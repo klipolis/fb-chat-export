@@ -7,6 +7,6 @@
 - `src/shared/rules/`: selector and export type rules for parsed message nodes.
 - `Output-generated/HTML Optimised/`: generated cleaned HTML snapshots.
 - `Output-generated/Data preview/`: final flattened JSON export previews.
-- `dist/`: generated one-file userscript output.
+- `dist/`: generated one-file userscript output (tracked in git).
 - `docs/`: documentation, changelog, and architecture notes.
 - `.skills/`: project planning and AI guidance files.

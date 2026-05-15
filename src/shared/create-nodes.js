@@ -218,6 +218,9 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
     nodes.push({
       title: rule.type,
       timestamp,
+      source: {
+        htmlRoute: route
+      },
       locate: {
         message: selectors.message,
         label: selectors.messageLabel,
@@ -234,11 +237,13 @@ function createNodeJson(fileName, metaMap) {
   const html = fs.readFileSync(path.join(optimizedDir, fileName), 'utf8');
   const exportDate = formatLocalDateTime();
   const nodes = parseMessageNodes(html, fileName, exportDate, metaMap);
+  const route = path.join('Output-generated', 'HTML Optimised', fileName).replace(/\\/g, '/');
   const uniqueNodes = [...new Map(nodes.map(node => [node.data_preview.content, node])).values()];
   const node = uniqueNodes.length ? uniqueNodes[0] : null;
   const output = {
     title: path.parse(fileName).name,
     export_date: exportDate,
+    source: node ? node.source : { htmlRoute: route },
     locate: node ? node.locate : {
       message: selectors.message,
       label: selectors.messageLabel,

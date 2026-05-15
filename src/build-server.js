@@ -40,6 +40,17 @@ function main() {
     process.exit(1);
   }
 
+  const nonInteractive = process.env.CI !== undefined || process.env.SKIP_PROMPT !== undefined;
+  const anonymizeEnv = String(process.env.ANONYMIZE_RAW || '').trim().toLowerCase();
+  const anonymize = ['1', 'true', 'y', 'yes'].includes(anonymizeEnv);
+
+  if (nonInteractive) {
+    files.forEach(fileName => optimizeFile(fileName, anonymize));
+    runCreateNodes();
+    console.log('Done: HTML + JSON in ./Output-generated');
+    return;
+  }
+
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   rl.question(`Rebuild ${files.length} files and build preview? [Y/N] `, answer => {
     const choice = String(answer || '').trim().toLowerCase().slice(0, 1);
@@ -50,10 +61,10 @@ function main() {
     }
 
     rl.question('Anonymize raw names? [Y/N] ', anonAnswer => {
-      const anonymize = String(anonAnswer || '').trim().toLowerCase().slice(0, 1) === 'y';
+      const anonymizeInteractive = String(anonAnswer || '').trim().toLowerCase().slice(0, 1) === 'y';
       rl.close();
-      files.forEach(fileName => optimizeFile(fileName, anonymize));
-      runCreateNodes(true);
+      files.forEach(fileName => optimizeFile(fileName, anonymizeInteractive));
+      runCreateNodes();
       console.log('Done: HTML + JSON in ./Output-generated');
     });
   });

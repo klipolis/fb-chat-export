@@ -1,5 +1,38 @@
 ﻿# Messenger Chat Exporter — Changelog
 
+## v5.0.3 (2026-05-15)
+
+### Fixed
+- Fixed `src/build-server.js` non-interactive CI detection and aligned it with Windows environment usage.
+- Updated README with PowerShell and CMD `CI=true` syntax for non-interactive builds.
+
+## v5.0.2 (2026-05-15)
+
+### Changed
+- Renamed GitHub workflow placeholder directory from `.github/` to `.github-next/` until CI integration is ready.
+- Added README guidance for PowerShell execution policy errors when running `pnpm` or `npm` scripts.
+- Added guidance to keep `packageManager` and `engines.pnpm` aligned when updating pnpm.
+
+## v5.0.1 (2026-05-15)
+
+### Added
+- GitHub Actions CI workflow for automated `pnpm run build:ci` builds.
+- `pnpm run build:ci:frontend` for isolated frontend CI builds.
+- `docs/TODO-next.md` as the next-task placeholder file.
+
+### Changed
+- Kept generated `dist/` and `Output-generated/` artifacts tracked in git.
+
+## v5.0.0 (2026-05-15)
+
+### Added
+- `package.json` with `pnpm` build scripts for server, frontend, preview, and node export workflows.
+- `pnpm run build:server` as the canonical full pipeline command.
+
+### Changed
+- Switched docs and build instructions to `pnpm` usage.
+- Bumped project release to major version 5.
+
 ## v3.0.4 (2026-05-14)
 
 ### Changed
@@ -30,6 +63,7 @@
 - Added `src/server/build-preview.js` to generate data preview JSON from optimized HTML.
 - Added `src/frontend/build-userscript.js` to emit a one-file userscript into `dist/`.
 - Added `src/build-server.js` to run the full pipeline: clear outputs, generate optimized HTML, and build data preview.
+- Added non-interactive `CI=true` / `SKIP_PROMPT=true` support and `ANONYMIZE_RAW=true` for server builds.
 
 ### Changed
 - Renamed helper pipeline paths from `Helper/` to root-level `Input-readonly/` and `Output-generated/`.

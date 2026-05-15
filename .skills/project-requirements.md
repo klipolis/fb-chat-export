@@ -18,4 +18,6 @@ This file now serves as a central index for split requirement documents.
 - Use `aria-label` as the primary message dedupe key and remove `data-message-id` dependencies.
 - Treat reply messages as text in exports, while still recognizing reply structure for locating messages if needed.
 - Use minute-based content length for audio/video calls and voice messages, and omit length for link preview exports.
+- Provide separate `pnpm` build scripts for server, frontend, and CI workflows.
+- Keep generated `dist/` and `Output-generated/` artifacts in source control.
 - Update changelog entries for every new helper or export schema change.

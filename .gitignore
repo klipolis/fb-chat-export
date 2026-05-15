@@ -2,10 +2,13 @@
 node_modules/
 .pnpm/
 
-# Placeholder workspace dirs
-__next/
-.github-next/
+# Build outputs
+# Dist and generated outputs are tracked in git.
 
 # Package manager files
 package-lock.json
 npm-debug.log*
+
+# Editor files
+.DS_Store
+Thumbs.db

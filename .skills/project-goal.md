@@ -8,3 +8,4 @@
 - Preserve call/voice durations as minute-based lengths and include link preview metadata in `content_link`.
 - Support accessible message extraction using `aria-label` values and preserve original/optimized preview metadata.
 - Keep `export_date` and `data_preview.optimised_date` in the same simple 24-hour format.
+- Preserve built `dist/` and generated `Output-generated/` artifacts in source control while supporting automated CI builds.
