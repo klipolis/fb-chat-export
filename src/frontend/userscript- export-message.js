@@ -1,11 +1,13 @@
 ﻿// ==UserScript==
 // @name         Messenger Chat Exporter
 // @namespace    http://tampermonkey.net/
-// @version      2.12.0
+// @version      5.0.4
 // @description  Export Messenger chats to text file
 // @match        https://www.facebook.com/messages/*
 // @grant        none
 // ==/UserScript==
+
+import { getContentMeta } from '../shared/message-metadata.js';
 
 (function () {
     'use strict';
@@ -156,38 +158,54 @@
     }
 
     function resolveRelativeDate(raw) {
-        const lower = raw.trim().toLowerCase();
+        const text = raw.trim();
+        const lower = text.toLowerCase();
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
         let resolvedDay = null;
-        if (lower.startsWith('today')) {
+        const relativeMatch = lower.match(/^(today|yesterday)(?:\s+at\s+)?(\d{1,2}:\d{2})\s*(am|pm)?$/i);
+        if (relativeMatch) {
+            const when = relativeMatch[1].toLowerCase();
+            const time = relativeMatch[2];
+            const meridiem = relativeMatch[3];
             resolvedDay = new Date(today);
-        } else if (lower.startsWith('yesterday')) {
-            resolvedDay = new Date(today); resolvedDay.setDate(today.getDate() - 1);
-        } else {
-            const days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
-            const matchedDay = days.find(day => lower.startsWith(day));
-            if (matchedDay) {
-                const targetDow = days.indexOf(matchedDay);
-                const diff = (today.getDay() - targetDow + 7) % 7 || 7;
-                resolvedDay = new Date(today); resolvedDay.setDate(today.getDate() - diff);
-            }
+            if (when === 'yesterday') resolvedDay.setDate(today.getDate() - 1);
+            setTimeOnResolved(resolvedDay, time, meridiem);
+            return resolvedDay.toISOString();
         }
 
-        if (!resolvedDay) return raw;
+        const dayNames = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+        const matchedDay = dayNames.find(day => lower.startsWith(day));
+        if (matchedDay) {
+            const targetDow = dayNames.indexOf(matchedDay);
+            const diff = (today.getDay() - targetDow + 7) % 7 || 7;
+            resolvedDay = new Date(today);
+            resolvedDay.setDate(today.getDate() - diff);
+            const timeMatch = text.match(/^(?:[a-z]+)\s+(\d{1,2}:\d{2})\s*(am|pm)?$/i);
+            if (timeMatch) {
+                setTimeOnResolved(resolvedDay, timeMatch[1], timeMatch[2]);
+            }
+            return resolvedDay.toISOString();
+        }
 
-        // extract time, e.g. "9:27am", "9:27 AM", "at 9:27 AM"
-        const timeMatch = raw.match(/(?:at\s+)?(\d{1,2}:\d{2})\s*(am|pm)/i);
-        if (timeMatch) {
-            let [, time, meridiem] = timeMatch;
-            let [h, min] = time.split(':').map(Number);
+        const timeOnlyMatch = text.match(/^(?:at\s*)?(\d{1,2}:\d{2})\s*(am|pm)?$/i);
+        if (timeOnlyMatch) {
+            resolvedDay = new Date(today);
+            setTimeOnResolved(resolvedDay, timeOnlyMatch[1], timeOnlyMatch[2]);
+            return resolvedDay.toISOString();
+        }
+
+        return raw;
+    }
+
+    function setTimeOnResolved(date, time, meridiem) {
+        let [h, min] = time.split(':').map(Number);
+        if (meridiem) {
             if (meridiem.toLowerCase() === 'pm' && h !== 12) h += 12;
             if (meridiem.toLowerCase() === 'am' && h === 12) h = 0;
-            resolvedDay.setHours(h, min, 0, 0);
         }
-
-        return resolvedDay.toISOString();
+        date.setHours(h, min, 0, 0);
     }
 
     function formatDate(raw) {
@@ -260,54 +278,26 @@
         const hasImage = Boolean(el.querySelector('img'));
         const hasPlayButton = Boolean(el.querySelector('[aria-label="Play"]'));
         const hasLink = Boolean(el.querySelector('a[href]')) || /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedText) || /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedLabel);
-        const hasReply = /\breplied to\b/i.test(normalizedText) || /\breply\b/i.test(normalizedText) || /\breply\b/i.test(normalizedLabel);
-        const hasUnsent = /\bunsent\b/i.test(normalizedText) || /\bunsent\b/i.test(normalizedLabel);
-        const callMatch = normalizedText.match(/\b(?:missed\s+)?(?:video|audio)?\s*call\b/i) || normalizedLabel.match(/\b(?:missed\s+)?(?:video|audio)?\s*call\b/i);
-        const voiceMatch = normalizedText.match(/\b(?:voice\s+message|voice\s+note|audio\s+message|audio\s+note)\b/i) || normalizedLabel.match(/\b(?:voice\s+message|voice\s+note|audio\s+message|audio\s+note)\b/i) || Boolean(timerEl) || hasPlayButton;
-        const durationSource = timerEl ? timerEl.innerText : normalizedText;
-        const durationMatch = durationSource.match(/(\d+)\s*min/i) || durationSource.match(/(\d+):(\d+)/);
-        const durationLength = durationMatch
-            ? (durationMatch[2] ? `${Number(durationMatch[1]) + (Number(durationMatch[2]) > 0 ? 1 : 0)} min` : `${Number(durationMatch[1])} min`)
-            : null;
-        let isCall = false;
-        let isImage = false;
-        let contentType = 'text';
-        let contentText = normalizedText;
-
-        if (hasUnsent) {
-            contentType = 'unsent';
-            contentText = 'message unsent';
-        } else if (callMatch) {
-            isCall = true;
-            contentType = callMatch[0].toLowerCase().trim();
-            contentText = contentType;
-        } else if (voiceMatch) {
-            contentType = 'voice message';
-            contentText = 'voice message';
-        } else if (hasImage) {
-            isImage = true;
-            contentType = 'image';
-            contentText = 'image sent';
-        } else if (hasLink) {
-            contentType = 'link';
-            contentText = 'link';
-        } else if (hasReply) {
-            contentType = 'text';
-            contentText = normalizedText;
-        } else if (/\b(image|photo|picture|gallery)\b/i.test(normalizedText)) {
-            isImage = true;
-            contentType = 'image';
-            contentText = 'image sent';
-        }
+        const durationText = timerEl ? timerEl.innerText : '';
+        const contentMeta = getContentMeta({
+            fileName: '',
+            ariaLabel: label,
+            message: normalizedText,
+            rawMeta: { duration: durationText },
+            hasImage,
+            hasPlayButton,
+            hasLink,
+            timerText: durationText
+        });
 
         return {
             rawDate,
             sender,
-            text: contentText,
-            type: contentType,
-            isCall,
-            isImage,
-            contentLength: (isCall || voiceMatch) ? (durationLength || '0 min') : normalizedText.length
+            text: contentMeta.text,
+            type: contentMeta.type,
+            isCall: contentMeta.isCall,
+            isImage: contentMeta.isImage,
+            contentLength: contentMeta.contentLength
         };
     }
 

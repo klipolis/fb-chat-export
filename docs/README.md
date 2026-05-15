@@ -34,10 +34,12 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - `src/frontend/`: browser-facing assets, userscript source, and frontend build tooling.
 - `src/server/`: build scripts such as `build-preview.js`.
 - `src/shared/`: shared helper scripts and node rules.
-- `Input-readonly/`: static raw HTML snapshots.
-- `Output-generated/`: generated optimized HTML and JSON preview outputs.
+- `Data-input-html-raw/`: static raw HTML snapshots.
+- `Data-output-html/`: generated optimized HTML snapshots.
+- `Data-output-json/`: generated JSON preview output.
 - `dist/`: generated one-file userscript output.
 - `docs/`: documentation, changelog, and project notes.
+- `tests/`: automated tests, fixtures, and validation scripts.
 - `.skills/`: planning, requirements, and development material.
 - `.github-next/`: placeholder workflow definitions for future GitHub Actions integration.
 
@@ -61,7 +63,15 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - Use `pnpm run build:ci` to run the full build in CI mode.
 - Use `pnpm run build:ci:frontend` to run only the frontend build in CI mode.
 - Set `ANONYMIZE_RAW=true` to anonymize raw chat names during server builds.
+- Use `BUILD_VERSION=<build-id>` with `pnpm run build:frontend` to generate a build-specific userscript version without updating `package.json`.
 - Run `pnpm run build-preview` to generate data preview JSON directly from optimized HTML.
 - Run `pnpm run create:nodes` for lower-level preview export debugging or custom workflows.
-- Keep `dist/` and `Output-generated/` committed to source control.
+- Keep `dist/`, `Data-output-html/`, and `Data-output-json/` committed to source control.
 - Keep `.skills/` for planning and requirements.
+
+## Suggestions
+
+- Add regression tests for shared message classification, content-type/length heuristics, and relative date parsing.
+- Add a CI validation step that checks `dist/userscript.js` header version, folder schema (`Data-input-html-raw/`, `Data-output-html/`, `Data-output-json/`), and package version stability.
+- Use `BUILD_VERSION` in CI to emit deterministic `dist/userscript.js` `@version` values while leaving `package.json` unchanged.
+- Consider adding `pnpm run build:clean` or a small maintenance script to ensure expected data folder layout.

@@ -1,6 +1,6 @@
 {
   "title": "text",
-  "export_date": "2026.05.15 14:37",
+  "export_date": "2026.05.15 16:03",
   "locate": {
     "message": "[aria-roledescription=\"message\"]",
     "label": "[aria-label]",
@@ -8,9 +8,9 @@
   },
   "data_preview": {
     "original_date": "12:26 AM",
-    "optimised_date": "12:26 AM",
-    "content": "",
-    "content_type": "link",
-    "content_link": null
+    "optimised_date": "2026.05.15 00:26",
+    "content": "image sent",
+    "content_type": "image",
+    "content_length": "10 chars"
   }
 }

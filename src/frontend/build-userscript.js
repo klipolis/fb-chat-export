@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const { transform } = require('esbuild');
+const { build } = require('esbuild');
+const { version: projectVersion } = require('../../package.json');
 
 const sourcePath = path.resolve(__dirname, 'userscript- export-message.js');
 const distDir = path.resolve(__dirname, '..', '..', 'dist');
@@ -15,15 +16,28 @@ const content = fs.readFileSync(sourcePath, 'utf8');
 const headerMatch = content.match(/^[\s\S]*?\/\/ ==UserScript==[\s\S]*?\/\/ ==\/UserScript==\s*/);
 const header = headerMatch ? headerMatch[0].trimEnd() : '';
 const body = headerMatch ? content.slice(header.length) : content;
+const buildVersion = process.env.BUILD_VERSION || `${projectVersion}-build.${new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14)}`;
+const versionedHeader = header
+  ? header.replace(/(^\/\/\s*@version\s+).*$/m, `$1${buildVersion}`)
+  : `// ==UserScript==\n// @version      ${buildVersion}\n// ==/UserScript==\n\n`;
 
 (async () => {
-  const result = await transform(body, {
-    minify: true,
+  await build({
+    stdin: {
+      contents: body,
+      resolveDir: path.dirname(sourcePath),
+      sourcefile: sourcePath
+    },
+    bundle: true,
+    platform: 'browser',
     target: 'es2020',
-    legalComments: 'none'
+    legalComments: 'none',
+    minify: true,
+    banner: {
+      js: `${versionedHeader}\n\n`
+    },
+    outfile: outputPath
   });
 
-  const output = header ? `${header}\n\n${result.code}` : result.code;
-  fs.writeFileSync(outputPath, output, 'utf8');
-  console.log(`Generated userscript: ${relOutputPath}`);
+  console.log(`Generated userscript: ${relOutputPath} (${buildVersion})`);
 })();

@@ -12,12 +12,14 @@ This file now serves as a central index for split requirement documents.
 - Point to dedicated files for goal definition, architecture, and implementation notes.
 
 ## Summary
-- Keep raw HTML and optimized HTML separated in `Input-readonly/` and `Output-generated/`.
-- Push final flattened JSON exports to `Output-generated/Data preview/`.
+- Keep raw HTML and optimized HTML separated in `Data-input-html-raw/` and `Data-output-html/`.
+- Push final flattened JSON exports to `Data-output-json/`.
 - Avoid nested `nodes` wrappers in exported JSON; use `export_date` and `data_preview.optimised_date` in simple 24-hour date/time format.
 - Use `aria-label` as the primary message dedupe key and remove `data-message-id` dependencies.
 - Treat reply messages as text in exports, while still recognizing reply structure for locating messages if needed.
+- Use shared relative date parsing for chat timestamps: plain times map to today, weekday labels map to the most recent matching day, and yesterday/today are handled consistently.
 - Use minute-based content length for audio/video calls and voice messages, and omit length for link preview exports.
 - Provide separate `pnpm` build scripts for server, frontend, and CI workflows.
-- Keep generated `dist/` and `Output-generated/` artifacts in source control.
+- Keep generated `dist/`, `Data-output-html/`, and `Data-output-json/` artifacts in source control.
+- Keep build-specific `dist/userscript.js` versioning separate from `package.json` using `BUILD_VERSION`.
 - Update changelog entries for every new helper or export schema change.

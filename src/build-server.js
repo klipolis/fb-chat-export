@@ -5,13 +5,13 @@ const { createOptimizedHtml } = require('./shared/optimize-html');
 const { runCreateNodes } = require('./shared/create-nodes');
 
 const baseDir = path.resolve(__dirname, '..');
-const rawDir = path.join(baseDir, 'Input-readonly', 'HTML Raw');
-const optimizedDir = path.join(baseDir, 'Output-generated', 'HTML Optimised');
-const previewDir = path.join(baseDir, 'Output-generated', 'Data preview');
+const rawDir = path.join(baseDir, 'Data-input-html-raw');
+const optimizedDir = path.join(baseDir, 'Data-output-html');
+const previewDir = path.join(baseDir, 'Data-output-json');
 
-const relRaw = './Input-readonly/HTML Raw';
-const relOptimized = './Output-generated/HTML Optimised';
-const relPreview = './Output-generated/Data preview';
+const relRaw = './Data-input-html-raw';
+const relOptimized = './Data-output-html';
+const relPreview = './Data-output-json';
 
 function optimizeFile(fileName, anonymize) {
   const inputPath = path.join(rawDir, fileName);
@@ -44,7 +44,7 @@ function main() {
 
   files.forEach(fileName => optimizeFile(fileName, anonymize));
   runCreateNodes();
-  console.log('Done: HTML + JSON in ./Output-generated');
+  console.log('Done: HTML + JSON in ./Data-output-html and ./Data-output-json');
 }
 
 main();

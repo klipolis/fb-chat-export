@@ -7,5 +7,7 @@
 - Treat reply messages as text in exports, while still allowing reply detection to support locate rules.
 - Preserve call/voice durations as minute-based lengths and include link preview metadata in `content_link`.
 - Support accessible message extraction using `aria-label` values and preserve original/optimized preview metadata.
+- Normalize chat labels into consistent export timestamps, turning same-day times into today's date and weekday labels into recent calendar dates.
 - Keep `export_date` and `data_preview.optimised_date` in the same simple 24-hour format.
-- Preserve built `dist/` and generated `Output-generated/` artifacts in source control while supporting automated CI builds.
+- Preserve built `dist/`, `Data-output-html/`, and `Data-output-json/` artifacts in source control while supporting automated CI builds.
+- Keep build-specific `dist` versioning separate from the stable project version and support deterministic CI build IDs via `BUILD_VERSION`.

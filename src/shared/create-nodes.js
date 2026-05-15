@@ -1,13 +1,14 @@
 const fs = require('fs');
 const path = require('path');
-const { messageRules, selectors } = require('./rules');
+const { selectors } = require('./rules');
 const { parseAriaLabel, normalizeDateToSimple } = require('./aria-label-parser');
+const { getContentMeta } = require('./message-metadata');
 
 const helperDir = path.resolve(__dirname);
 const baseDir = path.resolve(helperDir, '..', '..');
-const rawDir = path.join(baseDir, 'Input-readonly', 'HTML Raw');
-const optimizedDir = path.join(baseDir, 'Output-generated', 'HTML Optimised');
-const nodesDir = path.join(baseDir, 'Output-generated', 'Data preview');
+const rawDir = path.join(baseDir, 'Data-input-html-raw');
+const optimizedDir = path.join(baseDir, 'Data-output-html');
+const nodesDir = path.join(baseDir, 'Data-output-json');
 
 function relativePath(p) {
   const rel = path.relative(baseDir, p).replace(/\\/g, '/');
@@ -172,7 +173,7 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
   const nodes = [];
   const messageTagRe = /<([a-zA-Z0-9]+)([^>]*)>/gi;
   let match;
-  const route = path.join('Output-generated', 'HTML Optimised', fileName).replace(/\\/g, '/');
+  const route = path.join('Data-output-html', fileName).replace(/\\/g, '/');
 
   while ((match = messageTagRe.exec(html)) !== null) {
     const attrs = match[2];
@@ -184,39 +185,37 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
     const ariaLabel = ariaLabelMatch ? ariaLabelMatch[1] : '';
     const normalizedLabel = normalizeLabel(ariaLabel);
     const rawMeta = metaMap.get(normalizedLabel) || {};
-    const rule = chooseRule(fileName, ariaLabel);
     const parsedLabel = parseAriaLabel(ariaLabel);
     const message = parsedLabel.message;
     const originalDate = parsedLabel.date;
     const simpleDate = normalizeDateToSimple(parsedLabel.date);
     const timestamp = simpleDate || originalDate;
-    const link = rule.type === 'link' ? rawMeta.link || extractLink(message) || null : undefined;
-    const isTimedType = ['voice-message', 'video-call'].includes(rule.type);
-    const duration = isTimedType ? rawMeta.duration || parseDurationMinutes(message) : null;
-    const contentLength = rule.type === 'link' || rule.type === 'missed-call' || rule.type === 'unsent'
-      ? undefined
-      : isTimedType
-        ? duration
-        : `${message.length} chars`;
+    const contentMeta = getContentMeta({
+      fileName,
+      ariaLabel,
+      message,
+      rawMeta,
+      timerText: rawMeta.duration || ''
+    });
 
     const preview = {
       original_date: originalDate,
       optimised_date: simpleDate || originalDate,
-      content: message,
-      content_type: rule.type
+      content: contentMeta.text,
+      content_type: contentMeta.type
     };
 
-    if (link !== undefined) preview.content_link = link;
-    if (contentLength !== undefined) preview.content_length = contentLength;
+    if (contentMeta.link !== undefined) preview.content_link = contentMeta.link;
+    if (contentMeta.contentLength !== undefined) preview.content_length = contentMeta.contentLength;
     if (Object.keys(rawMeta).length) {
       preview.raw_meta = rawMeta;
     }
-    if (rule.type === 'voice-message') {
-      preview.voice_duration_source = rawMeta.duration ? 'timer' : 'label';
+    if (contentMeta.type === 'voice-message') {
+      preview.voice_duration_source = contentMeta.voiceDurationSource;
     }
 
     nodes.push({
-      title: rule.type,
+      title: contentMeta.type,
       timestamp,
       locate: {
         message: selectors.message,
@@ -234,7 +233,7 @@ function createNodeJson(fileName, metaMap) {
   const html = fs.readFileSync(path.join(optimizedDir, fileName), 'utf8');
   const exportDate = formatLocalDateTime();
   const nodes = parseMessageNodes(html, fileName, exportDate, metaMap);
-  const route = path.join('Output-generated', 'HTML Optimised', fileName).replace(/\\/g, '/');
+  const route = path.join('Data-output-html', fileName).replace(/\\/g, '/');
   const uniqueNodes = [...new Map(nodes.map(node => [node.data_preview.content, node])).values()];
   const node = uniqueNodes.length ? uniqueNodes[0] : null;
   const output = {
