@@ -1,0 +1,16 @@
+{
+  "title": "link-embed-no-text",
+  "export_date": "2026.05.15 10:29",
+  "locate": {
+    "message": "[aria-roledescription=\"message\"]",
+    "label": "[aria-label]",
+    "textContent": ".html-div"
+  },
+  "data_preview": {
+    "original_date": "Friday 1:51pm",
+    "optimised_date": "Friday 13:51",
+    "content": "",
+    "content_type": "link",
+    "content_link": null
+  }
+}

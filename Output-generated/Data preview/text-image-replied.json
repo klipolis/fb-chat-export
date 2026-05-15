@@ -1,0 +1,16 @@
+{
+  "title": "text-image-replied",
+  "export_date": "2026.05.15 10:29",
+  "locate": {
+    "message": "[aria-roledescription=\"message\"]",
+    "label": "[aria-label]",
+    "textContent": ".html-div"
+  },
+  "data_preview": {
+    "original_date": "April 14, 2026, 6:34 PM",
+    "optimised_date": "2026.04.14 18:34",
+    "content": "Well i didn't know about this",
+    "content_type": "text",
+    "content_length": "29 chars"
+  }
+}

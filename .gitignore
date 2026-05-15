@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+.pnpm/
+
+# Placeholder workspace dirs
+__next/
+.github-next/
+
+# Package manager files
+package-lock.json
+npm-debug.log*

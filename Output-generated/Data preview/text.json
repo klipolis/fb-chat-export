@@ -1,0 +1,16 @@
+{
+  "title": "text",
+  "export_date": "2026.05.15 10:29",
+  "locate": {
+    "message": "[aria-roledescription=\"message\"]",
+    "label": "[aria-label]",
+    "textContent": ".html-div"
+  },
+  "data_preview": {
+    "original_date": "12:26 AM",
+    "optimised_date": "12:26 AM",
+    "content": "Do you have that photo and a link?",
+    "content_type": "link",
+    "content_link": null
+  }
+}

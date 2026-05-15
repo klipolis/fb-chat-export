@@ -1,0 +1,16 @@
+{
+  "title": "audio-call",
+  "export_date": "2026.05.15 10:29",
+  "locate": {
+    "message": "[aria-roledescription=\"message\"]",
+    "label": "[aria-label]",
+    "textContent": ".html-div"
+  },
+  "data_preview": {
+    "original_date": "Thursday 5:34pm",
+    "optimised_date": "Thursday 17:34",
+    "content": "",
+    "content_type": "text",
+    "content_length": "0 chars"
+  }
+}
