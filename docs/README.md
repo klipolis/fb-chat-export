@@ -65,8 +65,7 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - Set `ANONYMIZE_RAW=true` to anonymize raw chat names during server builds.
 - Use `BUILD_VERSION=<build-id>` with `pnpm run build:frontend` to generate a build-specific userscript version without updating `package.json`.
 - Run `pnpm run build-preview` to generate data preview JSON directly from optimized HTML.
-- Run `pnpm run create:nodes` for lower-level preview export debugging or custom workflows.
-- Keep `dist/`, `Data-output-html/`, and `Data-output-json/` committed to source control.
+- Run `pnpm run create:nodes` for lower-level preview export debugging or custom workflows.- Run `pnpm run test` to execute automated shared-code regression tests.- Keep `dist/`, `Data-output-html/`, and `Data-output-json/` committed to source control.
 - Keep `.skills/` for planning and requirements.
 
 ## Suggestions

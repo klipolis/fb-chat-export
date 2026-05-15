@@ -179,7 +179,7 @@ import { getContentMeta } from '../shared/message-metadata.js';
         const matchedDay = dayNames.find(day => lower.startsWith(day));
         if (matchedDay) {
             const targetDow = dayNames.indexOf(matchedDay);
-            const diff = (today.getDay() - targetDow + 7) % 7 || 7;
+            const diff = (today.getDay() - targetDow + 7) % 7;
             resolvedDay = new Date(today);
             resolvedDay.setDate(today.getDate() - diff);
             const timeMatch = text.match(/^(?:[a-z]+)\s+(\d{1,2}:\d{2})\s*(am|pm)?$/i);

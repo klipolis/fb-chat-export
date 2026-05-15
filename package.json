@@ -8,6 +8,7 @@
     "build:frontend": "node src/build-frontend.js",
     "build:preview": "node src/server/build-preview.js",
     "create:nodes": "node src/shared/create-nodes.js",
+    "test": "node tests/run-tests.js",
     "build": "pnpm run build:server && pnpm run build:frontend",
     "build:ci": "CI=true pnpm run build",
     "build:ci:server": "CI=true pnpm run build:server",

@@ -90,7 +90,7 @@ function normalizeDateToSimple(dateString) {
     const [, dayName, hourPart = '0', minute = '00', meridiem] = dayOfWeekMatch;
     const days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
     const targetDow = days.indexOf(dayName.toLowerCase());
-    const diff = (today.getDay() - targetDow + 7) % 7 || 7;
+    const diff = (today.getDay() - targetDow + 7) % 7;
     const date = new Date(today);
     date.setDate(date.getDate() - diff);
     let hour = Number(hourPart);

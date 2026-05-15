@@ -10,4 +10,4 @@
 - Normalize chat labels into consistent export timestamps, turning same-day times into today's date and weekday labels into recent calendar dates.
 - Keep `export_date` and `data_preview.optimised_date` in the same simple 24-hour format.
 - Preserve built `dist/`, `Data-output-html/`, and `Data-output-json/` artifacts in source control while supporting automated CI builds.
-- Keep build-specific `dist` versioning separate from the stable project version and support deterministic CI build IDs via `BUILD_VERSION`.
+- Keep build-specific `dist` versioning separate from the stable project version and support deterministic CI build IDs via `BUILD_VERSION`.- Store automated tests in the dedicated `tests/` directory and validate core shared exports with unit tests.
