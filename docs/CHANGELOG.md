@@ -6,6 +6,10 @@
 - Renamed helper pipeline folders to `Data-input-html-raw/`, `Data-output-html/`, and `Data-output-json/`.
 - Bundled shared message metadata and classification helpers into the userscript so frontend and server logic use the same export rules.
 - Added build-specific `dist/userscript.js` versioning via `BUILD_VERSION`, keeping `package.json` stable.
+- Added optional `data_preview.duration` for timed preview exports in generated JSON output.
+- Added top-level `export_date` to generated preview JSON exports.
+- Added `tests/generated-json-schema.json` and `tests/validate-generated-json.js` plus `pnpm run validate:generated-json` for generated preview schema validation.
+- Added `pnpm run build:clean` and `src/build-clean.js` to safely clear generated build artifacts.
 
 ## v5.0.3 (2026-05-15)
 

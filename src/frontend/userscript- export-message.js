@@ -8,6 +8,7 @@
 // ==/UserScript==
 
 import { getContentMeta } from '../shared/message-metadata.js';
+import { parseAriaLabel, normalizeDateToIso } from '../shared/aria-label-parser.js';
 
 (function () {
     'use strict';
@@ -158,54 +159,7 @@ import { getContentMeta } from '../shared/message-metadata.js';
     }
 
     function resolveRelativeDate(raw) {
-        const text = raw.trim();
-        const lower = text.toLowerCase();
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-        let resolvedDay = null;
-        const relativeMatch = lower.match(/^(today|yesterday)(?:\s+at\s+)?(\d{1,2}:\d{2})\s*(am|pm)?$/i);
-        if (relativeMatch) {
-            const when = relativeMatch[1].toLowerCase();
-            const time = relativeMatch[2];
-            const meridiem = relativeMatch[3];
-            resolvedDay = new Date(today);
-            if (when === 'yesterday') resolvedDay.setDate(today.getDate() - 1);
-            setTimeOnResolved(resolvedDay, time, meridiem);
-            return resolvedDay.toISOString();
-        }
-
-        const dayNames = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
-        const matchedDay = dayNames.find(day => lower.startsWith(day));
-        if (matchedDay) {
-            const targetDow = dayNames.indexOf(matchedDay);
-            const diff = (today.getDay() - targetDow + 7) % 7;
-            resolvedDay = new Date(today);
-            resolvedDay.setDate(today.getDate() - diff);
-            const timeMatch = text.match(/^(?:[a-z]+)\s+(\d{1,2}:\d{2})\s*(am|pm)?$/i);
-            if (timeMatch) {
-                setTimeOnResolved(resolvedDay, timeMatch[1], timeMatch[2]);
-            }
-            return resolvedDay.toISOString();
-        }
-
-        const timeOnlyMatch = text.match(/^(?:at\s*)?(\d{1,2}:\d{2})\s*(am|pm)?$/i);
-        if (timeOnlyMatch) {
-            resolvedDay = new Date(today);
-            setTimeOnResolved(resolvedDay, timeOnlyMatch[1], timeOnlyMatch[2]);
-            return resolvedDay.toISOString();
-        }
-
-        return raw;
-    }
-
-    function setTimeOnResolved(date, time, meridiem) {
-        let [h, min] = time.split(':').map(Number);
-        if (meridiem) {
-            if (meridiem.toLowerCase() === 'pm' && h !== 12) h += 12;
-            if (meridiem.toLowerCase() === 'am' && h === 12) h = 0;
-        }
-        date.setHours(h, min, 0, 0);
+        return normalizeDateToIso(raw) || raw;
     }
 
     function formatDate(raw) {
@@ -247,38 +201,18 @@ import { getContentMeta } from '../shared/message-metadata.js';
 
     function extractMessageParts(el) {
         const label = el.getAttribute('aria-label') || '';
-        let rawDate = '';
-        let sender = '';
-        let text = '';
+        const parsedLabel = parseAriaLabel(label);
+        const rawDate = parsedLabel.date || '';
+        const sender = parsedLabel.sender || '';
+        const labelText = parsedLabel.message || '';
 
-        const fullMatch = label.match(/^At (.+?), ([^:]+):\s*(.+)$/s);
-        if (fullMatch) {
-            rawDate = fullMatch[1];
-            sender = fullMatch[2];
-            text = fullMatch[3].trim();
-        } else {
-            const enterMatch = label.match(/^Enter, Message sent\s+(.+?)\s+by\s+([^:]+):\s*(.+)$/s);
-            if (enterMatch) {
-                rawDate = enterMatch[1];
-                sender = enterMatch[2];
-                text = enterMatch[3].trim();
-            } else {
-                const fallback = label.match(/^At (.+?),\s*(.+)$/);
-                if (fallback) {
-                    rawDate = fallback[1];
-                    sender = fallback[2];
-                }
-                text = el.innerText.replace(/\s+/g, ' ').replace(/\bCall again\b/gi, '').trim();
-            }
-        }
-
-        const normalizedText = text.replace(/\s+/g, ' ').trim();
+        const normalizedText = (labelText || el.innerText).replace(/\s+/g, ' ').trim();
         const normalizedLabel = label.replace(/\s+/g, ' ').trim().toLowerCase();
         const timerEl = el.querySelector('[role="timer"]');
         const hasImage = Boolean(el.querySelector('img'));
         const hasPlayButton = Boolean(el.querySelector('[aria-label="Play"]'));
         const hasLink = Boolean(el.querySelector('a[href]')) || /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedText) || /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedLabel);
-        const durationText = timerEl ? timerEl.innerText : '';
+        const durationText = timerEl ? timerEl.innerText : normalizedText;
         const contentMeta = getContentMeta({
             fileName: '',
             ariaLabel: label,

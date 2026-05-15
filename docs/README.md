@@ -37,9 +37,13 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - `Data-input-html-raw/`: static raw HTML snapshots.
 - `Data-output-html/`: generated optimized HTML snapshots.
 - `Data-output-json/`: generated JSON preview output.
+- `Data-output-json/raw-input-metadata.json`: build metadata for raw input file stability.
 - `dist/`: generated one-file userscript output.
 - `docs/`: documentation, changelog, and project notes.
 - `tests/`: automated tests, fixtures, and validation scripts.
+- `tests/generated-json-schema.json`: formal contract for generated preview JSON exports.
+- `docs/JSON-Schema.md`: human-readable summary of the generated preview JSON contract.
+- `src/shared/metadata-generated/metadata.json`: metadata for generated JSON export files.
 - `.skills/`: planning, requirements, and development material.
 - `.github-next/`: placeholder workflow definitions for future GitHub Actions integration.
 
@@ -65,7 +69,11 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - Set `ANONYMIZE_RAW=true` to anonymize raw chat names during server builds.
 - Use `BUILD_VERSION=<build-id>` with `pnpm run build:frontend` to generate a build-specific userscript version without updating `package.json`.
 - Run `pnpm run build-preview` to generate data preview JSON directly from optimized HTML.
-- Run `pnpm run create:nodes` for lower-level preview export debugging or custom workflows.- Run `pnpm run test` to execute automated shared-code regression tests.- Keep `dist/`, `Data-output-html/`, and `Data-output-json/` committed to source control.
+- Run `pnpm run build:clean` to clear generated build artifacts while preserving raw inputs.
+- Run `pnpm run create:nodes` for lower-level preview export debugging or custom workflows.
+- Run `pnpm run validate:generated-json` to verify final `Data-output-json/` preview schema.
+- Run `pnpm run test` to execute automated shared-code regression tests and generated JSON schema validation.
+- Keep `dist/`, `Data-output-html/`, and `Data-output-json/` committed to source control.
 - Keep `.skills/` for planning and requirements.
 
 ## Suggestions

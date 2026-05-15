@@ -1,16 +1,19 @@
 {
   "title": "audio-call",
-  "export_date": "2026.05.15 16:03",
+  "export_date": "2026.05.15 19:17",
   "locate": {
     "message": "[aria-roledescription=\"message\"]",
     "label": "[aria-label]",
-    "textContent": ".html-div"
+    "textContent": ".html-div",
+    "voice_duration_source": "timer"
   },
   "data_preview": {
     "original_date": "Thursday 5:34pm",
     "optimised_date": "2026.05.14 17:34",
-    "content": "",
-    "content_type": "text",
-    "content_length": "0 chars"
+    "content": "Missed audio call",
+    "content_type": "missed-call",
+    "raw_meta": {
+      "duration": "5:34 mins"
+    }
   }
 }

@@ -1,28 +1,40 @@
 const { messageRules } = require('./rules');
 const { parseAriaLabel, normalizeDateToSimple, normalizeLabel } = require('./aria-label-parser');
 
-function parseDurationMinutes(text) {
+function normalizeDuration(text) {
   if (!text) return null;
-  const hhmm = text.match(/(\d{1,2}):(\d{2})/);
+  const normalized = String(text).trim();
+  const hhmm = normalized.match(/(\d{1,2}):(\d{2})/);
   if (hhmm) {
-    const minutes = Number(hhmm[1]);
-    const seconds = Number(hhmm[2]);
-    return `${minutes + (seconds > 0 ? 1 : 0)} min`;
+    return `${Number(hhmm[1])}:${hhmm[2]} mins`;
   }
 
-  const minMatch = text.match(/(\d+(?:\.\d+)?)\s*min/i);
-  if (minMatch) return `${Math.ceil(Number(minMatch[1]))} min`;
+  const minMatch = normalized.match(/(\d+(?:\.\d+)?)\s*min(?:s)?/i);
+  if (minMatch) return `${Math.ceil(parseFloat(minMatch[1]))} mins`;
 
-  const secMatch = text.match(/(\d+)\s*sec/i);
-  if (secMatch) return `${Math.ceil(Number(secMatch[1]) / 60)} min`;
+  const secMatch = normalized.match(/(\d+)\s*sec/i);
+  if (secMatch) return `${Math.ceil(parseInt(secMatch[1], 10) / 60)} mins`;
 
   return null;
 }
 
+function normalizeFacebookRedirect(url) {
+  const redirectMatch = url.match(/https?:\/\/(?:l\.facebook\.com|l\.m\.facebook\.com|l\.messenger\.com|l\.m\.messenger\.com)\/l\.php\?u=([^&]+)/i);
+  if (!redirectMatch) return url;
+  try {
+    return decodeURIComponent(redirectMatch[1]);
+  } catch {
+    return redirectMatch[1];
+  }
+}
+
 function extractLink(text) {
   if (!text) return null;
-  const urlMatch = text.match(/https?:\/\/[^\s]+/i);
-  return urlMatch ? urlMatch[0] : null;
+  const urlMatch = String(text).match(/(https?:\/\/[^\s"'<]+)/i);
+  const wwwMatch = String(text).match(/\b(www\.[^\s"'<]+)/i);
+  const rawUrl = urlMatch ? urlMatch[0] : wwwMatch ? `https://${wwwMatch[1]}` : null;
+  if (!rawUrl) return null;
+  return normalizeFacebookRedirect(rawUrl);
 }
 
 function chooseRule(fileName, ariaLabel) {
@@ -57,15 +69,20 @@ function getContentMeta({
   const normalizedLabel = normalizeLabel(ariaLabel);
   const rule = chooseRule(fileName, ariaLabel);
   let type = normalizeContentType(rule.type || 'text');
-  const link = rawMeta.link || (hasLink ? extractLink(normalizedText) : null);
-  const duration = rawMeta.duration || parseDurationMinutes(timerText);
+  const rawLink = rawMeta.link || extractLink(normalizedText) || extractLink(normalizedLabel) || null;
+  const link = rawLink ? normalizeFacebookRedirect(rawLink) : null;
+  const rawDuration = rawMeta.duration || normalizeDuration(timerText);
 
   const unsent = /(?:unsent|deleted)/i.test(normalizedText) || /(?:unsent|deleted)/i.test(normalizedLabel);
   const callMatch = normalizedText.match(/\b(?:missed\s+)?(?:video|audio)?\s*call\b/i) || normalizedLabel.match(/\b(?:missed\s+)?(?:video|audio)?\s*call\b/i);
   const voiceMatch = /\b(?:voice\s+message|voice\s+note|audio\s+message|audio\s+note)\b/i.test(normalizedText)
     || /\b(?:voice\s+message|voice\s+note|audio\s+message|audio\s+note)\b/i.test(normalizedLabel)
     || Boolean(timerText);
-  const explicitLink = hasLink || /https?:\/\/|www\.|\blink\b|\bhref\b/i.test(normalizedText) || /https?:\/\/|www\.|\blink\b|\bhref\b/i.test(normalizedLabel);
+  const explicitLink = hasLink
+    || /https?:\/\/|www\.|fbcdn\.|fbsbx\.|facebook\.com|fb\.me|m\.me|l\.facebook\.com\/l\.php|l\.messenger\.com\/l\.php|href\b|\blink\b/i.test(normalizedText)
+    || /https?:\/\/|www\.|fbcdn\.|fbsbx\.|facebook\.com|fb\.me|m\.me|l\.facebook\.com\/l\.php|l\.messenger\.com\/l\.php|href\b|\blink\b/i.test(normalizedLabel)
+    || /\b(?:attachment|open attachment|download|view image|view attachment)\b/i.test(normalizedText)
+    || /\b(?:attachment|open attachment|download|view image|view attachment)\b/i.test(normalizedLabel);
   const imageMatch = hasImage || /\b(?:image|photo|picture|gallery)\b/i.test(normalizedText) || /\b(?:image|photo|picture|gallery)\b/i.test(normalizedLabel);
 
   if (unsent) {
@@ -76,6 +93,8 @@ function getContentMeta({
       type = 'missed-call';
     } else if (/video/.test(callText)) {
       type = 'video-call';
+    } else if (/audio/.test(callText)) {
+      type = 'audio-call';
     } else {
       type = 'voice-message';
     }
@@ -96,15 +115,16 @@ function getContentMeta({
     contentText = 'voice message';
   } else if (type === 'image') {
     contentText = 'image sent';
-  } else if (type === 'video-call' || type === 'missed-call') {
+  } else if (type === 'video-call' || type === 'audio-call' || type === 'missed-call') {
     contentText = normalizedText || type;
   }
 
-  const isTimedType = type === 'voice-message' || type === 'video-call';
+  const duration = (type === 'voice-message' || type === 'video-call' || type === 'audio-call') ? rawDuration : null;
+  const isTimedType = type === 'voice-message' || type === 'video-call' || type === 'audio-call';
   const contentLength = type === 'link' || type === 'missed-call' || type === 'unsent'
     ? undefined
     : isTimedType
-      ? duration || '0 min'
+      ? undefined
       : `${contentText.length} chars`;
 
   return {
@@ -113,7 +133,7 @@ function getContentMeta({
     contentLength,
     link: link || undefined,
     voiceDurationSource: rawMeta.duration ? 'timer' : timerText ? 'label' : undefined,
-    isCall: type === 'video-call' || type === 'missed-call',
+    isCall: type === 'video-call' || type === 'missed-call' || type === 'audio-call',
     isImage: type === 'image',
     duration
   };
@@ -123,7 +143,7 @@ module.exports = {
   parseAriaLabel,
   normalizeDateToSimple,
   normalizeLabel,
-  parseDurationMinutes,
+  normalizeDuration,
   extractLink,
   chooseRule,
   getContentMeta

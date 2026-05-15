@@ -6,6 +6,8 @@
 - Use `aria-label` as the primary message dedupe key and remove `data-message-id` dependencies.
 - Treat reply messages as text in exports, while still allowing reply detection to support locate rules.
 - Preserve call/voice durations as minute-based lengths and include link preview metadata in `content_link`.
+- Expose a stable `data_preview.duration` field for timed preview exports when duration metadata is available.
+- Add a top-level `export_date` field to generated preview JSON for each export file.
 - Support accessible message extraction using `aria-label` values and preserve original/optimized preview metadata.
 - Normalize chat labels into consistent export timestamps, turning same-day times into today's date and weekday labels into recent calendar dates.
 - Keep `export_date` and `data_preview.optimised_date` in the same simple 24-hour format.

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Messenger Chat Export Preview",
+  "type": "object",
+  "required": ["title", "export_date", "locate", "data_preview"],
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "export_date": {
+      "type": "string"
+    },
+    "locate": {
+      "type": "object",
+      "required": ["message", "label", "textContent"],
+      "properties": {
+        "message": { "type": "string" },
+        "label": { "type": "string" },
+        "textContent": { "type": "string" }
+      }
+    },
+    "data_preview": {
+      "type": "object",
+      "required": ["optimised_date", "content", "content_type"],
+      "properties": {
+        "original_date": { "type": ["string", "null"] },
+        "optimised_date": { "type": "string" },
+        "content": { "type": ["string", "null"] },
+        "content_type": { "type": "string" },
+        "duration": { "type": "string" },
+        "content_link": { "type": "string" },
+        "content_length": { "type": "string" },
+        "raw_meta": {
+          "type": "object",
+          "properties": {
+            "duration": { "type": "string" },
+            "link": { "type": "string" }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

@@ -138,8 +138,23 @@ function normalizeDateToSimple(dateString) {
   return text;
 }
 
+function normalizeDateToIso(dateString) {
+  if (!dateString) return null;
+  const normalized = normalizeDateToSimple(dateString);
+  if (!normalized) return null;
+
+  const [dayPart, timePart] = normalized.split(' ');
+  if (!dayPart || !timePart) return null;
+
+  const [year, month, day] = dayPart.split('.').map(Number);
+  const [hour, minute] = timePart.split(':').map(Number);
+  const date = new Date(year, month - 1, day, hour, minute, 0, 0);
+  return date.toISOString();
+}
+
 module.exports = {
   parseAriaLabel,
   normalizeDateToSimple,
+  normalizeDateToIso,
   normalizeLabel
 };

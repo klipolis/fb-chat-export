@@ -1,20 +1,20 @@
 {
   "title": "voice-note",
-  "export_date": "2026.05.15 16:03",
+  "export_date": "2026.05.15 19:17",
   "locate": {
     "message": "[aria-roledescription=\"message\"]",
     "label": "[aria-label]",
-    "textContent": ".html-div"
+    "textContent": ".html-div",
+    "voice_duration_source": "timer"
   },
   "data_preview": {
     "original_date": "Wednesday 7:52pm",
     "optimised_date": "2026.05.13 19:52",
     "content": "voice message",
     "content_type": "voice-message",
-    "content_length": "1 min",
+    "duration": "0:20 mins",
     "raw_meta": {
-      "duration": "1 min"
-    },
-    "voice_duration_source": "timer"
+      "duration": "0:20 mins"
+    }
   }
 }

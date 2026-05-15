@@ -33,6 +33,10 @@ function removeTimeNodes(html) {
   return html.replace(/<span[^>]*>\s*\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)\s*<\/span>/g, '');
 }
 
+function removeSvgNodes(html) {
+  return html.replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/gi, '');
+}
+
 function normalizeText(text) {
   return text
     .replace(/\*/g, '')
@@ -137,6 +141,7 @@ function createOptimizedHtml(rawHtml) {
   html = removeCallActionNodes(html);
   html = removeDuplicateAccessibilityLabels(html);
   html = removeTimeNodes(html);
+  html = removeSvgNodes(html);
   html = removeDuplicateAriaLabelNodes(html);
   html = removeDataMessageIds(html);
   html = removeEmptyChildren(html);

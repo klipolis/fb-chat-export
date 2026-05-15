@@ -2,13 +2,14 @@ const fs = require('fs');
 const path = require('path');
 const { selectors } = require('./rules');
 const { parseAriaLabel, normalizeDateToSimple } = require('./aria-label-parser');
-const { getContentMeta } = require('./message-metadata');
+const { getContentMeta, normalizeDuration } = require('./message-metadata');
 
 const helperDir = path.resolve(__dirname);
 const baseDir = path.resolve(helperDir, '..', '..');
 const rawDir = path.join(baseDir, 'Data-input-html-raw');
 const optimizedDir = path.join(baseDir, 'Data-output-html');
 const nodesDir = path.join(baseDir, 'Data-output-json');
+const metadataDir = path.join(helperDir, 'metadata-generated');
 
 function relativePath(p) {
   const rel = path.relative(baseDir, p).replace(/\\/g, '/');
@@ -17,6 +18,16 @@ function relativePath(p) {
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
+
+function writeJsonIfChanged(targetPath, data) {
+  const content = JSON.stringify(data, null, 2) + '\n';
+  if (fs.existsSync(targetPath)) {
+    const existing = fs.readFileSync(targetPath, 'utf8');
+    if (existing === content) return false;
+  }
+  fs.writeFileSync(targetPath, content, 'utf8');
+  return true;
 }
 
 function findMatchingClosingTag(html, tag, fromIndex) {
@@ -53,6 +64,15 @@ function normalizeLabel(text) {
   return String(text || '').replace(/\s+/g, ' ').trim();
 }
 
+function extractPlainText(html) {
+  return String(html || '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function buildMessageMetaMap(rawHtml) {
   const map = new Map();
   const rawTagRe = /<([a-zA-Z0-9]+)([^>]*)>/gi;
@@ -74,9 +94,10 @@ function buildMessageMetaMap(rawHtml) {
     if (end === -1) continue;
 
     const segment = rawHtml.slice(start, end);
+    const segmentText = extractPlainText(segment);
     const hrefMatch = segment.match(/href="([^"]+)"/i);
     const timerMatch = segment.match(/role="timer"[^>]*>([^<]+)</i);
-    const duration = timerMatch ? parseDurationMinutes(timerMatch[1].trim()) : null;
+    const duration = timerMatch ? normalizeDuration(timerMatch[1].trim()) : normalizeDuration(segmentText);
     const metadata = {};
 
     if (hrefMatch) metadata.link = hrefMatch[1];
@@ -144,20 +165,6 @@ function formatLocalDateTime(date = new Date()) {
   return `${year}.${month}.${day} ${hours}:${minutes}`;
 }
 
-function parseDurationMinutes(text) {
-  if (!text) return null;
-  const hhmm = text.match(/(\d{1,2}):(\d{2})/);
-  if (hhmm) {
-    const minutes = parseInt(hhmm[1], 10);
-    const seconds = parseInt(hhmm[2], 10);
-    return `${minutes + (seconds > 0 ? 1 : 0)} min`;
-  }
-  const minMatch = text.match(/(\d+(?:\.\d+)?)\s*min/i);
-  if (minMatch) return `${Math.ceil(parseFloat(minMatch[1]))} min`;
-  const secMatch = text.match(/(\d+)\s*sec/i);
-  if (secMatch) return `${Math.ceil(parseInt(secMatch[1], 10) / 60)} min`;
-  return null;
-}
 
 function extractLink(text) {
   const urlMatch = text.match(/https?:\/\/[^"]+/i);
@@ -184,9 +191,33 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
     const ariaLabelMatch = attrs.match(/aria-label="([^\"]+)"/i);
     const ariaLabel = ariaLabelMatch ? ariaLabelMatch[1] : '';
     const normalizedLabel = normalizeLabel(ariaLabel);
-    const rawMeta = metaMap.get(normalizedLabel) || {};
+    const rawMeta = Object.assign({}, metaMap.get(normalizedLabel) || {});
     const parsedLabel = parseAriaLabel(ariaLabel);
-    const message = parsedLabel.message;
+    const start = match.index + match[0].length;
+    const end = findMatchingClosingTag(html, match[1], start);
+    if (end === -1) continue;
+
+    const rawSegment = html.slice(start, end);
+    const segmentText = extractPlainText(rawSegment);
+    if (!rawMeta.duration) {
+      const fallbackDuration = normalizeDuration(segmentText);
+      if (fallbackDuration) {
+        rawMeta.duration = fallbackDuration;
+      }
+    }
+    let message = parsedLabel.message || '';
+    if (!message && segmentText) {
+      if (/\bvideo[- ]call\b/i.test(segmentText)) {
+        message = 'video call';
+      } else if (/\bmissed[- ]call\b/i.test(segmentText)) {
+        message = 'missed call';
+      } else if (/\bvoice(?: message| note)\b/i.test(segmentText)) {
+        message = 'voice message';
+      } else {
+        message = segmentText;
+      }
+    }
+
     const originalDate = parsedLabel.date;
     const simpleDate = normalizeDateToSimple(parsedLabel.date);
     const timestamp = simpleDate || originalDate;
@@ -205,33 +236,38 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
       content_type: contentMeta.type
     };
 
+    if (contentMeta.duration !== undefined && contentMeta.duration !== null) {
+      preview.duration = contentMeta.duration;
+    }
     if (contentMeta.link !== undefined) preview.content_link = contentMeta.link;
     if (contentMeta.contentLength !== undefined) preview.content_length = contentMeta.contentLength;
     if (Object.keys(rawMeta).length) {
       preview.raw_meta = rawMeta;
     }
-    if (contentMeta.type === 'voice-message') {
-      preview.voice_duration_source = contentMeta.voiceDurationSource;
+    const locate = {
+      message: selectors.message,
+      label: selectors.messageLabel,
+      textContent: selectors.messageText
+    };
+    if (contentMeta.voiceDurationSource) {
+      locate.voice_duration_source = contentMeta.voiceDurationSource;
     }
 
     nodes.push({
       title: contentMeta.type,
       timestamp,
-      locate: {
-        message: selectors.message,
-        label: selectors.messageLabel,
-        textContent: selectors.messageText
-      },
+      locate,
       data_preview: preview
     });
+
+    messageTagRe.lastIndex = end;
   }
 
   return nodes;
 }
 
-function createNodeJson(fileName, metaMap) {
+function createNodeJson(fileName, metaMap, exportDate) {
   const html = fs.readFileSync(path.join(optimizedDir, fileName), 'utf8');
-  const exportDate = formatLocalDateTime();
   const nodes = parseMessageNodes(html, fileName, exportDate, metaMap);
   const route = path.join('Data-output-html', fileName).replace(/\\/g, '/');
   const uniqueNodes = [...new Map(nodes.map(node => [node.data_preview.content, node])).values()];
@@ -253,12 +289,22 @@ function createNodeJson(fileName, metaMap) {
   };
 
   const targetPath = path.join(nodesDir, `${path.parse(fileName).name}.json`);
-  fs.writeFileSync(targetPath, JSON.stringify(output, null, 2), 'utf8');
+  writeJsonIfChanged(targetPath, output);
   return targetPath;
+}
+
+function writeExportMetadata(createdFiles) {
+  const meta = {
+    file_count: createdFiles.length,
+    files: createdFiles.map(filePath => path.basename(filePath))
+  };
+
+  writeJsonIfChanged(path.join(metadataDir, 'metadata.json'), meta);
 }
 
 function main() {
   ensureDir(nodesDir);
+  ensureDir(metadataDir);
 
   const relOptimizedDir = relativePath(optimizedDir);
   const relNodesDir = relativePath(nodesDir);
@@ -275,13 +321,19 @@ function main() {
     process.exit(1);
   }
 
+  const exportDate = formatLocalDateTime();
   const metaMap = buildAllMessageMetaMap(rawDir);
-  const created = htmlFiles.map(fileName => createNodeJson(fileName, metaMap));
+  const created = htmlFiles.map(fileName => createNodeJson(fileName, metaMap, exportDate));
+  writeExportMetadata(created);
   console.log(`Generated ${created.length} JSON files in ${relNodesDir}`);
 }
 
 if (require.main === module) {
-  main(false);
+  main();
 }
 
-module.exports = { runCreateNodes: () => main() };
+module.exports = {
+  runCreateNodes: () => main(),
+  parseMessageNodes,
+  buildAllMessageMetaMap
+};

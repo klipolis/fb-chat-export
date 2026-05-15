@@ -6,8 +6,13 @@ module.exports = [
   },
   {
     type: 'missed-call',
-    matchFile: /missed call/i,
-    matchLabel: /missed call/i
+    matchFile: /missed[- ]call/i,
+    matchLabel: /missed[- ]call/i
+  },
+  {
+    type: 'audio-call',
+    matchFile: /audio[- ]call/i,
+    matchLabel: /audio[- ]call/i
   },
   {
     type: 'text',
@@ -21,13 +26,13 @@ module.exports = [
   },
   {
     type: 'video-call',
-    matchFile: /video call/i,
-    matchLabel: /video call/i
+    matchFile: /video[- ]call/i,
+    matchLabel: /video[- ]call/i
   },
   {
     type: 'voice-message',
-    matchFile: /voice(?: message| note)/i,
-    matchLabel: /voice(?: message| note)|audio(?: message| note)/i
+    matchFile: /voice(?:[- ]message|[- ]note)/i,
+    matchLabel: /voice(?:[- ]message|[- ]note)|audio(?:[- ]message|[- ]note)/i
   },
   {
     type: 'you-text',

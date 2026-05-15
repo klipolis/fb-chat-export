@@ -5,6 +5,8 @@
 - Export metadata should use `export_date` and `data_preview.optimised_date` as simple 24-hour strings, and date metadata should include both original/raw and optimized forms.
 - Parse chat label dates consistently across browser and server exports: plain timestamps are today, weekday labels map to a recent day, and `today`/`yesterday` are normalized.
 - Link previews should include `content_link` and omit `content_length`.
+- Add a dedicated generated JSON schema validation test in `tests/` and a schema document in `tests/generated-json-schema.json`.
+- Add a `pnpm run build:clean` script to clear generated output artifacts safely.
 - Reply messages should be treated as text when exporting, while location helpers can still recognize reply elements.
 - Audio/video call and voice message lengths should be expressed in minutes rather than character counts.
 - Maintain dedicated `pnpm` scripts for server, frontend, and CI builds.
