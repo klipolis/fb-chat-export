@@ -1,9 +1,6 @@
 {
   "title": "link-text",
-  "export_date": "2026.05.15 14:07",
-  "source": {
-    "htmlRoute": "Output-generated/HTML Optimised/link-text.html"
-  },
+  "export_date": "2026.05.15 14:37",
   "locate": {
     "message": "[aria-roledescription=\"message\"]",
     "label": "[aria-label]",

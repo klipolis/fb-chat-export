@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const readline = require('readline');
 const { ensureDir, emptyDir, anonymizeChatNames } = require('./shared/utils');
 const { createOptimizedHtml } = require('./shared/optimize-html');
 const { runCreateNodes } = require('./shared/create-nodes');
@@ -40,34 +39,12 @@ function main() {
     process.exit(1);
   }
 
-  const nonInteractive = process.env.CI !== undefined || process.env.SKIP_PROMPT !== undefined;
   const anonymizeEnv = String(process.env.ANONYMIZE_RAW || '').trim().toLowerCase();
   const anonymize = ['1', 'true', 'y', 'yes'].includes(anonymizeEnv);
 
-  if (nonInteractive) {
-    files.forEach(fileName => optimizeFile(fileName, anonymize));
-    runCreateNodes();
-    console.log('Done: HTML + JSON in ./Output-generated');
-    return;
-  }
-
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  rl.question(`Rebuild ${files.length} files and build preview? [Y/N] `, answer => {
-    const choice = String(answer || '').trim().toLowerCase().slice(0, 1);
-    if (choice !== 'y') {
-      console.log('Aborted.');
-      rl.close();
-      process.exit(0);
-    }
-
-    rl.question('Anonymize raw names? [Y/N] ', anonAnswer => {
-      const anonymizeInteractive = String(anonAnswer || '').trim().toLowerCase().slice(0, 1) === 'y';
-      rl.close();
-      files.forEach(fileName => optimizeFile(fileName, anonymizeInteractive));
-      runCreateNodes();
-      console.log('Done: HTML + JSON in ./Output-generated');
-    });
-  });
+  files.forEach(fileName => optimizeFile(fileName, anonymize));
+  runCreateNodes();
+  console.log('Done: HTML + JSON in ./Output-generated');
 }
 
 main();

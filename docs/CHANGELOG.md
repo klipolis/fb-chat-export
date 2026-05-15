@@ -3,8 +3,9 @@
 ## v5.0.3 (2026-05-15)
 
 ### Fixed
-- Fixed `src/build-server.js` non-interactive CI detection and aligned it with Windows environment usage.
-- Updated README with PowerShell and CMD `CI=true` syntax for non-interactive builds.
+- Made `src/build-server.js` fully non-interactive by default and use `ANONYMIZE_RAW=true` for anonymization.
+- Removed `source` metadata from JSON preview generation.
+- Updated README to reflect the new non-interactive build behavior.
 
 ## v5.0.2 (2026-05-15)
 

@@ -1,9 +1,6 @@
 {
   "title": "audio-call",
-  "export_date": "2026.05.15 14:07",
-  "source": {
-    "htmlRoute": "Output-generated/HTML Optimised/audio-call.html"
-  },
+  "export_date": "2026.05.15 14:37",
   "locate": {
     "message": "[aria-roledescription=\"message\"]",
     "label": "[aria-label]",

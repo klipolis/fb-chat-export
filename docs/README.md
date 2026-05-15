@@ -57,10 +57,7 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - Run `pnpm install` once after cloning the repo.
 - Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, and build data preview JSON.
 - Run `pnpm run build:frontend` to emit the built userscript into `dist/userscript.js`.
-- Use non-interactive server builds with:
-  - macOS/Linux: `CI=true pnpm run build:server`
-  - PowerShell: `$env:CI='true'; pnpm run build:server`
-  - CMD: `set CI=true && pnpm run build:server`
+- `build:server` now runs non-interactively by default and uses `ANONYMIZE_RAW=true` when set.
 - Use `pnpm run build:ci` to run the full build in CI mode.
 - Use `pnpm run build:ci:frontend` to run only the frontend build in CI mode.
 - Set `ANONYMIZE_RAW=true` to anonymize raw chat names during server builds.

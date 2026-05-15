@@ -218,9 +218,6 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
     nodes.push({
       title: rule.type,
       timestamp,
-      source: {
-        htmlRoute: route
-      },
       locate: {
         message: selectors.message,
         label: selectors.messageLabel,
@@ -243,7 +240,6 @@ function createNodeJson(fileName, metaMap) {
   const output = {
     title: path.parse(fileName).name,
     export_date: exportDate,
-    source: node ? node.source : { htmlRoute: route },
     locate: node ? node.locate : {
       message: selectors.message,
       label: selectors.messageLabel,
