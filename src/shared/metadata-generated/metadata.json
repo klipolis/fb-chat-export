@@ -1,12 +1,13 @@
 {
-  "file_count": 11,
+  "file_count": 12,
   "files": [
     "audio-call.json",
     "deleted.json",
     "image.json",
     "link-embed-no-text.json",
     "link-text.json",
-    "missed-calls.json",
+    "missed-audio-call.json",
+    "missed-video-call.json",
     "text-image-replied.json",
     "text-replied.json",
     "text.json",

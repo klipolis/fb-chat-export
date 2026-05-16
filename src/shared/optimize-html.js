@@ -124,8 +124,7 @@ function removeEmptyChildren(html) {
   let prev;
   do {
     prev = html;
-    html = html.replace(/<([a-zA-Z0-9]+)><\/\1>/g, '');
-    html = html.replace(/<([a-zA-Z0-9]+)>\s*<\/\1>/g, '');
+    html = html.replace(/<([a-zA-Z0-9]+)([^>]*)>\s*<\/\1>/g, '');
   } while (html !== prev);
   return html;
 }

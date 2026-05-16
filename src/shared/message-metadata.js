@@ -4,27 +4,72 @@ const { parseAriaLabel, normalizeDateToSimple, normalizeLabel } = require('./ari
 function normalizeDuration(text) {
   if (!text) return null;
   const normalized = String(text).trim();
-  const hhmm = normalized.match(/(\d{1,2}):(\d{2})/);
-  if (hhmm) {
-    return `${Number(hhmm[1])}:${hhmm[2]} mins`;
+  const suffix = normalized.match(/\b(?:am|pm)\b/i);
+
+  const formatFromSeconds = (totalSeconds) => {
+    const safeSeconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    const seconds = safeSeconds % 60;
+    if (hours > 0) {
+      return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} mins`;
+    }
+    return `${minutes}:${String(seconds).padStart(2, '0')} mins`;
+  };
+
+  // Standard duration format: H:MM:SS mins
+  const hhmmss = normalized.match(/^(\d+):(\d{2}):(\d{2})(?!\s*(?:am|pm)\b)/i);
+  if (hhmmss && !suffix) {
+    const totalSeconds = (Number(hhmmss[1]) * 3600) + (Number(hhmmss[2]) * 60) + Number(hhmmss[3]);
+    return formatFromSeconds(totalSeconds);
+  }
+
+  // Treat M:SS as a duration only when it is not a wall-clock time like "1:23 PM".
+  const hhmm = normalized.match(/^(\d+):(\d{2})(?!\s*(?:am|pm)\b)/i);
+  if (hhmm && !suffix) {
+    const totalSeconds = (Number(hhmm[1]) * 60) + Number(hhmm[2]);
+    return formatFromSeconds(totalSeconds);
   }
 
   const minMatch = normalized.match(/(\d+(?:\.\d+)?)\s*min(?:s)?/i);
-  if (minMatch) return `${Math.ceil(parseFloat(minMatch[1]))} mins`;
+  if (minMatch) {
+    const totalSeconds = parseFloat(minMatch[1]) * 60;
+    return formatFromSeconds(totalSeconds);
+  }
 
   const secMatch = normalized.match(/(\d+)\s*sec/i);
-  if (secMatch) return `${Math.ceil(parseInt(secMatch[1], 10) / 60)} mins`;
+  if (secMatch) {
+    return formatFromSeconds(parseInt(secMatch[1], 10));
+  }
 
   return null;
 }
 
 function normalizeFacebookRedirect(url) {
-  const redirectMatch = url.match(/https?:\/\/(?:l\.facebook\.com|l\.m\.facebook\.com|l\.messenger\.com|l\.m\.messenger\.com)\/l\.php\?u=([^&]+)/i);
-  if (!redirectMatch) return url;
   try {
-    return decodeURIComponent(redirectMatch[1]);
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    const path = parsed.pathname.toLowerCase();
+    const isFacebookRedirectHost = /(^|\.)facebook\.com$|(^|\.)messenger\.com$/.test(host);
+    const isRedirectPath = path.includes('/l.php') || path.includes('/flx/warn/');
+    if (!isFacebookRedirectHost || !isRedirectPath) return url;
+
+    const candidate = parsed.searchParams.get('u')
+      || parsed.searchParams.get('url')
+      || parsed.searchParams.get('q');
+
+    if (!candidate) return url;
+    const decoded = decodeURIComponent(candidate);
+    return /^https?:\/\//i.test(decoded) ? decoded : url;
   } catch {
-    return redirectMatch[1];
+    const redirectMatch = url.match(/https?:\/\/(?:l\.facebook\.com|l\.m\.facebook\.com|l\.messenger\.com|l\.m\.messenger\.com)\/l\.php\?(?:[^#]*?)(?:u|url|q)=([^&#]+)/i);
+    if (!redirectMatch) return url;
+    try {
+      const decoded = decodeURIComponent(redirectMatch[1]);
+      return /^https?:\/\//i.test(decoded) ? decoded : url;
+    } catch {
+      return redirectMatch[1];
+    }
   }
 }
 
@@ -35,6 +80,15 @@ function extractLink(text) {
   const rawUrl = urlMatch ? urlMatch[0] : wwwMatch ? `https://${wwwMatch[1]}` : null;
   if (!rawUrl) return null;
   return normalizeFacebookRedirect(rawUrl);
+}
+
+function extractPinnedLocationLink(text) {
+  const normalized = normalizeLabel(text);
+  const locationMatch = normalized.match(/\bPinned Location\s*(.+)$/i);
+  if (!locationMatch) return null;
+  const locationText = locationMatch[1].trim();
+  if (!locationText) return null;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationText)}`;
 }
 
 function chooseRule(fileName, ariaLabel) {
@@ -65,73 +119,99 @@ function getContentMeta({
   hasLink = false,
   timerText = ''
 } = {}) {
-  const normalizedText = normalizeLabel(message);
+  const normalizedText = normalizeLabel(message).replace(/[\r\n]+/g, ' ');
   const normalizedLabel = normalizeLabel(ariaLabel);
+  const loweredFileName = String(fileName || '').toLowerCase();
+  const isLinkTextFile = /(?:^|[\\/])link-text\.html$/i.test(loweredFileName) || loweredFileName === 'link-text.html';
   const rule = chooseRule(fileName, ariaLabel);
+  const fileTypeLocked = Boolean(rule && rule.matchFile && rule.matchFile.test(String(fileName || '').toLowerCase()));
   let type = normalizeContentType(rule.type || 'text');
   const rawLink = rawMeta.link || extractLink(normalizedText) || extractLink(normalizedLabel) || null;
   const link = rawLink ? normalizeFacebookRedirect(rawLink) : null;
-  const rawDuration = rawMeta.duration || normalizeDuration(timerText);
+  const pinnedLocationLink = extractPinnedLocationLink(normalizedText) || extractPinnedLocationLink(normalizedLabel);
+  const resolvedLink = link || pinnedLocationLink || null;
+  const isLinkTextLikeLive = !loweredFileName
+    && Boolean(normalizedText)
+    && !/^\b(?:pinned\s+location|open\s+attachment|view\s+attachment|attachment|open\s+link|view\s+link)\b/i.test(normalizedText);
+  const normalizedRawDuration = normalizeDuration(rawMeta.duration);
+  const fallbackDuration = normalizeDuration(timerText) || normalizeDuration(normalizedText);
+  const rawDuration = normalizedRawDuration || fallbackDuration;
 
   const unsent = /(?:unsent|deleted)/i.test(normalizedText) || /(?:unsent|deleted)/i.test(normalizedLabel);
   const callMatch = normalizedText.match(/\b(?:missed\s+)?(?:video|audio)?\s*call\b/i) || normalizedLabel.match(/\b(?:missed\s+)?(?:video|audio)?\s*call\b/i);
   const voiceMatch = /\b(?:voice\s+message|voice\s+note|audio\s+message|audio\s+note)\b/i.test(normalizedText)
     || /\b(?:voice\s+message|voice\s+note|audio\s+message|audio\s+note)\b/i.test(normalizedLabel)
     || Boolean(timerText);
-  const explicitLink = hasLink
-    || /https?:\/\/|www\.|fbcdn\.|fbsbx\.|facebook\.com|fb\.me|m\.me|l\.facebook\.com\/l\.php|l\.messenger\.com\/l\.php|href\b|\blink\b/i.test(normalizedText)
-    || /https?:\/\/|www\.|fbcdn\.|fbsbx\.|facebook\.com|fb\.me|m\.me|l\.facebook\.com\/l\.php|l\.messenger\.com\/l\.php|href\b|\blink\b/i.test(normalizedLabel)
-    || /\b(?:attachment|open attachment|download|view image|view attachment)\b/i.test(normalizedText)
-    || /\b(?:attachment|open attachment|download|view image|view attachment)\b/i.test(normalizedLabel);
-  const imageMatch = hasImage || /\b(?:image|photo|picture|gallery)\b/i.test(normalizedText) || /\b(?:image|photo|picture|gallery)\b/i.test(normalizedLabel);
+  // Only treat as explicit link if there is a real URL, <a> tag, or strong link phrase (not just the word 'link')
+  const explicitLink = Boolean(rawLink)
+    || hasLink
+    || /https?:\/\/|www\.|fbcdn\.|fbsbx\.|facebook\.com|fb\.me|m\.me|l\.facebook\.com\/l\.php|l\.messenger\.com\/l\.php|href\b/i.test(normalizedText)
+    || /https?:\/\/|www\.|fbcdn\.|fbsbx\.|facebook\.com|fb\.me|m\.me|l\.facebook\.com\/l\.php|l\.messenger\.com\/l\.php|href\b/i.test(normalizedLabel)
+    || /\b(?:attachment|open attachment|download|view attachment|open link|view link|pinned location)\b/i.test(normalizedText)
+    || /\b(?:attachment|open attachment|download|view attachment|open link|view link|pinned location)\b/i.test(normalizedLabel);
+  // Remove plain 'link' as a trigger for explicitLink
+  // Remove plain 'link' as a trigger for explicitLink
+  // (Do not match /\blink\b/ alone)
+  // Only classify as image if hasImage is true AND the text/label contains image keywords, or if the text/label contains image keywords alone
+  const imageKeyword = /\b(?:image sent|photo sent|picture sent|sent image|sent photo|sent picture)\b/i;
+  const imageMatch = (hasImage && (imageKeyword.test(normalizedText) || imageKeyword.test(normalizedLabel))) || imageKeyword.test(normalizedText) || imageKeyword.test(normalizedLabel);
 
-  if (unsent) {
-    type = 'unsent';
-  } else if (callMatch) {
-    const callText = callMatch[0].toLowerCase();
-    if (/missed/.test(callText)) {
-      type = 'missed-call';
-    } else if (/video/.test(callText)) {
-      type = 'video-call';
-    } else if (/audio/.test(callText)) {
-      type = 'audio-call';
-    } else {
+  if (!fileTypeLocked) {
+    if (unsent) {
+      type = 'unsent';
+    } else if (callMatch) {
+      const callText = callMatch[0].toLowerCase();
+      if (/missed/.test(callText)) {
+        type = 'missed-call';
+      } else if (/video/.test(callText)) {
+        type = 'video-call';
+      } else if (/audio/.test(callText)) {
+        type = 'audio-call';
+      } else {
+        type = 'voice-message';
+      }
+    } else if (explicitLink) {
+      type = 'link';
+    } else if (voiceMatch) {
       type = 'voice-message';
+    } else if (imageMatch) {
+      type = 'image';
     }
-  } else if (voiceMatch) {
-    type = 'voice-message';
-  } else if (imageMatch) {
-    type = 'image';
-  } else if (explicitLink) {
-    type = 'link';
   }
 
   let contentText = normalizedText;
   if (type === 'unsent') {
     contentText = 'message unsent';
   } else if (type === 'link') {
-    contentText = 'link';
+    if ((isLinkTextFile || isLinkTextLikeLive) && normalizedText) {
+      contentText = resolvedLink ? `${resolvedLink} ${normalizedText}` : normalizedText;
+    } else {
+      contentText = resolvedLink || 'link';
+    }
   } else if (type === 'voice-message') {
     contentText = 'voice message';
   } else if (type === 'image') {
     contentText = 'image sent';
   } else if (type === 'video-call' || type === 'audio-call' || type === 'missed-call') {
-    contentText = normalizedText || type;
+    const hasCallPhrase = /\bcall\b/i.test(normalizedText);
+    contentText = hasCallPhrase ? normalizedText : type.replace(/-/g, ' ');
   }
 
-  const duration = (type === 'voice-message' || type === 'video-call' || type === 'audio-call') ? rawDuration : null;
-  const isTimedType = type === 'voice-message' || type === 'video-call' || type === 'audio-call';
-  const contentLength = type === 'link' || type === 'missed-call' || type === 'unsent'
+  const timedTypes = new Set(['voice-message', 'video-call', 'audio-call']);
+  const noLengthTypes = new Set(['image', 'missed-call', 'unsent', ...timedTypes]);
+
+  const duration = timedTypes.has(type) ? rawDuration : null;
+  const linkHasTextContent = type === 'link' && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText);
+  const shouldOmitLength = noLengthTypes.has(type) || (type === 'link' && !linkHasTextContent);
+  const contentLength = shouldOmitLength
     ? undefined
-    : isTimedType
-      ? undefined
-      : `${contentText.length} chars`;
+    : `${contentText.length} chars`;
 
   return {
     type,
     text: contentText,
     contentLength,
-    link: link || undefined,
+    link: resolvedLink || undefined,
     voiceDurationSource: rawMeta.duration ? 'timer' : timerText ? 'label' : undefined,
     isCall: type === 'video-call' || type === 'missed-call' || type === 'audio-call',
     isImage: type === 'image',
@@ -145,6 +225,7 @@ module.exports = {
   normalizeLabel,
   normalizeDuration,
   extractLink,
+  extractPinnedLocationLink,
   chooseRule,
   getContentMeta
 };

@@ -64,6 +64,20 @@ function normalizeLabel(text) {
   return String(text || '').replace(/\s+/g, ' ').trim();
 }
 
+function extractRawDuration(text) {
+  if (!text) return null;
+  const normalized = normalizeLabel(text);
+  const hhmmss = normalized.match(/(\d+:\d{2}:\d{2})/i);
+  if (hhmmss) return hhmmss[1];
+  const mmss = normalized.match(/(\d+:\d{2})(?!\s*(?:am|pm)\b)/i);
+  if (mmss) return mmss[1];
+  const mins = normalized.match(/(\d+(?:\.\d+)?\s*min(?:s)?)/i);
+  if (mins) return mins[1];
+  const secs = normalized.match(/(\d+\s*sec(?:ond)?s?)/i);
+  if (secs) return secs[1];
+  return null;
+}
+
 function extractPlainText(html) {
   return String(html || '')
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -80,14 +94,19 @@ function buildMessageMetaMap(rawHtml) {
 
   while ((match = rawTagRe.exec(rawHtml)) !== null) {
     const attrs = match[2];
-    if (!/aria-roledescription="message"/i.test(attrs) || !/aria-label="[^"]+"/i.test(attrs)) {
+    if (!/aria-label="[^"]+"/i.test(attrs)) {
       continue;
     }
 
     const ariaLabelMatch = attrs.match(/aria-label="([^"]+)"/i);
     if (!ariaLabelMatch) continue;
 
-    const ariaLabel = normalizeLabel(ariaLabelMatch[1]);
+    const normalizedLabel = normalizeLabel(ariaLabelMatch[1]);
+    if (/^(?:message actions|open attachment)/i.test(normalizedLabel)) {
+      continue;
+    }
+
+    const ariaLabel = normalizedLabel;
     const tagName = match[1];
     const start = match.index + match[0].length;
     const end = findMatchingClosingTag(rawHtml, tagName, start);
@@ -97,7 +116,7 @@ function buildMessageMetaMap(rawHtml) {
     const segmentText = extractPlainText(segment);
     const hrefMatch = segment.match(/href="([^"]+)"/i);
     const timerMatch = segment.match(/role="timer"[^>]*>([^<]+)</i);
-    const duration = timerMatch ? normalizeDuration(timerMatch[1].trim()) : normalizeDuration(segmentText);
+    const duration = timerMatch ? normalizeLabel(timerMatch[1].trim()) : extractRawDuration(segmentText);
     const metadata = {};
 
     if (hrefMatch) metadata.link = hrefMatch[1];
@@ -184,13 +203,16 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
 
   while ((match = messageTagRe.exec(html)) !== null) {
     const attrs = match[2];
-    if (!/aria-roledescription="message"/i.test(attrs) || !/aria-label="[^"]+"/i.test(attrs)) {
+    if (!/aria-label="[^"]+"/i.test(attrs)) {
       continue;
     }
 
     const ariaLabelMatch = attrs.match(/aria-label="([^\"]+)"/i);
     const ariaLabel = ariaLabelMatch ? ariaLabelMatch[1] : '';
     const normalizedLabel = normalizeLabel(ariaLabel);
+    if (/^(?:message actions|open attachment)/i.test(normalizedLabel)) {
+      continue;
+    }
     const rawMeta = Object.assign({}, metaMap.get(normalizedLabel) || {});
     const parsedLabel = parseAriaLabel(ariaLabel);
     const start = match.index + match[0].length;
@@ -200,11 +222,25 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
     const rawSegment = html.slice(start, end);
     const segmentText = extractPlainText(rawSegment);
     if (!rawMeta.duration) {
-      const fallbackDuration = normalizeDuration(segmentText);
+      const fallbackDuration = extractRawDuration(segmentText);
       if (fallbackDuration) {
         rawMeta.duration = fallbackDuration;
       }
     }
+    const senderAlt = parsedLabel.sender ? parsedLabel.sender.trim() : '';
+    const imageTags = Array.from(rawSegment.matchAll(/<img\b[^>]*>/gi));
+    // Only count as image if there is an <img> that is NOT a sender avatar (alt is not a person name and not empty)
+    const hasImage = imageTags.some(tag => {
+      const altMatch = tag[0].match(/alt="([^"]*)"/i);
+      const altText = altMatch ? altMatch[1].trim() : '';
+      // If alt is missing or empty, treat as possible image (could be sticker, etc)
+      if (!altText) return true;
+      // If alt is a person name, treat as avatar, not message image
+      const isPersonName = /^[A-Z][a-z]+(?: [A-Z][a-z]+)*$/.test(altText);
+      return !isPersonName;
+    });
+    const hasLink = Boolean(rawMeta.link || /<a\s[^>]*href=/i.test(rawSegment));
+    const hasPlayButton = /aria-label="Play"/i.test(rawSegment);
     let message = parsedLabel.message || '';
     if (!message && segmentText) {
       if (/\bvideo[- ]call\b/i.test(segmentText)) {
@@ -226,6 +262,9 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
       ariaLabel,
       message,
       rawMeta,
+      hasImage,
+      hasLink,
+      hasPlayButton,
       timerText: rawMeta.duration || ''
     });
 
@@ -273,8 +312,7 @@ function createNodeJson(fileName, metaMap, exportDate) {
   const uniqueNodes = [...new Map(nodes.map(node => [node.data_preview.content, node])).values()];
   const node = uniqueNodes.length ? uniqueNodes[0] : null;
   const output = {
-    title: path.parse(fileName).name,
-    export_date: exportDate,
+    title: node ? (node.data_preview.content_type || path.parse(fileName).name) : path.parse(fileName).name,
     locate: node ? node.locate : {
       message: selectors.message,
       label: selectors.messageLabel,

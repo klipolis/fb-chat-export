@@ -9,6 +9,7 @@
 
 import { getContentMeta } from '../shared/message-metadata.js';
 import { parseAriaLabel, normalizeDateToIso } from '../shared/aria-label-parser.js';
+import { buildUserscriptSummary } from '../shared/userscript-summary.js';
 
 (function () {
     'use strict';
@@ -39,9 +40,10 @@ import { parseAriaLabel, normalizeDateToIso } from '../shared/aria-label-parser.
     notice.style.cssText = 'padding: 6px 10px; font-size: 12px; color: #333;';
     notice.innerHTML = 'Ready.';
 
+    const buttonStyle = 'color: #fff; border: none; padding: 6px 12px; border-radius: 5px; font-size: 12px; cursor: pointer;';
     const downloadBtn = document.createElement('button');
     downloadBtn.innerText = 'Download .txt';
-    downloadBtn.style.cssText = 'background: #27ae60; color: #fff; border: none; padding: 3px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; display: none; margin-left: 10px; vertical-align: middle;';
+    downloadBtn.style.cssText = `${buttonStyle} background: #27ae60; display: none; margin-left: 10px; vertical-align: middle;`;
 
     // body: inputs + scan button
     const body = document.createElement('div');
@@ -72,7 +74,7 @@ import { parseAriaLabel, normalizeDateToIso } from '../shared/aria-label-parser.
 
     const actionBtn = document.createElement('button');
     actionBtn.innerText = 'Scan Messages';
-    actionBtn.style.cssText = 'background: #0084ff; color: #fff; border: none; padding: 6px 12px; border-radius: 5px; font-size: 12px; cursor: pointer;';
+    actionBtn.style.cssText = `${buttonStyle} background: #0084ff;`;
 
     const rightCol = document.createElement('div');
     rightCol.style.cssText = 'display: flex; flex-direction: column; gap: 8px; min-width: 160px; padding-left: 10px;';
@@ -117,19 +119,19 @@ import { parseAriaLabel, normalizeDateToIso } from '../shared/aria-label-parser.
         return { wrap, inp, textInput };
     }
 
-    const { wrap: ignoreCallsWrap, inp: ignoreCallsChk } = settingToggle('Ignore calls');
-    const { wrap: anonymizeWrap, inp: anonymizeChk, textInput: anonymizeInput } = settingToggleWithInput('Anonymize as', 'You');
+    const { wrap: includeCallsWrap, inp: includeCallsChk } = settingToggle('Include calls');
+    const { wrap: anonymizeWrap, inp: anonymizeChk, textInput: anonymizeInput } = settingToggleWithInput('Anonymize as', 'Youghurt');
     const { wrap: summaryWrap, inp: summaryChk } = settingToggle('Summary');
-    const { wrap: typeOnlyWrap, inp: typeOnlyChk } = settingToggle('Type only');
+    const { wrap: includeContentWrap, inp: includeContentChk } = settingToggle('Include content');
     const { wrap: lengthWrap, inp: lengthChk } = settingToggle('Length');
     const selectAllBtn = document.createElement('button');
     selectAllBtn.innerText = 'All';
-    selectAllBtn.style.cssText = 'background: #f1f1f1; color: #333; border: 1px solid #ccc; padding: 3px 8px; border-radius: 4px; font-size: 12px; cursor: pointer;';
+    selectAllBtn.style.cssText = 'background: #f1f1f1; color: #333; border: 1px solid #ccc; padding: 4px 10px; border-radius: 5px; font-size: 12px; cursor: pointer;';
     selectAllBtn.addEventListener('click', () => {
-        ignoreCallsChk.checked = true;
+        includeCallsChk.checked = true;
         anonymizeChk.checked = true;
         summaryChk.checked = true;
-        typeOnlyChk.checked = true;
+        includeContentChk.checked = true;
         lengthChk.checked = true;
     });
 
@@ -137,12 +139,15 @@ import { parseAriaLabel, normalizeDateToIso } from '../shared/aria-label-parser.
     leftCol.appendChild(toWrap);
     leftCol.appendChild(actionBtn);
 
-    rightCol.appendChild(ignoreCallsWrap);
+    rightCol.appendChild(includeCallsWrap);
     rightCol.appendChild(anonymizeWrap);
     rightCol.appendChild(summaryWrap);
-    rightCol.appendChild(typeOnlyWrap);
+    rightCol.appendChild(includeContentWrap);
     rightCol.appendChild(lengthWrap);
     rightCol.appendChild(selectAllBtn);
+
+    // Start with full-info mode selected by default.
+    selectAllBtn.click();
 
     body.appendChild(leftCol);
     body.appendChild(rightCol);
@@ -189,6 +194,22 @@ import { parseAriaLabel, normalizeDateToIso } from '../shared/aria-label-parser.
             .replace(/\s*messenger\s*$/i, '')
             .trim();
         return cleaned || 'chat';
+    }
+
+    function getDisplayPersonName() {
+        const name = getConversationName();
+        const parts = name
+            .split(/\s*(?:,|&|\band\b|\+|\/)\s*/i)
+            .map(part => part.trim())
+            .filter(Boolean);
+        const firstNonYou = parts.find(part => !/^you$/i.test(part));
+        if (firstNonYou) return firstNonYou;
+
+        const withoutYou = name
+            .replace(/\byou\b/ig, '')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
+        return withoutYou || 'chat';
     }
 
     function formatExportFileName(count, fromLabel, toLabel) {
@@ -283,7 +304,7 @@ import { parseAriaLabel, normalizeDateToIso } from '../shared/aria-label-parser.
                     return m ? Number(m[1]) : 0;
                 })();
 
-                if (ignoreCallsChk.checked && isCall) return;
+                if (!includeCallsChk.checked && isCall) return;
                 if (fromDate && !isNaN(msgDate) && msgDate < fromDate) {
                     reachedFromDate = true;
                     return;
@@ -291,7 +312,7 @@ import { parseAriaLabel, normalizeDateToIso } from '../shared/aria-label-parser.
                 if (toDate && !isNaN(msgDate) && msgDate > toDate) return;
                 let finalText = text;
                 const lengthLabel = typeof contentLength === 'number' ? `${contentLength} chars` : contentLength;
-                if (typeOnlyChk.checked) {
+                if (!includeContentChk.checked) {
                     finalText = (type === 'image' || type === 'unsent' || type === 'link') ? type : `${type} (${lengthLabel})`;
                 } else if (lengthChk.checked && type !== 'image' && type !== 'unsent' && type !== 'link') {
                     finalText = `${text} (${lengthLabel})`;
@@ -300,6 +321,7 @@ import { parseAriaLabel, normalizeDateToIso } from '../shared/aria-label-parser.
                     ts: isNaN(msgDate) ? 0 : msgDate.getTime(),
                     sender: authorLabel,
                     date: msgDate,
+                    type,
                     isCall,
                     isImage,
                     callMinutes,
@@ -382,57 +404,9 @@ import { parseAriaLabel, normalizeDateToIso } from '../shared/aria-label-parser.
                     return;
                 }
 
-                const summaryText = summaryChk.checked ? (() => {
-                    const first = sortedEntries[0];
-                    const last = sortedEntries[sortedEntries.length - 1];
-                    const exportFrom = formatDate(first.date);
-                    const exportTo = formatDate(last.date);
-                    const totals = new Map();
-                    const allDays = new Set();
-                    sortedEntries.forEach(entry => {
-                        const key = entry.sender;
-                        const dateKey = `${entry.date.getFullYear()}-${String(entry.date.getMonth() + 1).padStart(2, '0')}-${String(entry.date.getDate()).padStart(2, '0')}`;
-                        allDays.add(dateKey);
-                        const data = totals.get(key) || { count: 0, days: new Set(), calls: 0, minutes: 0, images: 0 };
-                        data.count += 1;
-                        data.days.add(dateKey);
-                        if (entry.isCall) {
-                            data.calls += 1;
-                            data.minutes += entry.callMinutes;
-                        }
-                        if (entry.isImage) {
-                            data.images += 1;
-                        }
-                        totals.set(key, data);
-                    });
-                    let allText = 0;
-                    let allCalls = 0;
-                    let allMinutes = 0;
-                    let allImages = 0;
-                    totals.forEach(data => {
-                        allText += Math.max(0, data.count - data.calls - data.images);
-                        allCalls += data.calls;
-                        allMinutes += data.minutes;
-                        allImages += data.images;
-                    });
-                    const detailLines = [
-                        'Summary',
-                        `${sortedEntries.length} ${sortedEntries.length === 1 ? 'message' : 'messages'} / ${allDays.size} ${allDays.size === 1 ? 'day' : 'days'}`,
-                        `${allText} text / ${allImages} images / ${allCalls} calls (${allMinutes} mins)`,
-                        ''
-                    ];
-                    let index = 0;
-                    totals.forEach((data, key) => {
-                        index += 1;
-                        const textOnly = Math.max(0, data.count - data.calls - data.images);
-                        detailLines.push(`Person ${index} (${key})`);
-                        detailLines.push(`  ${data.count} ${data.count === 1 ? 'message' : 'messages'} / ${data.days.size} ${data.days.size === 1 ? 'day' : 'days'}`);
-                        detailLines.push(`  ${textOnly} text / ${data.images} images / ${data.calls} calls (${data.minutes} mins)`);
-                        detailLines.push('');
-                    });
-                    detailLines.push('---');
-                    return detailLines.join('\n') + '\n';
-                })() : '';
+                const summaryText = summaryChk.checked
+                    ? buildUserscriptSummary(sortedEntries)
+                    : '';
 
                 const blob = new Blob([summaryText + messages.join('')], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
@@ -443,15 +417,28 @@ import { parseAriaLabel, normalizeDateToIso } from '../shared/aria-label-parser.
                 const elapsed = elapsedMs < 60000
                     ? `${(elapsedMs / 1000).toFixed(1)} seconds`
                     : `${(elapsedMs / 60000).toFixed(2)} minutes`;
+                const displayPersonName = getDisplayPersonName();
                 const fileName = formatExportFileName(messages.length, fromLabel, toLabel);
-                notice.innerHTML = `Done: <b>${messages.length}</b> messages, ${fromLabel} – ${toLabel} (in ${elapsed})`;
+                notice.textContent = `Done: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
                 notice.appendChild(downloadBtn);
                 downloadBtn.style.display = '';
                 downloadBtn.onclick = () => {
+                    if (downloadBtn.disabled) return;
+                    downloadBtn.disabled = true;
+                    downloadBtn.style.opacity = '0.5';
+                    downloadBtn.style.cursor = 'not-allowed';
+                    const originalLabel = downloadBtn.innerText;
+                    downloadBtn.innerText = 'Downloaded';
                     const a = document.createElement('a');
                     a.href = url;
                     a.download = fileName;
                     a.click();
+                    setTimeout(() => {
+                        downloadBtn.disabled = false;
+                        downloadBtn.style.opacity = '1';
+                        downloadBtn.style.cursor = 'pointer';
+                        downloadBtn.innerText = originalLabel;
+                    }, 10000);
                 };
 
                 actionBtn.innerText = 'Scan Messages';

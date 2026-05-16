@@ -1,6 +1,5 @@
 {
-  "title": "voice-note",
-  "export_date": "2026.05.15 19:17",
+  "title": "voice-message",
   "locate": {
     "message": "[aria-roledescription=\"message\"]",
     "label": "[aria-label]",
@@ -14,7 +13,7 @@
     "content_type": "voice-message",
     "duration": "0:20 mins",
     "raw_meta": {
-      "duration": "0:20 mins"
+      "duration": "0:20"
     }
   }
 }

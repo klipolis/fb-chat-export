@@ -1,6 +1,35 @@
 ﻿# Messenger Chat Exporter — Changelog
 
-## v5.0.4 (2026-05-15)
+## v5.1.2 (2026-05-16)
+
+### Changed
+- Added a shared TXT summary concept contract in `tests/generated-txt-schema.json` and reused it in both server and userscript summary generation.
+- Added `src/frontend/build-frontend.js` as the frontend-local build entrypoint and routed root frontend build through it.
+- Updated summary schema to use `Total Summary` plus per-person summary blocks with rough (`~`) list lines.
+- Updated per-person summary counts to ignore `deleted/unsent` and missed call types, while keeping top-level total message count unchanged.
+- Updated rough total summary counts to be derived from the sum of person summary counts.
+- Updated anonymized self name output to `Youghurt` across server TXT output, schema validation, and userscript defaults.
+- Updated call summary counting to include audio calls, video calls, and voice notes/messages, and exclude missed calls.
+- Removed `Total:` prefix from summary count lines.
+
+### Fixed
+- Preserved original raw duration text in JSON `raw_meta.duration` while keeping normalized duration fields for output display.
+- Added userscript download anti-double-click protection by disabling the download button for 10 seconds after click.
+- Simplified userscript completion notice to minimal ready-state details (name, date interval, elapsed time).
+
+## v5.1.1 (2026-05-16)
+
+### Fixed
+- Server TXT exports now include URL content for `link-text` and `link-embed-no-text` lines in content-on mode.
+- Shared message metadata now prefers normalized `content_link` values as link content instead of the generic `link` label when URLs are available.
+- Added a pinned-location fallback that emits a canonical Google Maps search URL when link previews do not expose a direct `href`.
+- Improved aria-label sender parsing for dash-form labels so conversational leading tokens (for example `Yep`) are kept in message content instead of being merged into the sender name.
+- Hardened duration parsing to avoid interpreting wall-clock times like `1:23 PM` as message durations.
+
+### Changed
+- Added regression checks to enforce link URL content output and corrected link-text sender parsing in TXT/JSON build verification.
+
+## v5.1.0 (2026-05-15)
 
 ### Changed
 - Renamed helper pipeline folders to `Data-input-html-raw/`, `Data-output-html/`, and `Data-output-json/`.
@@ -10,6 +39,11 @@
 - Added top-level `export_date` to generated preview JSON exports.
 - Added `tests/generated-json-schema.json` and `tests/validate-generated-json.js` plus `pnpm run validate:generated-json` for generated preview schema validation.
 - Added `pnpm run build:clean` and `src/build-clean.js` to safely clear generated build artifacts.
+- Added `Data-output-txt/` text export generation from raw HTML message snapshots in `build-server`.
+- Fixed raw HTML anonymization so only a single confirmed sender name of 1-3 words is replaced, preserving raw date text and non-name content.
+- Fixed link preview JSON parsing so `original_date` is extracted correctly from `At ...` labels even when message content begins without a colon.
+- Updated exported text lines to include message type in brackets after the date.
+- Updated documentation and release notes to describe the server-generated chat export artifact.
 
 ## v5.0.3 (2026-05-15)
 

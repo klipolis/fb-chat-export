@@ -27,34 +27,86 @@ function escapeRegExp(value) {
 }
 
 function anonymizeChatNames(html) {
-  const titleMatch = html.match(/<title>([\s\S]*?)<\/title>/i);
-  const chatName = titleMatch ? titleMatch[1].trim() : '';
-  const hasMainName = chatName && !/^Messenger$/i.test(chatName);
-  const mainNameRe = hasMainName ? new RegExp(`\\b${escapeRegExp(chatName)}\\b`, 'gi') : null;
+  const normalizeName = (name) => name.trim().replace(/\s+/g, ' ');
+  const isValidName = (name) => /^[A-Za-z][A-Za-z .'\-]{0,80}$/i.test(name)
+    && !/\d/.test(name)
+    && name.split(/\s+/).length <= 3;
+  const extractCandidateNames = (text) => {
+    const names = [];
+    const byRegex = /\bby\s+([A-Za-z]+(?:\s+[A-Za-z]+){0,2})(?=\s*[:]|$)/gi;
+    const atRegex = /\bAt\s+[^,]+,\s*([A-Za-z]+(?:\s+[A-Za-z]+){0,2})(?=\s*[:]|$)/gi;
+    let match;
 
-  const replaceText = (text) => {
-    let result = text.replace(/\bYou\b/g, 'Yoghurt');
-    if (mainNameRe) {
-      result = result.replace(mainNameRe, 'Alpha');
+    while ((match = byRegex.exec(text))) {
+      const name = normalizeName(match[1]);
+      if (!/^you$/i.test(name) && isValidName(name)) {
+        names.push(name);
+      }
     }
-    return result;
+
+    while ((match = atRegex.exec(text))) {
+      const name = normalizeName(match[1]);
+      if (!/^you$/i.test(name) && isValidName(name)) {
+        names.push(name);
+      }
+    }
+
+    return names;
   };
 
-  let result = html;
-  if (hasMainName) {
-    result = result.replace(/<title>[\s\S]*?<\/title>/i, '<title>Alpha</title>');
+  const candidateNames = [];
+  html.replace(/aria-label="([^"]*)"/g, (_, label) => {
+    extractCandidateNames(label).forEach((name) => candidateNames.push(name));
+    return '';
+  });
+
+  if (candidateNames.length === 0) {
+    return html;
   }
 
-  result = result
-    .replace(/aria-label="([^\"]*)"/g, (match, value) => `aria-label="${replaceText(value)}"`)
-    .replace(/>\s*You\s*</g, '>Yoghurt<')
-    .replace(/\bYou\b/g, 'Yoghurt');
-
-  if (hasMainName) {
-    result = result.replace(mainNameRe, 'Alpha');
+  const nameStats = new Map();
+  for (const name of candidateNames) {
+    const stats = nameStats.get(name) || { labelCount: 0, totalCount: 0 };
+    stats.labelCount += 1;
+    nameStats.set(name, stats);
   }
 
-  return result;
+  for (const [name, stats] of nameStats.entries()) {
+    stats.totalCount = (html.match(new RegExp(`\\b${escapeRegExp(name)}\\b`, 'gi')) || []).length;
+    nameStats.set(name, stats);
+  }
+
+  const eligibleNames = Array.from(nameStats.entries())
+    .filter(([, stats]) => stats.labelCount >= 2 && stats.totalCount >= 3)
+    .sort((a, b) => {
+      const [, aStats] = a;
+      const [, bStats] = b;
+      if (bStats.labelCount !== aStats.labelCount) return bStats.labelCount - aStats.labelCount;
+      if (bStats.totalCount !== aStats.totalCount) return bStats.totalCount - aStats.totalCount;
+      return b[0].length - a[0].length;
+    })
+    .map(([name]) => name);
+
+  if (eligibleNames.length === 0) {
+    return html;
+  }
+
+  const selectedName = eligibleNames[0];
+  const senderRegex = new RegExp(`\\b${escapeRegExp(selectedName)}\\b`, 'gi');
+
+  const anonymizeText = (text) => text.replace(senderRegex, 'Alpha');
+
+  let result = html.replace(/aria-label="([^"]*)"/g, (match, label) => {
+    const updated = anonymizeText(label);
+    return updated === label ? match : `aria-label="${updated}"`;
+  });
+
+  result = result.replace(/(<img\b[^>]*\balt=")([^"]*)("[^>]*>)/gi, (match, prefix, altText, suffix) => {
+    const updatedAlt = anonymizeText(altText);
+    return updatedAlt === altText ? match : `${prefix}${updatedAlt}${suffix}`;
+  });
+
+  return result.replace(senderRegex, 'Alpha');
 }
 
 function minifyJs(code) {

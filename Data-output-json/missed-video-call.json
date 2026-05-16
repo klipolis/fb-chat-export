@@ -1,0 +1,14 @@
+{
+  "title": "missed-call",
+  "locate": {
+    "message": "[aria-roledescription=\"message\"]",
+    "label": "[aria-label]",
+    "textContent": ".html-div"
+  },
+  "data_preview": {
+    "original_date": "11:15 AM",
+    "optimised_date": "2026.05.16 11:15",
+    "content": "video call",
+    "content_type": "missed-call"
+  }
+}

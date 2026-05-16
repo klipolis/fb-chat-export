@@ -5,7 +5,7 @@ const path = require('path');
 const previewDir = path.join(__dirname, '..', 'Data-output-json');
 const schemaPath = path.join(__dirname, 'generated-json-schema.json');
 const timedTypes = new Set(['voice-message', 'video-call', 'audio-call']);
-const noLengthTypes = new Set(['link', 'unsent', 'missed-call']);
+const noLengthTypes = new Set(['unsent', 'missed-call']);
 
 function loadSchema() {
   const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
@@ -15,13 +15,17 @@ function loadSchema() {
 
 function validatePreviewJson(data, fileName) {
   assert.strictEqual(typeof data.title, 'string', `${fileName}: title must be a string`);
-  assert.strictEqual(typeof data.export_date, 'string', `${fileName}: export_date must be a string`);
   assert.ok(data.locate && typeof data.locate === 'object', `${fileName}: locate is required`);
   assert.strictEqual(typeof data.locate.message, 'string');
   assert.strictEqual(typeof data.locate.label, 'string');
   assert.strictEqual(typeof data.locate.textContent, 'string');
 
   const preview = data.data_preview;
+  if (preview.content_type && preview.content_type !== 'unknown') {
+    assert.strictEqual(data.title, preview.content_type, `${fileName}: title must reflect content_type`);
+  } else {
+    assert.strictEqual(data.title, path.parse(fileName).name, `${fileName}: title should fall back to file name when content_type is unknown`);
+  }
   assert.ok(preview && typeof preview === 'object', `${fileName}: data_preview is required`);
   assert.strictEqual(typeof preview.optimised_date, 'string', `${fileName}: optimised_date is required`);
   assert.ok('content' in preview, `${fileName}: content is required`);
@@ -41,6 +45,17 @@ function validatePreviewJson(data, fileName) {
 
   if (noLengthTypes.has(preview.content_type)) {
     assert.strictEqual(preview.content_length, undefined, `${fileName}: ${preview.content_type} preview should not include content_length`);
+  }
+
+  if (preview.content_type === 'link') {
+    const hasTextRichLink = typeof preview.content === 'string'
+      && /^https?:\/\//i.test(preview.content)
+      && /\s+\S+/.test(preview.content.replace(/^https?:\/\/\S+\s*/, ''));
+    if (hasTextRichLink) {
+      assert.ok(/^\d+ chars$/.test(preview.content_length), `${fileName}: text-rich link preview should include content_length`);
+    } else {
+      assert.strictEqual(preview.content_length, undefined, `${fileName}: non-text link preview should not include content_length`);
+    }
   }
 
   if (preview.raw_meta) {

@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Generated TXT Export Schema",
+  "description": "Schema and regex rules for validating generated server TXT exports.",
+  "method": "server",
+  "messageTypes": [
+    "audio-call",
+    "deleted",
+    "image",
+    "link-embed-no-text",
+    "link-text",
+    "missed-audio-call",
+    "missed-video-call",
+    "text-image-replied",
+    "text-replied",
+    "text",
+    "video-call",
+    "voice-note"
+  ],
+  "patterns": {
+    "entryLine": "^\\[\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}\\]\\s[^:]+:\\s[^/]+(?:\\s/\\s.*)?$",
+    "duration": "\\d+:\\d{2}(?::\\d{2})?\\s+mins",
+    "totalSummaryTitle": "^Total Summary$",
+    "totalLine": "^\\d+\\s+(?:message|messages)\\s*/\\s*\\d+\\s+(?:day|days)$",
+    "roughTextLine": "^~\\s+\\d+\\s+text\\s+messages;$",
+    "roughImagesLine": "^~\\s+\\d+\\s+images$",
+    "roughCallsLine": "^~\\s+\\d+\\s+calls\\s+\\d+\\s+mins$",
+    "personSummaryTitle": "^(Alpha|Youghurt) Summary$"
+  },
+  "summaryConcept": {
+    "totalSummaryTitle": "Total Summary",
+    "roughPrefix": "~",
+    "personSummarySuffix": " Summary"
+  },
+  "exports": [
+    {
+      "fileName": "fb-chats-export-content-on.txt",
+      "includeContent": true,
+      "includeSummary": true
+    },
+    {
+      "fileName": "fb-chats-export-content-off.txt",
+      "includeContent": false,
+      "includeSummary": false
+    }
+  ]
+}

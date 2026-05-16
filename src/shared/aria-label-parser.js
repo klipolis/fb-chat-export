@@ -6,6 +6,64 @@ function parseAriaLabel(ariaLabel) {
   const label = normalizeLabel(ariaLabel).replace(/\s*,\s*/g, ', ');
   let match;
 
+  const isValidSender = (value) => /^[A-Za-z][A-Za-z .'-]{0,80}$/i.test(value) && !/\d/.test(value);
+
+  const splitSenderAndMessage = (value) => {
+    const text = normalizeLabel(value);
+    const firstWordMatch = text.match(/^([A-Za-z][A-Za-z .'-]{0,80}?)(?:\s+([\s\S]*))?$/);
+    if (!firstWordMatch) return null;
+    const sender = normalizeLabel(firstWordMatch[1]);
+    const message = normalizeLabel(firstWordMatch[2] || '');
+    if (!isValidSender(sender)) return null;
+    return { sender, message };
+  };
+
+  match = label.match(/^At\s+(.+?),\s*([A-Za-z]+(?:\s+[A-Za-z]+){0,2})\s+[-–—]\s*([\s\S]*)$/i);
+  if (match) {
+    let sender = match[2].trim();
+    let message = match[3].trim();
+    // Handle labels like "Alpha Yep — ..." where "Yep" belongs to message text.
+    const conversationalToken = sender.match(/\s(Yep|Yes|No|Ok|Okay)$/i);
+    if (conversationalToken) {
+      sender = sender.slice(0, -conversationalToken[0].length).trim();
+      message = `${conversationalToken[1]} - ${message}`;
+    }
+    return {
+      date: match[1].trim(),
+      sender,
+      message
+    };
+  }
+
+  const atPrefix = label.match(/^At\s+([\s\S]*)$/i);
+  if (atPrefix) {
+    const tailParts = atPrefix[1].split(',').map(part => part.trim()).filter(Boolean);
+
+    if (tailParts.length >= 3) {
+      const maybeSender = tailParts[tailParts.length - 1];
+      const maybeDate = tailParts.slice(0, -1).join(', ');
+      if (isValidSender(maybeSender)) {
+        return {
+          date: maybeDate.trim(),
+          sender: maybeSender.trim(),
+          message: ''
+        };
+      }
+    }
+
+    if (tailParts.length >= 2) {
+      const maybeDate = tailParts[0];
+      const senderAndMessage = splitSenderAndMessage(tailParts.slice(1).join(', '));
+      if (senderAndMessage) {
+        return {
+          date: maybeDate.trim(),
+          sender: senderAndMessage.sender,
+          message: senderAndMessage.message
+        };
+      }
+    }
+  }
+
   match = label.match(/^At\s+(.+),\s*([^:]+):\s*([\s\S]*)$/i);
   if (match) {
     return {
@@ -15,17 +73,25 @@ function parseAriaLabel(ariaLabel) {
     };
   }
 
-  match = label.match(/^Enter,\s*Message sent\s+(.+?)\s+by\s+([^:]+):\s*([\s\S]*)$/i);
+  match = label.match(/^Enter,\s*([^:]+?)\s+sent\s+(.+?)\s+by\s+([^:]+):\s*([\s\S]*)$/i);
   if (match) {
     return {
-      date: match[1].trim(),
-      sender: match[2].trim(),
-      message: match[3].trim()
+      date: match[2].trim(),
+      sender: match[3].trim(),
+      message: match[4].trim()
     };
   }
 
   match = label.match(/^At\s+(.+),\s*([^:]+)$/i);
   if (match) {
+    const senderAndMessage = splitSenderAndMessage(match[2]);
+    if (senderAndMessage) {
+      return {
+        date: match[1].trim(),
+        sender: senderAndMessage.sender,
+        message: senderAndMessage.message
+      };
+    }
     return {
       date: match[1].trim(),
       sender: match[2].trim(),
@@ -33,11 +99,11 @@ function parseAriaLabel(ariaLabel) {
     };
   }
 
-  match = label.match(/^Enter,\s*Message sent\s+(.+?)\s+by\s+([^:]+)$/i);
+  match = label.match(/^Enter,\s*([^:]+?)\s+sent\s+(.+?)\s+by\s+([^:]+)$/i);
   if (match) {
     return {
-      date: match[1].trim(),
-      sender: match[2].trim(),
+      date: match[2].trim(),
+      sender: match[3].trim(),
       message: ''
     };
   }
@@ -148,7 +214,9 @@ function normalizeDateToIso(dateString) {
 
   const [year, month, day] = dayPart.split('.').map(Number);
   const [hour, minute] = timePart.split(':').map(Number);
+  if (![year, month, day, hour, minute].every(Number.isFinite)) return null;
   const date = new Date(year, month - 1, day, hour, minute, 0, 0);
+  if (isNaN(date.getTime())) return null;
   return date.toISOString();
 }
 

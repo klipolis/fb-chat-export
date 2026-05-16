@@ -2,6 +2,21 @@
 
 This project exports Messenger chat history to a `.txt` file using a Tampermonkey user script.
 
+## Build flow
+
+```mermaid
+flowchart TD
+	A[Data-input-html-raw] --> B[build-server]
+	B --> C[Data-output-html]
+	B --> D[create-nodes]
+	D --> E[Data-output-json]
+	B --> F[Data-output-txt content-on/content-off]
+	G[src/frontend/userscript- export-message.js] --> H[src/frontend/build-frontend.js]
+	H --> I[dist/userscript.js]
+	J[tests/generated-txt-schema.json] --> F
+	J --> I
+```
+
 ## Prerequisites
 
 ### User prerequisites
@@ -53,15 +68,16 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - Generate `dist/userscript.js` by running `pnpm run build:frontend`, then load it through Tampermonkey.
 - Start at the bottom of the conversation, or keep the current view if the visible date is within the export range.
 - Set `From` / `To` dates to narrow the export range.
-- Toggle `Ignore calls`, `Anonymize as`, `Summary`, `Type only`, and `Length` as needed.
+- Toggle `Include calls`, `Anonymize as`, `Summary`, `Include content`, and `Length` as needed.
 - Click `Scan Messages` and download the resulting `.txt` file.
+- After scan completion, the ready notice is minimal and shows conversation name, date interval, and elapsed scan time.
 
 ## Developer guide
 
 - Open the project in VS Code and use the terminal in `support/`.
 - Run `nvm use` in the `support/` folder to ensure the correct Node version from `.nvmrc`.
 - Run `pnpm install` once after cloning the repo.
-- Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, and build data preview JSON.
+- Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, build data preview JSON, and generate a text export in `Data-output-txt/`.
 - Run `pnpm run build:frontend` to emit the built userscript into `dist/userscript.js`.
 - `build:server` now runs non-interactively by default and uses `ANONYMIZE_RAW=true` when set.
 - Use `pnpm run build:ci` to run the full build in CI mode.

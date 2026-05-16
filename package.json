@@ -10,9 +10,10 @@
     "build:clean": "node src/build-clean.js",
     "create:nodes": "node src/shared/create-nodes.js",
     "validate:generated-json": "node tests/validate-generated-json.js",
-    "test": "node tests/run-tests.js && pnpm run validate:generated-json",
+    "validate:generated-txt": "node tests/validate-generated-txt.js",
+    "test": "node tests/run-tests.js && pnpm run validate:generated-json && pnpm run validate:generated-txt",
     "lint": "pnpm run test",
-    "build": "pnpm run build:server && pnpm run build:frontend",
+    "build": "pnpm run build:server && pnpm run build:frontend && pnpm run test",
     "build:ci": "CI=true pnpm run build",
     "build:ci:server": "CI=true pnpm run build:server",
     "build:ci:frontend": "CI=true pnpm run build:frontend"
@@ -22,6 +23,7 @@
     "pnpm": ">=8.10.0"
   },
   "devDependencies": {
-    "esbuild": "^0.19.4"
+    "esbuild": "^0.19.4",
+    "jsdom": "^22.1.0"
   }
 }
