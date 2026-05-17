@@ -7,7 +7,7 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 - Message rules map each raw file name to one primary message type.
 - Shared helpers convert the raw content into both JSON preview files and TXT exports.
 - The same semantic rules should be used by server and frontend build paths where possible.
-- Frontend userscript mode must apply equivalent rules without relying on server-only file-name context.
+- Frontend bundle mode must apply equivalent rules without relying on server-only file-name context.
 
 ## Message Type Mapping
 - File-name rules are the first-class classifier.

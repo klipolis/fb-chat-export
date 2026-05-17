@@ -30,7 +30,7 @@ This file now serves as a central index for split requirement documents.
 - Validate final `demo/output-json/` export schema with a dedicated test and JSON schema file under `tests/`.
 - Add a `pnpm run build:clean` script to safely clear generated build artifacts.
 - Provide separate `pnpm` build scripts for server, frontend, and CI workflows.
-- Keep shared metadata logic compatible with frontend one-file userscript runtime (no server file-name dependency for core content behavior).
+- Keep shared metadata logic compatible with frontend one-file bundle runtime (no server file-name dependency for core content behavior).
 - Resolve Facebook/Messenger redirect links (for example `l.php`, `flx/warn`) to original URLs when possible.
 - Keep TXT summary structure schema-driven and reusable through `tests/generated-txt-schema.json` summary concepts.
 - Keep total summary rough counts derived from summed person summary counts for consistency.
@@ -38,9 +38,18 @@ This file now serves as a central index for split requirement documents.
 - Count call totals in summaries using only audio/video calls and voice notes/messages (not missed calls).
 - Keep anonymized self sender output as `Youghurt` in final exports.
 - Keep generated `dist/`, `demo/output-html/`, and `demo/output-json/` artifacts in source control.
-- Keep build-specific `dist/userscript.js` versioning separate from `package.json` using `BUILD_VERSION`.
+- Keep build-specific `dist/app.js` versioning separate from `package.json` using `BUILD_VERSION`.
 - Use minor version bumps for release-level changelog entries that contain feature or contract updates.
 - Keep `package.json` version aligned with the topmost changelog release heading.
 - Update changelog entries for every new helper or export schema change.
+
+## Changelog writing rules
+
+- Every changelog entry must describe an **active change** — something added, fixed, changed, or removed. Entries that only describe what was retained, preserved, or left unchanged are not permitted.
+- Write in plain, user-facing language. Use active voice: "Exports now include attachments" not "Attachment export support has been added".
+- Describe what the user observes or benefits from. Do not mention internal identifiers, environment variable names, or implementation file paths.
+- Do not include entries for documentation-only edits, README updates, or planning notes.
+- CI, test tooling, and refactor changes with no user-visible effect belong under `### Dev` only.
+- Section headers per release: `### Added`, `### Changed`, `### Fixed`, `### Removed`, `### Dev`. Use only sections that have entries.
 
 

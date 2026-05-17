@@ -30,6 +30,20 @@ Thank you for contributing! This repository uses `pnpm` and standard Node.js too
 - Use `pnpm run release:check` to validate release readiness.
 - Tag the release with `pnpm run release:tag`.
 
+## Changelog rules
+
+Every entry in `CHANGELOG.md` must describe an **active change** — something that was added, fixed, changed, or removed in that release. Entries that only describe what was retained, preserved, or left unchanged are not permitted.
+
+Write in plain, user-facing language:
+
+- Use active voice and present tense: "Exports now include attachments" not "Attachment export support has been added".
+- Describe what the user observes or benefits from, not what file or variable changed internally.
+- Do not mention internal identifiers, environment variable names, or implementation file paths.
+- Do not include entries for documentation-only edits, README updates, or planning notes.
+- CI, test tooling, and refactor changes that have no user-visible effect belong under `### Dev` only.
+
+Section headers per release: `### Added`, `### Changed`, `### Fixed`, `### Removed`, `### Dev`. Use only the sections that have entries.
+
 ## Usage and privacy
 
 This project is intended for documenting personal Facebook Messenger interactions and generating personal summaries.
@@ -40,7 +54,7 @@ Always respect Facebook's Terms of Service: https://www.facebook.com/legal/terms
 
 - `src/` — application source and build scripts.
 - `demo/` — raw input and generated output artifacts.
-- `dist/` — built userscript deliverable.
+- `dist/` — built frontend bundle deliverable.
 - `tests/` — test and validation scripts.
 - `docs/` — project documentation.
 - `CHANGELOG.md` — release notes.

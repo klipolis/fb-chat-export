@@ -1,8 +1,9 @@
 {
   "name": "fb-chat-exporter",
-  "version": "5.2.0",
+  "version": "5.3.0",
   "private": true,
-  "packageManager": "pnpm@8.10.0",
+  "license": "MIT",
+  "packageManager": "pnpm@11.1.2",
   "scripts": {
     "build:server": "node src/build-server.js",
     "build:frontend": "node src/build.js",
@@ -13,31 +14,40 @@
     "validate:generated-txt": "node tests/validate-generated-txt.js",
     "validate:dist": "node tests/validate-dist.js",
     "validate:release": "node tests/validate-release.js",
-    "test": "node tests/run-tests.js && pnpm run validate:generated-json && pnpm run validate:generated-txt && pnpm run validate:dist && pnpm run validate:release",
+    "test:unit": "tap --timeout 20000 tests/run-tests.js",
+    "test": "pnpm run test:unit && pnpm run validate:generated-json && pnpm run validate:generated-txt && pnpm run validate:dist && pnpm run validate:release",
     "lint": "eslint --quiet \"src/**/*.js\" \"tests/**/*.js\"",
+    "lint:changelog": "node scripts/lint-changelog.js",
     "lint:docs": "markdownlint --config .markdownlint.json \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"*.md\"",
     "link:docs": "node scripts/check-doc-links.js",
+    "check:license": "node scripts/check-license.js",
     "format": "prettier --write \"src/**/*.js\" \"tests/**/*.js\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"CONTRIBUTING.md\" \"SECURITY.md\" \"CODE_OF_CONDUCT.md\"",
     "format:check": "prettier --check \"src/**/*.js\" \"tests/**/*.js\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"CONTRIBUTING.md\" \"SECURITY.md\" \"CODE_OF_CONDUCT.md\"",
     "audit": "pnpm audit --audit-level=moderate",
     "release:check": "pnpm run validate:release",
     "release:tag": "pnpm run release:check && node -e \"require('child_process').execSync('git tag v'+require('./package.json').version,{stdio:'inherit'})\"",
     "build": "pnpm run build:server && pnpm run build:frontend && pnpm run test",
-    "build:ci": "cross-env CI=true pnpm run lint && cross-env CI=true pnpm run build",
+    "build:ci": "cross-env CI=true pnpm run lint && pnpm run lint:changelog && pnpm run check:license && pnpm run audit && cross-env CI=true pnpm run build",
     "build:ci:server": "cross-env CI=true pnpm run build:server",
     "build:ci:frontend": "cross-env CI=true pnpm run build:frontend"
   },
   "engines": {
-    "node": "^26.1.0",
-    "pnpm": ">=8.10.0"
+    "node": ">=26.0.0",
+    "pnpm": ">=11.1.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
   },
   "devDependencies": {    
-    "cross-env": "^7.0.3",
-    "esbuild": "^0.19.4",
-    "jsdom": "^22.1.0",
-    "eslint": "^8.57.0",
+    "@eslint/js": "^10.0.0",
+    "cross-env": "^10.1.0",
+    "esbuild": "^0.28.0",
+    "eslint": "^10.0.0",
+    "globals": "^17.0.0",
+    "jsdom": "^29.1.1",
     "markdown-link-check": "^3.14.2",
-    "markdownlint-cli": "^0.38.0",
-    "prettier": "^3.0.0"
+    "markdownlint-cli": "^0.48.0",
+    "prettier": "^3.8.3",
+    "tap": "^21.7.4"
   }
 }

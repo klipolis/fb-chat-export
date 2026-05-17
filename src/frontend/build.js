@@ -5,31 +5,55 @@ const { version: projectVersion } = require('../../package.json');
 
 const sourcePath = path.resolve(__dirname, 'src', 'index.js');
 const distDir = path.resolve(__dirname, '..', '..', 'dist');
-const outputPath = path.join(distDir, 'userscript.js');
-const relOutputPath = './dist/userscript.js';
+const outputPath = path.join(distDir, 'app.js');
+const relOutputPath = './dist/app.js';
+const changelogPath = path.resolve(__dirname, '..', '..', 'CHANGELOG.md');
+const buildPlatform = process.env.BUILD_PLATFORM || 'userscript';
+
+const platformHeaders = {
+  userscript: [
+    '// ==UserScript==',
+    '// @name         Chat Exporter',
+    '// @namespace    http://tampermonkey.net/',
+    '// @version      %VERSION%',
+    '// @description  Export chat conversations to text file',
+    '// @match        https://www.facebook.com/messages/*',
+    '// @grant        none',
+    '// ==/UserScript==',
+  ].join('\n'),
+};
 
 if (!fs.existsSync(distDir)) {
   fs.mkdirSync(distDir, { recursive: true });
 }
 
-const content = fs.readFileSync(sourcePath, 'utf8');
-const headerMatch = content.match(/^[\s\S]*?\/\/ ==UserScript==[\s\S]*?\/\/ ==\/UserScript==\s*/);
-const header = headerMatch ? headerMatch[0].trimEnd() : '';
-const body = headerMatch ? content.slice(header.length) : content;
+const sourceContent = fs.readFileSync(sourcePath, 'utf8');
+const platformHeaderRegex = /^((?:\/\/[^\n]*\n)+)\s*\n/;
+const trimmedContent = sourceContent.replace(platformHeaderRegex, '').trimStart();
+
+function parseChangelogVersion(filePath) {
+  if (!fs.existsSync(filePath)) return null;
+  const changelog = fs.readFileSync(filePath, 'utf8');
+  const match = changelog.match(/^##\s+v(\d+\.\d+\.\d+)/m);
+  return match ? match[1] : null;
+}
+
+const changelogVersion = parseChangelogVersion(changelogPath);
 const buildVersion =
   process.env.BUILD_VERSION ||
-  `${projectVersion}-build.${new Date()
-    .toISOString()
-    .replace(/[^0-9]/g, '')
-    .slice(0, 14)}`;
-const versionedHeader = header
-  ? header.replace(/(^\/\/\s*@version\s+).*$/m, `$1${buildVersion}`)
-  : `// ==UserScript==\n// @version      ${buildVersion}\n// ==/UserScript==\n\n`;
+  changelogVersion ||
+  projectVersion ||
+  `0.0.0-build.${new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14)}`;
+
+const headerBanner =
+  buildPlatform in platformHeaders
+    ? platformHeaders[buildPlatform].replace('%VERSION%', buildVersion) + '\n\n'
+    : '';
 
 (async () => {
   await build({
     stdin: {
-      contents: body,
+      contents: trimmedContent,
       resolveDir: path.dirname(sourcePath),
       sourcefile: sourcePath,
     },
@@ -39,10 +63,10 @@ const versionedHeader = header
     legalComments: 'none',
     minify: true,
     banner: {
-      js: `${versionedHeader}\n\n`,
+      js: headerBanner,
     },
     outfile: outputPath,
   });
 
-  console.log(`Generated userscript: ${relOutputPath} (${buildVersion})`);
+  console.log(`Generated frontend bundle: ${relOutputPath} (${buildVersion})`);
 })();

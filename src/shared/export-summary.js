@@ -25,7 +25,7 @@ function isCountedCall(entry) {
   return ['audio-call', 'video-call', 'voice-note', 'voice-message'].includes(type);
 }
 
-function buildUserscriptSummaryData(entries = [], options = {}) {
+function buildSummaryData(entries = [], options = {}) {
   if (!entries.length) {
     return {
       total: {
@@ -163,10 +163,10 @@ function buildUserscriptSummaryData(entries = [], options = {}) {
   };
 }
 
-function buildUserscriptSummary(entries = [], options = {}) {
+function buildSummary(entries = [], options = {}) {
   if (!entries.length) return '';
 
-  const summary = buildUserscriptSummaryData(entries, options);
+  const summary = buildSummaryData(entries, options);
   const useMessageLabel = Boolean(options.useMessageLabel);
   const totalMessageLabel = useMessageLabel
     ? summary.total.messages === 1
@@ -219,6 +219,6 @@ function buildUserscriptSummary(entries = [], options = {}) {
 }
 
 module.exports = {
-  buildUserscriptSummary,
-  buildUserscriptSummaryData,
+  buildSummary,
+  buildSummaryData,
 };

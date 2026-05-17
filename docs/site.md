@@ -7,17 +7,19 @@ This page is a high-level docs landing page for quick onboarding and architectur
 1. Clone the repository and open the `support/` folder.
 2. Run `pnpm install --frozen-lockfile`.
 3. Run `pnpm run build:ci` to verify the full pipeline.
-4. Run `pnpm run build:frontend` to generate `dist/userscript.js`.
+4. Run `pnpm run build:frontend` to generate `dist/app.js`.
+
+> Optional: use `BUILD_PLATFORM=userscript pnpm run build:frontend` to emit a bundle with a Tampermonkey-compatible userscript header.
 
 ## Architecture overview
 
 - `src/` contains the application source and build scripts.
-- `src/frontend/src/` contains the userscript source code.
-- `src/frontend/build/` contains frontend build tooling that bundles the userscript.
+- `src/frontend/src/` contains the browser-facing source code.
+- `src/frontend/build.js` contains the frontend build wrapper that bundles the app.
 - `src/server/` contains server-side build scripts and preview generation.
 - `src/shared/` contains shared helpers used by both server and frontend code.
 - `demo/` contains raw input snapshots and generated output artifacts used for debugging and regression.
-- `dist/` contains the bundled Tampermonkey userscript result.
+- `dist/` contains the bundled frontend app result.
 
 ## Docs and contribution
 

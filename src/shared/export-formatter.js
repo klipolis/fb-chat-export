@@ -1,6 +1,6 @@
 const { normalizeDuration } = require('./message-metadata');
 const { normalizeDateToIso } = require('./aria-label-parser');
-const { buildUserscriptSummary, buildUserscriptSummaryData } = require('./userscript-summary');
+const { buildSummary, buildSummaryData } = require('./export-summary');
 
 function formatExportHeader({ method, messageTypes }) {
   const types = messageTypes.map((type) => `- ${type}`).join('\n');
@@ -74,34 +74,7 @@ function formatSummarySection(entries = [], options = {}) {
     };
   });
 
-  return buildUserscriptSummary(summaryEntries, {
-    fixedParticipants: ['Alpha', 'Youghurt'],
-    useMessageLabel: Boolean(options.useMessageLabel),
-  });
-}
-
-function buildSummaryData(entries = [], options = {}) {
-  const summaryEntries = entries.map((entry) => {
-    const fileType = String(entry.fileType || '').toLowerCase();
-    const isCall = [
-      'audio-call',
-      'video-call',
-      'voice-note',
-      'missed-audio-call',
-      'missed-video-call',
-    ].includes(fileType);
-    const isTimedCall = ['audio-call', 'video-call', 'voice-note'].includes(fileType);
-    return {
-      sender: entry.sender,
-      date: Number.isFinite(entry.ts) ? new Date(entry.ts) : new Date(NaN),
-      type: fileType,
-      isCall,
-      isImage: fileType === 'image',
-      callMinutes: isTimedCall ? durationToMinutes(entry.duration) : 0,
-    };
-  });
-
-  return buildUserscriptSummaryData(summaryEntries, {
+  return buildSummary(summaryEntries, {
     fixedParticipants: ['Alpha', 'Youghurt'],
     useMessageLabel: Boolean(options.useMessageLabel),
   });

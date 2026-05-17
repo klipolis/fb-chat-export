@@ -1,13 +1,13 @@
 # fb-chat-exporter
 
-A Messenger chat export project that generates `.txt`, JSON preview, HTML snapshots, and a Tampermonkey userscript.
+A Messenger chat export project that generates `.txt`, JSON preview, HTML snapshots, and a browser-side frontend bundle.
 
 ## Overview
 
 - Source files live under `src/`.
 - Frontend source and build tooling are under `src/frontend/`.
 - Data artifacts are stored under `demo/`.
-- Built userscript output is stored in `dist/`.
+- Built frontend bundle output is stored in `dist/`.
 - Documentation is kept in `docs/`.
 - Release notes live in `CHANGELOG.md`.
 
@@ -32,7 +32,7 @@ pnpm run build:ci
 - `docs/site.md` - documentation landing page with quick start and architecture overview.
 - `docs/terms-and-conditions.md`
 - `demo/` - structured raw input and generated output artifacts.
-- `dist/` - generated userscript bundle.
+- `dist/` - generated frontend bundle.
 
 ## More documentation
 

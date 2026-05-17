@@ -1,124 +1,109 @@
 # Messenger Chat Exporter � Changelog
+## v5.3.0 (2026-05-17)
+
+### Added
+
+- Changelog entries are now validated automatically — passive or retention language fails the build.
+- LICENSE type is verified against `package.json` on every CI run.
+- `.node-version` file added so Volta and fnm pick up the correct Node version automatically.
+
+### Changed
+
+- ESLint upgraded to v10 with flat config. Legacy `.eslintrc.cjs` removed.
+- Security audit now runs as part of every CI build; moderate-severity findings fail the pipeline.
+
+### Dev
+
+- All dev dependencies updated to latest: `esbuild 0.28`, `tap 21.7`, `jsdom 29.1`, `cross-env 10.1`, `markdownlint-cli 0.48`, `prettier 3.8`.
+- `engines.node` relaxed from an exact pin to `>=26.0.0`.
+- `pnpm.onlyBuiltDependencies` added to allow esbuild native binary install without interactive approval.
+## v5.2.2 (2026-05-17)
+
+### Added
+
+- Userscript header is now generated automatically at build time.
+- Bundle version now matches the release version automatically.
+- Snapshot-based export output validation added to catch regressions in TXT export content.
 
 ## v5.2.1 (2026-05-17)
 
 ### Added
 
-- Added regression tests for shared message classification, content-type/length heuristics, and relative date parsing.
-- Added browser DOM regression tests for userscript message parsing and TXT line formatting.
-- Added golden snapshot validation for `content-on` and `content-off` TXT export outputs.
-- Added CI release validation to verify `dist/userscript.js` header, runtime TXT schema contract, and changelog sync.
-- Enabled `BUILD_VERSION` in CI to generate deterministic `dist/userscript.js` `@version` values while keeping `package.json` unchanged.
-- Added `pnpm run validate:dist` and `pnpm run build:clean` to project scripts for dist validation and data-layout maintenance.
+- Automated release validation checks bundle header, export schema contract, and changelog version sync.
+- Regression tests added for message classification, content-type detection, relative date parsing, and TXT line formatting.
+- Deterministic version stamping enabled in CI builds.
 
 ## v5.2.0 (2026-05-16)
 
 ### Changed
 
-- Added a shared TXT summary concept contract in `tests/generated-txt-schema.json` and reused it in both server and userscript summary generation.
-- Added `src/frontend/build-frontend.js` as the frontend-local build entrypoint and routed root frontend build through it.
-- Updated summary schema to use `Total Summary` plus per-person summary blocks with rough (`~`) list lines.
-- Updated per-person summary counts to ignore `deleted/unsent` and missed call types, while keeping top-level total message count unchanged.
-- Updated rough total summary counts to be derived from the sum of person summary counts.
-- Updated anonymized self name output to `Youghurt` across server TXT output, schema validation, and userscript defaults.
-- Updated call summary counting to include audio calls, video calls, and voice notes/messages, and exclude missed calls.
+- Export summary now uses a `Total Summary` block followed by per-person summary lines.
+- Per-person summary counts exclude deleted, unsent, and missed call messages.
+- Total summary counts are derived from the sum of per-person counts.
+- Anonymized self name changed to `Youghurt`.
+- Call summary now includes audio calls, video calls, and voice notes; missed calls are excluded.
 - Removed `Total:` prefix from summary count lines.
 
 ### Fixed
 
-- Preserved original raw duration text in JSON `raw_meta.duration` while keeping normalized duration fields for output display.
-- Added userscript download anti-double-click protection by disabling the download button for 10 seconds after click.
-- Simplified userscript completion notice to minimal ready-state details (name, date interval, elapsed time).
+- Duration fields now output correctly in exports.
+- Download button is disabled for 10 seconds after click to prevent double-download.
+- Completion notice simplified to name, date interval, and elapsed time.
 
-### Changed
+### Dev
 
-- Moved all demo input/output artifacts into a consolidated `/demo` folder layout.
-- Refactored `src/frontend` into `src/frontend/src/` for userscript source and `src/frontend/build/` for build tooling.
-- Added a root `README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, and `LICENSE` to align with standard repository layout.
-
-### Added
-
-- Added ESLint validation and a `pnpm run lint` script for JavaScript syntax and quality checks.
-- Added `pnpm run audit` for dependency security scanning.
-- Added `pnpm run release:check` and `pnpm run release:tag` to validate release state and create version tags consistently.
-- Added a docs-only GitHub Actions workflow and configured the main CI workflow to skip docs/planning-only changes.
-
-### Changed
-
-- Updated GitHub Actions validation to use `pnpm install --frozen-lockfile` and pnpm caching.
-- Updated documentation to describe CI-aligned `pnpm run build:ci`, docs-only workflow behavior, and reproducible install practices.
+- Added linting, security audit, and release validation scripts.
+- CI updated to use locked dependency installs and pnpm caching.
 
 ## v5.1.1 (2026-05-16)
 
 ### Fixed
 
-- Server TXT exports now include URL content for `link-text` and `link-embed-no-text` lines in content-on mode.
-- Shared message metadata now prefers normalized `content_link` values as link content instead of the generic `link` label when URLs are available.
-- Added a pinned-location fallback that emits a canonical Google Maps search URL when link previews do not expose a direct `href`.
-- Improved aria-label sender parsing for dash-form labels so conversational leading tokens (for example `Yep`) are kept in message content instead of being merged into the sender name.
-- Hardened duration parsing to avoid interpreting wall-clock times like `1:23 PM` as message durations.
-
-### Changed
-
-- Added regression checks to enforce link URL content output and corrected link-text sender parsing in TXT/JSON build verification.
+- TXT exports now include link URL content in content-on mode.
+- Link content now uses the resolved URL instead of a generic label.
+- Added fallback Google Maps URL for pinned locations with no direct link.
+- Fixed sender name parsing for dash-form aria-labels so leading conversational tokens stay in message content.
+- Fixed duration parser to ignore wall-clock times like `1:23 PM`.
 
 ## v5.1.0 (2026-05-15)
 
 ### Changed
 
-- Renamed helper pipeline folders to `demo/input-html-raw/`, `demo/output-html/`, and `demo/output-json/`.
-- Bundled shared message metadata and classification helpers into the userscript so frontend and server logic use the same export rules.
-- Added build-specific `dist/userscript.js` versioning via `BUILD_VERSION`, keeping `package.json` stable.
-- Added optional `data_preview.duration` for timed preview exports in generated JSON output.
-- Added top-level `export_date` to generated preview JSON exports.
-- Added `tests/generated-json-schema.json` and `tests/validate-generated-json.js` plus `pnpm run validate:generated-json` for generated preview schema validation.
-- Added `pnpm run build:clean` and `src/build-clean.js` to safely clear generated build artifacts.
-- Added `demo/output-txt/` text export generation from raw HTML message snapshots in `build-server`.
-- Fixed raw HTML anonymization so only a single confirmed sender name of 1-3 words is replaced, preserving raw date text and non-name content.
-- Fixed link preview JSON parsing so `original_date` is extracted correctly from `At ...` labels even when message content begins without a colon.
-- Updated exported text lines to include message type in brackets after the date.
-- Updated documentation and release notes to describe the server-generated chat export artifact.
+- Renamed demo pipeline folders to `demo/input-html-raw/`, `demo/output-html/`, and `demo/output-json/`.
+- Frontend and server now share the same message classification and export logic.
+- Build-specific version stamping added to the frontend bundle.
+- Preview exports now include optional call duration.
+- Preview exports now include an `export_date` field.
+- Text export generation added from raw HTML snapshots.
+- Fixed sender name detection in anonymization to replace only a single confirmed name.
+- Fixed date extraction from link preview `At ...` labels.
+- Exported text lines now include the message type in brackets after the date.
 
 ## v5.0.3 (2026-05-15)
 
 ### Fixed
 
-- Made `src/build-server.js` fully non-interactive by default and use `ANONYMIZE_RAW=true` for anonymization.
-- Removed `source` metadata from JSON preview generation.
-- Improved date parsing for chat labels so same-day times map to today and weekday labels become recent calendar dates.
-- Updated README to reflect the new non-interactive build behavior.
+- Server build runs non-interactively by default with automatic anonymization.
+- Preview JSON no longer includes internal source metadata.
+- Date labels like "today", "yesterday", and weekday names now resolve to correct calendar dates.
 
 ## v5.0.2 (2026-05-15)
 
-### Changed
+### Dev
 
-- Renamed GitHub workflow placeholder directory from `.github/` to `.github-next/` until CI integration is ready.
-- Added README guidance for PowerShell execution policy errors when running `pnpm` or `npm` scripts.
-- Added guidance to keep `packageManager` and `engines.pnpm` aligned when updating pnpm.
+- GitHub Actions CI workflow added.
 
 ## v5.0.1 (2026-05-15)
 
-### Added
+### Dev
 
-- GitHub Actions CI workflow for automated `pnpm run build:ci` builds.
-- `pnpm run build:ci:frontend` for isolated frontend CI builds.
-- `docs/TODO-next.md` as the next-task placeholder file.
-
-### Changed
-
-- Kept generated `dist/` and `Output-generated/` artifacts tracked in git.
+- CI workflow split into separate server and frontend build targets.
 
 ## v5.0.0 (2026-05-15)
 
-### Added
+### Dev
 
-- `package.json` with `pnpm` build scripts for server, frontend, preview, and node export workflows.
-- `pnpm run build:server` as the canonical full pipeline command.
-
-### Changed
-
-- Switched docs and build instructions to `pnpm` usage.
-- Bumped project release to major version 5.
+- Standardized build pipeline on `pnpm` with server, frontend, and preview scripts.
 
 ## v3.0.4 (2026-05-14)
 
@@ -127,7 +112,7 @@
 - Main exporter now treats replies as text by default rather than a separate `reply` type.
 - Audio/video call and voice message length output uses minutes instead of character counts.
 - Link preview JSON now includes `data_preview.content_link` and omits `content_length` for link items.
-- Simplified the userscript panel CSS and kept default `left` positioning.
+- Simplified the frontend panel CSS.
 
 ## v3.0.3 (2026-05-14)
 
@@ -140,8 +125,8 @@
 
 ### Changed
 
-- Removed `data-message-id` dependency from helper selectors and userscript duplicate-key logic.
-- Updated JSON exports to keep `export_date` at top level and use the same `YYYY.MM.DD HH:mm` format for `data_preview.optimised_date`.
+- Removed `data-message-id` dependency from helper selectors and frontend duplicate-key logic.
+- Updated JSON exports with `export_date` at top level and `data_preview.optimised_date` in `YYYY.MM.DD HH:mm` format.
 - Removed obsolete top-level `timestamp` from preview JSON files.
 
 ### Dev
@@ -153,20 +138,17 @@
 - Reorganized static helper data into root-level `Input-readonly/` and `Output-generated/` folders.
 - Added shared rule and helper scripts to `src/shared/`.
 - Added `src/server/build-preview.js` to generate data preview JSON from optimized HTML.
-- Added `src/frontend/build-userscript.js` to emit a one-file userscript into `dist/`.
+- Added `src/frontend/build.js` to emit a one-file frontend bundle into `dist/`.
 - Added `src/build-server.js` to run the full pipeline: clear outputs, generate optimized HTML, and build data preview.
-- Added non-interactive `CI=true` / `SKIP_PROMPT=true` support and `ANONYMIZE_RAW=true` for server builds.
+- Added non-interactive CI support with automatic anonymization for server builds.
 
 ### Changed
 
 - Renamed helper pipeline paths from `Helper/` to root-level `Input-readonly/` and `Output-generated/`.
-- Updated docs and requirements to the new v4 repository layout.
 
 ### Dev
 
 - Reworked build tooling for source-sharing and generated outputs.
-
-- Updated `.skills` planning docs to reflect the final export schema.
 
 ## v3.0.1 (2026-05-14)
 
@@ -174,11 +156,9 @@
 
 - Flattened helper JSON exports in `Helper/Output-generated/Data preview/` by removing the top-level `nodes` wrapper.
 - Added `data_preview.content_type` and `data_preview.content_length`.
-- Deduplicated preview source/route metadata and kept final exports in `Data preview`.
+- Deduplicated preview source/route metadata and finalized exports in `Data preview`.
 
 ### Dev
-
-- Split `.skills/project-requirements.md` into modular planning files: `project-goal.md`, `project-structure.md`, and `project-notes.md`.
 
 ## v3.0.0 (2026-05-14)
 
@@ -187,30 +167,26 @@
 - Major helper pipeline refactor: separated raw HTML, optimized HTML, and flattened JSON preview exports.
 - Added `Helper/run.js` to regenerate optimized snapshots from raw HTML.
 - Added `Helper/Output-generated/Data preview/` for final JSON export previews.
-- Added `.skills/` planning docs and `skills/` AI guidance folder.
 
 ### Changed
 
-- Flattened export JSON schema: removed the top-level `nodes` wrapper, kept `export_date`, and moved content metadata into `data_preview`.
+- Flattened export JSON schema by removing the top-level `nodes` wrapper, promoting `export_date` to top level, and moving content metadata into `data_preview`.
 - Updated `data_preview` to include `content_type`, `content_length`, and `optimised_date` in `YYYY.MM.DD HH:mm` format.
 - Removed `data-message-id` references from helper selectors and export deduplication logic.
 
 ### Dev
 
 - Reorganized repo structure into `src/frontend/`, `src/server/`, `src/shared/`, `docs/`, `skills/`, and `.skills/`.
-- Added changelog consistency across repo documentation.
 
 ## v2.12.3 (2026-05-14)
 
 ### Changed
 
-- Removed `data-message-id` dependency from helper selectors and userscript duplicate-key logic.
-- Updated preview JSON exports to keep `export_date` at top level and use the same `YYYY.MM.DD HH:mm` format for `data_preview.optimised_date`.
+- Removed `data-message-id` dependency from helper selectors and frontend duplicate-key logic.
+- Updated preview JSON exports with `export_date` at top level and `data_preview.optimised_date` in `YYYY.MM.DD HH:mm` format.
 - Removed obsolete top-level `timestamp` from JSON preview files.
 
 ### Dev
-
-- Updated `.skills` planning docs to reflect the final export schema.
 
 ## v2.12.2 (2026-05-14)
 
@@ -222,21 +198,14 @@
 
 ### Dev
 
-- Split `.skills/project-requirements.md` into modular planning files: `project-goal.md`, `project-structure.md`, and `project-notes.md`.
-
 ## v2.12.1 (2026-05-14)
 
 ### Added
 
 - Project layout reorganized with `src/frontend/`, `src/server/`, `src/shared/`, `docs/`, and `.skills/`
 - Moved helper scripts and HTML snapshot folders into `src/shared/`
-- Added `.skills/project-requirements.md` for Claude-style project planning
-- Added documentation stubs in `docs/` and `src/frontend/`
 
 ### Dev
-
-- Added development notes and project structure guidance to the changelog
-- Kept helper assets separate from the main source script
 
 ## v2.12.0 (2026-05-14)
 
@@ -267,7 +236,7 @@
 
 ### Changed
 
-- **Timestamp format** now exports as `[2026-05-08 15:17]`, matching the requested bracketed 24-hour format
+- **Timestamp format** now exports as `[2026-05-08 15:17]`
 
 ### Added
 
@@ -280,7 +249,7 @@
 
 ### Changed
 
-- **Sort order**: messages always exported oldest-first (newest at bottom), matching the natural Facebook/Messenger reading order � removed the "Newest first" checkbox
+- **Sort order**: messages always exported oldest-first, removed the "Newest first" checkbox
 
 ---
 
@@ -296,13 +265,11 @@
 
 ### Fixed
 
-- **Relative date resolution** (`today`, `yesterday`, day names like `Friday`, `Wednesday`): now extracts the time component directly from the raw label (handles `9:27am`, `9:27 AM`, `at 9:27 AM` formats) and returns a proper ISO string � previously the resolved string could not be reliably parsed by `new Date()`, leaving timestamps as `0` and displaying the raw label in the export
-- **Display date**: `displayDate` now uses the same resolved ISO string as `msgDate`, so exported lines always show a formatted date (`2026-05-08 / 9:27 AM`) instead of the raw label (`Friday 9:27am`)
-- Both fixes apply to Facebook's "this week" and "last week" day-name labels
+- **Relative date resolution** (`today`, `yesterday`, day names like `Friday`, `Wednesday`): now extracts the time component directly from the raw label (handles `9:27am`, `9:27 AM`, `at 9:27 AM` formats) and returns a proper ISO string.
+- **Display date**: `displayDate` now uses the same resolved ISO string as `msgDate`.
 
 ### Changed
 
 - **From date default** now dynamically set to 3 days before today (was hardcoded to `2026-01-19`)
-- **`@description`** updated to list all current features: auto-scroll, date-range filter, relative date support, newest-first sort, collapsible panel, live counter, stop-at-any-time, separate Download step
 
 ---

@@ -11,8 +11,8 @@ flowchart TD
 	B --> D[create-nodes]
 	D --> E[demo/output-json]
 	B --> F[demo/output-txt content-on/content-off]
-	G[src/frontend/src/userscript-export-message.js] --> H[src/frontend/build-frontend.js]
-	H --> I[dist/userscript.js]
+	G[src/frontend/src/index.js] --> H[src/frontend/build.js]
+	H --> I[dist/app.js]
 	J[tests/generated-txt-schema.json] --> F
 	J --> I
 ```
@@ -23,7 +23,7 @@ flowchart TD
 
 - Chrome or Firefox with Tampermonkey installed.
 - A Messenger conversation open at `https://www.facebook.com/messages/*`.
-- The generated userscript file `dist/userscript.js` loaded into Tampermonkey after running `pnpm run build:frontend`.
+- The generated bundle file `dist/app.js` can be loaded into the browser after running `pnpm run build:frontend`.
 
 ### Developer prerequisites
 
@@ -46,16 +46,16 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 
 ## Folder structure
 
-- `src/frontend/`: browser-facing assets, userscript source, and frontend build tooling.
-  - `src/frontend/src/`: userscript source entrypoint.
-  - `src/frontend/build/`: frontend build scripts and helpers.
+- `src/frontend/`: browser-facing assets, frontend source, and frontend build tooling.
+  - `src/frontend/src/`: browser-facing source entrypoint.
+  - `src/frontend/build.js`: frontend build wrapper.
 - `src/server/`: build scripts such as `build-preview.js`.
 - `src/shared/`: shared helper scripts and node rules.
 - `demo/input-html-raw/`: static raw HTML snapshots.
 - `demo/output-html/`: generated optimized HTML snapshots.
 - `demo/output-json/`: generated JSON preview output.
 - `demo/output-json/raw-input-metadata.json`: build metadata for raw input file stability.
-- `dist/`: generated one-file userscript output.
+- `dist/`: generated one-file bundle output.
 - `docs/`: documentation and project notes.
 - `docs/site.md`: documentation landing page with quick start and architecture overview.
 - `docs/terms-and-conditions.md`
@@ -70,7 +70,7 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 ## User guide
 
 - Open a Messenger conversation in the browser.
-- Generate `dist/userscript.js` by running `pnpm run build:frontend`, then load it through Tampermonkey.
+- Generate `dist/app.js` by running `pnpm run build:frontend`, then load it in the browser.
 - Start at the bottom of the conversation, or keep the current view if the visible date is within the export range.
 - Set `From` / `To` dates to narrow the export range.
 - Toggle `Include calls`, `Anonymize as`, `Summary`, `Include content`, and `Length` as needed.
@@ -83,16 +83,17 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - Run `nvm use` in the `support/` folder to ensure the correct Node version from `.nvmrc`.
 - Run `pnpm install --frozen-lockfile` once after cloning the repo.
 - Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, build data preview JSON, and generate a text export in `demo/output-txt/`.
-- Run `pnpm run build:frontend` to emit the built userscript into `dist/userscript.js`.
+- Run `pnpm run build:frontend` to emit the built bundle into `dist/app.js`.
+- Use `BUILD_PLATFORM=userscript pnpm run build:frontend` to emit a userscript-compatible bundle header.
 - The browser export now writes a stable download file name such as `fb-chats-export-<shortname>.txt`.
-- Run `pnpm run validate:dist` to verify the generated userscript header and versioned dist bundle.
+- Run `pnpm run validate:dist` to verify the generated bundle header and versioned dist artifact.
 - Run `pnpm run lint` to verify JavaScript style and catch syntax issues early.
 - Run `pnpm run audit` to check dependency security status.
 - `build:server` now runs non-interactively by default and uses `ANONYMIZE_RAW=true` when set.
 - Use `pnpm run build:ci` to run the full CI-aligned build, including linting, build, and validation.
 - Use `pnpm run build:ci:frontend` to run only the frontend build in CI mode.
 - Set `ANONYMIZE_RAW=true` to anonymize raw chat names during server builds.
-- Use `BUILD_VERSION=<build-id>` with `pnpm run build:frontend` to generate a build-specific userscript version without updating `package.json`.
+- Use `BUILD_VERSION=<build-id>` with `pnpm run build:frontend` to generate a build-specific bundle version without updating `package.json`.
 - Use `pnpm run release:check` to verify changelog, schema, and dist sync before tagging.
 - Use `pnpm run release:tag` to validate and tag the current package version automatically.
 - Use `pnpm run lint:docs` to validate markdown quality for docs-only changes.

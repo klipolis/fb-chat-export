@@ -1,7 +1,9 @@
+const tap = require('tap');
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');
+const { compareSnapshots } = require('./snapshot-helper');
 
 const { normalizeDateToSimple, parseAriaLabel } = require(
   path.join(__dirname, '..', 'src', 'shared', 'aria-label-parser')
@@ -13,8 +15,8 @@ const { getContentMeta, normalizeDuration } = require(
 const { formatExportHeader, formatLine } = require(
   path.join(__dirname, '..', 'src', 'shared', 'export-formatter')
 );
-const { buildUserscriptSummary } = require(
-  path.join(__dirname, '..', 'src', 'shared', 'userscript-summary')
+const { buildSummary } = require(
+  path.join(__dirname, '..', 'src', 'shared', 'export-summary')
 );
 const { buildEntriesFromDocument } = require(
   path.join(__dirname, '..', 'src', 'shared', 'export-text')
@@ -201,7 +203,7 @@ function testBrowserExportFormatting() {
     'Browser line formatting should include type, duration, length, and content'
   );
 
-  const summary = buildUserscriptSummary(
+  const summary = buildSummary(
     [
       {
         sender: 'Alpha',
@@ -257,7 +259,7 @@ function testBrowserExportDomRegression() {
   );
 }
 
-function testUserScriptBuildDist() {
+function testFrontendBuildDist() {
   const baseDir = path.join(__dirname, '..');
   const buildResult = childProcess.spawnSync('node', ['src/frontend/build.js'], {
     cwd: baseDir,
@@ -266,21 +268,17 @@ function testUserScriptBuildDist() {
   assert.strictEqual(
     buildResult.status,
     0,
-    `build-frontend failed: ${buildResult.stderr || buildResult.stdout}`
+    `build.js failed: ${buildResult.stderr || buildResult.stdout}`
   );
 
-  const distPath = path.join(baseDir, 'dist', 'userscript.js');
-  assert.ok(fs.existsSync(distPath), 'dist/userscript.js should exist after build');
+  const distPath = path.join(baseDir, 'dist', 'app.js');
+  assert.ok(fs.existsSync(distPath), 'dist/app.js should exist after build');
   const contents = fs.readFileSync(distPath, 'utf8');
-  assert.ok(
-    /\/\/ ==UserScript==/.test(contents),
-    'dist/userscript.js should contain a userscript header'
-  );
-  assert.ok(/\/\/ @version\s+/.test(contents), 'dist/userscript.js should contain a version field');
-  assert.ok(contents.length > 200, 'dist/userscript.js should not be empty');
+  assert.ok(/\/\/ @version\s+/.test(contents), 'dist/app.js should contain a version field');
+  assert.ok(contents.length > 200, 'dist/app.js should not be empty');
   assert.ok(
     !/contentMeta\./.test(contents),
-    'dist/userscript.js should not contain stale contentMeta references'
+    'dist/app.js should not contain stale contentMeta references'
   );
 }
 
@@ -299,13 +297,8 @@ function testGoldenTxtSnapshots() {
   assert.ok(fs.existsSync(goldenOnPath), 'Golden snapshot for content-on TXT missing');
   assert.ok(fs.existsSync(goldenOffPath), 'Golden snapshot for content-off TXT missing');
 
-  const actualOn = fs.readFileSync(actualOnPath, 'utf8');
-  const actualOff = fs.readFileSync(actualOffPath, 'utf8');
-  const goldenOn = fs.readFileSync(goldenOnPath, 'utf8');
-  const goldenOff = fs.readFileSync(goldenOffPath, 'utf8');
-
-  assert.strictEqual(actualOn, goldenOn, 'Content-on TXT export differs from golden snapshot');
-  assert.strictEqual(actualOff, goldenOff, 'Content-off TXT export differs from golden snapshot');
+  compareSnapshots(actualOnPath, goldenOnPath, 'Content-on TXT export differs from golden snapshot');
+  compareSnapshots(actualOffPath, goldenOffPath, 'Content-off TXT export differs from golden snapshot');
 }
 
 function validatePreviewNode(node, fileName) {
@@ -940,26 +933,25 @@ function runTests() {
     { name: 'parseAriaLabelSenderSplits', fn: testParseAriaLabelSenderSplits },
     { name: 'browserExportFormatting', fn: testBrowserExportFormatting },
     { name: 'browserExportDomRegression', fn: testBrowserExportDomRegression },
-    { name: 'userScriptBuildDist', fn: testUserScriptBuildDist },
+    { name: 'frontendBuildDist', fn: testFrontendBuildDist },
     { name: 'goldenTxtSnapshots', fn: testGoldenTxtSnapshots },
     { name: 'buildServerTextExport', fn: testBuildServerTextExport },
     { name: 'textExportDurationNormalization', fn: testTextExportDurationNormalization },
   ];
 
-  console.log(`Running ${tests.length} tests...`);
-
   for (const test of tests) {
-    try {
-      test.fn();
-      console.log(`✔ ${test.name}`);
-    } catch (error) {
-      console.error(`✖ ${test.name}`);
-      console.error(error);
-      process.exit(1);
-    }
+    tap.test(test.name, (t) => {
+      try {
+        test.fn();
+        t.pass('Passed');
+      } catch (error) {
+        t.threw(error);
+      }
+      t.end();
+    });
   }
-
-  console.log('All tests passed.');
 }
 
-runTests();
+if (require.main === module) {
+  runTests();
+}

@@ -1,15 +1,6 @@
-﻿// ==UserScript==
-// @name         Chat Exporter
-// @namespace    http://tampermonkey.net/
-// @version      5.0.4
-// @description  Export chat conversations to text file
-// @match        https://www.facebook.com/messages/*
-// @grant        none
-// ==/UserScript==
-
-import { getContentMeta, normalizeDuration } from '../../shared/message-metadata.js';
+﻿import { getContentMeta, normalizeDuration } from '../../shared/message-metadata.js';
 import { parseAriaLabel, normalizeDateToIso } from '../../shared/aria-label-parser.js';
-import { buildUserscriptSummary } from '../../shared/userscript-summary.js';
+import { buildSummary } from '../../shared/export-summary.js';
 import { formatExportHeader, formatLine } from '../../shared/export-formatter.js';
 import {
   parseLocalDate,
@@ -358,7 +349,7 @@ import {
         }
 
         const summaryText = summaryChk.checked
-          ? buildUserscriptSummary(sortedEntries, { useMessageLabel: true })
+          ? buildSummary(sortedEntries, { useMessageLabel: true })
           : '';
         const messageTypes = Array.from(
           new Set(sortedEntries.map((entry) => entry.type).filter(Boolean))
