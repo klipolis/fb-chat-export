@@ -1,8 +1,8 @@
 ﻿// ==UserScript==
-// @name         Messenger Chat Exporter
+// @name         Chat Exporter
 // @namespace    http://tampermonkey.net/
 // @version      5.0.4
-// @description  Export Messenger chats to text file
+// @description  Export chat conversations to text file
 // @match        https://www.facebook.com/messages/*
 // @grant        none
 // ==/UserScript==
@@ -17,6 +17,13 @@ import {
   getDisplayPersonName,
   formatExportFileName,
 } from '../../shared/frontend-utils.js';
+import {
+  createButton,
+  createCheckboxToggle,
+  createCheckboxToggleWithInput,
+  createLabelInput,
+  createLinkAction,
+} from './ui.js';
 
 (function () {
   'use strict';
@@ -33,7 +40,7 @@ import {
   panelArrow.innerText = '▲';
   panelArrow.style.cssText = 'font-size: 10px; color: #aaa;';
   const panelTitle = document.createElement('span');
-  panelTitle.innerText = 'Export Messages';
+  panelTitle.innerText = 'Export Chat';
   panelSummary.appendChild(panelArrow);
   panelSummary.appendChild(panelTitle);
 
@@ -50,11 +57,8 @@ import {
   notice.style.cssText = 'padding: 6px 10px; font-size: 12px; color: #333;';
   notice.innerHTML = 'Ready.';
 
-  const buttonStyle =
-    'color: #fff; border: none; padding: 6px 12px; border-radius: 5px; font-size: 12px; cursor: pointer;';
-  const downloadBtn = document.createElement('button');
-  downloadBtn.innerText = 'Download .txt';
-  downloadBtn.style.cssText = `${buttonStyle} background: #27ae60; display: none; margin-left: 10px; vertical-align: middle;`;
+  const downloadBtn = createButton('Download .txt', '#27ae60');
+  downloadBtn.style.cssText += ' display: none; margin-left: 10px; vertical-align: middle;';
 
   // body: inputs + scan button
   const body = document.createElement('div');
@@ -64,24 +68,7 @@ import {
   const leftCol = document.createElement('div');
   leftCol.style.cssText = 'display: flex; flex-direction: column; gap: 6px;';
 
-  function labeledInput(labelText, placeholder, value) {
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'display: flex; align-items: center; gap: 6px;';
-    const lbl = document.createElement('span');
-    lbl.innerText = labelText;
-    lbl.style.cssText = 'color: #777; font-size: 12px; width: 32px;';
-    const inp = document.createElement('input');
-    inp.type = 'text';
-    inp.placeholder = placeholder;
-    inp.value = value;
-    inp.style.cssText =
-      'border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; font-size: 12px; width: 100px; outline: none;';
-    wrap.appendChild(lbl);
-    wrap.appendChild(inp);
-    return { wrap, inp };
-  }
-
-  const { wrap: fromWrap, inp: fromInput } = labeledInput(
+  const { wrap: fromWrap, inp: fromInput } = createLabelInput(
     'From:',
     'YYYY-MM-DD',
     (() => {
@@ -90,77 +77,28 @@ import {
       return d.toISOString().slice(0, 10);
     })()
   );
-  const { wrap: toWrap, inp: toInput } = labeledInput(
+  const { wrap: toWrap, inp: toInput } = createLabelInput(
     'To:',
     'YYYY-MM-DD',
     new Date().toISOString().slice(0, 10)
   );
 
-  const actionBtn = document.createElement('button');
-  actionBtn.innerText = 'Scan Messages';
-  actionBtn.style.cssText = `${buttonStyle} background: #0084ff;`;
+  const actionBtn = createButton('Scan Messages', '#0084ff');
 
   const rightCol = document.createElement('div');
   rightCol.style.cssText =
     'display: flex; flex-direction: column; gap: 8px; min-width: 160px; padding-left: 10px;';
 
-  function settingToggle(labelText) {
-    const wrap = document.createElement('label');
-    wrap.style.cssText =
-      'display: flex; align-items: center; gap: 6px; color: #555; font-size: 12px; cursor: pointer;';
-    const inp = document.createElement('input');
-    inp.type = 'checkbox';
-    inp.checked = false;
-    inp.style.cssText = 'cursor: pointer;';
-    const text = document.createElement('span');
-    text.innerText = labelText;
-    wrap.appendChild(inp);
-    wrap.appendChild(text);
-    return { wrap, inp };
-  }
-
-  function settingToggleWithInput(labelText, inputValue) {
-    const wrap = document.createElement('div');
-    wrap.style.cssText =
-      'display: flex; align-items: center; gap: 6px; color: #555; font-size: 12px;';
-
-    const checkboxLabel = document.createElement('label');
-    checkboxLabel.style.cssText = 'display: flex; align-items: center; gap: 6px; cursor: pointer;';
-    const inp = document.createElement('input');
-    inp.type = 'checkbox';
-    inp.checked = false;
-    inp.style.cssText = 'cursor: pointer;';
-    const text = document.createElement('span');
-    text.innerText = labelText;
-    checkboxLabel.appendChild(inp);
-    checkboxLabel.appendChild(text);
-
-    const textInput = document.createElement('input');
-    textInput.type = 'text';
-    textInput.value = inputValue;
-    textInput.placeholder = inputValue;
-    textInput.style.cssText =
-      'border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; font-size: 12px; width: 110px; outline: none;';
-
-    wrap.appendChild(checkboxLabel);
-    wrap.appendChild(textInput);
-    return { wrap, inp, textInput };
-  }
-
-  const { wrap: includeCallsWrap, inp: includeCallsChk } = settingToggle('Include calls');
+  const { wrap: includeCallsWrap, inp: includeCallsChk } = createCheckboxToggle('Calls');
   const {
     wrap: anonymizeWrap,
     inp: anonymizeChk,
     textInput: anonymizeInput,
-  } = settingToggleWithInput('Anonymize as', 'Youghurt');
-  const { wrap: summaryWrap, inp: summaryChk } = settingToggle('Summary');
-  const { wrap: includeContentWrap, inp: includeContentChk } = settingToggle('Include content');
-  const { wrap: lengthWrap, inp: lengthChk } = settingToggle('Length');
-  const selectAllBtn = document.createElement('button');
-  selectAllBtn.innerText = 'All';
-  selectAllBtn.style.cssText =
-    'background: #f1f1f1; color: #333; border: 1px solid #ccc; padding: 4px 10px; border-radius: 5px; font-size: 12px; cursor: pointer;';
-  selectAllBtn.addEventListener('click', () => {
+  } = createCheckboxToggleWithInput('Anonymize as', 'Youghurt');
+  const { wrap: summaryWrap, inp: summaryChk } = createCheckboxToggle('Summary');
+  const { wrap: includeContentWrap, inp: includeContentChk } = createCheckboxToggle('Content');
+  const { wrap: lengthWrap, inp: lengthChk } = createCheckboxToggle('Length');
+  const selectAllLink = createLinkAction('All', () => {
     includeCallsChk.checked = true;
     anonymizeChk.checked = true;
     summaryChk.checked = true;
@@ -177,10 +115,10 @@ import {
   rightCol.appendChild(summaryWrap);
   rightCol.appendChild(includeContentWrap);
   rightCol.appendChild(lengthWrap);
-  rightCol.appendChild(selectAllBtn);
+  rightCol.appendChild(selectAllLink);
 
   // Start with full-info mode selected by default.
-  selectAllBtn.click();
+  selectAllLink.click();
 
   body.appendChild(leftCol);
   body.appendChild(rightCol);
@@ -189,6 +127,13 @@ import {
   panel.appendChild(instructions);
   panel.appendChild(notice);
   panel.appendChild(body);
+
+  const termsNote = document.createElement('div');
+  termsNote.style.cssText = 'padding: 6px 10px 10px; font-size: 11px; color: #777;';
+  termsNote.innerHTML =
+    'Terms: <a href="https://github.com/klipolis/fb-chat-export/blob/main/docs/terms-and-conditions.md" target="_blank" rel="noreferrer noopener">docs/terms-and-conditions.md</a>';
+  panel.appendChild(termsNote);
+
   document.body.appendChild(panel);
 
   function formatDate(raw) {

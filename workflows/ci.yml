@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      BUILD_VERSION: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -17,8 +19,6 @@ jobs:
         with:
           node-version: 26.1.0
           cache: 'pnpm'
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
+      - run: corepack enable && corepack prepare pnpm@latest --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build:ci

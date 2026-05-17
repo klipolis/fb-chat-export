@@ -57,6 +57,8 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - `demo/output-json/raw-input-metadata.json`: build metadata for raw input file stability.
 - `dist/`: generated one-file userscript output.
 - `docs/`: documentation and project notes.
+- `docs/site.md`: documentation landing page with quick start and architecture overview.
+- `docs/terms-and-conditions.md`
 - `CHANGELOG.md`: release history and version notes.
 - `tests/`: automated tests, fixtures, and validation scripts.
 - `tests/generated-json-schema.json`: formal contract for generated preview JSON exports.
@@ -109,12 +111,10 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - Keep `dist/`, `demo/output-html/`, and `demo/output-json/` committed to source control.
 - Keep `.skills/` for planning and requirements.
 
-## Suggestions
+## How to contribute
 
-- Add regression tests for shared message classification, content-type/length heuristics, and relative date parsing.
-- Add browser DOM regression tests for userscript message parsing and TXT line formatting.
-- Add golden snapshot validation for `content-on` and `content-off` TXT export outputs.
-- Add a CI validation step that checks `dist/userscript.js` header, runtime TXT schema config, and release changelog sync.
-- Use `BUILD_VERSION` in CI to emit deterministic `dist/userscript.js` `@version` values while leaving `package.json` unchanged.
-- Add `pnpm run validate:dist` to verify the generated userscript bundle and its userscript header.
-- Consider adding `pnpm run build:clean` or a small maintenance script to ensure expected data folder layout.
+- Follow `CONTRIBUTING.md` for contribution guidelines.
+- Use the GitHub issue and PR templates in `.github/` for new reports and feature requests.
+- Keep the project focused on personal summary use and avoid publishing private chat content.
+- Use `pnpm run lint:docs`, `pnpm run link:docs`, and `pnpm run format:check` before submitting docs or formatting changes.
+

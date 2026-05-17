@@ -1,5 +1,16 @@
 # Messenger Chat Exporter � Changelog
 
+## v5.2.1 (2026-05-17)
+
+### Added
+
+- Added regression tests for shared message classification, content-type/length heuristics, and relative date parsing.
+- Added browser DOM regression tests for userscript message parsing and TXT line formatting.
+- Added golden snapshot validation for `content-on` and `content-off` TXT export outputs.
+- Added CI release validation to verify `dist/userscript.js` header, runtime TXT schema contract, and changelog sync.
+- Enabled `BUILD_VERSION` in CI to generate deterministic `dist/userscript.js` `@version` values while keeping `package.json` unchanged.
+- Added `pnpm run validate:dist` and `pnpm run build:clean` to project scripts for dist validation and data-layout maintenance.
+
 ## v5.2.0 (2026-05-16)
 
 ### Changed

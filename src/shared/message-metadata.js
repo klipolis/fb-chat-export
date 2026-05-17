@@ -94,6 +94,13 @@ function extractPinnedLocationLink(text) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationText)}`;
 }
 
+function isLinkOnlyText(text, link) {
+  if (!text || !link) return false;
+  const normalizedText = normalizeLabel(text).replace(/[.,;:!?]+$/g, '').trim();
+  const normalizedLink = normalizeLabel(link).replace(/[.,;:!?]+$/g, '').trim();
+  return normalizedText === normalizedLink;
+}
+
 function chooseRule(fileName, ariaLabel) {
   const loweredFile = String(fileName || '').toLowerCase();
   const loweredLabel = String(ariaLabel || '').toLowerCase();
@@ -214,7 +221,13 @@ function getContentMeta({
     contentText = 'message unsent';
   } else if (type === 'link') {
     if ((isLinkTextFile || isLinkTextLikeLive) && normalizedText) {
-      contentText = resolvedLink ? `${resolvedLink} ${normalizedText}` : normalizedText;
+      if (linkOnlyText) {
+        contentText = resolvedLink || normalizedText;
+      } else if (resolvedLink && normalizedText.includes(resolvedLink)) {
+        contentText = normalizedText;
+      } else {
+        contentText = resolvedLink ? `${resolvedLink} ${normalizedText}` : normalizedText;
+      }
     } else {
       contentText = resolvedLink || 'link';
     }
@@ -231,8 +244,9 @@ function getContentMeta({
   const noLengthTypes = new Set(['image', 'missed-call', 'unsent', ...timedTypes]);
 
   const duration = timedTypes.has(type) ? rawDuration : null;
+  const linkOnlyText = type === 'link' && Boolean(resolvedLink) && isLinkOnlyText(normalizedText, resolvedLink);
   const linkHasTextContent =
-    type === 'link' && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText);
+    type === 'link' && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
   const shouldOmitLength = noLengthTypes.has(type) || (type === 'link' && !linkHasTextContent);
   const contentLength = shouldOmitLength ? undefined : `${contentText.length} chars`;
 

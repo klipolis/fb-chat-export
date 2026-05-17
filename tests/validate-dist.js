@@ -6,7 +6,7 @@ const { spawnSync } = require('child_process');
 const baseDir = path.resolve(__dirname, '..');
 const distPath = path.join(baseDir, 'dist', 'userscript.js');
 
-const result = spawnSync('node', ['src/frontend/build-frontend.js'], {
+const result = spawnSync('node', ['src/frontend/build.js'], {
   cwd: baseDir,
   encoding: 'utf8',
 });

@@ -21,12 +21,14 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-22.04
+    env:
+      BUILD_VERSION: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v5
         with:
           node-version: '26'
           cache: 'pnpm'
-      - run: corepack enable
+      - run: corepack enable && corepack prepare pnpm@latest --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build:ci

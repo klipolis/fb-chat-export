@@ -30,6 +30,12 @@ Thank you for contributing! This repository uses `pnpm` and standard Node.js too
 - Use `pnpm run release:check` to validate release readiness.
 - Tag the release with `pnpm run release:tag`.
 
+## Usage and privacy
+
+This project is intended for documenting personal Facebook Messenger interactions and generating personal summaries.
+Do not use this tool to publish or distribute private chat conversations without consent.
+Always respect Facebook's Terms of Service: https://www.facebook.com/legal/terms
+
 ## Repository layout
 
 - `src/` — application source and build scripts.

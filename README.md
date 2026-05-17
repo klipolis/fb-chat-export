@@ -29,9 +29,13 @@ pnpm run build:ci
 - `src/` - project source code.
 - `tests/` - automated tests and validation.
 - `docs/` - extended documentation and process notes.
+- `docs/site.md` - documentation landing page with quick start and architecture overview.
+- `docs/terms-and-conditions.md`
 - `demo/` - structured raw input and generated output artifacts.
 - `dist/` - generated userscript bundle.
 
 ## More documentation
 
-See `docs/README.md` for full developer and user guidance.
+- See `docs/README.md` for developer and user guidance.
+- See `docs/site.md` for a documentation landing page and architecture overview.
+- See `docs/terms-and-conditions.md`.

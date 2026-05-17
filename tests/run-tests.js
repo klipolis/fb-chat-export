@@ -259,7 +259,7 @@ function testBrowserExportDomRegression() {
 
 function testUserScriptBuildDist() {
   const baseDir = path.join(__dirname, '..');
-  const buildResult = childProcess.spawnSync('node', ['src/frontend/build-frontend.js'], {
+  const buildResult = childProcess.spawnSync('node', ['src/frontend/build.js'], {
     cwd: baseDir,
     encoding: 'utf8',
   });

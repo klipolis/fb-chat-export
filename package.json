@@ -5,7 +5,7 @@
   "packageManager": "pnpm@8.10.0",
   "scripts": {
     "build:server": "node src/build-server.js",
-    "build:frontend": "node src/build-frontend.js",
+    "build:frontend": "node src/build.js",
     "build:preview": "node src/server/build-preview.js",
     "build:clean": "node src/build-clean.js",
     "create:nodes": "node src/shared/create-nodes.js",

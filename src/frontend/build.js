@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const { build } = require('esbuild');
-const { version: projectVersion } = require('../../../package.json');
+const { version: projectVersion } = require('../../package.json');
 
-const sourcePath = path.resolve(__dirname, '..', 'src', 'index.js');
+const sourcePath = path.resolve(__dirname, 'src', 'index.js');
 const distDir = path.resolve(__dirname, '..', '..', 'dist');
 const outputPath = path.join(distDir, 'userscript.js');
 const relOutputPath = './dist/userscript.js';

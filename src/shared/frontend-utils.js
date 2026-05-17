@@ -49,5 +49,5 @@ export function formatExportFileName() {
     .replace(/[^a-z0-9]/g, '')
     .slice(0, 3)
     .padEnd(3, '_');
-  return `fb-chats-export-${shortName}.txt`;
+  return `chat-export-${shortName}.txt`;
 }

@@ -22,8 +22,9 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '26'
-      - run: corepack enable
+      - run: corepack enable && corepack prepare pnpm@latest --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm run lint:docs
       - run: pnpm run link:docs
-      - run: echo "Docs-only validation complete: markdown lint and link check passed."
+      - run: |
+          echo 'Docs-only validation complete: markdown lint and link check passed.'
