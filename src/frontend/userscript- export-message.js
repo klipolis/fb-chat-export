@@ -7,9 +7,11 @@
 // @grant        none
 // ==/UserScript==
 
-import { getContentMeta } from '../shared/message-metadata.js';
+import { getContentMeta, normalizeDuration } from '../shared/message-metadata.js';
 import { parseAriaLabel, normalizeDateToIso } from '../shared/aria-label-parser.js';
 import { buildUserscriptSummary } from '../shared/userscript-summary.js';
+import { formatExportHeader, formatLine } from '../shared/export-formatter.js';
+import { parseLocalDate, resolveRelativeDate, getDisplayPersonName, formatExportFileName } from '../shared/frontend-utils.js';
 
 (function () {
     'use strict';
@@ -158,15 +160,6 @@ import { buildUserscriptSummary } from '../shared/userscript-summary.js';
     panel.appendChild(body);
     document.body.appendChild(panel);
 
-    function parseLocalDate(str) {
-        const m = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-        return m ? new Date(+m[1], +m[2] - 1, +m[3]) : NaN;
-    }
-
-    function resolveRelativeDate(raw) {
-        return normalizeDateToIso(raw) || raw;
-    }
-
     function formatDate(raw) {
         const d = new Date(raw);
         if (isNaN(d)) return raw;
@@ -175,49 +168,7 @@ import { buildUserscriptSummary } from '../shared/userscript-summary.js';
         const dd = String(d.getDate()).padStart(2, '0');
         const hh = String(d.getHours()).padStart(2, '0');
         const min = String(d.getMinutes()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd} - ${hh}:${min}`;
-    }
-
-    function sanitizeFileNamePart(value) {
-        const normalized = String(value || '')
-            .trim()
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '');
-        return normalized.slice(0, 20) || 'chat';
-    }
-
-    function getConversationName() {
-        const title = document.title || '';
-        const cleaned = title
-            .replace(/\s*[|\-•]\s*messenger.*$/i, '')
-            .replace(/\s*messenger\s*$/i, '')
-            .trim();
-        return cleaned || 'chat';
-    }
-
-    function getDisplayPersonName() {
-        const name = getConversationName();
-        const parts = name
-            .split(/\s*(?:,|&|\band\b|\+|\/)\s*/i)
-            .map(part => part.trim())
-            .filter(Boolean);
-        const firstNonYou = parts.find(part => !/^you$/i.test(part));
-        if (firstNonYou) return firstNonYou;
-
-        const withoutYou = name
-            .replace(/\byou\b/ig, '')
-            .replace(/\s{2,}/g, ' ')
-            .trim();
-        return withoutYou || 'chat';
-    }
-
-    function formatExportFileName(count, fromLabel, toLabel) {
-        const base = sanitizeFileNamePart(getConversationName());
-        const shortName = base.replace(/[^a-z0-9]/g, '').slice(0, 3).padEnd(3, '_');
-        const fromPart = sanitizeFileNamePart(fromLabel || 'start');
-        const toPart = sanitizeFileNamePart(toLabel || 'end');
-        return `fb-chats-${shortName}-${count}-${fromPart}-${toPart}.txt`;
+        return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
     }
 
     function extractMessageParts(el) {
@@ -252,6 +203,7 @@ import { buildUserscriptSummary } from '../shared/userscript-summary.js';
             type: contentMeta.type,
             isCall: contentMeta.isCall,
             isImage: contentMeta.isImage,
+            duration: contentMeta.duration,
             contentLength: contentMeta.contentLength
         };
     }
@@ -291,14 +243,16 @@ import { buildUserscriptSummary } from '../shared/userscript-summary.js';
             document.querySelectorAll('[aria-roledescription="message"]').forEach(el => {
                 const key = el.getAttribute('aria-label');
                 if (!key || collected.has(key)) return;
-                const { rawDate, sender, text, type, isCall, isImage, contentLength } = extractMessageParts(el);
+                const { rawDate, sender, text, type, isCall, isImage, duration, contentLength } = extractMessageParts(el);
                 if (!rawDate || !sender) return;
 
                 const timeEl = el.querySelector('time[datetime]');
                 const resolvedRaw = timeEl ? timeEl.getAttribute('datetime') : resolveRelativeDate(rawDate);
                 const msgDate = new Date(resolvedRaw);
                 const displayDate = formatDate(resolvedRaw);
-                const authorLabel = sender === 'You' && anonymizeChk.checked ? (anonymizeInput.value.trim() || '[    ]') : sender;
+                const authorLabel = anonymizeChk.checked && String(sender).toLowerCase() === 'you'
+                    ? (anonymizeInput.value.trim() || 'Youghurt')
+                    : sender;
                 const callMinutes = (() => {
                     const m = el.innerText.match(/(\d+)\s*min/i);
                     return m ? Number(m[1]) : 0;
@@ -310,13 +264,19 @@ import { buildUserscriptSummary } from '../shared/userscript-summary.js';
                     return;
                 }
                 if (toDate && !isNaN(msgDate) && msgDate > toDate) return;
-                let finalText = text;
-                const lengthLabel = typeof contentLength === 'number' ? `${contentLength} chars` : contentLength;
-                if (!includeContentChk.checked) {
-                    finalText = (type === 'image' || type === 'unsent' || type === 'link') ? type : `${type} (${lengthLabel})`;
-                } else if (lengthChk.checked && type !== 'image' && type !== 'unsent' && type !== 'link') {
-                    finalText = `${text} (${lengthLabel})`;
-                }
+                const lineEntry = {
+                    fileType: type,
+                    semanticType: type,
+                    dateText: displayDate,
+                    sender: authorLabel,
+                    duration,
+                    content: text,
+                    contentLength,
+                };
+                const finalLine = formatLine(lineEntry, {
+                    includeContent: includeContentChk.checked,
+                    includeLength: lengthChk.checked
+                });
                 collected.set(key, {
                     ts: isNaN(msgDate) ? 0 : msgDate.getTime(),
                     sender: authorLabel,
@@ -325,7 +285,8 @@ import { buildUserscriptSummary } from '../shared/userscript-summary.js';
                     isCall,
                     isImage,
                     callMinutes,
-                    line: `[${displayDate}] ${authorLabel}: ${finalText}\n`
+                    line: finalLine,
+                    exportEntry: lineEntry
                 });
             });
         }
@@ -405,10 +366,12 @@ import { buildUserscriptSummary } from '../shared/userscript-summary.js';
                 }
 
                 const summaryText = summaryChk.checked
-                    ? buildUserscriptSummary(sortedEntries)
+                    ? buildUserscriptSummary(sortedEntries, { useMessageLabel: true })
                     : '';
+                const messageTypes = Array.from(new Set(sortedEntries.map(entry => entry.type).filter(Boolean))).sort();
+                const headerText = formatExportHeader({ method: 'browser', messageTypes });
 
-                const blob = new Blob([summaryText + messages.join('')], { type: 'text/plain' });
+                const blob = new Blob([headerText + summaryText + messages.join('')], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
 
                 const fromLabel = fromInput.value.trim() || 'start';
@@ -418,7 +381,7 @@ import { buildUserscriptSummary } from '../shared/userscript-summary.js';
                     ? `${(elapsedMs / 1000).toFixed(1)} seconds`
                     : `${(elapsedMs / 60000).toFixed(2)} minutes`;
                 const displayPersonName = getDisplayPersonName();
-                const fileName = formatExportFileName(messages.length, fromLabel, toLabel);
+                const fileName = formatExportFileName();
                 notice.textContent = `Done: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
                 notice.appendChild(downloadBtn);
                 downloadBtn.style.display = '';

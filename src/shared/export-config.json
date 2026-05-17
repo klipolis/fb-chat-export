@@ -1,7 +1,4 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Generated TXT Export Schema",
-  "description": "Schema and regex rules for validating generated server TXT exports.",
   "method": "server",
   "messageTypes": [
     "audio-call",

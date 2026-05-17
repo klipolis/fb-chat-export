@@ -1,6 +1,6 @@
 ﻿# Messenger Chat Exporter — Changelog
 
-## v5.1.2 (2026-05-16)
+## v5.2.0 (2026-05-16)
 
 ### Changed
 - Added a shared TXT summary concept contract in `tests/generated-txt-schema.json` and reused it in both server and userscript summary generation.
@@ -16,6 +16,16 @@
 - Preserved original raw duration text in JSON `raw_meta.duration` while keeping normalized duration fields for output display.
 - Added userscript download anti-double-click protection by disabling the download button for 10 seconds after click.
 - Simplified userscript completion notice to minimal ready-state details (name, date interval, elapsed time).
+
+### Added
+- Added ESLint validation and a `pnpm run lint` script for JavaScript syntax and quality checks.
+- Added `pnpm run audit` for dependency security scanning.
+- Added `pnpm run release:check` and `pnpm run release:tag` to validate release state and create version tags consistently.
+- Added a docs-only GitHub Actions workflow and configured the main CI workflow to skip docs/planning-only changes.
+
+### Changed
+- Updated GitHub Actions validation to use `pnpm install --frozen-lockfile` and pnpm caching.
+- Updated documentation to describe CI-aligned `pnpm run build:ci`, docs-only workflow behavior, and reproducible install practices.
 
 ## v5.1.1 (2026-05-16)
 

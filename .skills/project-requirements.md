@@ -39,4 +39,6 @@ This file now serves as a central index for split requirement documents.
 - Keep anonymized self sender output as `Youghurt` in final exports.
 - Keep generated `dist/`, `Data-output-html/`, and `Data-output-json/` artifacts in source control.
 - Keep build-specific `dist/userscript.js` versioning separate from `package.json` using `BUILD_VERSION`.
+- Use minor version bumps for release-level changelog entries that contain feature or contract updates.
+- Keep `package.json` version aligned with the topmost changelog release heading.
 - Update changelog entries for every new helper or export schema change.

@@ -3,8 +3,7 @@ function formatDayKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
-const txtSchema = require('../../tests/generated-txt-schema.json');
-const summaryConcept = txtSchema.summaryConcept || {};
+const { summaryConcept } = require('./export-config.json');
 const TOTAL_SUMMARY_TITLE = summaryConcept.totalSummaryTitle || 'Total Summary';
 const ROUGH_PREFIX = summaryConcept.roughPrefix || '~';
 const PERSON_SUMMARY_SUFFIX = summaryConcept.personSummarySuffix || ' Summary';
@@ -152,19 +151,36 @@ function buildUserscriptSummary(entries = [], options = {}) {
   if (!entries.length) return '';
 
   const summary = buildUserscriptSummaryData(entries, options);
+  const useMessageLabel = Boolean(options.useMessageLabel);
+  const totalMessageLabel = useMessageLabel
+    ? summary.total.messages === 1 ? 'message' : 'messages'
+    : summary.total.messages === 1 ? 'post' : 'posts';
+  const totalDayLabel = useMessageLabel
+    ? summary.total.days === 1 ? 'day' : 'days'
+    : 'days';
+
+  const roughTextLabel = 'text;';
   const detailLines = [
     summary.total.title,
-    `${summary.total.messages} ${summary.total.messages === 1 ? 'post' : 'posts'} / ${summary.total.days} ${summary.total.days === 1 ? 'day' : 'days'}`,
-    `${ROUGH_PREFIX} ${summary.total.rough.text} text messages;`,
+    `${summary.total.messages} ${totalMessageLabel} / ${summary.total.days} ${totalDayLabel}`,
+    `${ROUGH_PREFIX} ${summary.total.rough.text} ${roughTextLabel}`,
     `${ROUGH_PREFIX} ${summary.total.rough.images} images`,
     `${ROUGH_PREFIX} ${summary.total.rough.calls} calls ${summary.total.rough.callMinutes} mins`,
     ''
   ];
 
   summary.participants.forEach((participant) => {
+    const participantMessageLabel = useMessageLabel
+      ? participant.messages === 1 ? 'message' : 'messages'
+      : participant.messages === 1 ? 'post' : 'posts';
+    const participantDayLabel = useMessageLabel
+      ? participant.days === 1 ? 'day' : 'days'
+      : 'days';
+
+    const participantRoughTextLabel = 'text;';
     detailLines.push(participant.title);
-    detailLines.push(`${participant.messages} ${participant.messages === 1 ? 'post' : 'posts'} / ${participant.days} ${participant.days === 1 ? 'day' : 'days'}`);
-    detailLines.push(`${ROUGH_PREFIX} ${participant.rough.text} text messages;`);
+    detailLines.push(`${participant.messages} ${participantMessageLabel} / ${participant.days} ${participantDayLabel}`);
+    detailLines.push(`${ROUGH_PREFIX} ${participant.rough.text} ${participantRoughTextLabel}`);
     detailLines.push(`${ROUGH_PREFIX} ${participant.rough.images} images`);
     detailLines.push(`${ROUGH_PREFIX} ${participant.rough.calls} calls ${participant.rough.callMinutes} mins`);
     detailLines.push('');

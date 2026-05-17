@@ -76,14 +76,24 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 
 - Open the project in VS Code and use the terminal in `support/`.
 - Run `nvm use` in the `support/` folder to ensure the correct Node version from `.nvmrc`.
-- Run `pnpm install` once after cloning the repo.
+- Run `pnpm install --frozen-lockfile` once after cloning the repo.
 - Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, build data preview JSON, and generate a text export in `Data-output-txt/`.
 - Run `pnpm run build:frontend` to emit the built userscript into `dist/userscript.js`.
+- The browser export now writes a stable download file name such as `fb-chats-export-<shortname>.txt`.
+- Run `pnpm run validate:dist` to verify the generated userscript header and versioned dist bundle.
+- Run `pnpm run lint` to verify JavaScript style and catch syntax issues early.
+- Run `pnpm run audit` to check dependency security status.
 - `build:server` now runs non-interactively by default and uses `ANONYMIZE_RAW=true` when set.
-- Use `pnpm run build:ci` to run the full build in CI mode.
+- Use `pnpm run build:ci` to run the full CI-aligned build, including linting, build, and validation.
 - Use `pnpm run build:ci:frontend` to run only the frontend build in CI mode.
 - Set `ANONYMIZE_RAW=true` to anonymize raw chat names during server builds.
 - Use `BUILD_VERSION=<build-id>` with `pnpm run build:frontend` to generate a build-specific userscript version without updating `package.json`.
+- Use `pnpm run release:check` to verify changelog, schema, and dist sync before tagging.
+- Use `pnpm run release:tag` to validate and tag the current package version automatically.
+
+> The full CI workflow skips docs-only changes (`docs/**`, `README.md`, `CHANGELOG.md`, `.skills/**`) so the build only runs when actual code or schema changes are present.
+>
+> Prefer GitHub/CI builds over local builds because CI builds run in a clean, consistent environment, catch dependency and environment drift early, and ensure the same generated artifacts are reproducible for release verification.
 - Run `pnpm run build-preview` to generate data preview JSON directly from optimized HTML.
 - Run `pnpm run build:clean` to clear generated build artifacts while preserving raw inputs.
 - Run `pnpm run create:nodes` for lower-level preview export debugging or custom workflows.
@@ -95,6 +105,9 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 ## Suggestions
 
 - Add regression tests for shared message classification, content-type/length heuristics, and relative date parsing.
-- Add a CI validation step that checks `dist/userscript.js` header version, folder schema (`Data-input-html-raw/`, `Data-output-html/`, `Data-output-json/`), and package version stability.
+- Add browser DOM regression tests for userscript message parsing and TXT line formatting.
+- Add golden snapshot validation for `content-on` and `content-off` TXT export outputs.
+- Add a CI validation step that checks `dist/userscript.js` header, runtime TXT schema config, and release changelog sync.
 - Use `BUILD_VERSION` in CI to emit deterministic `dist/userscript.js` `@version` values while leaving `package.json` unchanged.
+- Add `pnpm run validate:dist` to verify the generated userscript bundle and its userscript header.
 - Consider adding `pnpm run build:clean` or a small maintenance script to ensure expected data folder layout.

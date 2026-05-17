@@ -28,7 +28,7 @@ function escapeRegExp(value) {
 
 function anonymizeChatNames(html) {
   const normalizeName = (name) => name.trim().replace(/\s+/g, ' ');
-  const isValidName = (name) => /^[A-Za-z][A-Za-z .'\-]{0,80}$/i.test(name)
+  const isValidName = (name) => /^[A-Za-z][A-Za-z .' -]{0,80}$/i.test(name)
     && !/\d/.test(name)
     && name.split(/\s+/).length <= 3;
   const extractCandidateNames = (text) => {

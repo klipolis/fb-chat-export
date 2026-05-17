@@ -93,7 +93,7 @@ function buildTextExport(files, options = {}) {
     method: 'server',
     messageTypes: files.map(fileName => path.parse(fileName).name)
   });
-  const summaryText = options.includeSummary ? formatSummarySection(sorted) : '';
+  const summaryText = options.includeSummary ? formatSummarySection(sorted, { useMessageLabel: options.useMessageLabel }) : '';
   return buildExportText(lines, `${headerText}${summaryText}`);
 }
 
@@ -107,11 +107,12 @@ function writeTextExports(files) {
     method: 'server',
     messageTypes: files.map(fileName => path.parse(fileName).name)
   });
-  const summaryText = formatSummarySection(sortedEntries);
-  const contentOn = buildExportText(contentOnLines, `${headerText}${summaryText}`);
+  const summaryTextForContentOn = formatSummarySection(sortedEntries, { useMessageLabel: true });
+  const summaryTextForSummaryOnly = formatSummarySection(sortedEntries);
+  const contentOn = buildExportText(contentOnLines, `${headerText}${summaryTextForContentOn}`);
   const contentOff = buildExportText(contentOffLines, headerText);
 
-  const summaryOnly = buildExportText([], `${headerText}${summaryText}`);
+  const summaryOnly = buildExportText([], `${headerText}${summaryTextForSummaryOnly}`);
 
   const onPath = path.join(exportDir, formatExportFileName('content-on'));
   const offPath = path.join(exportDir, formatExportFileName('content-off'));

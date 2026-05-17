@@ -24,7 +24,7 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 - For dash-form labels, keep conversational leading tokens (for example `Yep`) in message text rather than appending them to sender names.
 
 ## Content Rules
-- Text messages should preserve readable end-user content.
+- text should preserve readable end-user content.
 - Link messages should emit canonical URL content when available; fall back to `link` only when no URL can be resolved.
 - Pinned-location link previews without direct `href` should emit a canonical maps search URL derived from the location text.
 - Redirected Facebook/Messenger links should be decoded to original target URLs using known redirect query parameters when available.
@@ -39,7 +39,7 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 - Missed-call items should not fabricate a duration field.
 
 ## Length Rules
-- Text messages may expose a character length.
+- text may expose a character length.
 - Audio, video, voice, image, link, deleted, and missed-call exports should omit length unless a specific rule says otherwise.
 - Length should never override the primary content meaning.
 

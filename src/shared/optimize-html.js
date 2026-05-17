@@ -26,7 +26,7 @@ function removeCallActionNodes(html) {
 }
 
 function removeDuplicateAccessibilityLabels(html) {
-  return html.replace(/<([a-zA-Z0-9]+)[^>]*aria-label="(?:Message actions|Open Attachment|Enter, Message sent[^\"]*)"[^>]*>[\s\S]*?<\/\1>/gi, '');
+  return html.replace(/<([a-zA-Z0-9]+)[^>]*aria-label="(?:Message actions|Open Attachment|Enter, Message sent[^"]*)"[^>]*>[\s\S]*?<\/\1>/gi, '');
 }
 
 function removeTimeNodes(html) {

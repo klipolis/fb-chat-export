@@ -1,6 +1,6 @@
 {
   "name": "fb-chat-exporter",
-  "version": "5.0.0",
+  "version": "5.2.0",
   "private": true,
   "packageManager": "pnpm@8.10.0",
   "scripts": {
@@ -11,19 +11,24 @@
     "create:nodes": "node src/shared/create-nodes.js",
     "validate:generated-json": "node tests/validate-generated-json.js",
     "validate:generated-txt": "node tests/validate-generated-txt.js",
-    "test": "node tests/run-tests.js && pnpm run validate:generated-json && pnpm run validate:generated-txt",
-    "lint": "pnpm run test",
+    "validate:dist": "node tests/validate-dist.js",
+    "validate:release": "node tests/validate-release.js",
+    "test": "node tests/run-tests.js && pnpm run validate:generated-json && pnpm run validate:generated-txt && pnpm run validate:dist && pnpm run validate:release",
+    "lint": "eslint --quiet \"src/**/*.js\" \"tests/**/*.js\"",
+    "audit": "pnpm audit --audit-level=moderate",
+    "release:check": "pnpm run validate:release",
+    "release:tag": "pnpm run release:check && node -e \"require('child_process').execSync('git tag v'+require('./package.json').version,{stdio:'inherit'})\"",
     "build": "pnpm run build:server && pnpm run build:frontend && pnpm run test",
-    "build:ci": "CI=true pnpm run build",
-    "build:ci:server": "CI=true pnpm run build:server",
-    "build:ci:frontend": "CI=true pnpm run build:frontend"
+    "build:ci": "cross-env CI=true pnpm run lint && cross-env CI=true pnpm run build",
+    "build:ci:server": "cross-env CI=true pnpm run build:server",
+    "build:ci:frontend": "cross-env CI=true pnpm run build:frontend"
   },
   "engines": {
     "node": "^26.1.0",
     "pnpm": ">=8.10.0"
   },
-  "devDependencies": {
-    "esbuild": "^0.19.4",
-    "jsdom": "^22.1.0"
+  "devDependencies": {    "cross-env": "^7.0.3",    "esbuild": "^0.19.4",
+    "jsdom": "^22.1.0",
+    "eslint": "^8.57.0"
   }
 }

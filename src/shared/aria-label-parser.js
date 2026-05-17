@@ -18,6 +18,16 @@ function parseAriaLabel(ariaLabel) {
     return { sender, message };
   };
 
+  const findValidDatePrefix = (text) => {
+    const parts = text.split(',').map(part => part.trim()).filter(Boolean);
+    let candidate = '';
+    for (let i = 0; i < Math.min(parts.length, 3); i += 1) {
+      candidate = candidate ? `${candidate}, ${parts[i]}` : parts[i];
+      if (normalizeDateToIso(candidate)) return candidate;
+    }
+    return null;
+  };
+
   match = label.match(/^At\s+(.+?),\s*([A-Za-z]+(?:\s+[A-Za-z]+){0,2})\s+[-–—]\s*([\s\S]*)$/i);
   if (match) {
     let sender = match[2].trim();
@@ -66,6 +76,19 @@ function parseAriaLabel(ariaLabel) {
 
   match = label.match(/^At\s+(.+),\s*([^:]+):\s*([\s\S]*)$/i);
   if (match) {
+    const dateValue = match[1].trim();
+    const normalizedDate = normalizeDateToIso(dateValue);
+    if (normalizedDate || findValidDatePrefix(dateValue)) {
+      return {
+        date: dateValue,
+        sender: match[2].trim(),
+        message: match[3].trim()
+      };
+    }
+  }
+
+  match = label.match(/^(.+?),\s*([^:]+):\s*([\s\S]*)$/i);
+  if (match && isValidSender(match[2])) {
     return {
       date: match[1].trim(),
       sender: match[2].trim(),

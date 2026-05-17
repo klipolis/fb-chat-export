@@ -3,15 +3,15 @@ const fs = require('fs');
 const path = require('path');
 
 const txtDir = path.join(__dirname, '..', 'Data-output-txt');
-const schemaPath = path.join(__dirname, 'generated-txt-schema.json');
+const runtimeConfig = require(path.join(__dirname, '..', 'src', 'shared', 'export-config.json'));
 
 function loadSchema() {
-  const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
-  assert.ok(schema, 'Generated TXT schema not found');
-  assert.strictEqual(typeof schema.method, 'string', 'TXT schema.method must be a string');
-  assert.ok(Array.isArray(schema.messageTypes) && schema.messageTypes.length > 0, 'TXT schema.messageTypes must be a non-empty array');
-  assert.ok(schema.patterns && typeof schema.patterns === 'object', 'TXT schema.patterns must be defined');
-  assert.ok(Array.isArray(schema.exports) && schema.exports.length > 0, 'TXT schema.exports must be a non-empty array');
+  const schema = runtimeConfig;
+  assert.ok(schema, 'Runtime TXT export config not found');
+  assert.strictEqual(typeof schema.method, 'string', 'TXT config.method must be a string');
+  assert.ok(Array.isArray(schema.messageTypes) && schema.messageTypes.length > 0, 'TXT config.messageTypes must be a non-empty array');
+  assert.ok(schema.patterns && typeof schema.patterns === 'object', 'TXT config.patterns must be defined');
+  assert.ok(Array.isArray(schema.exports) && schema.exports.length > 0, 'TXT config.exports must be a non-empty array');
   return schema;
 }
 
@@ -134,7 +134,6 @@ function validateFile(fileSchema, schema, patterns) {
 
 function run() {
   assert.ok(fs.existsSync(txtDir), `TXT output directory not found: ${txtDir}`);
-  assert.ok(fs.existsSync(schemaPath), `TXT schema file not found: ${schemaPath}`);
 
   const schema = loadSchema();
   const patterns = compilePatterns(schema);

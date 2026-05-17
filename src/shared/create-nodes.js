@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { selectors } = require('./rules');
+const { selectors, messageRules } = require('./rules');
 const { parseAriaLabel, normalizeDateToSimple } = require('./aria-label-parser');
 const { getContentMeta, normalizeDuration } = require('./message-metadata');
 
@@ -207,7 +207,7 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
       continue;
     }
 
-    const ariaLabelMatch = attrs.match(/aria-label="([^\"]+)"/i);
+    const ariaLabelMatch = attrs.match(/aria-label="([^"]+)"/i);
     const ariaLabel = ariaLabelMatch ? ariaLabelMatch[1] : '';
     const normalizedLabel = normalizeLabel(ariaLabel);
     if (/^(?:message actions|open attachment)/i.test(normalizedLabel)) {

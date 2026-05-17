@@ -1,9 +1,14 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const { JSDOM } = require('jsdom');
 
 const { normalizeDateToSimple, parseAriaLabel } = require(path.join(__dirname, '..', 'src', 'shared', 'aria-label-parser'));
+const childProcess = require('child_process');
 const { getContentMeta, normalizeDuration } = require(path.join(__dirname, '..', 'src', 'shared', 'message-metadata'));
+const { formatExportHeader, formatLine } = require(path.join(__dirname, '..', 'src', 'shared', 'export-formatter'));
+const { buildUserscriptSummary } = require(path.join(__dirname, '..', 'src', 'shared', 'userscript-summary'));
+const { buildEntriesFromDocument } = require(path.join(__dirname, '..', 'src', 'shared', 'export-text'));
 const { createOptimizedHtml } = require(path.join(__dirname, '..', 'src', 'shared', 'optimize-html'));
 const { buildAllMessageMetaMap, parseMessageNodes } = require(path.join(__dirname, '..', 'src', 'shared', 'create-nodes'));
 const { anonymizeChatNames } = require(path.join(__dirname, '..', 'src', 'shared', 'utils'));
@@ -142,6 +147,87 @@ function testGetContentMeta() {
   assert.strictEqual(videoMeta.text, 'video call');
   assert.strictEqual(videoMeta.contentLength, undefined);
   assert.strictEqual(videoMeta.duration, '31:00 mins');
+}
+
+function testBrowserExportFormatting() {
+  const header = formatExportHeader({ method: 'browser', messageTypes: ['text', 'image'] });
+  assert.ok(header.includes('Method: browser'), 'Browser header should include method browser');
+  assert.ok(header.includes('- text'), 'Browser header should list text message type');
+  assert.ok(header.includes('- image'), 'Browser header should list image message type');
+
+  const formattedLine = formatLine({
+    fileType: 'text',
+    semanticType: 'text',
+    dateText: '2026-05-17 11:00',
+    sender: 'Alpha',
+    duration: '0:20 mins',
+    content: 'Hello',
+    contentLength: 5
+  }, { includeContent: true, includeLength: true });
+
+  assert.strictEqual(formattedLine, '[2026-05-17 11:00] Alpha: text 0:20 mins 5 / Hello\n', 'Browser line formatting should include type, duration, length, and content');
+
+  const summary = buildUserscriptSummary([
+    { sender: 'Alpha', date: new Date('2026-05-17T11:00:00Z'), type: 'text', isCall: false, isImage: false, callMinutes: 0 },
+    { sender: 'Youghurt', date: new Date('2026-05-17T11:05:00Z'), type: 'image', isCall: false, isImage: true, callMinutes: 0 }
+  ], { useMessageLabel: true });
+
+  assert.ok(summary.includes('Total Summary'), 'Summary output should include Total Summary title');
+  assert.ok(summary.includes('1 message / 1 day'), 'Summary output should use message/day labels with useMessageLabel');
+  assert.ok(summary.includes('Alpha Summary'), 'Summary output should include Alpha Summary');
+  assert.ok(summary.includes('Youghurt Summary'), 'Summary output should include Youghurt Summary');
+}
+
+function testBrowserExportDomRegression() {
+  const dom = new JSDOM(`
+    <div aria-roledescription="message" aria-label="At April 17, 2026, 3:45 PM, You: Hello world">Hello world</div>
+  `);
+  const entries = buildEntriesFromDocument(dom.window.document, 'text.html');
+  assert.strictEqual(entries.length, 1, 'Should parse one message entry');
+
+  const entry = entries[0];
+  assert.strictEqual(entry.sender, 'Youghurt', 'Self-sender should be normalized to Youghurt');
+  assert.strictEqual(entry.semanticType, 'text', 'Message type should resolve to text');
+  assert.strictEqual(entry.dateText, '2026-04-17 15:45', 'Date text should be normalized to ISO-friendly format');
+  assert.strictEqual(entry.content, 'Hello world', 'Text content should be preserved');
+
+  const formattedLine = formatLine(entry, { includeContent: true, includeLength: true });
+  assert.strictEqual(formattedLine, '[2026-04-17 15:45] Youghurt: text 11 chars / Hello world\n', 'Formatted browser line should include duration, length, and content');
+}
+
+function testUserScriptBuildDist() {
+  const baseDir = path.join(__dirname, '..');
+  const buildResult = childProcess.spawnSync('node', ['src/frontend/build-frontend.js'], { cwd: baseDir, encoding: 'utf8' });
+  assert.strictEqual(buildResult.status, 0, `build-frontend failed: ${buildResult.stderr || buildResult.stdout}`);
+
+  const distPath = path.join(baseDir, 'dist', 'userscript.js');
+  assert.ok(fs.existsSync(distPath), 'dist/userscript.js should exist after build');
+  const contents = fs.readFileSync(distPath, 'utf8');
+  assert.ok(/\/\/ ==UserScript==/.test(contents), 'dist/userscript.js should contain a userscript header');
+  assert.ok(/\/\/ @version\s+/.test(contents), 'dist/userscript.js should contain a version field');
+  assert.ok(contents.length > 200, 'dist/userscript.js should not be empty');
+  assert.ok(!/contentMeta\./.test(contents), 'dist/userscript.js should not contain stale contentMeta references');
+}
+
+function testGoldenTxtSnapshots() {
+  const baseDir = path.join(__dirname, '..');
+  const actualOnPath = path.join(baseDir, 'Data-output-txt', 'fb-chats-export-content-on.txt');
+  const actualOffPath = path.join(baseDir, 'Data-output-txt', 'fb-chats-export-content-off.txt');
+  const goldenOnPath = path.join(baseDir, 'tests', 'golden', 'fb-chats-export-content-on.txt');
+  const goldenOffPath = path.join(baseDir, 'tests', 'golden', 'fb-chats-export-content-off.txt');
+
+  assert.ok(fs.existsSync(actualOnPath), 'Content-on TXT export missing for golden snapshot test');
+  assert.ok(fs.existsSync(actualOffPath), 'Content-off TXT export missing for golden snapshot test');
+  assert.ok(fs.existsSync(goldenOnPath), 'Golden snapshot for content-on TXT missing');
+  assert.ok(fs.existsSync(goldenOffPath), 'Golden snapshot for content-off TXT missing');
+
+  const actualOn = fs.readFileSync(actualOnPath, 'utf8');
+  const actualOff = fs.readFileSync(actualOffPath, 'utf8');
+  const goldenOn = fs.readFileSync(goldenOnPath, 'utf8');
+  const goldenOff = fs.readFileSync(goldenOffPath, 'utf8');
+
+  assert.strictEqual(actualOn, goldenOn, 'Content-on TXT export differs from golden snapshot');
+  assert.strictEqual(actualOff, goldenOff, 'Content-off TXT export differs from golden snapshot');
 }
 
 function validatePreviewNode(node, fileName) {
@@ -367,13 +453,13 @@ function testBuildServerTextExport() {
   assert.ok(contentOff.includes('\n---\n'), 'Content-off export summary should end with ---');
   assert.ok(contentOn.includes('\nTotal Summary\n'), 'Content-on export should include a Total Summary block when all options are enabled');
   assert.ok(/\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n/.test(contentOn), 'Content-on summary should include a total count line without prefix');
-  assert.ok(/\n~\s+\d+\s+text\s+messages;\n/.test(contentOn), 'Content-on summary should include rough text totals as ~ list items');
+  assert.ok(/\n~\s+\d+\s+text;\n/.test(contentOn), 'Content-on summary should include rough text totals as ~ list items');
   assert.ok(/\n~\s+\d+\s+images\n/.test(contentOn), 'Content-on summary should include rough image totals as ~ list items');
   assert.ok(/\n~\s+\d+\s+calls\s+\d+\s+mins\n/.test(contentOn), 'Content-on summary should include rough call totals without brackets');
   assert.ok(/\nAlpha Summary\n/.test(contentOn), 'Content-on summary should include Alpha Summary section');
   assert.ok(/\nYoughurt Summary\n/.test(contentOn), 'Content-on summary should include Youghurt Summary section');
-  assert.ok(/\nAlpha Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text\s+messages;\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d+\s+mins\n/.test(contentOn), 'Alpha Summary should mirror total summary list style');
-  assert.ok(/\nYoughurt Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text\s+messages;\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d+\s+mins\n/.test(contentOn), 'Youghurt Summary should mirror total summary list style');
+  assert.ok(/\nAlpha Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text;\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d+\s+mins\n/.test(contentOn), 'Alpha Summary should mirror total summary list style');
+  assert.ok(/\nYoughurt Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text;\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d+\s+mins\n/.test(contentOn), 'Youghurt Summary should mirror total summary list style');
 
   const rawFiles = fs.readdirSync(rawDir).filter(name => name.endsWith('.html'));
   rawFiles.forEach(fileName => {
@@ -505,6 +591,10 @@ function runTests() {
     { name: 'parseAriaLabel', fn: testParseAriaLabel },
     { name: 'anonymizeChatNames', fn: testAnonymizeChatNames },
     { name: 'parseAriaLabelSenderSplits', fn: testParseAriaLabelSenderSplits },
+    { name: 'browserExportFormatting', fn: testBrowserExportFormatting },
+    { name: 'browserExportDomRegression', fn: testBrowserExportDomRegression },
+    { name: 'userScriptBuildDist', fn: testUserScriptBuildDist },
+    { name: 'goldenTxtSnapshots', fn: testGoldenTxtSnapshots },
     { name: 'buildServerTextExport', fn: testBuildServerTextExport },
     { name: 'textExportDurationNormalization', fn: testTextExportDurationNormalization }
   ];
