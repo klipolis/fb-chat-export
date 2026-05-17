@@ -4,5 +4,5 @@ module.exports = {
   messageText: '.html-div',
   boldText: '.html-b',
   italicText: '.html-i',
-  image: '.html-img'
+  image: '.html-img',
 };

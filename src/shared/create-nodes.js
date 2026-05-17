@@ -6,9 +6,9 @@ const { getContentMeta, normalizeDuration } = require('./message-metadata');
 
 const helperDir = path.resolve(__dirname);
 const baseDir = path.resolve(helperDir, '..', '..');
-const rawDir = path.join(baseDir, 'Data-input-html-raw');
-const optimizedDir = path.join(baseDir, 'Data-output-html');
-const nodesDir = path.join(baseDir, 'Data-output-json');
+const rawDir = path.join(baseDir, 'demo/input-html-raw');
+const optimizedDir = path.join(baseDir, 'demo/output-html');
+const nodesDir = path.join(baseDir, 'demo/output-json');
 const metadataDir = path.join(helperDir, 'metadata-generated');
 
 function relativePath(p) {
@@ -61,7 +61,9 @@ function findMatchingClosingTag(html, tag, fromIndex) {
 }
 
 function normalizeLabel(text) {
-  return String(text || '').replace(/\s+/g, ' ').trim();
+  return String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function extractRawDuration(text) {
@@ -116,7 +118,9 @@ function buildMessageMetaMap(rawHtml) {
     const segmentText = extractPlainText(segment);
     const hrefMatch = segment.match(/href="([^"]+)"/i);
     const timerMatch = segment.match(/role="timer"[^>]*>([^<]+)</i);
-    const duration = timerMatch ? normalizeLabel(timerMatch[1].trim()) : extractRawDuration(segmentText);
+    const duration = timerMatch
+      ? normalizeLabel(timerMatch[1].trim())
+      : extractRawDuration(segmentText);
     const metadata = {};
 
     if (hrefMatch) metadata.link = hrefMatch[1];
@@ -138,8 +142,8 @@ function buildAllMessageMetaMap(rawDir) {
   const metaMap = new Map();
   if (!fs.existsSync(rawDir)) return metaMap;
 
-  const rawFiles = fs.readdirSync(rawDir).filter(name => name.endsWith('.html'));
-  rawFiles.forEach(fileName => {
+  const rawFiles = fs.readdirSync(rawDir).filter((name) => name.endsWith('.html'));
+  rawFiles.forEach((fileName) => {
     const rawHtml = fs.readFileSync(path.join(rawDir, fileName), 'utf8');
     const fileMeta = buildMessageMetaMap(rawHtml);
     fileMeta.forEach((meta, ariaLabel) => {
@@ -156,13 +160,15 @@ function chooseRule(fileName, ariaLabel) {
   const loweredFile = fileName.toLowerCase();
   const loweredLabel = ariaLabel.toLowerCase();
 
-  const fileRule = messageRules.find(rule => rule.matchFile && rule.matchFile.test(loweredFile));
+  const fileRule = messageRules.find((rule) => rule.matchFile && rule.matchFile.test(loweredFile));
   if (fileRule) return fileRule;
 
-  const labelRule = messageRules.find(rule => rule.matchLabel && rule.matchLabel.test(loweredLabel));
+  const labelRule = messageRules.find(
+    (rule) => rule.matchLabel && rule.matchLabel.test(loweredLabel)
+  );
   if (labelRule) return labelRule;
 
-  return messageRules.find(rule => rule.type === 'text') || messageRules[0];
+  return messageRules.find((rule) => rule.type === 'text') || messageRules[0];
 }
 
 function extractDate(ariaLabel) {
@@ -184,7 +190,6 @@ function formatLocalDateTime(date = new Date()) {
   return `${year}.${month}.${day} ${hours}:${minutes}`;
 }
 
-
 function extractLink(text) {
   const urlMatch = text.match(/https?:\/\/[^"]+/i);
   return urlMatch ? urlMatch[0] : null;
@@ -199,7 +204,7 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
   const nodes = [];
   const messageTagRe = /<([a-zA-Z0-9]+)([^>]*)>/gi;
   let match;
-  const route = path.join('Data-output-html', fileName).replace(/\\/g, '/');
+  const route = path.join('demo/output-html', fileName).replace(/\\/g, '/');
 
   while ((match = messageTagRe.exec(html)) !== null) {
     const attrs = match[2];
@@ -230,7 +235,7 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
     const senderAlt = parsedLabel.sender ? parsedLabel.sender.trim() : '';
     const imageTags = Array.from(rawSegment.matchAll(/<img\b[^>]*>/gi));
     // Only count as image if there is an <img> that is NOT a sender avatar (alt is not a person name and not empty)
-    const hasImage = imageTags.some(tag => {
+    const hasImage = imageTags.some((tag) => {
       const altMatch = tag[0].match(/alt="([^"]*)"/i);
       const altText = altMatch ? altMatch[1].trim() : '';
       // If alt is missing or empty, treat as possible image (could be sticker, etc)
@@ -265,14 +270,14 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
       hasImage,
       hasLink,
       hasPlayButton,
-      timerText: rawMeta.duration || ''
+      timerText: rawMeta.duration || '',
     });
 
     const preview = {
       original_date: originalDate,
       optimised_date: simpleDate || originalDate,
       content: contentMeta.text,
-      content_type: contentMeta.type
+      content_type: contentMeta.type,
     };
 
     if (contentMeta.duration !== undefined && contentMeta.duration !== null) {
@@ -286,7 +291,7 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
     const locate = {
       message: selectors.message,
       label: selectors.messageLabel,
-      textContent: selectors.messageText
+      textContent: selectors.messageText,
     };
     if (contentMeta.voiceDurationSource) {
       locate.voice_duration_source = contentMeta.voiceDurationSource;
@@ -296,7 +301,7 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
       title: contentMeta.type,
       timestamp,
       locate,
-      data_preview: preview
+      data_preview: preview,
     });
 
     messageTagRe.lastIndex = end;
@@ -308,22 +313,28 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
 function createNodeJson(fileName, metaMap, exportDate) {
   const html = fs.readFileSync(path.join(optimizedDir, fileName), 'utf8');
   const nodes = parseMessageNodes(html, fileName, exportDate, metaMap);
-  const route = path.join('Data-output-html', fileName).replace(/\\/g, '/');
-  const uniqueNodes = [...new Map(nodes.map(node => [node.data_preview.content, node])).values()];
+  const route = path.join('demo/output-html', fileName).replace(/\\/g, '/');
+  const uniqueNodes = [...new Map(nodes.map((node) => [node.data_preview.content, node])).values()];
   const node = uniqueNodes.length ? uniqueNodes[0] : null;
   const output = {
-    title: node ? (node.data_preview.content_type || path.parse(fileName).name) : path.parse(fileName).name,
-    locate: node ? node.locate : {
-      message: selectors.message,
-      label: selectors.messageLabel,
-      textContent: selectors.messageText
-    },
-    data_preview: node ? node.data_preview : {
-      original_date: null,
-      optimised_date: exportDate,
-      content: null,
-      content_type: 'unknown'
-    }
+    title: node
+      ? node.data_preview.content_type || path.parse(fileName).name
+      : path.parse(fileName).name,
+    locate: node
+      ? node.locate
+      : {
+          message: selectors.message,
+          label: selectors.messageLabel,
+          textContent: selectors.messageText,
+        },
+    data_preview: node
+      ? node.data_preview
+      : {
+          original_date: null,
+          optimised_date: exportDate,
+          content: null,
+          content_type: 'unknown',
+        },
   };
 
   const targetPath = path.join(nodesDir, `${path.parse(fileName).name}.json`);
@@ -334,7 +345,7 @@ function createNodeJson(fileName, metaMap, exportDate) {
 function writeExportMetadata(createdFiles) {
   const meta = {
     file_count: createdFiles.length,
-    files: createdFiles.map(filePath => path.basename(filePath))
+    files: createdFiles.map((filePath) => path.basename(filePath)),
   };
 
   writeJsonIfChanged(path.join(metadataDir, 'metadata.json'), meta);
@@ -353,7 +364,7 @@ function main() {
     process.exit(1);
   }
 
-  const htmlFiles = fs.readdirSync(optimizedDir).filter(name => name.endsWith('.html'));
+  const htmlFiles = fs.readdirSync(optimizedDir).filter((name) => name.endsWith('.html'));
   if (!htmlFiles.length) {
     console.error('No optimized HTML files found in', relOptimizedDir);
     process.exit(1);
@@ -361,7 +372,7 @@ function main() {
 
   const exportDate = formatLocalDateTime();
   const metaMap = buildAllMessageMetaMap(rawDir);
-  const created = htmlFiles.map(fileName => createNodeJson(fileName, metaMap, exportDate));
+  const created = htmlFiles.map((fileName) => createNodeJson(fileName, metaMap, exportDate));
   writeExportMetadata(created);
   console.log(`Generated ${created.length} JSON files in ${relNodesDir}`);
 }
@@ -373,5 +384,5 @@ if (require.main === module) {
 module.exports = {
   runCreateNodes: () => main(),
   parseMessageNodes,
-  buildAllMessageMetaMap
+  buildAllMessageMetaMap,
 };

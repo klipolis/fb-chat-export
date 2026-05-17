@@ -28,9 +28,10 @@ function escapeRegExp(value) {
 
 function anonymizeChatNames(html) {
   const normalizeName = (name) => name.trim().replace(/\s+/g, ' ');
-  const isValidName = (name) => /^[A-Za-z][A-Za-z .' -]{0,80}$/i.test(name)
-    && !/\d/.test(name)
-    && name.split(/\s+/).length <= 3;
+  const isValidName = (name) =>
+    /^[A-Za-z][A-Za-z .' -]{0,80}$/i.test(name) &&
+    !/\d/.test(name) &&
+    name.split(/\s+/).length <= 3;
   const extractCandidateNames = (text) => {
     const names = [];
     const byRegex = /\bby\s+([A-Za-z]+(?:\s+[A-Za-z]+){0,2})(?=\s*[:]|$)/gi;
@@ -101,10 +102,13 @@ function anonymizeChatNames(html) {
     return updated === label ? match : `aria-label="${updated}"`;
   });
 
-  result = result.replace(/(<img\b[^>]*\balt=")([^"]*)("[^>]*>)/gi, (match, prefix, altText, suffix) => {
-    const updatedAlt = anonymizeText(altText);
-    return updatedAlt === altText ? match : `${prefix}${updatedAlt}${suffix}`;
-  });
+  result = result.replace(
+    /(<img\b[^>]*\balt=")([^"]*)("[^>]*>)/gi,
+    (match, prefix, altText, suffix) => {
+      const updatedAlt = anonymizeText(altText);
+      return updatedAlt === altText ? match : `${prefix}${updatedAlt}${suffix}`;
+    }
+  );
 
   return result.replace(senderRegex, 'Alpha');
 }
@@ -131,8 +135,8 @@ function minifyJs(code) {
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/(^|\s)\/\/.*$/gm, '')
     .split(/\r?\n/)
-    .map(line => line.trim())
-    .filter(line => line.length)
+    .map((line) => line.trim())
+    .filter((line) => line.length)
     .join(' ')
     .replace(/\s{2,}/g, ' ')
     .replace(/;\s*(?=(const|let|var|function))/g, ';\n')
@@ -152,5 +156,5 @@ module.exports = {
   ensureDir,
   emptyDir,
   anonymizeChatNames,
-  minifyJs
+  minifyJs,
 };

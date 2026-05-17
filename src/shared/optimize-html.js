@@ -5,16 +5,21 @@ function stripAttributes(tag, attrs) {
   const lowerTag = tag.toLowerCase();
   if (lowerTag === 'img') return '<img>';
   const cleaned = attrs
-    .replace(/\s*(id|style|class|tabindex|role|src|href|alt|referrerpolicy|data-[^\s=]+|aria-[^\s=]+)="[^"]*"/gi, (m, name) => {
-      return keep.includes(name.toLowerCase()) ? m : '';
-    })
+    .replace(
+      /\s*(id|style|class|tabindex|role|src|href|alt|referrerpolicy|data-[^\s=]+|aria-[^\s=]+)="[^"]*"/gi,
+      (m, name) => {
+        return keep.includes(name.toLowerCase()) ? m : '';
+      }
+    )
     .replace(/\s+/g, ' ')
     .trim();
   return cleaned ? `<${tag} ${cleaned}>` : `<${tag}>`;
 }
 
 function normalizeTagStrings(html) {
-  return html.replace(/<([a-zA-Z0-9]+)([^>]*)>/g, (match, tag, attrs) => stripAttributes(tag, attrs));
+  return html.replace(/<([a-zA-Z0-9]+)([^>]*)>/g, (match, tag, attrs) =>
+    stripAttributes(tag, attrs)
+  );
 }
 
 function removeLinkContent(html) {
@@ -22,11 +27,17 @@ function removeLinkContent(html) {
 }
 
 function removeCallActionNodes(html) {
-  return html.replace(/<([a-zA-Z0-9]+)[^>]*aria-label="(?:Call back|Call again)"[^>]*>[\s\S]*?<\/\1>/gi, '');
+  return html.replace(
+    /<([a-zA-Z0-9]+)[^>]*aria-label="(?:Call back|Call again)"[^>]*>[\s\S]*?<\/\1>/gi,
+    ''
+  );
 }
 
 function removeDuplicateAccessibilityLabels(html) {
-  return html.replace(/<([a-zA-Z0-9]+)[^>]*aria-label="(?:Message actions|Open Attachment|Enter, Message sent[^"]*)"[^>]*>[\s\S]*?<\/\1>/gi, '');
+  return html.replace(
+    /<([a-zA-Z0-9]+)[^>]*aria-label="(?:Message actions|Open Attachment|Enter, Message sent[^"]*)"[^>]*>[\s\S]*?<\/\1>/gi,
+    ''
+  );
 }
 
 function removeTimeNodes(html) {
@@ -38,11 +49,7 @@ function removeSvgNodes(html) {
 }
 
 function normalizeText(text) {
-  return text
-    .replace(/\*/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toLowerCase();
+  return text.replace(/\*/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
 function extractAriaLabelMessageText(label) {

@@ -10,7 +10,9 @@ const PERSON_SUMMARY_SUFFIX = summaryConcept.personSummarySuffix || ' Summary';
 
 function isIgnoredForIndividualCount(entry) {
   const type = String(entry.type || entry.fileType || '').toLowerCase();
-  return ['unsent', 'deleted', 'missed-call', 'missed-audio-call', 'missed-video-call'].includes(type);
+  return ['unsent', 'deleted', 'missed-call', 'missed-audio-call', 'missed-video-call'].includes(
+    type
+  );
 }
 
 function isMissedCall(entry) {
@@ -34,22 +36,28 @@ function buildUserscriptSummaryData(entries = [], options = {}) {
           text: 0,
           images: 0,
           calls: 0,
-          callMinutes: 0
-        }
+          callMinutes: 0,
+        },
       },
-      participants: []
+      participants: [],
     };
   }
 
   const totals = new Map();
   const allDays = new Set();
 
-  entries.forEach(entry => {
+  entries.forEach((entry) => {
     const sender = entry.sender || 'Unknown';
     const dayKey = formatDayKey(entry.date);
     allDays.add(dayKey);
 
-    const data = totals.get(sender) || { count: 0, days: new Set(), calls: 0, minutes: 0, images: 0 };
+    const data = totals.get(sender) || {
+      count: 0,
+      days: new Set(),
+      calls: 0,
+      minutes: 0,
+      images: 0,
+    };
     data.count += 1;
     data.days.add(dayKey);
     if (isCountedCall(entry)) {
@@ -70,7 +78,7 @@ function buildUserscriptSummaryData(entries = [], options = {}) {
     }
   } else {
     const participantNames = [];
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       if (!participantNames.includes(entry.sender)) {
         participantNames.push(entry.sender);
       }
@@ -82,18 +90,20 @@ function buildUserscriptSummaryData(entries = [], options = {}) {
   }
 
   const participantSummaries = selectedParticipants.map((name) => {
-    const participantEntries = entries.filter(entry => (entry.sender || 'Unknown') === name);
-    const includedEntries = participantEntries.filter(entry => !isIgnoredForIndividualCount(entry));
+    const participantEntries = entries.filter((entry) => (entry.sender || 'Unknown') === name);
+    const includedEntries = participantEntries.filter(
+      (entry) => !isIgnoredForIndividualCount(entry)
+    );
 
     const participantDays = new Set();
     let participantImages = 0;
     let participantCalls = 0;
     let participantMinutes = 0;
-    participantEntries.forEach(entry => {
+    participantEntries.forEach((entry) => {
       const dayKey = formatDayKey(entry.date);
       participantDays.add(dayKey);
     });
-    includedEntries.forEach(entry => {
+    includedEntries.forEach((entry) => {
       if (entry.isImage) participantImages += 1;
       if (isCountedCall(entry) && !isMissedCall(entry)) {
         participantCalls += 1;
@@ -101,7 +111,10 @@ function buildUserscriptSummaryData(entries = [], options = {}) {
       }
     });
 
-    const participantText = Math.max(0, includedEntries.length - participantCalls - participantImages);
+    const participantText = Math.max(
+      0,
+      includedEntries.length - participantCalls - participantImages
+    );
     return {
       name,
       participantEntries,
@@ -110,14 +123,17 @@ function buildUserscriptSummaryData(entries = [], options = {}) {
       participantText,
       participantImages,
       participantCalls,
-      participantMinutes
+      participantMinutes,
     };
   });
 
   const totalText = participantSummaries.reduce((sum, item) => sum + item.participantText, 0);
   const totalImages = participantSummaries.reduce((sum, item) => sum + item.participantImages, 0);
   const totalCalls = participantSummaries.reduce((sum, item) => sum + item.participantCalls, 0);
-  const totalCallMinutes = participantSummaries.reduce((sum, item) => sum + item.participantMinutes, 0);
+  const totalCallMinutes = participantSummaries.reduce(
+    (sum, item) => sum + item.participantMinutes,
+    0
+  );
 
   return {
     total: {
@@ -129,8 +145,8 @@ function buildUserscriptSummaryData(entries = [], options = {}) {
         text: totalText,
         images: totalImages,
         calls: totalCalls,
-        callMinutes: totalCallMinutes
-      }
+        callMinutes: totalCallMinutes,
+      },
     },
     participants: participantSummaries.map((summary) => ({
       title: `${summary.name}${PERSON_SUMMARY_SUFFIX}`,
@@ -141,9 +157,9 @@ function buildUserscriptSummaryData(entries = [], options = {}) {
         text: summary.participantText,
         images: summary.participantImages,
         calls: summary.participantCalls,
-        callMinutes: summary.participantMinutes
-      }
-    }))
+        callMinutes: summary.participantMinutes,
+      },
+    })),
   };
 }
 
@@ -153,11 +169,13 @@ function buildUserscriptSummary(entries = [], options = {}) {
   const summary = buildUserscriptSummaryData(entries, options);
   const useMessageLabel = Boolean(options.useMessageLabel);
   const totalMessageLabel = useMessageLabel
-    ? summary.total.messages === 1 ? 'message' : 'messages'
-    : summary.total.messages === 1 ? 'post' : 'posts';
-  const totalDayLabel = useMessageLabel
-    ? summary.total.days === 1 ? 'day' : 'days'
-    : 'days';
+    ? summary.total.messages === 1
+      ? 'message'
+      : 'messages'
+    : summary.total.messages === 1
+      ? 'post'
+      : 'posts';
+  const totalDayLabel = useMessageLabel ? (summary.total.days === 1 ? 'day' : 'days') : 'days';
 
   const roughTextLabel = 'text;';
   const detailLines = [
@@ -166,23 +184,33 @@ function buildUserscriptSummary(entries = [], options = {}) {
     `${ROUGH_PREFIX} ${summary.total.rough.text} ${roughTextLabel}`,
     `${ROUGH_PREFIX} ${summary.total.rough.images} images`,
     `${ROUGH_PREFIX} ${summary.total.rough.calls} calls ${summary.total.rough.callMinutes} mins`,
-    ''
+    '',
   ];
 
   summary.participants.forEach((participant) => {
     const participantMessageLabel = useMessageLabel
-      ? participant.messages === 1 ? 'message' : 'messages'
-      : participant.messages === 1 ? 'post' : 'posts';
+      ? participant.messages === 1
+        ? 'message'
+        : 'messages'
+      : participant.messages === 1
+        ? 'post'
+        : 'posts';
     const participantDayLabel = useMessageLabel
-      ? participant.days === 1 ? 'day' : 'days'
+      ? participant.days === 1
+        ? 'day'
+        : 'days'
       : 'days';
 
     const participantRoughTextLabel = 'text;';
     detailLines.push(participant.title);
-    detailLines.push(`${participant.messages} ${participantMessageLabel} / ${participant.days} ${participantDayLabel}`);
+    detailLines.push(
+      `${participant.messages} ${participantMessageLabel} / ${participant.days} ${participantDayLabel}`
+    );
     detailLines.push(`${ROUGH_PREFIX} ${participant.rough.text} ${participantRoughTextLabel}`);
     detailLines.push(`${ROUGH_PREFIX} ${participant.rough.images} images`);
-    detailLines.push(`${ROUGH_PREFIX} ${participant.rough.calls} calls ${participant.rough.callMinutes} mins`);
+    detailLines.push(
+      `${ROUGH_PREFIX} ${participant.rough.calls} calls ${participant.rough.callMinutes} mins`
+    );
     detailLines.push('');
   });
 
@@ -192,5 +220,5 @@ function buildUserscriptSummary(entries = [], options = {}) {
 
 module.exports = {
   buildUserscriptSummary,
-  buildUserscriptSummaryData
+  buildUserscriptSummaryData,
 };

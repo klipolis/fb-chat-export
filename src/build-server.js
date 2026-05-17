@@ -4,20 +4,27 @@ const { JSDOM } = require('jsdom');
 const { ensureDir, emptyDir, anonymizeChatNames } = require('./shared/utils');
 const { createOptimizedHtml } = require('./shared/optimize-html');
 const { runCreateNodes } = require('./shared/create-nodes');
-const { buildEntriesFromDocument, buildExportText, formatExportFileName, formatExportHeader, formatLine, formatSummarySection } = require('./shared/export-text');
+const {
+  buildEntriesFromDocument,
+  buildExportText,
+  formatExportFileName,
+  formatExportHeader,
+  formatLine,
+  formatSummarySection,
+} = require('./shared/export-text');
 const { chooseRule } = require('./shared/message-metadata');
 
 const baseDir = path.resolve(__dirname, '..');
-const rawDir = path.join(baseDir, 'Data-input-html-raw');
-const optimizedDir = path.join(baseDir, 'Data-output-html');
-const previewDir = path.join(baseDir, 'Data-output-json');
+const rawDir = path.join(baseDir, 'demo/input-html-raw');
+const optimizedDir = path.join(baseDir, 'demo/output-html');
+const previewDir = path.join(baseDir, 'demo/output-json');
 const rawMetadataPath = path.join(previewDir, 'raw-input-metadata.json');
-const exportDir = path.join(baseDir, 'Data-output-txt');
+const exportDir = path.join(baseDir, 'demo/output-txt');
 
-const relRaw = './Data-input-html-raw';
-const relOptimized = './Data-output-html';
-const relPreview = './Data-output-json';
-const relExport = './Data-output-txt';
+const relRaw = './demo/input-html-raw';
+const relOptimized = './demo/output-html';
+const relPreview = './demo/output-json';
+const relExport = './demo/output-txt';
 
 function optimizeFile(fileName) {
   const inputPath = path.join(rawDir, fileName);
@@ -42,7 +49,7 @@ function loadRawMetadata() {
 
 function writeRawMetadata(fileRecords) {
   const payload = {
-    files: fileRecords
+    files: fileRecords,
   };
   fs.writeFileSync(rawMetadataPath, JSON.stringify(payload, null, 2) + '\n', 'utf8');
 }
@@ -53,14 +60,14 @@ function getFileRecord(fileName) {
   return {
     fileName,
     mtimeMs: stats.mtimeMs,
-    size: stats.size
+    size: stats.size,
   };
 }
 
 function buildTextEntries(files) {
   const entries = [];
 
-  files.forEach(fileName => {
+  files.forEach((fileName) => {
     const rawHtml = fs.readFileSync(path.join(rawDir, fileName), 'utf8');
     const document = new JSDOM(rawHtml).window.document;
     const docEntries = buildEntriesFromDocument(document, fileName);
@@ -74,10 +81,12 @@ function buildTextEntries(files) {
       return rule.type === 'you-text' ? 'text' : rule.type;
     })();
 
-    const matchingType = docEntries.filter(entry => entry.semanticType === expectedType);
+    const matchingType = docEntries.filter((entry) => entry.semanticType === expectedType);
     let preferred = matchingType[0];
     if (expectedType === 'link') {
-      preferred = matchingType.find(entry => /^https?:\/\//i.test(String(entry.content || ''))) || matchingType[0];
+      preferred =
+        matchingType.find((entry) => /^https?:\/\//i.test(String(entry.content || ''))) ||
+        matchingType[0];
     }
 
     entries.push(preferred || docEntries[0]);
@@ -88,24 +97,30 @@ function buildTextEntries(files) {
 
 function buildTextExport(files, options = {}) {
   const sorted = buildTextEntries(files);
-  const lines = sorted.map(entry => formatLine(entry, options));
+  const lines = sorted.map((entry) => formatLine(entry, options));
   const headerText = formatExportHeader({
     method: 'server',
-    messageTypes: files.map(fileName => path.parse(fileName).name)
+    messageTypes: files.map((fileName) => path.parse(fileName).name),
   });
-  const summaryText = options.includeSummary ? formatSummarySection(sorted, { useMessageLabel: options.useMessageLabel }) : '';
+  const summaryText = options.includeSummary
+    ? formatSummarySection(sorted, { useMessageLabel: options.useMessageLabel })
+    : '';
   return buildExportText(lines, `${headerText}${summaryText}`);
 }
 
 function writeTextExports(files) {
   ensureDir(exportDir);
   const sortedEntries = buildTextEntries(files);
-  const contentOnLines = sortedEntries.map(entry => formatLine(entry, { includeContent: true, includeLength: true }));
-  const contentOffLines = sortedEntries.map(entry => formatLine(entry, { includeContent: false, includeLength: true }));
+  const contentOnLines = sortedEntries.map((entry) =>
+    formatLine(entry, { includeContent: true, includeLength: true })
+  );
+  const contentOffLines = sortedEntries.map((entry) =>
+    formatLine(entry, { includeContent: false, includeLength: true })
+  );
 
   const headerText = formatExportHeader({
     method: 'server',
-    messageTypes: files.map(fileName => path.parse(fileName).name)
+    messageTypes: files.map((fileName) => path.parse(fileName).name),
   });
   const summaryTextForContentOn = formatSummarySection(sortedEntries, { useMessageLabel: true });
   const summaryTextForSummaryOnly = formatSummarySection(sortedEntries);
@@ -137,14 +152,16 @@ function main() {
   }
 
   const previousRawMetadata = loadRawMetadata();
-  const previousFileMap = new Map((previousRawMetadata?.files || []).map(file => [file.fileName, file]));
-  const files = fs.readdirSync(rawDir).filter(name => name.endsWith('.html'));
+  const previousFileMap = new Map(
+    (previousRawMetadata?.files || []).map((file) => [file.fileName, file])
+  );
+  const files = fs.readdirSync(rawDir).filter((name) => name.endsWith('.html'));
   if (!files.length) {
     console.error('No raw HTML files found in', relRaw);
     process.exit(1);
   }
 
-  const fileRecords = files.map(fileName => {
+  const fileRecords = files.map((fileName) => {
     const filePath = path.join(rawDir, fileName);
     const rawHtml = fs.readFileSync(filePath, 'utf8');
     const cleanedHtml = anonymizeChatNames(rawHtml);
@@ -160,7 +177,7 @@ function main() {
 
   writeRawMetadata(fileRecords);
 
-  const unchanged = fileRecords.every(record => {
+  const unchanged = fileRecords.every((record) => {
     const previous = previousFileMap.get(record.fileName);
     return previous && previous.mtimeMs === record.mtimeMs && previous.size === record.size;
   });
@@ -170,8 +187,8 @@ function main() {
 
   runCreateNodes();
   const exportPaths = writeTextExports(files);
-  console.log(`Done: HTML + JSON in ./Data-output-html and ./Data-output-json`);
-  exportPaths.forEach(exportPath => {
+  console.log(`Done: HTML + JSON in ./demo/output-html and ./demo/output-json`);
+  exportPaths.forEach((exportPath) => {
     console.log(`Generated chat text export: ${path.relative(baseDir, exportPath)}`);
   });
 }

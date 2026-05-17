@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const { minifyJs } = require('../shared/utils');
+const { minifyJs } = require('../../shared/utils');
 
-const sourcePath = path.resolve(__dirname, 'userscript- export-message.js');
+const sourcePath = path.resolve(__dirname, '..', 'src', 'userscript-export-message.js');
 const distDir = path.resolve(__dirname, '..', '..', 'dist');
 const outputPath = path.join(distDir, 'userscript.js');
 

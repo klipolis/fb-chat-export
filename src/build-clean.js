@@ -3,9 +3,9 @@ const path = require('path');
 
 const baseDir = path.resolve(__dirname, '..');
 const dirs = [
-  path.join(baseDir, 'Data-output-html'),
-  path.join(baseDir, 'Data-output-json'),
-  path.join(baseDir, 'dist')
+  path.join(baseDir, 'demo/output-html'),
+  path.join(baseDir, 'demo/output-json'),
+  path.join(baseDir, 'dist'),
 ];
 
 function removeDir(dir) {
@@ -20,12 +20,12 @@ function ensureDir(dir) {
 }
 
 function main() {
-  dirs.forEach(dir => {
+  dirs.forEach((dir) => {
     removeDir(dir);
     ensureDir(dir);
   });
   console.log('Cleaned generated build artifacts:');
-  dirs.forEach(dir => console.log(`- ${path.relative(baseDir, dir)}`));
+  dirs.forEach((dir) => console.log(`- ${path.relative(baseDir, dir)}`));
 }
 
 main();

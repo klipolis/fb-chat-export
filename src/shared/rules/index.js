@@ -3,5 +3,5 @@ const messageRules = require('./message-rules');
 
 module.exports = {
   selectors,
-  messageRules
+  messageRules,
 };

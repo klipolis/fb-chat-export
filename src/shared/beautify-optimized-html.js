@@ -3,9 +3,9 @@ const path = require('path');
 const { beautifyHtml } = require('./beautify');
 
 const dir = path.join(__dirname, 'HTML Optimised');
-const files = fs.readdirSync(dir).filter(file => file.endsWith('.html'));
+const files = fs.readdirSync(dir).filter((file) => file.endsWith('.html'));
 
-files.forEach(file => {
+files.forEach((file) => {
   const filePath = path.join(dir, file);
   let html = fs.readFileSync(filePath, 'utf8');
   html = beautifyHtml(html);

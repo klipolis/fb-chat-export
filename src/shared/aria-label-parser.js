@@ -1,5 +1,7 @@
 function normalizeLabel(text) {
-  return String(text || '').replace(/\s+/g, ' ').trim();
+  return String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function parseAriaLabel(ariaLabel) {
@@ -19,7 +21,10 @@ function parseAriaLabel(ariaLabel) {
   };
 
   const findValidDatePrefix = (text) => {
-    const parts = text.split(',').map(part => part.trim()).filter(Boolean);
+    const parts = text
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean);
     let candidate = '';
     for (let i = 0; i < Math.min(parts.length, 3); i += 1) {
       candidate = candidate ? `${candidate}, ${parts[i]}` : parts[i];
@@ -41,13 +46,16 @@ function parseAriaLabel(ariaLabel) {
     return {
       date: match[1].trim(),
       sender,
-      message
+      message,
     };
   }
 
   const atPrefix = label.match(/^At\s+([\s\S]*)$/i);
   if (atPrefix) {
-    const tailParts = atPrefix[1].split(',').map(part => part.trim()).filter(Boolean);
+    const tailParts = atPrefix[1]
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean);
 
     if (tailParts.length >= 3) {
       const maybeSender = tailParts[tailParts.length - 1];
@@ -56,7 +64,7 @@ function parseAriaLabel(ariaLabel) {
         return {
           date: maybeDate.trim(),
           sender: maybeSender.trim(),
-          message: ''
+          message: '',
         };
       }
     }
@@ -68,7 +76,7 @@ function parseAriaLabel(ariaLabel) {
         return {
           date: maybeDate.trim(),
           sender: senderAndMessage.sender,
-          message: senderAndMessage.message
+          message: senderAndMessage.message,
         };
       }
     }
@@ -82,7 +90,7 @@ function parseAriaLabel(ariaLabel) {
       return {
         date: dateValue,
         sender: match[2].trim(),
-        message: match[3].trim()
+        message: match[3].trim(),
       };
     }
   }
@@ -92,7 +100,7 @@ function parseAriaLabel(ariaLabel) {
     return {
       date: match[1].trim(),
       sender: match[2].trim(),
-      message: match[3].trim()
+      message: match[3].trim(),
     };
   }
 
@@ -101,7 +109,7 @@ function parseAriaLabel(ariaLabel) {
     return {
       date: match[2].trim(),
       sender: match[3].trim(),
-      message: match[4].trim()
+      message: match[4].trim(),
     };
   }
 
@@ -112,13 +120,13 @@ function parseAriaLabel(ariaLabel) {
       return {
         date: match[1].trim(),
         sender: senderAndMessage.sender,
-        message: senderAndMessage.message
+        message: senderAndMessage.message,
       };
     }
     return {
       date: match[1].trim(),
       sender: match[2].trim(),
-      message: ''
+      message: '',
     };
   }
 
@@ -127,7 +135,7 @@ function parseAriaLabel(ariaLabel) {
     return {
       date: match[2].trim(),
       sender: match[3].trim(),
-      message: ''
+      message: '',
     };
   }
 
@@ -135,7 +143,7 @@ function parseAriaLabel(ariaLabel) {
   return {
     date: null,
     sender: null,
-    message: colonIndex >= 0 ? label.slice(colonIndex + 1).trim() : label
+    message: colonIndex >= 0 ? label.slice(colonIndex + 1).trim() : label,
   };
 }
 
@@ -174,10 +182,12 @@ function normalizeDateToSimple(dateString) {
     return `${year}.${month}.${day} ${hours}:${minute}`;
   }
 
-  const dayOfWeekMatch = text.match(/^(sunday|monday|tuesday|wednesday|thursday|friday|saturday)(?:\s+(\d{1,2}):(\d{2})\s*(am|pm)?)?$/i);
+  const dayOfWeekMatch = text.match(
+    /^(sunday|monday|tuesday|wednesday|thursday|friday|saturday)(?:\s+(\d{1,2}):(\d{2})\s*(am|pm)?)?$/i
+  );
   if (dayOfWeekMatch) {
     const [, dayName, hourPart = '0', minute = '00', meridiem] = dayOfWeekMatch;
-    const days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const targetDow = days.indexOf(dayName.toLowerCase());
     const diff = (today.getDay() - targetDow + 7) % 7;
     const date = new Date(today);
@@ -212,7 +222,9 @@ function normalizeDateToSimple(dateString) {
     return `${year}.${month}.${day} ${hours}:${minute}`;
   }
 
-  const fullMatch = text.match(/^([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4}),\s*(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+  const fullMatch = text.match(
+    /^([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4}),\s*(\d{1,2}):(\d{2})\s*(am|pm)?$/i
+  );
   if (fullMatch) {
     const [, monthName, day, year, hourPart, minute, meridiem] = fullMatch;
     let hour = Number(hourPart);
@@ -247,5 +259,5 @@ module.exports = {
   parseAriaLabel,
   normalizeDateToSimple,
   normalizeDateToIso,
-  normalizeLabel
+  normalizeLabel,
 };

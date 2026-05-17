@@ -1,1 +1,1 @@
-require('./build-userscript.js');
+require('./build/build-userscript.js');

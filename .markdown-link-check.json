@@ -1,0 +1,16 @@
+{
+  "ignorePatterns": [
+    {
+      "pattern": "^mailto:",
+      "type": "regexp"
+    },
+    {
+      "pattern": "^#",
+      "type": "regexp"
+    },
+    {
+      "pattern": "^https?://(localhost|127\\.0\\.1|0\\.0\\.0\\.0)",
+      "type": "regexp"
+    }
+  ]
+}

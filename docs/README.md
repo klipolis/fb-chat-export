@@ -6,12 +6,12 @@ This project exports Messenger chat history to a `.txt` file using a Tampermonke
 
 ```mermaid
 flowchart TD
-	A[Data-input-html-raw] --> B[build-server]
-	B --> C[Data-output-html]
+	A[demo/input-html-raw] --> B[build-server]
+	B --> C[demo/output-html]
 	B --> D[create-nodes]
-	D --> E[Data-output-json]
-	B --> F[Data-output-txt content-on/content-off]
-	G[src/frontend/userscript- export-message.js] --> H[src/frontend/build-frontend.js]
+	D --> E[demo/output-json]
+	B --> F[demo/output-txt content-on/content-off]
+	G[src/frontend/src/userscript-export-message.js] --> H[src/frontend/build-frontend.js]
 	H --> I[dist/userscript.js]
 	J[tests/generated-txt-schema.json] --> F
 	J --> I
@@ -42,19 +42,22 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - Run in Command Prompt: `cmd /c "pnpm install"` or `cmd /c "npm install"`
 - Enable local script execution: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned -Force`
 - Use Corepack instead of global pnpm: `corepack enable && pnpm install`
-- If you still see execution policy errors, see Microsoft docs: `https:/go.microsoft.com/fwlink/?LinkID=135170`
+- If you still see execution policy errors, see Microsoft docs: `https://go.microsoft.com/fwlink/?LinkID=135170`
 
 ## Folder structure
 
 - `src/frontend/`: browser-facing assets, userscript source, and frontend build tooling.
+  - `src/frontend/src/`: userscript source entrypoint.
+  - `src/frontend/build/`: frontend build scripts and helpers.
 - `src/server/`: build scripts such as `build-preview.js`.
 - `src/shared/`: shared helper scripts and node rules.
-- `Data-input-html-raw/`: static raw HTML snapshots.
-- `Data-output-html/`: generated optimized HTML snapshots.
-- `Data-output-json/`: generated JSON preview output.
-- `Data-output-json/raw-input-metadata.json`: build metadata for raw input file stability.
+- `demo/input-html-raw/`: static raw HTML snapshots.
+- `demo/output-html/`: generated optimized HTML snapshots.
+- `demo/output-json/`: generated JSON preview output.
+- `demo/output-json/raw-input-metadata.json`: build metadata for raw input file stability.
 - `dist/`: generated one-file userscript output.
-- `docs/`: documentation, changelog, and project notes.
+- `docs/`: documentation and project notes.
+- `CHANGELOG.md`: release history and version notes.
 - `tests/`: automated tests, fixtures, and validation scripts.
 - `tests/generated-json-schema.json`: formal contract for generated preview JSON exports.
 - `docs/JSON-Schema.md`: human-readable summary of the generated preview JSON contract.
@@ -77,7 +80,7 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - Open the project in VS Code and use the terminal in `support/`.
 - Run `nvm use` in the `support/` folder to ensure the correct Node version from `.nvmrc`.
 - Run `pnpm install --frozen-lockfile` once after cloning the repo.
-- Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, build data preview JSON, and generate a text export in `Data-output-txt/`.
+- Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, build data preview JSON, and generate a text export in `demo/output-txt/`.
 - Run `pnpm run build:frontend` to emit the built userscript into `dist/userscript.js`.
 - The browser export now writes a stable download file name such as `fb-chats-export-<shortname>.txt`.
 - Run `pnpm run validate:dist` to verify the generated userscript header and versioned dist bundle.
@@ -90,16 +93,20 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - Use `BUILD_VERSION=<build-id>` with `pnpm run build:frontend` to generate a build-specific userscript version without updating `package.json`.
 - Use `pnpm run release:check` to verify changelog, schema, and dist sync before tagging.
 - Use `pnpm run release:tag` to validate and tag the current package version automatically.
+- Use `pnpm run lint:docs` to validate markdown quality for docs-only changes.
+- Use `pnpm run link:docs` to validate external links in docs and catch broken references before publishing.
+- A GitHub release workflow is configured to publish release notes from root `CHANGELOG.md` on `v*` tags.
 
 > The full CI workflow skips docs-only changes (`docs/**`, `README.md`, `CHANGELOG.md`, `.skills/**`) so the build only runs when actual code or schema changes are present.
 >
 > Prefer GitHub/CI builds over local builds because CI builds run in a clean, consistent environment, catch dependency and environment drift early, and ensure the same generated artifacts are reproducible for release verification.
+
 - Run `pnpm run build-preview` to generate data preview JSON directly from optimized HTML.
 - Run `pnpm run build:clean` to clear generated build artifacts while preserving raw inputs.
 - Run `pnpm run create:nodes` for lower-level preview export debugging or custom workflows.
-- Run `pnpm run validate:generated-json` to verify final `Data-output-json/` preview schema.
+- Run `pnpm run validate:generated-json` to verify final `demo/output-json/` preview schema.
 - Run `pnpm run test` to execute automated shared-code regression tests and generated JSON schema validation.
-- Keep `dist/`, `Data-output-html/`, and `Data-output-json/` committed to source control.
+- Keep `dist/`, `demo/output-html/`, and `demo/output-json/` committed to source control.
 - Keep `.skills/` for planning and requirements.
 
 ## Suggestions

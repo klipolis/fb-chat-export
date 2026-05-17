@@ -15,6 +15,10 @@
     "validate:release": "node tests/validate-release.js",
     "test": "node tests/run-tests.js && pnpm run validate:generated-json && pnpm run validate:generated-txt && pnpm run validate:dist && pnpm run validate:release",
     "lint": "eslint --quiet \"src/**/*.js\" \"tests/**/*.js\"",
+    "lint:docs": "markdownlint --config .markdownlint.json \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"*.md\"",
+    "link:docs": "node scripts/check-doc-links.js",
+    "format": "prettier --write \"src/**/*.js\" \"tests/**/*.js\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"CONTRIBUTING.md\" \"SECURITY.md\" \"CODE_OF_CONDUCT.md\"",
+    "format:check": "prettier --check \"src/**/*.js\" \"tests/**/*.js\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"CONTRIBUTING.md\" \"SECURITY.md\" \"CODE_OF_CONDUCT.md\"",
     "audit": "pnpm audit --audit-level=moderate",
     "release:check": "pnpm run validate:release",
     "release:tag": "pnpm run release:check && node -e \"require('child_process').execSync('git tag v'+require('./package.json').version,{stdio:'inherit'})\"",
@@ -27,8 +31,13 @@
     "node": "^26.1.0",
     "pnpm": ">=8.10.0"
   },
-  "devDependencies": {    "cross-env": "^7.0.3",    "esbuild": "^0.19.4",
+  "devDependencies": {    
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.19.4",
     "jsdom": "^22.1.0",
-    "eslint": "^8.57.0"
+    "eslint": "^8.57.0",
+    "markdown-link-check": "^3.14.2",
+    "markdownlint-cli": "^0.38.0",
+    "prettier": "^3.0.0"
   }
 }

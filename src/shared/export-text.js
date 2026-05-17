@@ -1,10 +1,18 @@
 const path = require('path');
 const { getContentMeta, normalizeDuration } = require('./message-metadata');
 const { parseAriaLabel, normalizeDateToIso } = require('./aria-label-parser');
-const { formatExportHeader, buildExportText, formatDate, formatLine, formatSummarySection } = require('./export-formatter');
+const {
+  formatExportHeader,
+  buildExportText,
+  formatDate,
+  formatLine,
+  formatSummarySection,
+} = require('./export-formatter');
 
 function normalizeLabel(text) {
-  return String(text || '').replace(/\s+/g, ' ').trim();
+  return String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function normalizeExportSender(sender) {
@@ -13,7 +21,9 @@ function normalizeExportSender(sender) {
 }
 
 function formatExportFileName(mode = 'content-on') {
-  return mode === 'content-off' ? 'fb-chats-export-content-off.txt' : 'fb-chats-export-content-on.txt';
+  return mode === 'content-off'
+    ? 'fb-chats-export-content-off.txt'
+    : 'fb-chats-export-content-on.txt';
 }
 
 function extractMessageEntry(el, fileName) {
@@ -23,16 +33,17 @@ function extractMessageEntry(el, fileName) {
   const sender = parsedLabel.sender || '';
   const labelText = parsedLabel.message || '';
 
-  const normalizedText = normalizeLabel(labelText || (el.textContent || ''));
+  const normalizedText = normalizeLabel(labelText || el.textContent || '');
   const normalizedLabel = normalizeLabel(ariaLabel).toLowerCase();
   const timerEl = el.querySelector('[role="timer"]');
   const linkEl = el.querySelector('a[href]');
   const hasImage = Boolean(el.querySelector('img'));
   const hasPlayButton = Boolean(el.querySelector('[aria-label="Play"]'));
   // Only treat as link if there is a real URL or <a href>, not just the word 'link'
-  const hasLink = Boolean(linkEl)
-    || /https?:\/\/|www\./i.test(normalizedText)
-    || /https?:\/\/|www\./i.test(normalizedLabel);
+  const hasLink =
+    Boolean(linkEl) ||
+    /https?:\/\/|www\./i.test(normalizedText) ||
+    /https?:\/\/|www\./i.test(normalizedLabel);
   const timerText = timerEl ? normalizeLabel(timerEl.textContent) : '';
   const normalizedDuration = normalizeDuration(timerText);
 
@@ -42,12 +53,12 @@ function extractMessageEntry(el, fileName) {
     message: normalizedText,
     rawMeta: {
       duration: normalizedDuration || undefined,
-      link: linkEl ? linkEl.getAttribute('href') || undefined : undefined
+      link: linkEl ? linkEl.getAttribute('href') || undefined : undefined,
     },
     hasImage,
     hasPlayButton,
     hasLink,
-    timerText
+    timerText,
   });
 
   let resolvedDate;
@@ -58,9 +69,17 @@ function extractMessageEntry(el, fileName) {
   }
   const timestamp = Number.isFinite(Date.parse(resolvedDate)) ? Date.parse(resolvedDate) : 0;
 
-  const isRedundantVoiceText = contentMeta.type === 'voice-message' && /^voice(?:[- ]message|[- ]note)$/i.test(contentMeta.text);
+  const isRedundantVoiceText =
+    contentMeta.type === 'voice-message' &&
+    /^voice(?:[- ]message|[- ]note)$/i.test(contentMeta.text);
   const isRedundantLinkText = contentMeta.type === 'link' && /^link$/i.test(contentMeta.text);
-  const body = isRedundantVoiceText ? '' : (isRedundantLinkText ? 'link' : contentMeta.text === contentMeta.type ? '' : contentMeta.text);
+  const body = isRedundantVoiceText
+    ? ''
+    : isRedundantLinkText
+      ? 'link'
+      : contentMeta.text === contentMeta.type
+        ? ''
+        : contentMeta.text;
   const fileType = path.parse(fileName).name;
 
   return {
@@ -71,13 +90,13 @@ function extractMessageEntry(el, fileName) {
     sender: normalizeExportSender(sender),
     content: body,
     duration: contentMeta.duration,
-    contentLength: contentMeta.contentLength
+    contentLength: contentMeta.contentLength,
   };
 }
 
 function buildEntriesFromDocument(document, fileName) {
   const entries = [];
-  document.querySelectorAll('[aria-roledescription="message"]').forEach(el => {
+  document.querySelectorAll('[aria-roledescription="message"]').forEach((el) => {
     const entry = extractMessageEntry(el, fileName);
     if (entry && entry.semanticType) {
       entries.push(entry);
@@ -87,14 +106,13 @@ function buildEntriesFromDocument(document, fileName) {
   const seen = new Set();
   return entries
     .sort((a, b) => a.ts - b.ts)
-    .filter(entry => {
+    .filter((entry) => {
       const key = `${entry.ts}|${entry.fileType}|${entry.sender}|${entry.content}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
 }
-
 
 module.exports = {
   formatDate,
@@ -104,5 +122,5 @@ module.exports = {
   buildEntriesFromDocument,
   buildExportText,
   formatSummarySection,
-  formatLine
+  formatLine,
 };

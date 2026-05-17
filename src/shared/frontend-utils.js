@@ -31,17 +31,23 @@ export function getDisplayPersonName() {
   const name = getConversationName();
   const parts = name
     .split(/\s*(?:,|&|\band\b|\+|\/)\s*/i)
-    .map(part => part.trim())
+    .map((part) => part.trim())
     .filter(Boolean);
-  const firstNonYou = parts.find(part => !/^you$/i.test(part));
+  const firstNonYou = parts.find((part) => !/^you$/i.test(part));
   if (firstNonYou) return firstNonYou;
 
-  const withoutYou = name.replace(/\byou\b/ig, '').replace(/\s{2,}/g, ' ').trim();
+  const withoutYou = name
+    .replace(/\byou\b/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
   return withoutYou || 'chat';
 }
 
 export function formatExportFileName() {
   const base = sanitizeFileNamePart(getConversationName());
-  const shortName = base.replace(/[^a-z0-9]/g, '').slice(0, 3).padEnd(3, '_');
+  const shortName = base
+    .replace(/[^a-z0-9]/g, '')
+    .slice(0, 3)
+    .padEnd(3, '_');
   return `fb-chats-export-${shortName}.txt`;
 }

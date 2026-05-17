@@ -3,7 +3,7 @@ const { normalizeDateToIso } = require('./aria-label-parser');
 const { buildUserscriptSummary, buildUserscriptSummaryData } = require('./userscript-summary');
 
 function formatExportHeader({ method, messageTypes }) {
-  const types = messageTypes.map(type => `- ${type}`).join('\n');
+  const types = messageTypes.map((type) => `- ${type}`).join('\n');
   return `Method: ${method}\nMessage types:\n${types}\n---\n\n`;
 }
 
@@ -45,7 +45,8 @@ function formatLine(entry, options = {}) {
 
   const base = `[${dateText}] ${sender}: ${parts.join(' ')}`;
   const contentTypes = new Set(['text', 'link']);
-  const shouldShowTextContent = includeContent && contentTypes.has(entry.semanticType) && entry.content;
+  const shouldShowTextContent =
+    includeContent && contentTypes.has(entry.semanticType) && entry.content;
   if (shouldShowTextContent) {
     return `${base} / ${entry.content}\n`;
   }
@@ -53,9 +54,15 @@ function formatLine(entry, options = {}) {
 }
 
 function formatSummarySection(entries = [], options = {}) {
-  const summaryEntries = entries.map(entry => {
+  const summaryEntries = entries.map((entry) => {
     const fileType = String(entry.fileType || '').toLowerCase();
-    const isCall = ['audio-call', 'video-call', 'voice-note', 'missed-audio-call', 'missed-video-call'].includes(fileType);
+    const isCall = [
+      'audio-call',
+      'video-call',
+      'voice-note',
+      'missed-audio-call',
+      'missed-video-call',
+    ].includes(fileType);
     const isTimedCall = ['audio-call', 'video-call', 'voice-note'].includes(fileType);
     return {
       sender: entry.sender,
@@ -63,20 +70,26 @@ function formatSummarySection(entries = [], options = {}) {
       type: fileType,
       isCall,
       isImage: fileType === 'image',
-      callMinutes: isTimedCall ? durationToMinutes(entry.duration) : 0
+      callMinutes: isTimedCall ? durationToMinutes(entry.duration) : 0,
     };
   });
 
   return buildUserscriptSummary(summaryEntries, {
     fixedParticipants: ['Alpha', 'Youghurt'],
-    useMessageLabel: Boolean(options.useMessageLabel)
+    useMessageLabel: Boolean(options.useMessageLabel),
   });
 }
 
 function buildSummaryData(entries = [], options = {}) {
-  const summaryEntries = entries.map(entry => {
+  const summaryEntries = entries.map((entry) => {
     const fileType = String(entry.fileType || '').toLowerCase();
-    const isCall = ['audio-call', 'video-call', 'voice-note', 'missed-audio-call', 'missed-video-call'].includes(fileType);
+    const isCall = [
+      'audio-call',
+      'video-call',
+      'voice-note',
+      'missed-audio-call',
+      'missed-video-call',
+    ].includes(fileType);
     const isTimedCall = ['audio-call', 'video-call', 'voice-note'].includes(fileType);
     return {
       sender: entry.sender,
@@ -84,13 +97,13 @@ function buildSummaryData(entries = [], options = {}) {
       type: fileType,
       isCall,
       isImage: fileType === 'image',
-      callMinutes: isTimedCall ? durationToMinutes(entry.duration) : 0
+      callMinutes: isTimedCall ? durationToMinutes(entry.duration) : 0,
     };
   });
 
   return buildUserscriptSummaryData(summaryEntries, {
     fixedParticipants: ['Alpha', 'Youghurt'],
-    useMessageLabel: Boolean(options.useMessageLabel)
+    useMessageLabel: Boolean(options.useMessageLabel),
   });
 }
 
@@ -101,7 +114,7 @@ function durationToMinutes(duration) {
   const ms = String(normalized).match(/^(\d+):(\d{2})\s+mins$/i);
   const mins = String(normalized).match(/^(\d+)\s+mins$/i);
   if (hms) {
-    return (Number(hms[1]) * 60) + Number(hms[2]) + Math.ceil(Number(hms[3]) / 60);
+    return Number(hms[1]) * 60 + Number(hms[2]) + Math.ceil(Number(hms[3]) / 60);
   }
   if (ms) {
     return Number(ms[1]) + Math.ceil(Number(ms[2]) / 60);
@@ -118,5 +131,5 @@ module.exports = {
   formatDate,
   formatLine,
   formatSummarySection,
-  buildSummaryData
+  buildSummaryData,
 };

@@ -1,11 +1,26 @@
 function beautifyHtml(html) {
   html = html.replace(/>\s+</g, '><').trim();
   const tokens = html.split(/(?=<)|(?<=>)/g).filter(Boolean);
-  const voidTags = new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
+  const voidTags = new Set([
+    'area',
+    'base',
+    'br',
+    'col',
+    'embed',
+    'hr',
+    'img',
+    'input',
+    'link',
+    'meta',
+    'param',
+    'source',
+    'track',
+    'wbr',
+  ]);
   let indent = 0;
   const lines = [];
 
-  tokens.forEach(token => {
+  tokens.forEach((token) => {
     token = token.trim();
     if (!token) return;
     if (/^<\//.test(token)) {
@@ -17,7 +32,13 @@ function beautifyHtml(html) {
     const tagMatch = token.match(/^<\s*([a-zA-Z0-9-]+)/);
     const tagName = tagMatch ? tagMatch[1].toLowerCase() : null;
     lines.push('  '.repeat(indent) + token);
-    if (tagName && !voidTags.has(tagName) && !/^<\?/.test(token) && !/^<!/.test(token) && !/\/>$/.test(token)) {
+    if (
+      tagName &&
+      !voidTags.has(tagName) &&
+      !/^<\?/.test(token) &&
+      !/^<!/.test(token) &&
+      !/\/>$/.test(token)
+    ) {
       indent += 1;
     }
   });

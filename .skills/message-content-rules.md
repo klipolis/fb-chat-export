@@ -3,7 +3,7 @@
 This file documents the developer-facing rules that map raw Messenger HTML into end-user exports. It is intentionally separate from setup and product requirements because it describes implementation behavior, not user-facing features.
 
 ## Scope
-- Raw HTML in `Data-input-html-raw/` is the source of truth.
+- Raw HTML in `demo/input-html-raw/` is the source of truth.
 - Message rules map each raw file name to one primary message type.
 - Shared helpers convert the raw content into both JSON preview files and TXT exports.
 - The same semantic rules should be used by server and frontend build paths where possible.
@@ -78,3 +78,5 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 - Update this file whenever a new raw file type is added or an export rule changes.
 - Keep this document synchronized with `src/shared/message-metadata.js`, `src/shared/export-text.js`, `src/shared/aria-label-parser.js`, and `src/shared/rules/message-rules.js`.
 - If a rule is ambiguous, prefer deterministic filename mapping over fragile heuristics.
+
+

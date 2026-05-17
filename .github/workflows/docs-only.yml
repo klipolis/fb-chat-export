@@ -16,7 +16,14 @@ on:
 
 jobs:
   docs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Docs-only changes detected; no full build required."
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '26'
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lint:docs
+      - run: pnpm run link:docs
+      - run: echo "Docs-only validation complete: markdown lint and link check passed."
