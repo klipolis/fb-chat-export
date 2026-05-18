@@ -6,7 +6,9 @@ const { version: projectVersion } = require('../../package.json');
 const sourcePath = path.resolve(__dirname, 'src', 'index.js');
 const distDir = path.resolve(__dirname, '..', '..', 'dist');
 const outputPath = path.join(distDir, 'app.js');
+const minOutputPath = path.join(distDir, 'app.min.js');
 const relOutputPath = './dist/app.js';
+const relMinOutputPath = './dist/app.min.js';
 const changelogPath = path.resolve(__dirname, '..', '..', 'CHANGELOG.md');
 const buildPlatform = process.env.BUILD_PLATFORM || 'userscript';
 
@@ -51,7 +53,7 @@ const headerBanner =
     : '';
 
 (async () => {
-  await build({
+  const sharedConfig = {
     stdin: {
       contents: trimmedContent,
       resolveDir: path.dirname(sourcePath),
@@ -61,12 +63,13 @@ const headerBanner =
     platform: 'browser',
     target: 'es2020',
     legalComments: 'none',
-    minify: true,
     banner: {
       js: headerBanner,
     },
-    outfile: outputPath,
-  });
+  };
 
-  console.log(`Generated frontend bundle: ${relOutputPath} (${buildVersion})`);
+  await build({ ...sharedConfig, minify: false, outfile: outputPath });
+  await build({ ...sharedConfig, minify: true, outfile: minOutputPath });
+
+  console.log(`Generated frontend bundle: ${relOutputPath} + ${relMinOutputPath} (${buildVersion})`);
 })();

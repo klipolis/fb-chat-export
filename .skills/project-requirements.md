@@ -51,5 +51,6 @@ This file now serves as a central index for split requirement documents.
 - Do not include entries for documentation-only edits, README updates, or planning notes.
 - CI, test tooling, and refactor changes with no user-visible effect belong under `### Dev` only.
 - Section headers per release: `### Added`, `### Changed`, `### Fixed`, `### Removed`, `### Dev`. Use only sections that have entries.
+- Keep each entry as short as possible — one sentence per change. Do not repeat information across entries. Avoid mentioning function names, file names, or internal identifiers.
 
 

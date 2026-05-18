@@ -9,18 +9,18 @@ export function createDetailsPanel(titleText) {
     'cursor: pointer; padding: 6px 10px; font-size: 12px; color: #555; background: #fafafa; display: flex; align-items: center; gap: 6px; user-select: none;';
 
   const arrow = document.createElement('span');
-  arrow.innerText = '▲';
+  arrow.textContent = '▲';
   arrow.style.cssText = 'font-size: 10px; color: #aaa;';
 
   const title = document.createElement('span');
-  title.innerText = titleText;
+  title.textContent = titleText;
 
   summary.appendChild(arrow);
   summary.appendChild(title);
   panel.appendChild(summary);
 
   panel.addEventListener('toggle', () => {
-    arrow.innerText = panel.open ? '▲' : '▼';
+    arrow.textContent = panel.open ? '▲' : '▼';
   });
 
   return { panel, summary, arrow, title };
@@ -31,7 +31,7 @@ export function createLabelInput(labelText, placeholder, value) {
   wrap.style.cssText = 'display: flex; align-items: center; gap: 6px;';
 
   const label = document.createElement('span');
-  label.innerText = labelText;
+  label.textContent = labelText;
   label.style.cssText = 'color: #777; font-size: 12px; width: 32px;';
 
   const input = document.createElement('input');
@@ -57,7 +57,7 @@ export function createCheckboxToggle(labelText) {
   input.style.cssText = 'cursor: pointer;';
 
   const text = document.createElement('span');
-  text.innerText = labelText;
+  text.textContent = labelText;
 
   wrap.appendChild(input);
   wrap.appendChild(text);
@@ -79,7 +79,7 @@ export function createCheckboxToggleWithInput(labelText, inputValue) {
   input.style.cssText = 'cursor: pointer;';
 
   const text = document.createElement('span');
-  text.innerText = labelText;
+  text.textContent = labelText;
 
   checkboxLabel.appendChild(input);
   checkboxLabel.appendChild(text);
@@ -99,7 +99,7 @@ export function createCheckboxToggleWithInput(labelText, inputValue) {
 export function createLinkAction(labelText, onClick) {
   const link = document.createElement('a');
   link.href = '#';
-  link.innerText = labelText;
+  link.textContent = labelText;
   link.style.cssText =
     'color: #0084ff; text-decoration: underline; font-size: 12px; cursor: pointer;';
   link.addEventListener('click', (event) => {
@@ -111,7 +111,7 @@ export function createLinkAction(labelText, onClick) {
 
 export function createButton(labelText, backgroundColor) {
   const button = document.createElement('button');
-  button.innerText = labelText;
+  button.textContent = labelText;
   button.style.cssText =
     `color: #fff; border: none; padding: 6px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; background: ${backgroundColor};`;
   return button;

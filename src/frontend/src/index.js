@@ -28,28 +28,44 @@ import {
   panelSummary.style.cssText =
     'cursor: pointer; padding: 6px 10px; font-size: 12px; color: #555; background: #fafafa; display: flex; align-items: center; gap: 6px; user-select: none;';
   const panelArrow = document.createElement('span');
-  panelArrow.innerText = '▲';
+  panelArrow.textContent = '▲';
+  panelArrow.setAttribute('aria-hidden', 'true');
   panelArrow.style.cssText = 'font-size: 10px; color: #aaa;';
   const panelTitle = document.createElement('span');
-  panelTitle.innerText = 'Export Chat';
+  panelTitle.textContent = 'Export Chat';
   panelSummary.appendChild(panelArrow);
   panelSummary.appendChild(panelTitle);
 
   panel.addEventListener('toggle', () => {
-    panelArrow.innerText = panel.open ? '▲' : '▼';
+    panelArrow.textContent = panel.open ? '▲' : '▼';
+    if (!panel.open && actionBtn.dataset.scanning === 'true') {
+      stopRequested = true;
+      if (scrollTimeout !== null) {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = null;
+      }
+      setScanState('idle');
+      noticeMsg.textContent = 'Scan cancelled.';
+    }
   });
 
   const instructions = document.createElement('div');
   instructions.style.cssText =
     'padding: 6px 10px; font-size: 11px; color: #666; background: #fafafa;';
-  instructions.innerText = 'Start at the bottom of the conversation';
+  instructions.textContent = 'Start at the bottom of the conversation';
 
   const notice = document.createElement('div');
   notice.style.cssText = 'padding: 6px 10px; font-size: 12px; color: #333;';
-  notice.innerHTML = 'Ready.';
+  notice.setAttribute('role', 'status');
+  notice.setAttribute('aria-live', 'polite');
+  const noticeMsg = document.createElement('span');
+  noticeMsg.textContent = 'Ready.';
 
   const downloadBtn = createButton('Download .txt', '#27ae60');
   downloadBtn.style.cssText += ' display: none; margin-left: 10px; vertical-align: middle;';
+
+  notice.appendChild(noticeMsg);
+  notice.appendChild(downloadBtn);
 
   // body: inputs + scan button
   const body = document.createElement('div');
@@ -59,7 +75,7 @@ import {
   const leftCol = document.createElement('div');
   leftCol.style.cssText = 'display: flex; flex-direction: column; gap: 6px;';
 
-  const { wrap: fromWrap, inp: fromInput } = createLabelInput(
+  const { wrap: fromWrap, input: fromInput } = createLabelInput(
     'From:',
     'YYYY-MM-DD',
     (() => {
@@ -68,7 +84,7 @@ import {
       return d.toISOString().slice(0, 10);
     })()
   );
-  const { wrap: toWrap, inp: toInput } = createLabelInput(
+  const { wrap: toWrap, input: toInput } = createLabelInput(
     'To:',
     'YYYY-MM-DD',
     new Date().toISOString().slice(0, 10)
@@ -80,21 +96,32 @@ import {
   rightCol.style.cssText =
     'display: flex; flex-direction: column; gap: 8px; min-width: 160px; padding-left: 10px;';
 
-  const { wrap: includeCallsWrap, inp: includeCallsChk } = createCheckboxToggle('Calls');
+  const { wrap: includeCallsWrap, input: includeCallsChk } = createCheckboxToggle('Calls');
   const {
     wrap: anonymizeWrap,
-    inp: anonymizeChk,
+    input: anonymizeChk,
     textInput: anonymizeInput,
   } = createCheckboxToggleWithInput('Anonymize as', 'Youghurt');
-  const { wrap: summaryWrap, inp: summaryChk } = createCheckboxToggle('Summary');
-  const { wrap: includeContentWrap, inp: includeContentChk } = createCheckboxToggle('Content');
-  const { wrap: lengthWrap, inp: lengthChk } = createCheckboxToggle('Length');
-  const selectAllLink = createLinkAction('All', () => {
-    includeCallsChk.checked = true;
-    anonymizeChk.checked = true;
-    summaryChk.checked = true;
-    includeContentChk.checked = true;
-    lengthChk.checked = true;
+  const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle('Summary');
+  const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle('Content');
+  const { wrap: lengthWrap, input: lengthChk } = createCheckboxToggle('Length');
+  function setAllChecked(state) {
+    includeCallsChk.checked = state;
+    anonymizeChk.checked = state;
+    summaryChk.checked = state;
+    includeContentChk.checked = state;
+    lengthChk.checked = state;
+    selectAllLink.textContent = state ? 'Uncheck all' : 'Check all';
+  }
+
+  const selectAllLink = createLinkAction('Check all', () => {
+    const allChecked =
+      includeCallsChk.checked &&
+      anonymizeChk.checked &&
+      summaryChk.checked &&
+      includeContentChk.checked &&
+      lengthChk.checked;
+    setAllChecked(!allChecked);
   });
 
   leftCol.appendChild(fromWrap);
@@ -109,7 +136,7 @@ import {
   rightCol.appendChild(selectAllLink);
 
   // Start with full-info mode selected by default.
-  selectAllLink.click();
+  setAllChecked(true);
 
   body.appendChild(leftCol);
   body.appendChild(rightCol);
@@ -121,8 +148,14 @@ import {
 
   const termsNote = document.createElement('div');
   termsNote.style.cssText = 'padding: 6px 10px 10px; font-size: 11px; color: #777;';
-  termsNote.innerHTML =
-    'Terms: <a href="https://github.com/klipolis/fb-chat-export/blob/main/docs/terms-and-conditions.md" target="_blank" rel="noreferrer noopener">docs/terms-and-conditions.md</a>';
+  const termsLabel = document.createTextNode('Terms: ');
+  const termsLink = document.createElement('a');
+  termsLink.href = 'https://github.com/klipolis/fb-chat-export/blob/main/docs/terms-and-conditions.md';
+  termsLink.target = '_blank';
+  termsLink.rel = 'noreferrer noopener';
+  termsLink.textContent = 'docs/terms-and-conditions.md';
+  termsNote.appendChild(termsLabel);
+  termsNote.appendChild(termsLink);
   panel.appendChild(termsNote);
 
   document.body.appendChild(panel);
@@ -178,9 +211,30 @@ import {
     };
   }
 
+  fromInput.addEventListener('input', () => { fromInput.style.borderColor = '#ccc'; });
+  toInput.addEventListener('input', () => { toInput.style.borderColor = '#ccc'; });
+
+  let downloadRevokeTimeout = null;
+  let scrollTimeout = null;
+  let stopRequested = false;
+
+  function setScanState(state) {
+    if (state === 'scanning') {
+      actionBtn.textContent = 'Stop Scan';
+      actionBtn.style.background = '#e74c3c';
+      actionBtn.dataset.scanning = 'true';
+      fromInput.disabled = toInput.disabled = true;
+    } else {
+      actionBtn.textContent = 'Scan Messages';
+      actionBtn.style.background = '#0084ff';
+      actionBtn.dataset.scanning = 'false';
+      fromInput.disabled = toInput.disabled = false;
+    }
+  }
+
   actionBtn.addEventListener('click', () => {
     if (actionBtn.dataset.scanning === 'true') {
-      actionBtn.dataset.stopped = 'true';
+      stopRequested = true;
       return;
     }
 
@@ -194,22 +248,24 @@ import {
 
     if (fromDate !== null && isNaN(fromDate)) {
       fromInput.style.borderColor = 'red';
+      noticeMsg.textContent = 'Invalid “From” date — use YYYY-MM-DD format.';
       return;
     }
     if (toDate !== null && isNaN(toDate)) {
       toInput.style.borderColor = 'red';
+      noticeMsg.textContent = 'Invalid “To” date — use YYYY-MM-DD format.';
       return;
     }
     fromInput.style.borderColor = toInput.style.borderColor = '#ccc';
 
-    fromInput.disabled = toInput.disabled = true;
-    actionBtn.innerText = 'Stop Scan';
-    actionBtn.style.background = '#e74c3c';
-    actionBtn.dataset.scanning = 'true';
-    actionBtn.dataset.stopped = 'false';
+    if (downloadRevokeTimeout !== null) {
+      clearTimeout(downloadRevokeTimeout);
+      downloadRevokeTimeout = null;
+    }
+    stopRequested = false;
+    setScanState('scanning');
     downloadBtn.style.display = 'none';
-    notice.innerHTML = 'Scanning: <b>0</b>';
-    notice.appendChild(downloadBtn);
+    noticeMsg.textContent = 'Scanning: 0';
 
     const collected = new Map();
 
@@ -300,11 +356,8 @@ import {
     const scroller = findScrollContainer();
 
     if (!scroller) {
-      notice.innerHTML = 'Could not find the message list. Make sure a conversation is open.';
-      actionBtn.innerText = 'Scan Messages';
-      actionBtn.style.background = '#0084ff';
-      actionBtn.dataset.scanning = 'false';
-      fromInput.disabled = toInput.disabled = false;
+      noticeMsg.textContent = 'Could not find the message list. Make sure a conversation is open.';
+      setScanState('idle');
       return;
     }
 
@@ -320,17 +373,16 @@ import {
 
     const scanStartedAt = Date.now();
 
-    let prevScrollTop = -1;
     let stableCount = 0;
-    let scrollTimeout = null;
 
     function scanStep() {
+      try {
       collectVisible();
-      notice.innerHTML = `Scanning... <b>${collected.size}</b> messages collected.`;
-      notice.appendChild(downloadBtn);
+      const elapsedSec = Math.round((Date.now() - scanStartedAt) / 1000);
+      noticeMsg.textContent = `Scanning... ${collected.size} collected (${elapsedSec}s).`;
 
       if (
-        actionBtn.dataset.stopped === 'true' ||
+        stopRequested ||
         reachedFromDate ||
         (scroller.scrollTop <= 0 && stableCount >= 3)
       ) {
@@ -340,11 +392,9 @@ import {
         const messages = sortedEntries.map((e) => e.line);
 
         if (messages.length === 0) {
-          notice.innerHTML = 'No messages found.';
-          notice.appendChild(downloadBtn);
-          actionBtn.innerText = 'Scan Messages';
-          actionBtn.style.background = '#0084ff';
-          fromInput.disabled = toInput.disabled = false;
+          noticeMsg.textContent = 'No messages found.';
+          downloadBtn.style.display = 'none';
+          setScanState('idle');
           return;
         }
 
@@ -359,7 +409,22 @@ import {
         const blob = new Blob([headerText + summaryText + messages.join('')], {
           type: 'text/plain',
         });
-        const url = URL.createObjectURL(blob);
+        let url;
+        try {
+          url = URL.createObjectURL(blob);
+        } catch (_) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            url = e.target.result;
+          };
+          reader.readAsDataURL(blob);
+          // Wait for synchronous FileReader on small blobs (data: URI fallback)
+          if (!url) {
+            noticeMsg.textContent = 'Could not prepare download (CSP restriction).';
+            setScanState('idle');
+            return;
+          }
+        }
 
         const fromLabel = fromInput.value.trim() || 'start';
         const toLabel = toInput.value.trim() || 'end';
@@ -370,31 +435,30 @@ import {
             : `${(elapsedMs / 60000).toFixed(2)} minutes`;
         const displayPersonName = getDisplayPersonName();
         const fileName = formatExportFileName();
-        notice.textContent = `Done: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
-        notice.appendChild(downloadBtn);
+        noticeMsg.textContent = `Done: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
         downloadBtn.style.display = '';
         downloadBtn.onclick = () => {
           if (downloadBtn.disabled) return;
           downloadBtn.disabled = true;
           downloadBtn.style.opacity = '0.5';
           downloadBtn.style.cursor = 'not-allowed';
-          const originalLabel = downloadBtn.innerText;
-          downloadBtn.innerText = 'Downloaded';
+          const originalLabel = downloadBtn.textContent;
+          downloadBtn.textContent = 'Downloaded';
           const a = document.createElement('a');
           a.href = url;
           a.download = fileName;
           a.click();
-          setTimeout(() => {
+          downloadRevokeTimeout = setTimeout(() => {
+            if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+            downloadRevokeTimeout = null;
             downloadBtn.disabled = false;
             downloadBtn.style.opacity = '1';
             downloadBtn.style.cursor = 'pointer';
-            downloadBtn.innerText = originalLabel;
+            downloadBtn.textContent = originalLabel;
           }, 10000);
         };
 
-        actionBtn.innerText = 'Scan Messages';
-        actionBtn.style.background = '#0084ff';
-        fromInput.disabled = toInput.disabled = false;
+        setScanState('idle');
         return;
       }
 
@@ -405,9 +469,13 @@ import {
         stableCount = 0;
         scroller.scrollTop = nextTop;
       }
-      prevScrollTop = scroller.scrollTop;
       const delay = 500 + Math.random() * 500;
       scrollTimeout = setTimeout(scanStep, delay);
+      } catch (err) {
+        noticeMsg.textContent = 'An unexpected error occurred. Please try again.';
+        setScanState('idle');
+        throw err;
+      }
     }
 
     scanStep();

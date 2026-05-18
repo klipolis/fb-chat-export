@@ -5,6 +5,7 @@ const { spawnSync } = require('child_process');
 
 const baseDir = path.resolve(__dirname, '..');
 const distPath = path.join(baseDir, 'dist', 'app.js');
+const minDistPath = path.join(baseDir, 'dist', 'app.min.js');
 
 const result = spawnSync('node', ['src/frontend/build.js'], {
   cwd: baseDir,
@@ -27,9 +28,25 @@ assert.ok(
   'dist/app.js should contain a version annotation'
 );
 assert.ok(contents.length > 200, 'dist/app.js should not be empty');
+
+assert.ok(fs.existsSync(minDistPath), 'dist/app.min.js should exist after build');
+const minContents = fs.readFileSync(minDistPath, 'utf8');
 assert.ok(
-  !/contentMeta\./.test(contents),
-  'dist/app.js should not contain stale contentMeta references'
+  /\/\/ ==UserScript==/.test(minContents),
+  'dist/app.min.js should contain a userscript header'
+);
+assert.ok(
+  /\/\/ @version\s+/.test(minContents),
+  'dist/app.min.js should contain a version annotation'
+);
+assert.ok(minContents.length > 200, 'dist/app.min.js should not be empty');
+assert.ok(
+  !/contentMeta\./.test(minContents),
+  'dist/app.min.js should not contain stale contentMeta references (variable should be mangled)'
+);
+assert.ok(
+  minContents.length < contents.length,
+  'dist/app.min.js should be smaller than dist/app.js'
 );
 
 console.log('Validated dist/app.js successfully.');

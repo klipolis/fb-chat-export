@@ -24,3 +24,4 @@ When writing or editing `CHANGELOG.md`:
 - Documentation-only edits, README updates, and planning notes do not belong in the changelog.
 - CI, test tooling, and refactor changes with no user-visible effect belong under `### Dev` only.
 - Section headers per release: `### Added`, `### Changed`, `### Fixed`, `### Removed`, `### Dev`. Include only sections with entries.
+- Keep each entry as short as possible — one sentence per change. Do not repeat information across entries. Avoid mentioning function names, file names, or internal identifiers.

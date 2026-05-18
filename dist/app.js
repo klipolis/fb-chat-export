@@ -1,21 +1,1436 @@
 // ==UserScript==
 // @name         Chat Exporter
 // @namespace    http://tampermonkey.net/
-// @version      5.2.2
+// @version      5.3.5
 // @description  Export chat conversations to text file
 // @match        https://www.facebook.com/messages/*
 // @grant        none
 // ==/UserScript==
 
 
-(()=>{var ot=Object.create;var De=Object.defineProperty;var it=Object.getOwnPropertyDescriptor;var rt=Object.getOwnPropertyNames;var lt=Object.getPrototypeOf,ct=Object.prototype.hasOwnProperty;var H=(e,n)=>()=>(n||e((n={exports:{}}).exports,n),n.exports);var dt=(e,n,t,o)=>{if(n&&typeof n=="object"||typeof n=="function")for(let i of rt(n))!ct.call(e,i)&&i!==t&&De(e,i,{get:()=>n[i],enumerable:!(o=it(n,i))||o.enumerable});return e};var K=(e,n,t)=>(t=e!=null?ot(lt(e)):{},dt(n||!e||!e.__esModule?De(t,"default",{value:e,enumerable:!0}):t,e));var Ne=H((It,ve)=>{ve.exports={message:'[aria-roledescription="message"]',messageLabel:"[aria-label]",messageText:".html-div",boldText:".html-b",italicText:".html-i",image:".html-img"}});var Ee=H((Pt,ze)=>{ze.exports=[{type:"unsent",matchFile:/^deleted\.html$/i,matchLabel:/deleted/i},{type:"audio-call",matchFile:/^audio-call\.html$/i,matchLabel:/audio call/i},{type:"image",matchFile:/^image\.html$/i,matchLabel:/image/i},{type:"link",matchFile:/^link-embed-no-text\.html$/i,matchLabel:/open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location/i},{type:"link",matchFile:/^link-text\.html$/i,matchLabel:/open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location/i},{type:"missed-call",matchFile:/^missed-audio-call\.html$/i,matchLabel:/missed[- ]call/i},{type:"missed-call",matchFile:/^missed-video-call\.html$/i,matchLabel:/missed[- ]call/i},{type:"text",matchFile:/^text-image-replied\.html$/i,matchLabel:/reply/i},{type:"text",matchFile:/^text-replied\.html$/i,matchLabel:/reply/i},{type:"video-call",matchFile:/^video-call\.html$/i,matchLabel:/video[- ]call/i},{type:"voice-message",matchFile:/^voice-note\.html$/i,matchLabel:/voice(?:[- ]message|[- ]note)|audio(?:[- ]message|[- ]note)/i},{type:"you-text",matchFile:/you - text message/i,matchLabel:/you:/i},{type:"text",matchFile:/^text\.html$/i,matchLabel:/^(?!.*\b(?:link|reply|unsent|video call|voice message|voice note|missed call)\b).*/i}]});var Ae=H((Yt,Fe)=>{var mt=Ne(),ut=Ee();Fe.exports={selectors:mt,messageRules:ut}});var X=H((Ht,Pe)=>{function q(e){return String(e||"").replace(/\s+/g," ").trim()}function pt(e){let n=q(e).replace(/\s*,\s*/g,", "),t,o=a=>/^[A-Za-z][A-Za-z .'-]{0,80}$/i.test(a)&&!/\d/.test(a),i=a=>{let s=q(a).match(/^([A-Za-z][A-Za-z .'-]{0,80}?)(?:\s+([\s\S]*))?$/);if(!s)return null;let m=q(s[1]),p=q(s[2]||"");return o(m)?{sender:m,message:p}:null},c=a=>{let d=a.split(",").map(m=>m.trim()).filter(Boolean),s="";for(let m=0;m<Math.min(d.length,3);m+=1)if(s=s?`${s}, ${d[m]}`:d[m],xe(s))return s;return null};if(t=n.match(/^At\s+(.+?),\s*([A-Za-z]+(?:\s+[A-Za-z]+){0,2})\s+[-–—]\s*([\s\S]*)$/i),t){let a=t[2].trim(),d=t[3].trim(),s=a.match(/\s(Yep|Yes|No|Ok|Okay)$/i);return s&&(a=a.slice(0,-s[0].length).trim(),d=`${s[1]} - ${d}`),{date:t[1].trim(),sender:a,message:d}}let r=n.match(/^At\s+([\s\S]*)$/i);if(r){let a=r[1].split(",").map(d=>d.trim()).filter(Boolean);if(a.length>=3){let d=a[a.length-1],s=a.slice(0,-1).join(", ");if(o(d))return{date:s.trim(),sender:d.trim(),message:""}}if(a.length>=2){let d=a[0],s=i(a.slice(1).join(", "));if(s)return{date:d.trim(),sender:s.sender,message:s.message}}}if(t=n.match(/^At\s+(.+),\s*([^:]+):\s*([\s\S]*)$/i),t){let a=t[1].trim();if(xe(a)||c(a))return{date:a,sender:t[2].trim(),message:t[3].trim()}}if(t=n.match(/^(.+?),\s*([^:]+):\s*([\s\S]*)$/i),t&&o(t[2]))return{date:t[1].trim(),sender:t[2].trim(),message:t[3].trim()};if(t=n.match(/^Enter,\s*([^:]+?)\s+sent\s+(.+?)\s+by\s+([^:]+):\s*([\s\S]*)$/i),t)return{date:t[2].trim(),sender:t[3].trim(),message:t[4].trim()};if(t=n.match(/^At\s+(.+),\s*([^:]+)$/i),t){let a=i(t[2]);return a?{date:t[1].trim(),sender:a.sender,message:a.message}:{date:t[1].trim(),sender:t[2].trim(),message:""}}if(t=n.match(/^Enter,\s*([^:]+?)\s+sent\s+(.+?)\s+by\s+([^:]+)$/i),t)return{date:t[2].trim(),sender:t[3].trim(),message:""};let h=n.indexOf(":");return{date:null,sender:null,message:h>=0?n.slice(h+1).trim():n}}function Ie(e){if(!e)return null;let n=q(e).replace(/^At\s+/i,""),t=Date.parse(n);if(!isNaN(t)){let d=new Date(t),s=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),p=String(d.getDate()).padStart(2,"0"),u=String(d.getHours()).padStart(2,"0"),l=String(d.getMinutes()).padStart(2,"0");return`${s}.${m}.${p} ${u}:${l}`}let o=new Date,i=new Date(o.getFullYear(),o.getMonth(),o.getDate()),c=n.match(/^(today|yesterday)(?:\s+at\s+)?(\d{1,2}):(\d{2})\s*(am|pm)?$/i);if(c){let[,d,s,m,p]=c,u=new Date(i);d.toLowerCase()==="yesterday"&&u.setDate(u.getDate()-1);let l=Number(s);p&&(p.toLowerCase()==="pm"&&l<12&&(l+=12),p.toLowerCase()==="am"&&l===12&&(l=0)),u.setHours(l,Number(m),0,0);let f=u.getFullYear(),x=String(u.getMonth()+1).padStart(2,"0"),w=String(u.getDate()).padStart(2,"0"),g=String(u.getHours()).padStart(2,"0");return`${f}.${x}.${w} ${g}:${m}`}let r=n.match(/^(sunday|monday|tuesday|wednesday|thursday|friday|saturday)(?:\s+(\d{1,2}):(\d{2})\s*(am|pm)?)?$/i);if(r){let[,d,s="0",m="00",p]=r,l=["sunday","monday","tuesday","wednesday","thursday","friday","saturday"].indexOf(d.toLowerCase()),f=(i.getDay()-l+7)%7,x=new Date(i);x.setDate(x.getDate()-f);let w=Number(s);p&&(p.toLowerCase()==="pm"&&w<12&&(w+=12),p.toLowerCase()==="am"&&w===12&&(w=0)),x.setHours(w,Number(m),0,0);let g=x.getFullYear(),E=String(x.getMonth()+1).padStart(2,"0"),W=String(x.getDate()).padStart(2,"0"),R=String(x.getHours()).padStart(2,"0");return`${g}.${E}.${W} ${R}:${m}`}let h=n.match(/^(?:at\s*)?(\d{1,2}):(\d{2})\s*(am|pm)?$/i);if(h){let[,d,s,m]=h,p=new Date(i),u=Number(d);m&&(m.toLowerCase()==="pm"&&u<12&&(u+=12),m.toLowerCase()==="am"&&u===12&&(u=0)),p.setHours(u,Number(s),0,0);let l=p.getFullYear(),f=String(p.getMonth()+1).padStart(2,"0"),x=String(p.getDate()).padStart(2,"0"),w=String(p.getHours()).padStart(2,"0");return`${l}.${f}.${x} ${w}:${s}`}let a=n.match(/^([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4}),\s*(\d{1,2}):(\d{2})\s*(am|pm)?$/i);if(a){let[,d,s,m,p,u,l]=a,f=Number(p);l&&(l.toLowerCase()==="pm"&&f<12&&(f+=12),l.toLowerCase()==="am"&&f===12&&(f=0));let x=new Date(`${d} 1, ${m}`).getMonth()+1;return`${m}.${String(x).padStart(2,"0")}.${String(s).padStart(2,"0")} ${String(f).padStart(2,"0")}:${u}`}return n}function xe(e){if(!e)return null;let n=Ie(e);if(!n)return null;let[t,o]=n.split(" ");if(!t||!o)return null;let[i,c,r]=t.split(".").map(Number),[h,a]=o.split(":").map(Number);if(![i,c,r,h,a].every(Number.isFinite))return null;let d=new Date(i,c-1,r,h,a,0,0);return isNaN(d.getTime())?null:d.toISOString()}Pe.exports={parseAriaLabel:pt,normalizeDateToSimple:Ie,normalizeDateToIso:xe,normalizeLabel:q}});var Se=H((Rt,Re)=>{var{messageRules:ie}=Ae(),{parseAriaLabel:ht,normalizeDateToSimple:gt,normalizeLabel:O}=X();function re(e){if(!e)return null;let n=String(e).trim(),t=n.match(/\b(?:am|pm)\b/i),o=a=>{let d=Math.max(0,Math.round(Number(a)||0)),s=Math.floor(d/3600),m=Math.floor(d%3600/60),p=d%60;return s>0?`${s}:${String(m).padStart(2,"0")}:${String(p).padStart(2,"0")} mins`:`${m}:${String(p).padStart(2,"0")} mins`},i=n.match(/^(\d+):(\d{2}):(\d{2})(?!\s*(?:am|pm)\b)/i);if(i&&!t){let a=Number(i[1])*3600+Number(i[2])*60+Number(i[3]);return o(a)}let c=n.match(/^(\d+):(\d{2})(?!\s*(?:am|pm)\b)/i);if(c&&!t){let a=Number(c[1])*60+Number(c[2]);return o(a)}let r=n.match(/(\d+(?:\.\d+)?)\s*min(?:s)?/i);if(r){let a=parseFloat(r[1])*60;return o(a)}let h=n.match(/(\d+)\s*sec/i);return h?o(parseInt(h[1],10)):null}function Ye(e){try{let n=new URL(e),t=n.hostname.toLowerCase(),o=n.pathname.toLowerCase(),i=/(^|\.)facebook\.com$|(^|\.)messenger\.com$/.test(t),c=o.includes("/l.php")||o.includes("/flx/warn/");if(!i||!c)return e;let r=n.searchParams.get("u")||n.searchParams.get("url")||n.searchParams.get("q");if(!r)return e;let h=decodeURIComponent(r);return/^https?:\/\//i.test(h)?h:e}catch{let n=e.match(/https?:\/\/(?:l\.facebook\.com|l\.m\.facebook\.com|l\.messenger\.com|l\.m\.messenger\.com)\/l\.php\?(?:[^#]*?)(?:u|url|q)=([^&#]+)/i);if(!n)return e;try{let t=decodeURIComponent(n[1]);return/^https?:\/\//i.test(t)?t:e}catch{return n[1]}}}function ye(e){if(!e)return null;let n=String(e).match(/(https?:\/\/[^\s"'<]+)/i),t=String(e).match(/\b(www\.[^\s"'<]+)/i),o=n?n[0]:t?`https://${t[1]}`:null;return o?Ye(o):null}function be(e){let t=O(e).match(/\bPinned Location\s*(.+)$/i);if(!t)return null;let o=t[1].trim();return o?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o)}`:null}function ft(e,n){if(!e||!n)return!1;let t=O(e).replace(/[.,;:!?]+$/g,"").trim(),o=O(n).replace(/[.,;:!?]+$/g,"").trim();return t===o}function He(e,n){let t=String(e||"").toLowerCase(),o=String(n||"").toLowerCase(),i=ie.find(r=>r.matchFile&&r.matchFile.test(t));if(i)return i;let c=ie.find(r=>r.matchLabel&&r.matchLabel.test(o));return c||ie.find(r=>r.type==="text")||ie[0]}function xt(e){return e==="you-text"?"text":e}function yt({fileName:e="",ariaLabel:n="",message:t="",rawMeta:o={},hasImage:i=!1,hasPlayButton:c=!1,hasLink:r=!1,timerText:h=""}={}){let a=O(t).replace(/[\r\n]+/g," "),d=O(n),s=String(e||"").toLowerCase(),m=/(?:^|[\\/])link-text\.html$/i.test(s)||s==="link-text.html",p=He(e,n),u=!!(p&&p.matchFile&&p.matchFile.test(String(e||"").toLowerCase())),l=xt(p.type||"text"),f=o.link||ye(a)||ye(d)||null,x=f?Ye(f):null,w=be(a)||be(d),g=x||w||null,E=!s&&!!a&&!/^\b(?:pinned\s+location|open\s+attachment|view\s+attachment|attachment|open\s+link|view\s+link)\b/i.test(a),W=re(o.duration),R=re(h)||re(a),ce=W||R,J=/(?:unsent|deleted)/i.test(a)||/(?:unsent|deleted)/i.test(d),Q=a.match(/\b(?:missed\s+)?(?:video|audio)?\s*call\b/i)||d.match(/\b(?:missed\s+)?(?:video|audio)?\s*call\b/i),ee=/\b(?:voice\s+message|voice\s+note|audio\s+message|audio\s+note)\b/i.test(a)||/\b(?:voice\s+message|voice\s+note|audio\s+message|audio\s+note)\b/i.test(d)||!!h,te=!!f||r||/https?:\/\/|www\.|fbcdn\.|fbsbx\.|facebook\.com|fb\.me|m\.me|l\.facebook\.com\/l\.php|l\.messenger\.com\/l\.php|href\b/i.test(a)||/https?:\/\/|www\.|fbcdn\.|fbsbx\.|facebook\.com|fb\.me|m\.me|l\.facebook\.com\/l\.php|l\.messenger\.com\/l\.php|href\b/i.test(d)||/\b(?:attachment|open attachment|download|view attachment|open link|view link|pinned location)\b/i.test(a)||/\b(?:attachment|open attachment|download|view attachment|open link|view link|pinned location)\b/i.test(d),F=/\b(?:image sent|photo sent|picture sent|sent image|sent photo|sent picture)\b/i,de=i&&(F.test(a)||F.test(d))||F.test(a)||F.test(d);if(!u)if(J)l="unsent";else if(Q){let $=Q[0].toLowerCase();/missed/.test($)?l="missed-call":/video/.test($)?l="video-call":/audio/.test($)?l="audio-call":l="voice-message"}else te?l="link":ee?l="voice-message":de&&(l="image");let L=a;l==="unsent"?L="message unsent":l==="link"?(m||E)&&a?M?L=g||a:g&&a.includes(g)?L=a:L=g?`${g} ${a}`:a:L=g||"link":l==="voice-message"?L="voice message":l==="image"?L="image sent":(l==="video-call"||l==="audio-call"||l==="missed-call")&&(L=/\bcall\b/i.test(a)?a:l.replace(/-/g," "));let y=new Set(["voice-message","video-call","audio-call"]),S=new Set(["image","missed-call","unsent",...y]),C=y.has(l)?ce:null,M=l==="link"&&!!g&&ft(a,g),A=l==="link"&&(m||E)&&!!a&&!M,D=S.has(l)||l==="link"&&!A?void 0:`${L.length} chars`;return{type:l,text:L,contentLength:D,link:g||void 0,voiceDurationSource:o.duration?"timer":h?"label":void 0,isCall:l==="video-call"||l==="missed-call"||l==="audio-call",isImage:l==="image",duration:C}}Re.exports={parseAriaLabel:ht,normalizeDateToSimple:gt,normalizeLabel:O,normalizeDuration:re,extractLink:ye,extractPinnedLocationLink:be,chooseRule:He,getContentMeta:yt}});var Be=H((Bt,bt)=>{bt.exports={method:"server",messageTypes:["audio-call","deleted","image","link-embed-no-text","link-text","missed-audio-call","missed-video-call","text-image-replied","text-replied","text","video-call","voice-note"],patterns:{entryLine:"^\\[\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}\\]\\s[^:]+:\\s[^/]+(?:\\s/\\s.*)?$",duration:"\\d+:\\d{2}(?::\\d{2})?\\s+mins",totalSummaryTitle:"^Total Summary$",totalLine:"^\\d+\\s+(?:message|messages)\\s*/\\s*\\d+\\s+(?:day|days)$",roughTextLine:"^~\\s+\\d+\\s+text;$",roughImagesLine:"^~\\s+\\d+\\s+images$",roughCallsLine:"^~\\s+\\d+\\s+calls\\s+\\d+\\s+mins$",personSummaryTitle:"^(Alpha|Youghurt) Summary$"},summaryConcept:{totalSummaryTitle:"Total Summary",roughPrefix:"~",personSummarySuffix:" Summary"},exports:[{fileName:"fb-chats-export-content-on.txt",includeContent:!0,includeSummary:!0},{fileName:"fb-chats-export-content-off.txt",includeContent:!1,includeSummary:!1}]}});var Te=H((qt,je)=>{function qe(e){return!(e instanceof Date)||isNaN(e)?"unknown":`${e.getFullYear()}-${String(e.getMonth()+1).padStart(2,"0")}-${String(e.getDate()).padStart(2,"0")}`}var{summaryConcept:$e}=Be(),Oe=$e.totalSummaryTitle||"Total Summary",U=$e.roughPrefix||"~",St=$e.personSummarySuffix||" Summary";function $t(e){let n=String(e.type||e.fileType||"").toLowerCase();return["unsent","deleted","missed-call","missed-audio-call","missed-video-call"].includes(n)}function Tt(e){let n=String(e.type||e.fileType||"").toLowerCase();return["missed-call","missed-audio-call","missed-video-call"].includes(n)}function Ue(e){let n=String(e.type||e.fileType||"").toLowerCase();return["audio-call","video-call","voice-note","voice-message"].includes(n)}function We(e=[],n={}){if(!e.length)return{total:{title:Oe,messages:0,days:0,rough:{text:0,images:0,calls:0,callMinutes:0}},participants:[]};let t=new Map,o=new Set;e.forEach(s=>{let m=s.sender||"Unknown",p=qe(s.date);o.add(p);let u=t.get(m)||{count:0,days:new Set,calls:0,minutes:0,images:0};u.count+=1,u.days.add(p),Ue(s)&&(u.calls+=1,u.minutes+=Number(s.callMinutes||0)),s.isImage&&(u.images+=1),t.set(m,u)});let i;if(Array.isArray(n.fixedParticipants)&&n.fixedParticipants.length)for(i=n.fixedParticipants.slice(0,2);i.length<2;)i.push(`Unknown ${i.length+1}`);else{let s=[];for(e.forEach(m=>{s.includes(m.sender)||s.push(m.sender)}),i=s.slice(0,2);i.length<2;)i.push(`Unknown ${i.length+1}`)}let c=i.map(s=>{let m=e.filter(g=>(g.sender||"Unknown")===s),p=m.filter(g=>!$t(g)),u=new Set,l=0,f=0,x=0;m.forEach(g=>{let E=qe(g.date);u.add(E)}),p.forEach(g=>{g.isImage&&(l+=1),Ue(g)&&!Tt(g)&&(f+=1,x+=Number(g.callMinutes||0))});let w=Math.max(0,p.length-f-l);return{name:s,participantEntries:m,includedEntries:p,participantDays:u,participantText:w,participantImages:l,participantCalls:f,participantMinutes:x}}),r=c.reduce((s,m)=>s+m.participantText,0),h=c.reduce((s,m)=>s+m.participantImages,0),a=c.reduce((s,m)=>s+m.participantCalls,0),d=c.reduce((s,m)=>s+m.participantMinutes,0);return{total:{title:Oe,messages:e.length,days:o.size,rough:{text:r,images:h,calls:a,callMinutes:d}},participants:c.map(s=>({title:`${s.name}${St}`,name:s.name,messages:s.participantEntries.length,days:s.participantDays.size,rough:{text:s.participantText,images:s.participantImages,calls:s.participantCalls,callMinutes:s.participantMinutes}}))}}function wt(e=[],n={}){if(!e.length)return"";let t=We(e,n),o=!!n.useMessageLabel,i=o?t.total.messages===1?"message":"messages":t.total.messages===1?"post":"posts",c=o&&t.total.days===1?"day":"days",h=[t.total.title,`${t.total.messages} ${i} / ${t.total.days} ${c}`,`${U} ${t.total.rough.text} text;`,`${U} ${t.total.rough.images} images`,`${U} ${t.total.rough.calls} calls ${t.total.rough.callMinutes} mins`,""];return t.participants.forEach(a=>{let d=o?a.messages===1?"message":"messages":a.messages===1?"post":"posts",s=o&&a.days===1?"day":"days",m="text;";h.push(a.title),h.push(`${a.messages} ${d} / ${a.days} ${s}`),h.push(`${U} ${a.rough.text} ${m}`),h.push(`${U} ${a.rough.images} images`),h.push(`${U} ${a.rough.calls} calls ${a.rough.callMinutes} mins`),h.push("")}),h.push("---"),h.join(`
-`)+`
-`}je.exports={buildSummary:wt,buildSummaryData:We}});var Ve=H((Ot,_e)=>{var{normalizeDuration:Ze}=Se(),{normalizeDateToIso:Lt}=X(),{buildSummary:Ct,buildSummaryData:kt}=Te();function Mt({method:e,messageTypes:n}){let t=n.map(o=>`- ${o}`).join(`
-`);return`Method: ${e}
+(() => {
+  var __create = Object.create;
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __getProtoOf = Object.getPrototypeOf;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __commonJS = (cb, mod) => function __require() {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+    // If the importer is in node compatibility mode or this is not an ESM
+    // file that has been converted to a CommonJS file using a Babel-
+    // compatible transform (i.e. "__esModule" has not been set), then set
+    // "default" to the CommonJS "module.exports" for node compatibility.
+    isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+    mod
+  ));
+
+  // src/shared/rules/selectors.js
+  var require_selectors = __commonJS({
+    "src/shared/rules/selectors.js"(exports, module) {
+      module.exports = {
+        message: '[aria-roledescription="message"]',
+        messageLabel: "[aria-label]",
+        messageText: ".html-div",
+        boldText: ".html-b",
+        italicText: ".html-i",
+        image: ".html-img"
+      };
+    }
+  });
+
+  // src/shared/rules/message-rules.js
+  var require_message_rules = __commonJS({
+    "src/shared/rules/message-rules.js"(exports, module) {
+      module.exports = [
+        {
+          type: "unsent",
+          matchFile: /^deleted\.html$/i,
+          matchLabel: /deleted/i
+        },
+        {
+          type: "audio-call",
+          matchFile: /^audio-call\.html$/i,
+          matchLabel: /audio call/i
+        },
+        {
+          type: "image",
+          matchFile: /^image\.html$/i,
+          matchLabel: /image/i
+        },
+        {
+          type: "link",
+          matchFile: /^link-embed-no-text\.html$/i,
+          matchLabel: /open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location/i
+        },
+        {
+          type: "link",
+          matchFile: /^link-text\.html$/i,
+          matchLabel: /open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location/i
+        },
+        {
+          type: "missed-call",
+          matchFile: /^missed-audio-call\.html$/i,
+          matchLabel: /missed[- ]call/i
+        },
+        {
+          type: "missed-call",
+          matchFile: /^missed-video-call\.html$/i,
+          matchLabel: /missed[- ]call/i
+        },
+        {
+          type: "text",
+          matchFile: /^text-image-replied\.html$/i,
+          matchLabel: /reply/i
+        },
+        {
+          type: "text",
+          matchFile: /^text-replied\.html$/i,
+          matchLabel: /reply/i
+        },
+        {
+          type: "video-call",
+          matchFile: /^video-call\.html$/i,
+          matchLabel: /video[- ]call/i
+        },
+        {
+          type: "voice-message",
+          matchFile: /^voice-note\.html$/i,
+          matchLabel: /voice(?:[- ]message|[- ]note)|audio(?:[- ]message|[- ]note)/i
+        },
+        {
+          type: "you-text",
+          matchFile: /you - text message/i,
+          matchLabel: /you:/i
+        },
+        {
+          type: "text",
+          matchFile: /^text\.html$/i,
+          matchLabel: /^(?!.*\b(?:link|reply|unsent|video call|voice message|voice note|missed call)\b).*/i
+        }
+      ];
+    }
+  });
+
+  // src/shared/rules/index.js
+  var require_rules = __commonJS({
+    "src/shared/rules/index.js"(exports, module) {
+      var selectors = require_selectors();
+      var messageRules = require_message_rules();
+      module.exports = {
+        selectors,
+        messageRules
+      };
+    }
+  });
+
+  // src/shared/aria-label-parser.js
+  var require_aria_label_parser = __commonJS({
+    "src/shared/aria-label-parser.js"(exports, module) {
+      function normalizeLabel(text) {
+        return String(text || "").replace(/\s+/g, " ").trim();
+      }
+      function parseAriaLabel2(ariaLabel) {
+        const label = normalizeLabel(ariaLabel).replace(/\s*,\s*/g, ", ");
+        let match;
+        const isValidSender = (value) => /^[A-Za-z][A-Za-z .'-]{0,80}$/i.test(value) && !/\d/.test(value);
+        const splitSenderAndMessage = (value) => {
+          const text = normalizeLabel(value);
+          const firstWordMatch = text.match(/^([A-Za-z][A-Za-z .'-]{0,80}?)(?:\s+([\s\S]*))?$/);
+          if (!firstWordMatch) return null;
+          const sender = normalizeLabel(firstWordMatch[1]);
+          const message = normalizeLabel(firstWordMatch[2] || "");
+          if (!isValidSender(sender)) return null;
+          return { sender, message };
+        };
+        const findValidDatePrefix = (text) => {
+          const parts = text.split(",").map((part) => part.trim()).filter(Boolean);
+          let candidate = "";
+          for (let i = 0; i < Math.min(parts.length, 3); i += 1) {
+            candidate = candidate ? `${candidate}, ${parts[i]}` : parts[i];
+            if (normalizeDateToIso3(candidate)) return candidate;
+          }
+          return null;
+        };
+        match = label.match(/^At\s+(.+?),\s*([A-Za-z]+(?:\s+[A-Za-z]+){0,2})\s+[-–—]\s*([\s\S]*)$/i);
+        if (match) {
+          let sender = match[2].trim();
+          let message = match[3].trim();
+          const conversationalToken = sender.match(/\s(Yep|Yes|No|Ok|Okay)$/i);
+          if (conversationalToken) {
+            sender = sender.slice(0, -conversationalToken[0].length).trim();
+            message = `${conversationalToken[1]} - ${message}`;
+          }
+          return {
+            date: match[1].trim(),
+            sender,
+            message
+          };
+        }
+        const atPrefix = label.match(/^At\s+([\s\S]*)$/i);
+        if (atPrefix) {
+          const tailParts = atPrefix[1].split(",").map((part) => part.trim()).filter(Boolean);
+          if (tailParts.length >= 3) {
+            const maybeSender = tailParts[tailParts.length - 1];
+            const maybeDate = tailParts.slice(0, -1).join(", ");
+            if (isValidSender(maybeSender)) {
+              return {
+                date: maybeDate.trim(),
+                sender: maybeSender.trim(),
+                message: ""
+              };
+            }
+          }
+          if (tailParts.length >= 2) {
+            const maybeDate = tailParts[0];
+            const senderAndMessage = splitSenderAndMessage(tailParts.slice(1).join(", "));
+            if (senderAndMessage) {
+              return {
+                date: maybeDate.trim(),
+                sender: senderAndMessage.sender,
+                message: senderAndMessage.message
+              };
+            }
+          }
+        }
+        match = label.match(/^At\s+(.+),\s*([^:]+):\s*([\s\S]*)$/i);
+        if (match) {
+          const dateValue = match[1].trim();
+          const normalizedDate = normalizeDateToIso3(dateValue);
+          if (normalizedDate || findValidDatePrefix(dateValue)) {
+            return {
+              date: dateValue,
+              sender: match[2].trim(),
+              message: match[3].trim()
+            };
+          }
+        }
+        match = label.match(/^(.+?),\s*([^:]+):\s*([\s\S]*)$/i);
+        if (match && isValidSender(match[2])) {
+          return {
+            date: match[1].trim(),
+            sender: match[2].trim(),
+            message: match[3].trim()
+          };
+        }
+        match = label.match(/^Enter,\s*([^:]+?)\s+sent\s+(.+?)\s+by\s+([^:]+):\s*([\s\S]*)$/i);
+        if (match) {
+          return {
+            date: match[2].trim(),
+            sender: match[3].trim(),
+            message: match[4].trim()
+          };
+        }
+        match = label.match(/^At\s+(.+),\s*([^:]+)$/i);
+        if (match) {
+          const senderAndMessage = splitSenderAndMessage(match[2]);
+          if (senderAndMessage) {
+            return {
+              date: match[1].trim(),
+              sender: senderAndMessage.sender,
+              message: senderAndMessage.message
+            };
+          }
+          return {
+            date: match[1].trim(),
+            sender: match[2].trim(),
+            message: ""
+          };
+        }
+        match = label.match(/^Enter,\s*([^:]+?)\s+sent\s+(.+?)\s+by\s+([^:]+)$/i);
+        if (match) {
+          return {
+            date: match[2].trim(),
+            sender: match[3].trim(),
+            message: ""
+          };
+        }
+        const colonIndex = label.indexOf(":");
+        return {
+          date: null,
+          sender: null,
+          message: colonIndex >= 0 ? label.slice(colonIndex + 1).trim() : label
+        };
+      }
+      function normalizeDateToSimple(dateString) {
+        if (!dateString) return null;
+        let text = normalizeLabel(dateString).replace(/^At\s+/i, "");
+        const parsed = Date.parse(text);
+        if (!isNaN(parsed)) {
+          const date = new Date(parsed);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          const hours = String(date.getHours()).padStart(2, "0");
+          const minutes = String(date.getMinutes()).padStart(2, "0");
+          return `${year}.${month}.${day} ${hours}:${minutes}`;
+        }
+        const now = /* @__PURE__ */ new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const relativeMatch = text.match(/^(today|yesterday)(?:\s+at\s+)?(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+        if (relativeMatch) {
+          const [, when, hourPart, minute, meridiem] = relativeMatch;
+          const date = new Date(today);
+          if (when.toLowerCase() === "yesterday") date.setDate(date.getDate() - 1);
+          let hour = Number(hourPart);
+          if (meridiem) {
+            if (meridiem.toLowerCase() === "pm" && hour < 12) hour += 12;
+            if (meridiem.toLowerCase() === "am" && hour === 12) hour = 0;
+          }
+          date.setHours(hour, Number(minute), 0, 0);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          const hours = String(date.getHours()).padStart(2, "0");
+          return `${year}.${month}.${day} ${hours}:${minute}`;
+        }
+        const dayOfWeekMatch = text.match(
+          /^(sunday|monday|tuesday|wednesday|thursday|friday|saturday)(?:\s+(\d{1,2}):(\d{2})\s*(am|pm)?)?$/i
+        );
+        if (dayOfWeekMatch) {
+          const [, dayName, hourPart = "0", minute = "00", meridiem] = dayOfWeekMatch;
+          const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+          const targetDow = days.indexOf(dayName.toLowerCase());
+          const diff = (today.getDay() - targetDow + 7) % 7;
+          const date = new Date(today);
+          date.setDate(date.getDate() - diff);
+          let hour = Number(hourPart);
+          if (meridiem) {
+            if (meridiem.toLowerCase() === "pm" && hour < 12) hour += 12;
+            if (meridiem.toLowerCase() === "am" && hour === 12) hour = 0;
+          }
+          date.setHours(hour, Number(minute), 0, 0);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          const hours = String(date.getHours()).padStart(2, "0");
+          return `${year}.${month}.${day} ${hours}:${minute}`;
+        }
+        const timeOnlyMatch = text.match(/^(?:at\s*)?(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+        if (timeOnlyMatch) {
+          const [, hourPart, minute, meridiem] = timeOnlyMatch;
+          const date = new Date(today);
+          let hour = Number(hourPart);
+          if (meridiem) {
+            if (meridiem.toLowerCase() === "pm" && hour < 12) hour += 12;
+            if (meridiem.toLowerCase() === "am" && hour === 12) hour = 0;
+          }
+          date.setHours(hour, Number(minute), 0, 0);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          const hours = String(date.getHours()).padStart(2, "0");
+          return `${year}.${month}.${day} ${hours}:${minute}`;
+        }
+        const fullMatch = text.match(
+          /^([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4}),\s*(\d{1,2}):(\d{2})\s*(am|pm)?$/i
+        );
+        if (fullMatch) {
+          const [, monthName, day, year, hourPart, minute, meridiem] = fullMatch;
+          let hour = Number(hourPart);
+          if (meridiem) {
+            if (meridiem.toLowerCase() === "pm" && hour < 12) hour += 12;
+            if (meridiem.toLowerCase() === "am" && hour === 12) hour = 0;
+          }
+          const monthIndex = (/* @__PURE__ */ new Date(`${monthName} 1, ${year}`)).getMonth() + 1;
+          return `${year}.${String(monthIndex).padStart(2, "0")}.${String(day).padStart(2, "0")} ${String(hour).padStart(2, "0")}:${minute}`;
+        }
+        return text;
+      }
+      function normalizeDateToIso3(dateString) {
+        if (!dateString) return null;
+        const normalized = normalizeDateToSimple(dateString);
+        if (!normalized) return null;
+        const [dayPart, timePart] = normalized.split(" ");
+        if (!dayPart || !timePart) return null;
+        const [year, month, day] = dayPart.split(".").map(Number);
+        const [hour, minute] = timePart.split(":").map(Number);
+        if (![year, month, day, hour, minute].every(Number.isFinite)) return null;
+        const date = new Date(year, month - 1, day, hour, minute, 0, 0);
+        if (isNaN(date.getTime())) return null;
+        return date.toISOString();
+      }
+      module.exports = {
+        parseAriaLabel: parseAriaLabel2,
+        normalizeDateToSimple,
+        normalizeDateToIso: normalizeDateToIso3,
+        normalizeLabel
+      };
+    }
+  });
+
+  // src/shared/message-metadata.js
+  var require_message_metadata = __commonJS({
+    "src/shared/message-metadata.js"(exports, module) {
+      var { messageRules } = require_rules();
+      var { parseAriaLabel: parseAriaLabel2, normalizeDateToSimple, normalizeLabel } = require_aria_label_parser();
+      function normalizeDuration2(text) {
+        if (!text) return null;
+        const normalized = String(text).trim();
+        const suffix = normalized.match(/\b(?:am|pm)\b/i);
+        const formatFromSeconds = (totalSeconds) => {
+          const safeSeconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
+          const hours = Math.floor(safeSeconds / 3600);
+          const minutes = Math.floor(safeSeconds % 3600 / 60);
+          const seconds = safeSeconds % 60;
+          if (hours > 0) {
+            return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")} mins`;
+          }
+          return `${minutes}:${String(seconds).padStart(2, "0")} mins`;
+        };
+        const hhmmss = normalized.match(/^(\d+):(\d{2}):(\d{2})(?!\s*(?:am|pm)\b)/i);
+        if (hhmmss && !suffix) {
+          const totalSeconds = Number(hhmmss[1]) * 3600 + Number(hhmmss[2]) * 60 + Number(hhmmss[3]);
+          return formatFromSeconds(totalSeconds);
+        }
+        const hhmm = normalized.match(/^(\d+):(\d{2})(?!\s*(?:am|pm)\b)/i);
+        if (hhmm && !suffix) {
+          const totalSeconds = Number(hhmm[1]) * 60 + Number(hhmm[2]);
+          return formatFromSeconds(totalSeconds);
+        }
+        const minMatch = normalized.match(/(\d+(?:\.\d+)?)\s*min(?:s)?/i);
+        if (minMatch) {
+          const totalSeconds = parseFloat(minMatch[1]) * 60;
+          return formatFromSeconds(totalSeconds);
+        }
+        const secMatch = normalized.match(/(\d+)\s*sec/i);
+        if (secMatch) {
+          return formatFromSeconds(parseInt(secMatch[1], 10));
+        }
+        return null;
+      }
+      function normalizeFacebookRedirect(url) {
+        try {
+          const parsed = new URL(url);
+          const host = parsed.hostname.toLowerCase();
+          const path = parsed.pathname.toLowerCase();
+          const isFacebookRedirectHost = /(^|\.)facebook\.com$|(^|\.)messenger\.com$/.test(host);
+          const isRedirectPath = path.includes("/l.php") || path.includes("/flx/warn/");
+          if (!isFacebookRedirectHost || !isRedirectPath) return url;
+          const candidate = parsed.searchParams.get("u") || parsed.searchParams.get("url") || parsed.searchParams.get("q");
+          if (!candidate) return url;
+          const decoded = decodeURIComponent(candidate);
+          return /^https?:\/\//i.test(decoded) ? decoded : url;
+        } catch {
+          const redirectMatch = url.match(
+            /https?:\/\/(?:l\.facebook\.com|l\.m\.facebook\.com|l\.messenger\.com|l\.m\.messenger\.com)\/l\.php\?(?:[^#]*?)(?:u|url|q)=([^&#]+)/i
+          );
+          if (!redirectMatch) return url;
+          try {
+            const decoded = decodeURIComponent(redirectMatch[1]);
+            return /^https?:\/\//i.test(decoded) ? decoded : url;
+          } catch {
+            return redirectMatch[1];
+          }
+        }
+      }
+      function extractLink(text) {
+        if (!text) return null;
+        const urlMatch = String(text).match(/(https?:\/\/[^\s"'<]+)/i);
+        const wwwMatch = String(text).match(/\b(www\.[^\s"'<]+)/i);
+        const rawUrl = urlMatch ? urlMatch[0] : wwwMatch ? `https://${wwwMatch[1]}` : null;
+        if (!rawUrl) return null;
+        return normalizeFacebookRedirect(rawUrl);
+      }
+      function extractPinnedLocationLink(text) {
+        const normalized = normalizeLabel(text);
+        const locationMatch = normalized.match(/\bPinned Location\s*(.+)$/i);
+        if (!locationMatch) return null;
+        const locationText = locationMatch[1].trim();
+        if (!locationText) return null;
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationText)}`;
+      }
+      function isLinkOnlyText(text, link) {
+        if (!text || !link) return false;
+        const normalizedText = normalizeLabel(text).replace(/[.,;:!?]+$/g, "").trim();
+        const normalizedLink = normalizeLabel(link).replace(/[.,;:!?]+$/g, "").trim();
+        return normalizedText === normalizedLink;
+      }
+      function chooseRule(fileName, ariaLabel) {
+        const loweredFile = String(fileName || "").toLowerCase();
+        const loweredLabel = String(ariaLabel || "").toLowerCase();
+        const fileRule = messageRules.find((rule) => rule.matchFile && rule.matchFile.test(loweredFile));
+        if (fileRule) return fileRule;
+        const labelRule = messageRules.find(
+          (rule) => rule.matchLabel && rule.matchLabel.test(loweredLabel)
+        );
+        if (labelRule) return labelRule;
+        return messageRules.find((rule) => rule.type === "text") || messageRules[0];
+      }
+      function normalizeContentType(type) {
+        if (type === "you-text") return "text";
+        return type;
+      }
+      function getContentMeta2({
+        fileName = "",
+        ariaLabel = "",
+        message = "",
+        rawMeta = {},
+        hasImage = false,
+        hasPlayButton = false,
+        hasLink = false,
+        timerText = ""
+      } = {}) {
+        const normalizedText = normalizeLabel(message).replace(/[\r\n]+/g, " ");
+        const normalizedLabel = normalizeLabel(ariaLabel);
+        const loweredFileName = String(fileName || "").toLowerCase();
+        const isLinkTextFile = /(?:^|[\\/])link-text\.html$/i.test(loweredFileName) || loweredFileName === "link-text.html";
+        const rule = chooseRule(fileName, ariaLabel);
+        const fileTypeLocked = Boolean(
+          rule && rule.matchFile && rule.matchFile.test(String(fileName || "").toLowerCase())
+        );
+        let type = normalizeContentType(rule.type || "text");
+        const rawLink = rawMeta.link || extractLink(normalizedText) || extractLink(normalizedLabel) || null;
+        const link = rawLink ? normalizeFacebookRedirect(rawLink) : null;
+        const pinnedLocationLink = extractPinnedLocationLink(normalizedText) || extractPinnedLocationLink(normalizedLabel);
+        const resolvedLink = link || pinnedLocationLink || null;
+        const isLinkTextLikeLive = !loweredFileName && Boolean(normalizedText) && !/^\b(?:pinned\s+location|open\s+attachment|view\s+attachment|attachment|open\s+link|view\s+link)\b/i.test(
+          normalizedText
+        );
+        const normalizedRawDuration = normalizeDuration2(rawMeta.duration);
+        const fallbackDuration = normalizeDuration2(timerText) || normalizeDuration2(normalizedText);
+        const rawDuration = normalizedRawDuration || fallbackDuration;
+        const unsent = /(?:unsent|deleted)/i.test(normalizedText) || /(?:unsent|deleted)/i.test(normalizedLabel);
+        const callMatch = normalizedText.match(/\b(?:missed\s+)?(?:video|audio)?\s*call\b/i) || normalizedLabel.match(/\b(?:missed\s+)?(?:video|audio)?\s*call\b/i);
+        const voiceMatch = /\b(?:voice\s+message|voice\s+note|audio\s+message|audio\s+note)\b/i.test(normalizedText) || /\b(?:voice\s+message|voice\s+note|audio\s+message|audio\s+note)\b/i.test(normalizedLabel) || Boolean(timerText);
+        const explicitLink = Boolean(rawLink) || hasLink || /https?:\/\/|www\.|fbcdn\.|fbsbx\.|facebook\.com|fb\.me|m\.me|l\.facebook\.com\/l\.php|l\.messenger\.com\/l\.php|href\b/i.test(
+          normalizedText
+        ) || /https?:\/\/|www\.|fbcdn\.|fbsbx\.|facebook\.com|fb\.me|m\.me|l\.facebook\.com\/l\.php|l\.messenger\.com\/l\.php|href\b/i.test(
+          normalizedLabel
+        ) || /\b(?:attachment|open attachment|download|view attachment|open link|view link|pinned location)\b/i.test(
+          normalizedText
+        ) || /\b(?:attachment|open attachment|download|view attachment|open link|view link|pinned location)\b/i.test(
+          normalizedLabel
+        );
+        const imageKeyword = /\b(?:image sent|photo sent|picture sent|sent image|sent photo|sent picture)\b/i;
+        const imageMatch = hasImage && (imageKeyword.test(normalizedText) || imageKeyword.test(normalizedLabel)) || imageKeyword.test(normalizedText) || imageKeyword.test(normalizedLabel);
+        if (!fileTypeLocked) {
+          if (unsent) {
+            type = "unsent";
+          } else if (callMatch) {
+            const callText = callMatch[0].toLowerCase();
+            if (/missed/.test(callText)) {
+              type = "missed-call";
+            } else if (/video/.test(callText)) {
+              type = "video-call";
+            } else if (/audio/.test(callText)) {
+              type = "audio-call";
+            } else {
+              type = "voice-message";
+            }
+          } else if (explicitLink) {
+            type = "link";
+          } else if (voiceMatch) {
+            type = "voice-message";
+          } else if (imageMatch) {
+            type = "image";
+          }
+        }
+        let contentText = normalizedText;
+        if (type === "unsent") {
+          contentText = "message unsent";
+        } else if (type === "link") {
+          if ((isLinkTextFile || isLinkTextLikeLive) && normalizedText) {
+            if (linkOnlyText) {
+              contentText = resolvedLink || normalizedText;
+            } else if (resolvedLink && normalizedText.includes(resolvedLink)) {
+              contentText = normalizedText;
+            } else {
+              contentText = resolvedLink ? `${resolvedLink} ${normalizedText}` : normalizedText;
+            }
+          } else {
+            contentText = resolvedLink || "link";
+          }
+        } else if (type === "voice-message") {
+          contentText = "voice message";
+        } else if (type === "image") {
+          contentText = "image sent";
+        } else if (type === "video-call" || type === "audio-call" || type === "missed-call") {
+          const hasCallPhrase = /\bcall\b/i.test(normalizedText);
+          contentText = hasCallPhrase ? normalizedText : type.replace(/-/g, " ");
+        }
+        const timedTypes = /* @__PURE__ */ new Set(["voice-message", "video-call", "audio-call"]);
+        const noLengthTypes = /* @__PURE__ */ new Set(["image", "missed-call", "unsent", ...timedTypes]);
+        const duration = timedTypes.has(type) ? rawDuration : null;
+        const linkOnlyText = type === "link" && Boolean(resolvedLink) && isLinkOnlyText(normalizedText, resolvedLink);
+        const linkHasTextContent = type === "link" && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
+        const shouldOmitLength = noLengthTypes.has(type) || type === "link" && !linkHasTextContent;
+        const contentLength = shouldOmitLength ? void 0 : `${contentText.length} chars`;
+        return {
+          type,
+          text: contentText,
+          contentLength,
+          link: resolvedLink || void 0,
+          voiceDurationSource: rawMeta.duration ? "timer" : timerText ? "label" : void 0,
+          isCall: type === "video-call" || type === "missed-call" || type === "audio-call",
+          isImage: type === "image",
+          duration
+        };
+      }
+      module.exports = {
+        parseAriaLabel: parseAriaLabel2,
+        normalizeDateToSimple,
+        normalizeLabel,
+        normalizeDuration: normalizeDuration2,
+        extractLink,
+        extractPinnedLocationLink,
+        chooseRule,
+        getContentMeta: getContentMeta2
+      };
+    }
+  });
+
+  // src/shared/export-config.json
+  var require_export_config = __commonJS({
+    "src/shared/export-config.json"(exports, module) {
+      module.exports = {
+        method: "server",
+        messageTypes: [
+          "audio-call",
+          "deleted",
+          "image",
+          "link-embed-no-text",
+          "link-text",
+          "missed-audio-call",
+          "missed-video-call",
+          "text-image-replied",
+          "text-replied",
+          "text",
+          "video-call",
+          "voice-note"
+        ],
+        patterns: {
+          entryLine: "^\\[\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}\\]\\s[^:]+:\\s[^/]+(?:\\s/\\s.*)?$",
+          duration: "\\d+:\\d{2}(?::\\d{2})?\\s+mins",
+          totalSummaryTitle: "^Total Summary$",
+          totalLine: "^\\d+\\s+(?:message|messages)\\s*/\\s*\\d+\\s+(?:day|days)$",
+          roughTextLine: "^~\\s+\\d+\\s+text;$",
+          roughImagesLine: "^~\\s+\\d+\\s+images$",
+          roughCallsLine: "^~\\s+\\d+\\s+calls\\s+\\d+\\s+mins$",
+          personSummaryTitle: "^(Alpha|Youghurt) Summary$"
+        },
+        summaryConcept: {
+          totalSummaryTitle: "Total Summary",
+          roughPrefix: "~",
+          personSummarySuffix: " Summary"
+        },
+        exports: [
+          {
+            fileName: "fb-chats-export-content-on.txt",
+            includeContent: true,
+            includeSummary: true
+          },
+          {
+            fileName: "fb-chats-export-content-off.txt",
+            includeContent: false,
+            includeSummary: false
+          }
+        ]
+      };
+    }
+  });
+
+  // src/shared/export-summary.js
+  var require_export_summary = __commonJS({
+    "src/shared/export-summary.js"(exports, module) {
+      function formatDayKey(date) {
+        if (!(date instanceof Date) || isNaN(date)) return "unknown";
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      }
+      var { summaryConcept } = require_export_config();
+      var TOTAL_SUMMARY_TITLE = summaryConcept.totalSummaryTitle || "Total Summary";
+      var ROUGH_PREFIX = summaryConcept.roughPrefix || "~";
+      var PERSON_SUMMARY_SUFFIX = summaryConcept.personSummarySuffix || " Summary";
+      function isIgnoredForIndividualCount(entry) {
+        const type = String(entry.type || entry.fileType || "").toLowerCase();
+        return ["unsent", "deleted", "missed-call", "missed-audio-call", "missed-video-call"].includes(
+          type
+        );
+      }
+      function isMissedCall(entry) {
+        const type = String(entry.type || entry.fileType || "").toLowerCase();
+        return ["missed-call", "missed-audio-call", "missed-video-call"].includes(type);
+      }
+      function isCountedCall(entry) {
+        const type = String(entry.type || entry.fileType || "").toLowerCase();
+        return ["audio-call", "video-call", "voice-note", "voice-message"].includes(type);
+      }
+      function buildSummaryData(entries = [], options = {}) {
+        if (!entries.length) {
+          return {
+            total: {
+              title: TOTAL_SUMMARY_TITLE,
+              messages: 0,
+              days: 0,
+              rough: {
+                text: 0,
+                images: 0,
+                calls: 0,
+                callMinutes: 0
+              }
+            },
+            participants: []
+          };
+        }
+        const totals = /* @__PURE__ */ new Map();
+        const allDays = /* @__PURE__ */ new Set();
+        entries.forEach((entry) => {
+          const sender = entry.sender || "Unknown";
+          const dayKey = formatDayKey(entry.date);
+          allDays.add(dayKey);
+          const data = totals.get(sender) || {
+            count: 0,
+            days: /* @__PURE__ */ new Set(),
+            calls: 0,
+            minutes: 0,
+            images: 0
+          };
+          data.count += 1;
+          data.days.add(dayKey);
+          if (isCountedCall(entry)) {
+            data.calls += 1;
+            data.minutes += Number(entry.callMinutes || 0);
+          }
+          if (entry.isImage) {
+            data.images += 1;
+          }
+          totals.set(sender, data);
+        });
+        let selectedParticipants;
+        if (Array.isArray(options.fixedParticipants) && options.fixedParticipants.length) {
+          selectedParticipants = options.fixedParticipants.slice(0, 2);
+          while (selectedParticipants.length < 2) {
+            selectedParticipants.push(`Unknown ${selectedParticipants.length + 1}`);
+          }
+        } else {
+          const participantNames = [];
+          entries.forEach((entry) => {
+            if (!participantNames.includes(entry.sender)) {
+              participantNames.push(entry.sender);
+            }
+          });
+          selectedParticipants = participantNames.slice(0, 2);
+          while (selectedParticipants.length < 2) {
+            selectedParticipants.push(`Unknown ${selectedParticipants.length + 1}`);
+          }
+        }
+        const participantSummaries = selectedParticipants.map((name) => {
+          const participantEntries = entries.filter((entry) => (entry.sender || "Unknown") === name);
+          const includedEntries = participantEntries.filter(
+            (entry) => !isIgnoredForIndividualCount(entry)
+          );
+          const participantDays = /* @__PURE__ */ new Set();
+          let participantImages = 0;
+          let participantCalls = 0;
+          let participantMinutes = 0;
+          participantEntries.forEach((entry) => {
+            const dayKey = formatDayKey(entry.date);
+            participantDays.add(dayKey);
+          });
+          includedEntries.forEach((entry) => {
+            if (entry.isImage) participantImages += 1;
+            if (isCountedCall(entry) && !isMissedCall(entry)) {
+              participantCalls += 1;
+              participantMinutes += Number(entry.callMinutes || 0);
+            }
+          });
+          const participantText = Math.max(
+            0,
+            includedEntries.length - participantCalls - participantImages
+          );
+          return {
+            name,
+            participantEntries,
+            includedEntries,
+            participantDays,
+            participantText,
+            participantImages,
+            participantCalls,
+            participantMinutes
+          };
+        });
+        const totalText = participantSummaries.reduce((sum, item) => sum + item.participantText, 0);
+        const totalImages = participantSummaries.reduce((sum, item) => sum + item.participantImages, 0);
+        const totalCalls = participantSummaries.reduce((sum, item) => sum + item.participantCalls, 0);
+        const totalCallMinutes = participantSummaries.reduce(
+          (sum, item) => sum + item.participantMinutes,
+          0
+        );
+        return {
+          total: {
+            title: TOTAL_SUMMARY_TITLE,
+            messages: entries.length,
+            // Total-day count must always use all messages, not filtered subsets.
+            days: allDays.size,
+            rough: {
+              text: totalText,
+              images: totalImages,
+              calls: totalCalls,
+              callMinutes: totalCallMinutes
+            }
+          },
+          participants: participantSummaries.map((summary) => ({
+            title: `${summary.name}${PERSON_SUMMARY_SUFFIX}`,
+            name: summary.name,
+            messages: summary.participantEntries.length,
+            days: summary.participantDays.size,
+            rough: {
+              text: summary.participantText,
+              images: summary.participantImages,
+              calls: summary.participantCalls,
+              callMinutes: summary.participantMinutes
+            }
+          }))
+        };
+      }
+      function buildSummary2(entries = [], options = {}) {
+        if (!entries.length) return "";
+        const summary = buildSummaryData(entries, options);
+        const useMessageLabel = Boolean(options.useMessageLabel);
+        const totalMessageLabel = useMessageLabel ? summary.total.messages === 1 ? "message" : "messages" : summary.total.messages === 1 ? "post" : "posts";
+        const totalDayLabel = useMessageLabel ? summary.total.days === 1 ? "day" : "days" : "days";
+        const roughTextLabel = "text;";
+        const detailLines = [
+          summary.total.title,
+          `${summary.total.messages} ${totalMessageLabel} / ${summary.total.days} ${totalDayLabel}`,
+          `${ROUGH_PREFIX} ${summary.total.rough.text} ${roughTextLabel}`,
+          `${ROUGH_PREFIX} ${summary.total.rough.images} images`,
+          `${ROUGH_PREFIX} ${summary.total.rough.calls} calls ${summary.total.rough.callMinutes} mins`,
+          ""
+        ];
+        summary.participants.forEach((participant) => {
+          const participantMessageLabel = useMessageLabel ? participant.messages === 1 ? "message" : "messages" : participant.messages === 1 ? "post" : "posts";
+          const participantDayLabel = useMessageLabel ? participant.days === 1 ? "day" : "days" : "days";
+          const participantRoughTextLabel = "text;";
+          detailLines.push(participant.title);
+          detailLines.push(
+            `${participant.messages} ${participantMessageLabel} / ${participant.days} ${participantDayLabel}`
+          );
+          detailLines.push(`${ROUGH_PREFIX} ${participant.rough.text} ${participantRoughTextLabel}`);
+          detailLines.push(`${ROUGH_PREFIX} ${participant.rough.images} images`);
+          detailLines.push(
+            `${ROUGH_PREFIX} ${participant.rough.calls} calls ${participant.rough.callMinutes} mins`
+          );
+          detailLines.push("");
+        });
+        detailLines.push("---");
+        return detailLines.join("\n") + "\n";
+      }
+      module.exports = {
+        buildSummary: buildSummary2,
+        buildSummaryData
+      };
+    }
+  });
+
+  // src/shared/export-formatter.js
+  var require_export_formatter = __commonJS({
+    "src/shared/export-formatter.js"(exports, module) {
+      var { normalizeDuration: normalizeDuration2 } = require_message_metadata();
+      var { normalizeDateToIso: normalizeDateToIso3 } = require_aria_label_parser();
+      var { buildSummary: buildSummary2, buildSummaryData } = require_export_summary();
+      function formatExportHeader2({ method, messageTypes }) {
+        const types = messageTypes.map((type) => `- ${type}`).join("\n");
+        return `Method: ${method}
 Message types:
-${t}
+${types}
 ---
 
-`}function Dt(e,n=""){return`${n}${e.join("")}`}function vt(e){let n=e;if(typeof e=="string")try{n=Lt(e)||e}catch{n=e}let t=new Date(n);if(isNaN(t))return String(e||"");let o=t.getFullYear(),i=String(t.getMonth()+1).padStart(2,"0"),c=String(t.getDate()).padStart(2,"0"),r=String(t.getHours()).padStart(2,"0"),h=String(t.getMinutes()).padStart(2,"0");return`${o}-${i}-${c} ${r}:${h}`}function Nt(e,n={}){let t=n.includeContent!==!1,o=n.includeLength!==!1,i=e.dateText||"unknown",c=e.sender||"Unknown",r=[e.fileType];if(e.duration){let s=Ze(e.duration)||e.duration;r.push(s)}o&&e.contentLength&&r.push(e.contentLength);let h=`[${i}] ${c}: ${r.join(" ")}`;return t&&new Set(["text","link"]).has(e.semanticType)&&e.content?`${h} / ${e.content}
-`:`${h}
-`}function zt(e=[],n={}){let t=e.map(o=>{let i=String(o.fileType||"").toLowerCase(),c=["audio-call","video-call","voice-note","missed-audio-call","missed-video-call"].includes(i),r=["audio-call","video-call","voice-note"].includes(i);return{sender:o.sender,date:Number.isFinite(o.ts)?new Date(o.ts):new Date(NaN),type:i,isCall:c,isImage:i==="image",callMinutes:r?Et(o.duration):0}});return Ct(t,{fixedParticipants:["Alpha","Youghurt"],useMessageLabel:!!n.useMessageLabel})}function Et(e){if(!e)return 0;let n=Ze(e)||e,t=String(n).match(/^(\d+):(\d{2}):(\d{2})\s+mins$/i),o=String(n).match(/^(\d+):(\d{2})\s+mins$/i),i=String(n).match(/^(\d+)\s+mins$/i);return t?Number(t[1])*60+Number(t[2])+Math.ceil(Number(t[3])/60):o?Number(o[1])+Math.ceil(Number(o[2])/60):i?Number(i[1]):0}_e.exports={formatExportHeader:Mt,buildExportText:Dt,formatDate:vt,formatLine:Nt,formatSummarySection:zt,buildSummaryData:kt}});var tt=K(Se()),nt=K(X()),at=K(Te()),le=K(Ve());var Ke=K(X());function we(e){let n=e.match(/^(\d{4})-(\d{2})-(\d{2})$/);return n?new Date(+n[1],+n[2]-1,+n[3]):NaN}function Le(e){return(0,Ke.normalizeDateToIso)(e)||e}function Ft(e){return String(e||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,20)||"chat"}function Xe(){return(document.title||"").replace(/\s*[|\-•]\s*messenger.*$/i,"").replace(/\s*messenger\s*$/i,"").trim()||"chat"}function Ge(){let e=Xe(),t=e.split(/\s*(?:,|&|\band\b|\+|\/)\s*/i).map(i=>i.trim()).filter(Boolean).find(i=>!/^you$/i.test(i));return t||e.replace(/\byou\b/gi,"").replace(/\s{2,}/g," ").trim()||"chat"}function Je(){return`chat-export-${Ft(Xe()).replace(/[^a-z0-9]/g,"").slice(0,3).padEnd(3,"_")}.txt`}function Ce(e,n,t){let o=document.createElement("div");o.style.cssText="display: flex; align-items: center; gap: 6px;";let i=document.createElement("span");i.innerText=e,i.style.cssText="color: #777; font-size: 12px; width: 32px;";let c=document.createElement("input");return c.type="text",c.placeholder=n,c.value=t,c.style.cssText="border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; font-size: 12px; width: 100px; outline: none;",o.appendChild(i),o.appendChild(c),{wrap:o,input:c}}function G(e){let n=document.createElement("label");n.style.cssText="display: flex; align-items: center; gap: 6px; color: #555; font-size: 12px; cursor: pointer;";let t=document.createElement("input");t.type="checkbox",t.checked=!1,t.style.cssText="cursor: pointer;";let o=document.createElement("span");return o.innerText=e,n.appendChild(t),n.appendChild(o),{wrap:n,input:t}}function Qe(e,n){let t=document.createElement("div");t.style.cssText="display: flex; align-items: center; gap: 6px; color: #555; font-size: 12px;";let o=document.createElement("label");o.style.cssText="display: flex; align-items: center; gap: 6px; cursor: pointer;";let i=document.createElement("input");i.type="checkbox",i.checked=!1,i.style.cssText="cursor: pointer;";let c=document.createElement("span");c.innerText=e,o.appendChild(i),o.appendChild(c);let r=document.createElement("input");return r.type="text",r.value=n,r.placeholder=n,r.style.cssText="border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; font-size: 12px; width: 110px; outline: none;",t.appendChild(o),t.appendChild(r),{wrap:t,input:i,textInput:r}}function et(e,n){let t=document.createElement("a");return t.href="#",t.innerText=e,t.style.cssText="color: #0084ff; text-decoration: underline; font-size: 12px; cursor: pointer;",t.addEventListener("click",o=>{o.preventDefault(),n(o)}),t}function ke(e,n){let t=document.createElement("button");return t.innerText=e,t.style.cssText=`color: #fff; border: none; padding: 6px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; background: ${n};`,t}(function(){"use strict";let e=document.createElement("details");e.style.cssText="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 99999; background: #fff; border: 1px solid #ddd; border-radius: 0 0 10px 10px; font-family: sans-serif; font-size: 13px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); min-width: 420px; max-width: calc(100% - 40px);",e.open=!0;let n=document.createElement("summary");n.style.cssText="cursor: pointer; padding: 6px 10px; font-size: 12px; color: #555; background: #fafafa; display: flex; align-items: center; gap: 6px; user-select: none;";let t=document.createElement("span");t.innerText="\u25B2",t.style.cssText="font-size: 10px; color: #aaa;";let o=document.createElement("span");o.innerText="Export Chat",n.appendChild(t),n.appendChild(o),e.addEventListener("toggle",()=>{t.innerText=e.open?"\u25B2":"\u25BC"});let i=document.createElement("div");i.style.cssText="padding: 6px 10px; font-size: 11px; color: #666; background: #fafafa;",i.innerText="Start at the bottom of the conversation";let c=document.createElement("div");c.style.cssText="padding: 6px 10px; font-size: 12px; color: #333;",c.innerHTML="Ready.";let r=ke("Download .txt","#27ae60");r.style.cssText+=" display: none; margin-left: 10px; vertical-align: middle;";let h=document.createElement("div");h.style.cssText="display: flex; gap: 10px; padding: 8px 10px; align-items: flex-end;";let a=document.createElement("div");a.style.cssText="display: flex; flex-direction: column; gap: 6px;";let{wrap:d,inp:s}=Ce("From:","YYYY-MM-DD",(()=>{let y=new Date;return y.setDate(y.getDate()-3),y.toISOString().slice(0,10)})()),{wrap:m,inp:p}=Ce("To:","YYYY-MM-DD",new Date().toISOString().slice(0,10)),u=ke("Scan Messages","#0084ff"),l=document.createElement("div");l.style.cssText="display: flex; flex-direction: column; gap: 8px; min-width: 160px; padding-left: 10px;";let{wrap:f,inp:x}=G("Calls"),{wrap:w,inp:g,textInput:E}=Qe("Anonymize as","Youghurt"),{wrap:W,inp:R}=G("Summary"),{wrap:ce,inp:J}=G("Content"),{wrap:Q,inp:ee}=G("Length"),te=et("All",()=>{x.checked=!0,g.checked=!0,R.checked=!0,J.checked=!0,ee.checked=!0});a.appendChild(d),a.appendChild(m),a.appendChild(u),l.appendChild(f),l.appendChild(w),l.appendChild(W),l.appendChild(ce),l.appendChild(Q),l.appendChild(te),te.click(),h.appendChild(a),h.appendChild(l),e.appendChild(n),e.appendChild(i),e.appendChild(c),e.appendChild(h);let F=document.createElement("div");F.style.cssText="padding: 6px 10px 10px; font-size: 11px; color: #777;",F.innerHTML='Terms: <a href="https://github.com/klipolis/fb-chat-export/blob/main/docs/terms-and-conditions.md" target="_blank" rel="noreferrer noopener">docs/terms-and-conditions.md</a>',e.appendChild(F),document.body.appendChild(e);function de(y){let S=new Date(y);if(isNaN(S))return y;let C=S.getFullYear(),M=String(S.getMonth()+1).padStart(2,"0"),A=String(S.getDate()).padStart(2,"0"),j=String(S.getHours()).padStart(2,"0"),D=String(S.getMinutes()).padStart(2,"0");return`${C}-${M}-${A} ${j}:${D}`}function L(y){let S=y.getAttribute("aria-label")||"",C=(0,nt.parseAriaLabel)(S),M=C.date||"",A=C.sender||"",D=(C.message||""||y.innerText).replace(/\s+/g," ").trim(),$=S.replace(/\s+/g," ").trim().toLowerCase(),Z=y.querySelector('[role="timer"]'),me=!!y.querySelector("img"),ue=!!y.querySelector('[aria-label="Play"]'),_=!!y.querySelector("a[href]")||/\b(?:https?:\/\/|www\.|\blink\b)/i.test(D)||/\b(?:https?:\/\/|www\.|\blink\b)/i.test($),ne=Z?Z.innerText:D,v=(0,tt.getContentMeta)({fileName:"",ariaLabel:S,message:D,rawMeta:{duration:ne},hasImage:me,hasPlayButton:ue,hasLink:_,timerText:ne});return{rawDate:M,sender:A,text:v.text,type:v.type,isCall:v.isCall,isImage:v.isImage,duration:v.duration,contentLength:v.contentLength}}u.addEventListener("click",()=>{if(u.dataset.scanning==="true"){u.dataset.stopped="true";return}let y=s.value.trim()?we(s.value.trim()):null,S=(()=>{if(!p.value.trim())return null;let b=we(p.value.trim());return isNaN(b)||b.setHours(23,59,59),b})();if(y!==null&&isNaN(y)){s.style.borderColor="red";return}if(S!==null&&isNaN(S)){p.style.borderColor="red";return}s.style.borderColor=p.style.borderColor="#ccc",s.disabled=p.disabled=!0,u.innerText="Stop Scan",u.style.background="#e74c3c",u.dataset.scanning="true",u.dataset.stopped="false",r.style.display="none",c.innerHTML="Scanning: <b>0</b>",c.appendChild(r);let C=new Map,M=!1;function A(){document.querySelectorAll('[aria-roledescription="message"]').forEach(b=>{let T=b.getAttribute("aria-label");if(!T||C.has(T))return;let{rawDate:I,sender:k,text:V,type:P,isCall:ae,isImage:pe,duration:he,contentLength:ge}=L(b);if(!I||!k)return;let se=b.querySelector("time[datetime]"),B=se?se.getAttribute("datetime"):Le(I),N=new Date(B),fe=de(B),oe=g.checked&&String(k).toLowerCase()==="you"?E.value.trim()||"Youghurt":k,z=(()=>{let Me=b.innerText.match(/(\d+)\s*min/i);return Me?Number(Me[1]):0})();if(!x.checked&&ae)return;if(y&&!isNaN(N)&&N<y){M=!0;return}if(S&&!isNaN(N)&&N>S)return;let Y={fileType:P,semanticType:P,dateText:fe,sender:oe,duration:he,content:V,contentLength:ge},st=(0,le.formatLine)(Y,{includeContent:J.checked,includeLength:ee.checked});C.set(T,{ts:isNaN(N)?0:N.getTime(),sender:oe,date:N,type:P,isCall:ae,isImage:pe,callMinutes:z,line:st,exportEntry:Y})})}function j(){let b=document.querySelector('[aria-roledescription="message"]');if(!b)return null;let T=b.parentElement;for(;T;){if(T.scrollHeight>T.clientHeight+10)return T;T=T.parentElement}return null}function D(){let b=Array.from(document.querySelectorAll('[aria-roledescription="message"]')).map(T=>{let{rawDate:I}=L(T),k=T.querySelector("time[datetime]"),V=k?k.getAttribute("datetime"):Le(I),P=new Date(V);return isNaN(P)?null:P}).filter(Boolean);return b.length?new Date(Math.max(...b.map(T=>T.getTime()))):null}A();let $=j();if(!$){c.innerHTML="Could not find the message list. Make sure a conversation is open.",u.innerText="Scan Messages",u.style.background="#0084ff",u.dataset.scanning="false",s.disabled=p.disabled=!1;return}let Z=Math.max(0,$.scrollHeight-$.clientHeight);if(S){let b=D();b&&b>S&&($.scrollTop=Z)}else $.scrollTop=Z;let me=Date.now(),ue=-1,_=0,ne=null;function v(){if(A(),c.innerHTML=`Scanning... <b>${C.size}</b> messages collected.`,c.appendChild(r),u.dataset.stopped==="true"||M||$.scrollTop<=0&&_>=3){u.dataset.scanning="false";let I=Array.from(C.values()).sort((z,Y)=>z.ts-Y.ts),k=I.map(z=>z.line);if(k.length===0){c.innerHTML="No messages found.",c.appendChild(r),u.innerText="Scan Messages",u.style.background="#0084ff",s.disabled=p.disabled=!1;return}let V=R.checked?(0,at.buildSummary)(I,{useMessageLabel:!0}):"",P=Array.from(new Set(I.map(z=>z.type).filter(Boolean))).sort(),ae=(0,le.formatExportHeader)({method:"browser",messageTypes:P}),pe=new Blob([ae+V+k.join("")],{type:"text/plain"}),he=URL.createObjectURL(pe),ge=s.value.trim()||"start",se=p.value.trim()||"end",B=Date.now()-me,N=B<6e4?`${(B/1e3).toFixed(1)} seconds`:`${(B/6e4).toFixed(2)} minutes`,fe=Ge(),oe=Je();c.textContent=`Done: ${k.length} messages | ${fe} | ${ge} - ${se} | ${N}`,c.appendChild(r),r.style.display="",r.onclick=()=>{if(r.disabled)return;r.disabled=!0,r.style.opacity="0.5",r.style.cursor="not-allowed";let z=r.innerText;r.innerText="Downloaded";let Y=document.createElement("a");Y.href=he,Y.download=oe,Y.click(),setTimeout(()=>{r.disabled=!1,r.style.opacity="1",r.style.cursor="pointer",r.innerText=z},1e4)},u.innerText="Scan Messages",u.style.background="#0084ff",s.disabled=p.disabled=!1;return}let b=Math.max(0,$.scrollTop-Math.max(800,$.clientHeight-100));Math.abs(b-$.scrollTop)<5?_+=1:(_=0,$.scrollTop=b),ue=$.scrollTop;let T=500+Math.random()*500;ne=setTimeout(v,T)}v()})})();})();
+`;
+      }
+      function buildExportText(lines, headerLines = "") {
+        return `${headerLines}${lines.join("")}`;
+      }
+      function formatDate(raw) {
+        let dateValue = raw;
+        if (typeof raw === "string") {
+          try {
+            dateValue = normalizeDateToIso3(raw) || raw;
+          } catch {
+            dateValue = raw;
+          }
+        }
+        const date = new Date(dateValue);
+        if (isNaN(date)) return String(raw || "");
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, "0");
+        const dd = String(date.getDate()).padStart(2, "0");
+        const hh = String(date.getHours()).padStart(2, "0");
+        const min = String(date.getMinutes()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+      }
+      function formatLine2(entry, options = {}) {
+        const includeContent = options.includeContent !== false;
+        const includeLength = options.includeLength !== false;
+        const dateText = entry.dateText || "unknown";
+        const sender = entry.sender || "Unknown";
+        const parts = [entry.fileType];
+        if (entry.duration) {
+          const ensureNormalized = normalizeDuration2(entry.duration) || entry.duration;
+          parts.push(ensureNormalized);
+        }
+        if (includeLength && entry.contentLength) parts.push(entry.contentLength);
+        const base = `[${dateText}] ${sender}: ${parts.join(" ")}`;
+        const contentTypes = /* @__PURE__ */ new Set(["text", "link"]);
+        const shouldShowTextContent = includeContent && contentTypes.has(entry.semanticType) && entry.content;
+        if (shouldShowTextContent) {
+          return `${base} / ${entry.content}
+`;
+        }
+        return `${base}
+`;
+      }
+      function formatSummarySection(entries = [], options = {}) {
+        const summaryEntries = entries.map((entry) => {
+          const fileType = String(entry.fileType || "").toLowerCase();
+          const isCall = [
+            "audio-call",
+            "video-call",
+            "voice-note",
+            "missed-audio-call",
+            "missed-video-call"
+          ].includes(fileType);
+          const isTimedCall = ["audio-call", "video-call", "voice-note"].includes(fileType);
+          return {
+            sender: entry.sender,
+            date: Number.isFinite(entry.ts) ? new Date(entry.ts) : /* @__PURE__ */ new Date(NaN),
+            type: fileType,
+            isCall,
+            isImage: fileType === "image",
+            callMinutes: isTimedCall ? durationToMinutes(entry.duration) : 0
+          };
+        });
+        return buildSummary2(summaryEntries, {
+          fixedParticipants: ["Alpha", "Youghurt"],
+          useMessageLabel: Boolean(options.useMessageLabel)
+        });
+      }
+      function durationToMinutes(duration) {
+        if (!duration) return 0;
+        const normalized = normalizeDuration2(duration) || duration;
+        const hms = String(normalized).match(/^(\d+):(\d{2}):(\d{2})\s+mins$/i);
+        const ms = String(normalized).match(/^(\d+):(\d{2})\s+mins$/i);
+        const mins = String(normalized).match(/^(\d+)\s+mins$/i);
+        if (hms) {
+          return Number(hms[1]) * 60 + Number(hms[2]) + Math.ceil(Number(hms[3]) / 60);
+        }
+        if (ms) {
+          return Number(ms[1]) + Math.ceil(Number(ms[2]) / 60);
+        }
+        if (mins) {
+          return Number(mins[1]);
+        }
+        return 0;
+      }
+      module.exports = {
+        formatExportHeader: formatExportHeader2,
+        buildExportText,
+        formatDate,
+        formatLine: formatLine2,
+        formatSummarySection,
+        buildSummaryData
+      };
+    }
+  });
+
+  // src/frontend/src/index.js
+  var import_message_metadata = __toESM(require_message_metadata());
+  var import_aria_label_parser2 = __toESM(require_aria_label_parser());
+  var import_export_summary = __toESM(require_export_summary());
+  var import_export_formatter = __toESM(require_export_formatter());
+
+  // src/shared/frontend-utils.js
+  var import_aria_label_parser = __toESM(require_aria_label_parser());
+  function parseLocalDate(str) {
+    const m = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? new Date(+m[1], +m[2] - 1, +m[3]) : NaN;
+  }
+  function resolveRelativeDate(raw) {
+    return (0, import_aria_label_parser.normalizeDateToIso)(raw) || raw;
+  }
+  function sanitizeFileNamePart(value) {
+    const normalized = String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    return normalized.slice(0, 20) || "chat";
+  }
+  function getConversationName() {
+    const title = document.title || "";
+    const cleaned = title.replace(/\s*[|\-•]\s*messenger.*$/i, "").replace(/\s*messenger\s*$/i, "").trim();
+    return cleaned || "chat";
+  }
+  function getDisplayPersonName() {
+    const name = getConversationName();
+    const parts = name.split(/\s*(?:,|&|\band\b|\+|\/)\s*/i).map((part) => part.trim()).filter(Boolean);
+    const firstNonYou = parts.find((part) => !/^you$/i.test(part));
+    if (firstNonYou) return firstNonYou;
+    const withoutYou = name.replace(/\byou\b/gi, "").replace(/\s{2,}/g, " ").trim();
+    return withoutYou || "chat";
+  }
+  function formatExportFileName() {
+    const base = sanitizeFileNamePart(getConversationName());
+    const shortName = base.replace(/[^a-z0-9]/g, "").slice(0, 3).padEnd(3, "_");
+    return `chat-export-${shortName}.txt`;
+  }
+
+  // src/frontend/src/ui.js
+  function createLabelInput(labelText, placeholder, value) {
+    const wrap = document.createElement("div");
+    wrap.style.cssText = "display: flex; align-items: center; gap: 6px;";
+    const label = document.createElement("span");
+    label.textContent = labelText;
+    label.style.cssText = "color: #777; font-size: 12px; width: 32px;";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = placeholder;
+    input.value = value;
+    input.style.cssText = "border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; font-size: 12px; width: 100px; outline: none;";
+    wrap.appendChild(label);
+    wrap.appendChild(input);
+    return { wrap, input };
+  }
+  function createCheckboxToggle(labelText) {
+    const wrap = document.createElement("label");
+    wrap.style.cssText = "display: flex; align-items: center; gap: 6px; color: #555; font-size: 12px; cursor: pointer;";
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = false;
+    input.style.cssText = "cursor: pointer;";
+    const text = document.createElement("span");
+    text.textContent = labelText;
+    wrap.appendChild(input);
+    wrap.appendChild(text);
+    return { wrap, input };
+  }
+  function createCheckboxToggleWithInput(labelText, inputValue) {
+    const wrap = document.createElement("div");
+    wrap.style.cssText = "display: flex; align-items: center; gap: 6px; color: #555; font-size: 12px;";
+    const checkboxLabel = document.createElement("label");
+    checkboxLabel.style.cssText = "display: flex; align-items: center; gap: 6px; cursor: pointer;";
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = false;
+    input.style.cssText = "cursor: pointer;";
+    const text = document.createElement("span");
+    text.textContent = labelText;
+    checkboxLabel.appendChild(input);
+    checkboxLabel.appendChild(text);
+    const textInput = document.createElement("input");
+    textInput.type = "text";
+    textInput.value = inputValue;
+    textInput.placeholder = inputValue;
+    textInput.style.cssText = "border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; font-size: 12px; width: 110px; outline: none;";
+    wrap.appendChild(checkboxLabel);
+    wrap.appendChild(textInput);
+    return { wrap, input, textInput };
+  }
+  function createLinkAction(labelText, onClick) {
+    const link = document.createElement("a");
+    link.href = "#";
+    link.textContent = labelText;
+    link.style.cssText = "color: #0084ff; text-decoration: underline; font-size: 12px; cursor: pointer;";
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      onClick(event);
+    });
+    return link;
+  }
+  function createButton(labelText, backgroundColor) {
+    const button = document.createElement("button");
+    button.textContent = labelText;
+    button.style.cssText = `color: #fff; border: none; padding: 6px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; background: ${backgroundColor};`;
+    return button;
+  }
+
+  // src/frontend/src/index.js
+  (function() {
+    "use strict";
+    const panel = document.createElement("details");
+    panel.style.cssText = "position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 99999; background: #fff; border: 1px solid #ddd; border-radius: 0 0 10px 10px; font-family: sans-serif; font-size: 13px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); min-width: 420px; max-width: calc(100% - 40px);";
+    panel.open = true;
+    const panelSummary = document.createElement("summary");
+    panelSummary.style.cssText = "cursor: pointer; padding: 6px 10px; font-size: 12px; color: #555; background: #fafafa; display: flex; align-items: center; gap: 6px; user-select: none;";
+    const panelArrow = document.createElement("span");
+    panelArrow.textContent = "\u25B2";
+    panelArrow.setAttribute("aria-hidden", "true");
+    panelArrow.style.cssText = "font-size: 10px; color: #aaa;";
+    const panelTitle = document.createElement("span");
+    panelTitle.textContent = "Export Chat";
+    panelSummary.appendChild(panelArrow);
+    panelSummary.appendChild(panelTitle);
+    panel.addEventListener("toggle", () => {
+      panelArrow.textContent = panel.open ? "\u25B2" : "\u25BC";
+      if (!panel.open && actionBtn.dataset.scanning === "true") {
+        stopRequested = true;
+        if (scrollTimeout !== null) {
+          clearTimeout(scrollTimeout);
+          scrollTimeout = null;
+        }
+        setScanState("idle");
+        noticeMsg.textContent = "Scan cancelled.";
+      }
+    });
+    const instructions = document.createElement("div");
+    instructions.style.cssText = "padding: 6px 10px; font-size: 11px; color: #666; background: #fafafa;";
+    instructions.textContent = "Start at the bottom of the conversation";
+    const notice = document.createElement("div");
+    notice.style.cssText = "padding: 6px 10px; font-size: 12px; color: #333;";
+    notice.setAttribute("role", "status");
+    notice.setAttribute("aria-live", "polite");
+    const noticeMsg = document.createElement("span");
+    noticeMsg.textContent = "Ready.";
+    const downloadBtn = createButton("Download .txt", "#27ae60");
+    downloadBtn.style.cssText += " display: none; margin-left: 10px; vertical-align: middle;";
+    notice.appendChild(noticeMsg);
+    notice.appendChild(downloadBtn);
+    const body = document.createElement("div");
+    body.style.cssText = "display: flex; gap: 10px; padding: 8px 10px; align-items: flex-end;";
+    const leftCol = document.createElement("div");
+    leftCol.style.cssText = "display: flex; flex-direction: column; gap: 6px;";
+    const { wrap: fromWrap, input: fromInput } = createLabelInput(
+      "From:",
+      "YYYY-MM-DD",
+      (() => {
+        const d = /* @__PURE__ */ new Date();
+        d.setDate(d.getDate() - 3);
+        return d.toISOString().slice(0, 10);
+      })()
+    );
+    const { wrap: toWrap, input: toInput } = createLabelInput(
+      "To:",
+      "YYYY-MM-DD",
+      (/* @__PURE__ */ new Date()).toISOString().slice(0, 10)
+    );
+    const actionBtn = createButton("Scan Messages", "#0084ff");
+    const rightCol = document.createElement("div");
+    rightCol.style.cssText = "display: flex; flex-direction: column; gap: 8px; min-width: 160px; padding-left: 10px;";
+    const { wrap: includeCallsWrap, input: includeCallsChk } = createCheckboxToggle("Calls");
+    const {
+      wrap: anonymizeWrap,
+      input: anonymizeChk,
+      textInput: anonymizeInput
+    } = createCheckboxToggleWithInput("Anonymize as", "Youghurt");
+    const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle("Summary");
+    const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle("Content");
+    const { wrap: lengthWrap, input: lengthChk } = createCheckboxToggle("Length");
+    function setAllChecked(state) {
+      includeCallsChk.checked = state;
+      anonymizeChk.checked = state;
+      summaryChk.checked = state;
+      includeContentChk.checked = state;
+      lengthChk.checked = state;
+      selectAllLink.textContent = state ? "Uncheck all" : "Check all";
+    }
+    const selectAllLink = createLinkAction("Check all", () => {
+      const allChecked = includeCallsChk.checked && anonymizeChk.checked && summaryChk.checked && includeContentChk.checked && lengthChk.checked;
+      setAllChecked(!allChecked);
+    });
+    leftCol.appendChild(fromWrap);
+    leftCol.appendChild(toWrap);
+    leftCol.appendChild(actionBtn);
+    rightCol.appendChild(includeCallsWrap);
+    rightCol.appendChild(anonymizeWrap);
+    rightCol.appendChild(summaryWrap);
+    rightCol.appendChild(includeContentWrap);
+    rightCol.appendChild(lengthWrap);
+    rightCol.appendChild(selectAllLink);
+    setAllChecked(true);
+    body.appendChild(leftCol);
+    body.appendChild(rightCol);
+    panel.appendChild(panelSummary);
+    panel.appendChild(instructions);
+    panel.appendChild(notice);
+    panel.appendChild(body);
+    const termsNote = document.createElement("div");
+    termsNote.style.cssText = "padding: 6px 10px 10px; font-size: 11px; color: #777;";
+    const termsLabel = document.createTextNode("Terms: ");
+    const termsLink = document.createElement("a");
+    termsLink.href = "https://github.com/klipolis/fb-chat-export/blob/main/docs/terms-and-conditions.md";
+    termsLink.target = "_blank";
+    termsLink.rel = "noreferrer noopener";
+    termsLink.textContent = "docs/terms-and-conditions.md";
+    termsNote.appendChild(termsLabel);
+    termsNote.appendChild(termsLink);
+    panel.appendChild(termsNote);
+    document.body.appendChild(panel);
+    function formatDate(raw) {
+      const d = new Date(raw);
+      if (isNaN(d)) return raw;
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      const hh = String(d.getHours()).padStart(2, "0");
+      const min = String(d.getMinutes()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+    }
+    function extractMessageParts(el) {
+      const label = el.getAttribute("aria-label") || "";
+      const parsedLabel = (0, import_aria_label_parser2.parseAriaLabel)(label);
+      const rawDate = parsedLabel.date || "";
+      const sender = parsedLabel.sender || "";
+      const labelText = parsedLabel.message || "";
+      const normalizedText = (labelText || el.innerText).replace(/\s+/g, " ").trim();
+      const normalizedLabel = label.replace(/\s+/g, " ").trim().toLowerCase();
+      const timerEl = el.querySelector('[role="timer"]');
+      const hasImage = Boolean(el.querySelector("img"));
+      const hasPlayButton = Boolean(el.querySelector('[aria-label="Play"]'));
+      const hasLink = Boolean(el.querySelector("a[href]")) || /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedText) || /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedLabel);
+      const durationText = timerEl ? timerEl.innerText : normalizedText;
+      const contentMeta = (0, import_message_metadata.getContentMeta)({
+        fileName: "",
+        ariaLabel: label,
+        message: normalizedText,
+        rawMeta: { duration: durationText },
+        hasImage,
+        hasPlayButton,
+        hasLink,
+        timerText: durationText
+      });
+      return {
+        rawDate,
+        sender,
+        text: contentMeta.text,
+        type: contentMeta.type,
+        isCall: contentMeta.isCall,
+        isImage: contentMeta.isImage,
+        duration: contentMeta.duration,
+        contentLength: contentMeta.contentLength
+      };
+    }
+    fromInput.addEventListener("input", () => {
+      fromInput.style.borderColor = "#ccc";
+    });
+    toInput.addEventListener("input", () => {
+      toInput.style.borderColor = "#ccc";
+    });
+    let downloadRevokeTimeout = null;
+    let scrollTimeout = null;
+    let stopRequested = false;
+    function setScanState(state) {
+      if (state === "scanning") {
+        actionBtn.textContent = "Stop Scan";
+        actionBtn.style.background = "#e74c3c";
+        actionBtn.dataset.scanning = "true";
+        fromInput.disabled = toInput.disabled = true;
+      } else {
+        actionBtn.textContent = "Scan Messages";
+        actionBtn.style.background = "#0084ff";
+        actionBtn.dataset.scanning = "false";
+        fromInput.disabled = toInput.disabled = false;
+      }
+    }
+    actionBtn.addEventListener("click", () => {
+      if (actionBtn.dataset.scanning === "true") {
+        stopRequested = true;
+        return;
+      }
+      const fromDate = fromInput.value.trim() ? parseLocalDate(fromInput.value.trim()) : null;
+      const toDate = (() => {
+        if (!toInput.value.trim()) return null;
+        const d = parseLocalDate(toInput.value.trim());
+        if (!isNaN(d)) d.setHours(23, 59, 59);
+        return d;
+      })();
+      if (fromDate !== null && isNaN(fromDate)) {
+        fromInput.style.borderColor = "red";
+        noticeMsg.textContent = "Invalid \u201CFrom\u201D date \u2014 use YYYY-MM-DD format.";
+        return;
+      }
+      if (toDate !== null && isNaN(toDate)) {
+        toInput.style.borderColor = "red";
+        noticeMsg.textContent = "Invalid \u201CTo\u201D date \u2014 use YYYY-MM-DD format.";
+        return;
+      }
+      fromInput.style.borderColor = toInput.style.borderColor = "#ccc";
+      if (downloadRevokeTimeout !== null) {
+        clearTimeout(downloadRevokeTimeout);
+        downloadRevokeTimeout = null;
+      }
+      stopRequested = false;
+      setScanState("scanning");
+      downloadBtn.style.display = "none";
+      noticeMsg.textContent = "Scanning: 0";
+      const collected = /* @__PURE__ */ new Map();
+      let reachedFromDate = false;
+      function collectVisible() {
+        document.querySelectorAll('[aria-roledescription="message"]').forEach((el) => {
+          const key = el.getAttribute("aria-label");
+          if (!key || collected.has(key)) return;
+          const { rawDate, sender, text, type, isCall, isImage, duration, contentLength } = extractMessageParts(el);
+          if (!rawDate || !sender) return;
+          const timeEl = el.querySelector("time[datetime]");
+          const resolvedRaw = timeEl ? timeEl.getAttribute("datetime") : resolveRelativeDate(rawDate);
+          const msgDate = new Date(resolvedRaw);
+          const displayDate = formatDate(resolvedRaw);
+          const authorLabel = anonymizeChk.checked && String(sender).toLowerCase() === "you" ? anonymizeInput.value.trim() || "Youghurt" : sender;
+          const callMinutes = (() => {
+            const m = el.innerText.match(/(\d+)\s*min/i);
+            return m ? Number(m[1]) : 0;
+          })();
+          if (!includeCallsChk.checked && isCall) return;
+          if (fromDate && !isNaN(msgDate) && msgDate < fromDate) {
+            reachedFromDate = true;
+            return;
+          }
+          if (toDate && !isNaN(msgDate) && msgDate > toDate) return;
+          const lineEntry = {
+            fileType: type,
+            semanticType: type,
+            dateText: displayDate,
+            sender: authorLabel,
+            duration,
+            content: text,
+            contentLength
+          };
+          const finalLine = (0, import_export_formatter.formatLine)(lineEntry, {
+            includeContent: includeContentChk.checked,
+            includeLength: lengthChk.checked
+          });
+          collected.set(key, {
+            ts: isNaN(msgDate) ? 0 : msgDate.getTime(),
+            sender: authorLabel,
+            date: msgDate,
+            type,
+            isCall,
+            isImage,
+            callMinutes,
+            line: finalLine,
+            exportEntry: lineEntry
+          });
+        });
+      }
+      function findScrollContainer() {
+        const firstMsg = document.querySelector('[aria-roledescription="message"]');
+        if (!firstMsg) return null;
+        let el = firstMsg.parentElement;
+        while (el) {
+          if (el.scrollHeight > el.clientHeight + 10) return el;
+          el = el.parentElement;
+        }
+        return null;
+      }
+      function getLatestVisibleMessageDate() {
+        const dates = Array.from(document.querySelectorAll('[aria-roledescription="message"]')).map((el) => {
+          const { rawDate } = extractMessageParts(el);
+          const timeEl = el.querySelector("time[datetime]");
+          const resolvedRaw = timeEl ? timeEl.getAttribute("datetime") : resolveRelativeDate(rawDate);
+          const date = new Date(resolvedRaw);
+          return isNaN(date) ? null : date;
+        }).filter(Boolean);
+        if (!dates.length) return null;
+        return new Date(Math.max(...dates.map((d) => d.getTime())));
+      }
+      collectVisible();
+      const scroller = findScrollContainer();
+      if (!scroller) {
+        noticeMsg.textContent = "Could not find the message list. Make sure a conversation is open.";
+        setScanState("idle");
+        return;
+      }
+      const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+      if (toDate) {
+        const latestVisible = getLatestVisibleMessageDate();
+        if (latestVisible && latestVisible > toDate) {
+          scroller.scrollTop = maxScrollTop;
+        }
+      } else {
+        scroller.scrollTop = maxScrollTop;
+      }
+      const scanStartedAt = Date.now();
+      let stableCount = 0;
+      function scanStep() {
+        try {
+          collectVisible();
+          const elapsedSec = Math.round((Date.now() - scanStartedAt) / 1e3);
+          noticeMsg.textContent = `Scanning... ${collected.size} collected (${elapsedSec}s).`;
+          if (stopRequested || reachedFromDate || scroller.scrollTop <= 0 && stableCount >= 3) {
+            actionBtn.dataset.scanning = "false";
+            const sortedEntries = Array.from(collected.values()).sort((a, b) => a.ts - b.ts);
+            const messages = sortedEntries.map((e) => e.line);
+            if (messages.length === 0) {
+              noticeMsg.textContent = "No messages found.";
+              downloadBtn.style.display = "none";
+              setScanState("idle");
+              return;
+            }
+            const summaryText = summaryChk.checked ? (0, import_export_summary.buildSummary)(sortedEntries, { useMessageLabel: true }) : "";
+            const messageTypes = Array.from(
+              new Set(sortedEntries.map((entry) => entry.type).filter(Boolean))
+            ).sort();
+            const headerText = (0, import_export_formatter.formatExportHeader)({ method: "browser", messageTypes });
+            const blob = new Blob([headerText + summaryText + messages.join("")], {
+              type: "text/plain"
+            });
+            let url;
+            try {
+              url = URL.createObjectURL(blob);
+            } catch (_) {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                url = e.target.result;
+              };
+              reader.readAsDataURL(blob);
+              if (!url) {
+                noticeMsg.textContent = "Could not prepare download (CSP restriction).";
+                setScanState("idle");
+                return;
+              }
+            }
+            const fromLabel = fromInput.value.trim() || "start";
+            const toLabel = toInput.value.trim() || "end";
+            const elapsedMs = Date.now() - scanStartedAt;
+            const elapsed = elapsedMs < 6e4 ? `${(elapsedMs / 1e3).toFixed(1)} seconds` : `${(elapsedMs / 6e4).toFixed(2)} minutes`;
+            const displayPersonName = getDisplayPersonName();
+            const fileName = formatExportFileName();
+            noticeMsg.textContent = `Done: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
+            downloadBtn.style.display = "";
+            downloadBtn.onclick = () => {
+              if (downloadBtn.disabled) return;
+              downloadBtn.disabled = true;
+              downloadBtn.style.opacity = "0.5";
+              downloadBtn.style.cursor = "not-allowed";
+              const originalLabel = downloadBtn.textContent;
+              downloadBtn.textContent = "Downloaded";
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = fileName;
+              a.click();
+              downloadRevokeTimeout = setTimeout(() => {
+                if (url.startsWith("blob:")) URL.revokeObjectURL(url);
+                downloadRevokeTimeout = null;
+                downloadBtn.disabled = false;
+                downloadBtn.style.opacity = "1";
+                downloadBtn.style.cursor = "pointer";
+                downloadBtn.textContent = originalLabel;
+              }, 1e4);
+            };
+            setScanState("idle");
+            return;
+          }
+          const nextTop = Math.max(0, scroller.scrollTop - Math.max(800, scroller.clientHeight - 100));
+          if (Math.abs(nextTop - scroller.scrollTop) < 5) {
+            stableCount += 1;
+          } else {
+            stableCount = 0;
+            scroller.scrollTop = nextTop;
+          }
+          const delay = 500 + Math.random() * 500;
+          scrollTimeout = setTimeout(scanStep, delay);
+        } catch (err) {
+          noticeMsg.textContent = "An unexpected error occurred. Please try again.";
+          setScanState("idle");
+          throw err;
+        }
+      }
+      scanStep();
+    });
+  })();
+})();

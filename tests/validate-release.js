@@ -24,6 +24,8 @@ assert.deepStrictEqual(
   'Runtime export config and generated TXT schema message types must match'
 );
 assert.ok(fs.existsSync(distPath), 'dist/app.js must exist for release validation');
+const minDistPath = path.join(baseDir, 'dist', 'app.min.js');
+assert.ok(fs.existsSync(minDistPath), 'dist/app.min.js must exist for release validation');
 
 const distContents = fs.readFileSync(distPath, 'utf8');
 assert.ok(/\/\/ @version\s+/.test(distContents), 'dist/app.js must contain @version header');
