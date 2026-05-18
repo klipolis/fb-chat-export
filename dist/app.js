@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat Exporter
 // @namespace    http://tampermonkey.net/
-// @version      5.3.5
+// @version      5.4.0
 // @description  Export chat conversations to text file
 // @match        https://www.facebook.com/messages/*
 // @grant        none
@@ -536,6 +536,7 @@
             type = "image";
           }
         }
+        const linkOnlyText = type === "link" && Boolean(resolvedLink) && isLinkOnlyText(normalizedText, resolvedLink);
         let contentText = normalizedText;
         if (type === "unsent") {
           contentText = "message unsent";
@@ -562,7 +563,6 @@
         const timedTypes = /* @__PURE__ */ new Set(["voice-message", "video-call", "audio-call"]);
         const noLengthTypes = /* @__PURE__ */ new Set(["image", "missed-call", "unsent", ...timedTypes]);
         const duration = timedTypes.has(type) ? rawDuration : null;
-        const linkOnlyText = type === "link" && Boolean(resolvedLink) && isLinkOnlyText(normalizedText, resolvedLink);
         const linkHasTextContent = type === "link" && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
         const shouldOmitLength = noLengthTypes.has(type) || type === "link" && !linkHasTextContent;
         const contentLength = shouldOmitLength ? void 0 : `${contentText.length} chars`;
@@ -952,20 +952,28 @@ ${types}
   // src/shared/frontend-utils.js
   var import_aria_label_parser = __toESM(require_aria_label_parser());
   function parseLocalDate(str) {
-    const m = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    return m ? new Date(+m[1], +m[2] - 1, +m[3]) : NaN;
+    if (!str) return NaN;
+    const s = str.trim();
+    const iso = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+    if (iso) return new Date(+iso[1], +iso[2] - 1, +iso[3]);
+    const dmy = s.match(/^(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})$/);
+    if (dmy) return new Date(+dmy[3], +dmy[2] - 1, +dmy[1]);
+    return NaN;
   }
   function resolveRelativeDate(raw) {
     return (0, import_aria_label_parser.normalizeDateToIso)(raw) || raw;
   }
   function sanitizeFileNamePart(value) {
     const normalized = String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-    return normalized.slice(0, 20) || "chat";
+    return normalized.slice(0, 40) || "chat";
   }
   function getConversationName() {
     const title = document.title || "";
     const cleaned = title.replace(/\s*[|\-•]\s*messenger.*$/i, "").replace(/\s*messenger\s*$/i, "").trim();
-    return cleaned || "chat";
+    if (cleaned) return cleaned;
+    const h1 = document.querySelector("h1");
+    if (h1 && h1.textContent.trim()) return h1.textContent.trim();
+    return "chat";
   }
   function getDisplayPersonName() {
     const name = getConversationName();
@@ -1027,6 +1035,7 @@ ${types}
     textInput.type = "text";
     textInput.value = inputValue;
     textInput.placeholder = inputValue;
+    textInput.setAttribute("aria-label", `${labelText} replacement name`);
     textInput.style.cssText = "border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; font-size: 12px; width: 110px; outline: none;";
     wrap.appendChild(checkboxLabel);
     wrap.appendChild(textInput);
@@ -1055,7 +1064,7 @@ ${types}
     "use strict";
     const panel = document.createElement("details");
     panel.style.cssText = "position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 99999; background: #fff; border: 1px solid #ddd; border-radius: 0 0 10px 10px; font-family: sans-serif; font-size: 13px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); min-width: 420px; max-width: calc(100% - 40px);";
-    panel.open = true;
+    panel.open = localStorage.getItem("fbExportPanelOpen") !== "false";
     const panelSummary = document.createElement("summary");
     panelSummary.style.cssText = "cursor: pointer; padding: 6px 10px; font-size: 12px; color: #555; background: #fafafa; display: flex; align-items: center; gap: 6px; user-select: none;";
     const panelArrow = document.createElement("span");
@@ -1068,6 +1077,8 @@ ${types}
     panelSummary.appendChild(panelTitle);
     panel.addEventListener("toggle", () => {
       panelArrow.textContent = panel.open ? "\u25B2" : "\u25BC";
+      panelSummary.setAttribute("aria-expanded", String(panel.open));
+      localStorage.setItem("fbExportPanelOpen", String(panel.open));
       if (!panel.open && actionBtn.dataset.scanning === "true") {
         stopRequested = true;
         if (scrollTimeout !== null) {
@@ -1078,6 +1089,7 @@ ${types}
         noticeMsg.textContent = "Scan cancelled.";
       }
     });
+    panelSummary.setAttribute("aria-expanded", String(panel.open));
     const instructions = document.createElement("div");
     instructions.style.cssText = "padding: 6px 10px; font-size: 11px; color: #666; background: #fafafa;";
     instructions.textContent = "Start at the bottom of the conversation";
@@ -1098,7 +1110,7 @@ ${types}
     const { wrap: fromWrap, input: fromInput } = createLabelInput(
       "From:",
       "YYYY-MM-DD",
-      (() => {
+      sessionStorage.getItem("fbExportFrom") || (() => {
         const d = /* @__PURE__ */ new Date();
         d.setDate(d.getDate() - 3);
         return d.toISOString().slice(0, 10);
@@ -1107,7 +1119,7 @@ ${types}
     const { wrap: toWrap, input: toInput } = createLabelInput(
       "To:",
       "YYYY-MM-DD",
-      (/* @__PURE__ */ new Date()).toISOString().slice(0, 10)
+      sessionStorage.getItem("fbExportTo") || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10)
     );
     const actionBtn = createButton("Scan Messages", "#0084ff");
     const rightCol = document.createElement("div");
@@ -1211,8 +1223,14 @@ ${types}
     toInput.addEventListener("input", () => {
       toInput.style.borderColor = "#ccc";
     });
+    [fromInput, toInput].forEach((input) => {
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") actionBtn.click();
+      });
+    });
     let downloadRevokeTimeout = null;
     let scrollTimeout = null;
+    let downloadHandler = null;
     let stopRequested = false;
     function setScanState(state) {
       if (state === "scanning") {
@@ -1242,11 +1260,13 @@ ${types}
       if (fromDate !== null && isNaN(fromDate)) {
         fromInput.style.borderColor = "red";
         noticeMsg.textContent = "Invalid \u201CFrom\u201D date \u2014 use YYYY-MM-DD format.";
+        fromInput.focus();
         return;
       }
       if (toDate !== null && isNaN(toDate)) {
         toInput.style.borderColor = "red";
-        noticeMsg.textContent = "Invalid \u201CTo\u201D date \u2014 use YYYY-MM-DD format.";
+        noticeMsg.textContent = 'Invalid "To" date \u2014 use YYYY-MM-DD format.';
+        toInput.focus();
         return;
       }
       fromInput.style.borderColor = toInput.style.borderColor = "#ccc";
@@ -1255,6 +1275,8 @@ ${types}
         downloadRevokeTimeout = null;
       }
       stopRequested = false;
+      sessionStorage.setItem("fbExportFrom", fromInput.value.trim());
+      sessionStorage.setItem("fbExportTo", toInput.value.trim());
       setScanState("scanning");
       downloadBtn.style.display = "none";
       noticeMsg.textContent = "Scanning: 0";
@@ -1268,11 +1290,16 @@ ${types}
           if (!rawDate || !sender) return;
           const timeEl = el.querySelector("time[datetime]");
           const resolvedRaw = timeEl ? timeEl.getAttribute("datetime") : resolveRelativeDate(rawDate);
-          const msgDate = new Date(resolvedRaw);
+          const msgDate = /^\d{4}-\d{2}-\d{2}$/.test(resolvedRaw) ? (() => {
+            const [y, m, d] = resolvedRaw.split("-").map(Number);
+            return new Date(y, m - 1, d);
+          })() : new Date(resolvedRaw);
           const displayDate = formatDate(resolvedRaw);
           const authorLabel = anonymizeChk.checked && String(sender).toLowerCase() === "you" ? anonymizeInput.value.trim() || "Youghurt" : sender;
           const callMinutes = (() => {
-            const m = el.innerText.match(/(\d+)\s*min/i);
+            const timer = el.querySelector('[role="timer"], time');
+            const src = timer ? timer.textContent || "" : el.getAttribute("aria-label") || "";
+            const m = src.match(/(\d+)\s*min/i);
             return m ? Number(m[1]) : 0;
           })();
           if (!includeCallsChk.checked && isCall) return;
@@ -1350,8 +1377,36 @@ ${types}
         try {
           collectVisible();
           const elapsedSec = Math.round((Date.now() - scanStartedAt) / 1e3);
-          noticeMsg.textContent = `Scanning... ${collected.size} collected (${elapsedSec}s).`;
+          const scrollPct = scroller.scrollHeight > 0 ? Math.round((1 - scroller.scrollTop / scroller.scrollHeight) * 100) : 0;
+          noticeMsg.textContent = `Scanning... ${collected.size} collected (${elapsedSec}s, ~${scrollPct}% back).`;
           if (stopRequested || reachedFromDate || scroller.scrollTop <= 0 && stableCount >= 3) {
+            let setupDownload = function(downloadUrl) {
+              noticeMsg.textContent = `${doneLabel}: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
+              downloadBtn.style.display = "";
+              if (downloadHandler) downloadBtn.removeEventListener("click", downloadHandler);
+              downloadHandler = () => {
+                if (downloadBtn.getAttribute("aria-disabled") === "true") return;
+                downloadBtn.setAttribute("aria-disabled", "true");
+                downloadBtn.style.opacity = "0.5";
+                downloadBtn.style.cursor = "not-allowed";
+                const originalLabel = downloadBtn.textContent;
+                downloadBtn.textContent = "Downloaded";
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = fileName;
+                a.click();
+                downloadRevokeTimeout = setTimeout(() => {
+                  if (downloadUrl.startsWith("blob:")) URL.revokeObjectURL(downloadUrl);
+                  downloadRevokeTimeout = null;
+                  downloadBtn.removeAttribute("aria-disabled");
+                  downloadBtn.style.opacity = "1";
+                  downloadBtn.style.cursor = "pointer";
+                  downloadBtn.textContent = originalLabel;
+                }, 1e4);
+              };
+              downloadBtn.addEventListener("click", downloadHandler);
+              setScanState("idle");
+            };
             actionBtn.dataset.scanning = "false";
             const sortedEntries = Array.from(collected.values()).sort((a, b) => a.ts - b.ts);
             const messages = sortedEntries.map((e) => e.line);
@@ -1369,50 +1424,24 @@ ${types}
             const blob = new Blob([headerText + summaryText + messages.join("")], {
               type: "text/plain"
             });
-            let url;
-            try {
-              url = URL.createObjectURL(blob);
-            } catch (_) {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                url = e.target.result;
-              };
-              reader.readAsDataURL(blob);
-              if (!url) {
-                noticeMsg.textContent = "Could not prepare download (CSP restriction).";
-                setScanState("idle");
-                return;
-              }
-            }
             const fromLabel = fromInput.value.trim() || "start";
             const toLabel = toInput.value.trim() || "end";
             const elapsedMs = Date.now() - scanStartedAt;
             const elapsed = elapsedMs < 6e4 ? `${(elapsedMs / 1e3).toFixed(1)} seconds` : `${(elapsedMs / 6e4).toFixed(2)} minutes`;
             const displayPersonName = getDisplayPersonName();
             const fileName = formatExportFileName();
-            noticeMsg.textContent = `Done: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
-            downloadBtn.style.display = "";
-            downloadBtn.onclick = () => {
-              if (downloadBtn.disabled) return;
-              downloadBtn.disabled = true;
-              downloadBtn.style.opacity = "0.5";
-              downloadBtn.style.cursor = "not-allowed";
-              const originalLabel = downloadBtn.textContent;
-              downloadBtn.textContent = "Downloaded";
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = fileName;
-              a.click();
-              downloadRevokeTimeout = setTimeout(() => {
-                if (url.startsWith("blob:")) URL.revokeObjectURL(url);
-                downloadRevokeTimeout = null;
-                downloadBtn.disabled = false;
-                downloadBtn.style.opacity = "1";
-                downloadBtn.style.cursor = "pointer";
-                downloadBtn.textContent = originalLabel;
-              }, 1e4);
-            };
-            setScanState("idle");
+            const doneLabel = stopRequested ? "Stopped" : "Done";
+            try {
+              setupDownload(URL.createObjectURL(blob));
+            } catch (_) {
+              const reader = new FileReader();
+              reader.onload = (e) => setupDownload(e.target.result);
+              reader.onerror = () => {
+                noticeMsg.textContent = "Could not prepare download.";
+                setScanState("idle");
+              };
+              reader.readAsDataURL(blob);
+            }
             return;
           }
           const nextTop = Math.max(0, scroller.scrollTop - Math.max(800, scroller.clientHeight - 100));

@@ -216,6 +216,8 @@ function getContentMeta({
     }
   }
 
+  const linkOnlyText = type === 'link' && Boolean(resolvedLink) && isLinkOnlyText(normalizedText, resolvedLink);
+
   let contentText = normalizedText;
   if (type === 'unsent') {
     contentText = 'message unsent';
@@ -244,7 +246,6 @@ function getContentMeta({
   const noLengthTypes = new Set(['image', 'missed-call', 'unsent', ...timedTypes]);
 
   const duration = timedTypes.has(type) ? rawDuration : null;
-  const linkOnlyText = type === 'link' && Boolean(resolvedLink) && isLinkOnlyText(normalizedText, resolvedLink);
   const linkHasTextContent =
     type === 'link' && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
   const shouldOmitLength = noLengthTypes.has(type) || (type === 'link' && !linkHasTextContent);

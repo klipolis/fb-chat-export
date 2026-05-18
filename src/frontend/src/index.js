@@ -22,7 +22,7 @@ import {
   const panel = document.createElement('details');
   panel.style.cssText =
     'position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 99999; background: #fff; border: 1px solid #ddd; border-radius: 0 0 10px 10px; font-family: sans-serif; font-size: 13px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); min-width: 420px; max-width: calc(100% - 40px);';
-  panel.open = true;
+  panel.open = localStorage.getItem('fbExportPanelOpen') !== 'false';
 
   const panelSummary = document.createElement('summary');
   panelSummary.style.cssText =
@@ -38,6 +38,8 @@ import {
 
   panel.addEventListener('toggle', () => {
     panelArrow.textContent = panel.open ? '▲' : '▼';
+    panelSummary.setAttribute('aria-expanded', String(panel.open));
+    localStorage.setItem('fbExportPanelOpen', String(panel.open));
     if (!panel.open && actionBtn.dataset.scanning === 'true') {
       stopRequested = true;
       if (scrollTimeout !== null) {
@@ -48,6 +50,7 @@ import {
       noticeMsg.textContent = 'Scan cancelled.';
     }
   });
+  panelSummary.setAttribute('aria-expanded', String(panel.open));
 
   const instructions = document.createElement('div');
   instructions.style.cssText =
@@ -78,7 +81,7 @@ import {
   const { wrap: fromWrap, input: fromInput } = createLabelInput(
     'From:',
     'YYYY-MM-DD',
-    (() => {
+    sessionStorage.getItem('fbExportFrom') || (() => {
       const d = new Date();
       d.setDate(d.getDate() - 3);
       return d.toISOString().slice(0, 10);
@@ -87,7 +90,7 @@ import {
   const { wrap: toWrap, input: toInput } = createLabelInput(
     'To:',
     'YYYY-MM-DD',
-    new Date().toISOString().slice(0, 10)
+    sessionStorage.getItem('fbExportTo') || new Date().toISOString().slice(0, 10)
   );
 
   const actionBtn = createButton('Scan Messages', '#0084ff');
@@ -214,8 +217,15 @@ import {
   fromInput.addEventListener('input', () => { fromInput.style.borderColor = '#ccc'; });
   toInput.addEventListener('input', () => { toInput.style.borderColor = '#ccc'; });
 
+  [fromInput, toInput].forEach((input) => {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') actionBtn.click();
+    });
+  });
+
   let downloadRevokeTimeout = null;
   let scrollTimeout = null;
+  let downloadHandler = null;
   let stopRequested = false;
 
   function setScanState(state) {
@@ -249,11 +259,13 @@ import {
     if (fromDate !== null && isNaN(fromDate)) {
       fromInput.style.borderColor = 'red';
       noticeMsg.textContent = 'Invalid “From” date — use YYYY-MM-DD format.';
+      fromInput.focus();
       return;
     }
     if (toDate !== null && isNaN(toDate)) {
       toInput.style.borderColor = 'red';
-      noticeMsg.textContent = 'Invalid “To” date — use YYYY-MM-DD format.';
+      noticeMsg.textContent = 'Invalid "To" date — use YYYY-MM-DD format.';
+      toInput.focus();
       return;
     }
     fromInput.style.borderColor = toInput.style.borderColor = '#ccc';
@@ -263,6 +275,8 @@ import {
       downloadRevokeTimeout = null;
     }
     stopRequested = false;
+    sessionStorage.setItem('fbExportFrom', fromInput.value.trim());
+    sessionStorage.setItem('fbExportTo', toInput.value.trim());
     setScanState('scanning');
     downloadBtn.style.display = 'none';
     noticeMsg.textContent = 'Scanning: 0';
@@ -281,14 +295,20 @@ import {
 
         const timeEl = el.querySelector('time[datetime]');
         const resolvedRaw = timeEl ? timeEl.getAttribute('datetime') : resolveRelativeDate(rawDate);
-        const msgDate = new Date(resolvedRaw);
+        // Date-only ISO strings (e.g. "2026-05-15") parse as UTC midnight in all browsers.
+        // Re-parse them as local midnight to match what parseLocalDate produces.
+        const msgDate = /^\d{4}-\d{2}-\d{2}$/.test(resolvedRaw)
+          ? (() => { const [y, m, d] = resolvedRaw.split('-').map(Number); return new Date(y, m - 1, d); })()
+          : new Date(resolvedRaw);
         const displayDate = formatDate(resolvedRaw);
         const authorLabel =
           anonymizeChk.checked && String(sender).toLowerCase() === 'you'
             ? anonymizeInput.value.trim() || 'Youghurt'
             : sender;
         const callMinutes = (() => {
-          const m = el.innerText.match(/(\d+)\s*min/i);
+          const timer = el.querySelector('[role="timer"], time');
+          const src = timer ? (timer.textContent || '') : (el.getAttribute('aria-label') || '');
+          const m = src.match(/(\d+)\s*min/i);
           return m ? Number(m[1]) : 0;
         })();
 
@@ -379,7 +399,10 @@ import {
       try {
       collectVisible();
       const elapsedSec = Math.round((Date.now() - scanStartedAt) / 1000);
-      noticeMsg.textContent = `Scanning... ${collected.size} collected (${elapsedSec}s).`;
+      const scrollPct = scroller.scrollHeight > 0
+        ? Math.round((1 - scroller.scrollTop / scroller.scrollHeight) * 100)
+        : 0;
+      noticeMsg.textContent = `Scanning... ${collected.size} collected (${elapsedSec}s, ~${scrollPct}% back).`;
 
       if (
         stopRequested ||
@@ -409,23 +432,6 @@ import {
         const blob = new Blob([headerText + summaryText + messages.join('')], {
           type: 'text/plain',
         });
-        let url;
-        try {
-          url = URL.createObjectURL(blob);
-        } catch (_) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            url = e.target.result;
-          };
-          reader.readAsDataURL(blob);
-          // Wait for synchronous FileReader on small blobs (data: URI fallback)
-          if (!url) {
-            noticeMsg.textContent = 'Could not prepare download (CSP restriction).';
-            setScanState('idle');
-            return;
-          }
-        }
-
         const fromLabel = fromInput.value.trim() || 'start';
         const toLabel = toInput.value.trim() || 'end';
         const elapsedMs = Date.now() - scanStartedAt;
@@ -435,30 +441,47 @@ import {
             : `${(elapsedMs / 60000).toFixed(2)} minutes`;
         const displayPersonName = getDisplayPersonName();
         const fileName = formatExportFileName();
-        noticeMsg.textContent = `Done: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
-        downloadBtn.style.display = '';
-        downloadBtn.onclick = () => {
-          if (downloadBtn.disabled) return;
-          downloadBtn.disabled = true;
-          downloadBtn.style.opacity = '0.5';
-          downloadBtn.style.cursor = 'not-allowed';
-          const originalLabel = downloadBtn.textContent;
-          downloadBtn.textContent = 'Downloaded';
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = fileName;
-          a.click();
-          downloadRevokeTimeout = setTimeout(() => {
-            if (url.startsWith('blob:')) URL.revokeObjectURL(url);
-            downloadRevokeTimeout = null;
-            downloadBtn.disabled = false;
-            downloadBtn.style.opacity = '1';
-            downloadBtn.style.cursor = 'pointer';
-            downloadBtn.textContent = originalLabel;
-          }, 10000);
-        };
+        const doneLabel = stopRequested ? 'Stopped' : 'Done';
 
-        setScanState('idle');
+        function setupDownload(downloadUrl) {
+          noticeMsg.textContent = `${doneLabel}: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
+          downloadBtn.style.display = '';
+          if (downloadHandler) downloadBtn.removeEventListener('click', downloadHandler);
+          downloadHandler = () => {
+            if (downloadBtn.getAttribute('aria-disabled') === 'true') return;
+            downloadBtn.setAttribute('aria-disabled', 'true');
+            downloadBtn.style.opacity = '0.5';
+            downloadBtn.style.cursor = 'not-allowed';
+            const originalLabel = downloadBtn.textContent;
+            downloadBtn.textContent = 'Downloaded';
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = fileName;
+            a.click();
+            downloadRevokeTimeout = setTimeout(() => {
+              if (downloadUrl.startsWith('blob:')) URL.revokeObjectURL(downloadUrl);
+              downloadRevokeTimeout = null;
+              downloadBtn.removeAttribute('aria-disabled');
+              downloadBtn.style.opacity = '1';
+              downloadBtn.style.cursor = 'pointer';
+              downloadBtn.textContent = originalLabel;
+            }, 10000);
+          };
+          downloadBtn.addEventListener('click', downloadHandler);
+          setScanState('idle');
+        }
+
+        try {
+          setupDownload(URL.createObjectURL(blob));
+        } catch (_) {
+          const reader = new FileReader();
+          reader.onload = (e) => setupDownload(e.target.result);
+          reader.onerror = () => {
+            noticeMsg.textContent = 'Could not prepare download.';
+            setScanState('idle');
+          };
+          reader.readAsDataURL(blob);
+        }
         return;
       }
 

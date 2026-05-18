@@ -1,6 +1,6 @@
 {
   "name": "fb-chat-exporter",
-  "version": "5.3.5",
+  "version": "5.4.0",
   "private": true,
   "license": "MIT",
   "packageManager": "pnpm@11.1.2",
@@ -15,7 +15,7 @@
     "validate:dist": "node tests/validate-dist.js",
     "validate:release": "node tests/validate-release.js",
     "test:unit": "tap --timeout 20000 tests/run-tests.js tests/test-ui.js",
-    "test": "pnpm run test:unit && pnpm run validate:generated-json && pnpm run validate:generated-txt && pnpm run validate:dist && pnpm run validate:release",
+    "test": "pnpm run lint && pnpm run test:unit && pnpm run validate:generated-json && pnpm run validate:generated-txt && pnpm run validate:dist && pnpm run validate:release",
     "lint": "eslint --quiet \"src/**/*.js\" \"tests/**/*.js\"",
     "lint:changelog": "node scripts/lint-changelog.js",
     "lint:docs": "markdownlint --config .markdownlint.json \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"*.md\"",

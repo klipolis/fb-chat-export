@@ -1,8 +1,15 @@
 import { normalizeDateToIso } from './aria-label-parser.js';
 
 export function parseLocalDate(str) {
-  const m = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  return m ? new Date(+m[1], +m[2] - 1, +m[3]) : NaN;
+  if (!str) return NaN;
+  const s = str.trim();
+  // YYYY-MM-DD or YYYY/MM/DD
+  const iso = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if (iso) return new Date(+iso[1], +iso[2] - 1, +iso[3]);
+  // DD.MM.YYYY or DD/MM/YYYY or DD-MM-YYYY (year at end)
+  const dmy = s.match(/^(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})$/);
+  if (dmy) return new Date(+dmy[3], +dmy[2] - 1, +dmy[1]);
+  return NaN;
 }
 
 export function resolveRelativeDate(raw) {
@@ -15,7 +22,7 @@ export function sanitizeFileNamePart(value) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
-  return normalized.slice(0, 20) || 'chat';
+  return normalized.slice(0, 40) || 'chat';
 }
 
 export function getConversationName() {
@@ -24,7 +31,10 @@ export function getConversationName() {
     .replace(/\s*[|\-•]\s*messenger.*$/i, '')
     .replace(/\s*messenger\s*$/i, '')
     .trim();
-  return cleaned || 'chat';
+  if (cleaned) return cleaned;
+  const h1 = document.querySelector('h1');
+  if (h1 && h1.textContent.trim()) return h1.textContent.trim();
+  return 'chat';
 }
 
 export function getDisplayPersonName() {

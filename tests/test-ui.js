@@ -22,10 +22,8 @@ function makeWindow() {
 function loadUi(window) {
   const module = { exports: {} };
   // eslint-disable-next-line no-new-func
-  const fn = new Function('module', 'exports', 'require', transformed.code);
-  fn(module, module.exports, () => ({}));
-  // Inject window globals so DOM APIs work
-  global.document = window.document;
+  const fn = new Function('module', 'exports', 'require', 'document', transformed.code);
+  fn(module, module.exports, () => ({}), window.document);
   return module.exports;
 }
 

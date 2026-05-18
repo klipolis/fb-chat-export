@@ -5,50 +5,45 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v5.3.5 (2026-05-18)
+## v5.4.0 (2026-05-18)
 
-### Changed
+### Added
 
-- Scan progress shows elapsed seconds alongside message count.
-- Closing the panel mid-scan cancels the scan and re-enables controls.
-- Stop flag is now a boolean; scan button state is fully managed by a central helper.
-
-## v5.3.4 (2026-05-18)
+- Date inputs accept `YYYY/MM/DD`, `DD.MM.YYYY`, and `DD/MM/YYYY` in addition to `YYYY-MM-DD`.
+- Panel open/closed state is remembered across page loads.
+- Last-used date range is restored automatically on next visit.
+- Pressing Enter in either date field starts the scan.
+- Scan progress shows elapsed time and an approximate scroll-back percentage.
+- Completion notice shows elapsed time alongside message count and date range.
+- Scan stopped by the user shows "Stopped" instead of "Done".
+- Both readable and minified output files are produced by the build.
+- Automated release validation verifies both build artifacts.
 
 ### Fixed
 
+- All panel controls (calls, anonymize, summary, content, length) now work correctly on load.
+- Invalid date input is focused automatically when an error is shown.
 - Date fields clear their error highlight as soon as the user starts typing.
+- Messages near midnight are no longer incorrectly filtered due to a timezone mismatch.
 - Download falls back gracefully when the browser restricts blob URL creation.
-
-### Dev
-
-- Scan state transitions centralised; in-flight download cleanup cancelled before a new scan starts.
-
-## v5.3.3 (2026-05-18)
+- Screen readers no longer announce the decorative panel arrow.
+- Call duration is now read from the call timer element only, not surrounding message text.
 
 ### Dev
 
 - Panel status area and download button are stable DOM nodes, updated in place.
-- Release validation verifies both build artifacts exist.
-
-## v5.3.2 (2026-05-18)
-
-### Added
-
-- Build produces both readable and minified output files.
-
-### Fixed
-
-- Screen readers no longer announce the decorative panel arrow.
-- Date fields show an error message for invalid input.
-
-## v5.3.1 (2026-05-18)
-
-### Fixed
-
-- Panel checkboxes and options now work correctly on load.
+- Download button uses `aria-disabled` instead of `disabled` so screen readers announce its unavailable state.
 - Check/Uncheck all toggle reflects current selection state.
-- Memory used by the download is released after each scan.
+- Blob URL released after download; existing download cleanup cancelled before a new scan starts.
+- Scan state transitions centralised; stop flag is a boolean managed by a central helper.
+- Closing the panel mid-scan cancels the scan and re-enables controls.
+- `sanitizeFileNamePart` limit raised to 40 characters.
+- `getConversationName` falls back to the page `<h1>` on non-English locales.
+- `validate-dist` rebuild is opt-in via `SKIP_BUILD` environment variable.
+- `lint` added to the `test` script so local runs match CI.
+- `engines.pnpm` constraint added to `package.json`.
+- `formatLine` option combinations, `buildSummary` edge cases, and `parseLocalDate` format variants covered by tests.
+- `test-ui.js` DOM sandbox no longer mutates the Node global `document`.
 
 ## v5.3.0 (2026-05-17)
 
@@ -59,56 +54,6 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - All dev dependencies updated to latest versions.
 - Node version constraint relaxed to `>=26.0.0`.
 
-## v5.2.2 (2026-05-17)� Changelog
-## v5.3.3 (2026-05-18)
-
-### Changed
-
-- Panel status messages update a dedicated text node; the download button stays in the DOM and is shown or hidden in place.
-- Terms link built from DOM elements, eliminating the last `innerHTML` use in the panel.
-
-### Dev
-
-- Release validation now also checks that the minified build artifact exists.
-
-## v5.3.2 (2026-05-18)
-
-### Added
-
-- Build now produces both `dist/app.js` (readable) and `dist/app.min.js` (minified). Both include the userscript header and version annotation.
-
-### Changed
-
-- Decorative panel arrow is now hidden from screen readers.
-- Date fields show an inline error message when the entered value is not a valid date.
-- All static label text in the panel uses `textContent` instead of `innerText`, consistent with best practice for non-layout text.
-
-## v5.3.1 (2026-05-18)
-
-### Fixed
-
-- Panel controls (calls, anonymize, summary, content, length) now respond correctly — a naming mismatch caused all checkboxes to be unreachable and threw an error on load.
-- "All" link replaced with a "Check all" / "Uncheck all" toggle that reflects current state.
-- Blob URL created for the download file is now released after the download completes, preventing a memory leak on repeated scans.
-
-## v5.3.0 (2026-05-17)
-
-### Added
-
-- Changelog entries are now validated automatically — passive or retention language fails the build.
-- LICENSE type is verified against `package.json` on every CI run.
-- `.node-version` file added so Volta and fnm pick up the correct Node version automatically.
-
-### Changed
-
-- ESLint upgraded to v10 with flat config. Legacy `.eslintrc.cjs` removed.
-- Security audit now runs as part of every CI build; moderate-severity findings fail the pipeline.
-
-### Dev
-
-- All dev dependencies updated to latest: `esbuild 0.28`, `tap 21.7`, `jsdom 29.1`, `cross-env 10.1`, `markdownlint-cli 0.48`, `prettier 3.8`.
-- `engines.node` relaxed from an exact pin to `>=26.0.0`.
-- `pnpm.onlyBuiltDependencies` added to allow esbuild native binary install without interactive approval.
 ## v5.2.2 (2026-05-17)
 
 ### Added

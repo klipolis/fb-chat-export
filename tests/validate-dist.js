@@ -7,15 +7,17 @@ const baseDir = path.resolve(__dirname, '..');
 const distPath = path.join(baseDir, 'dist', 'app.js');
 const minDistPath = path.join(baseDir, 'dist', 'app.min.js');
 
-const result = spawnSync('node', ['src/frontend/build.js'], {
-  cwd: baseDir,
-  encoding: 'utf8',
-  env: {
-    ...process.env,
-    BUILD_PLATFORM: 'userscript',
-  },
-});
-assert.strictEqual(result.status, 0, `build-frontend failed: ${result.stderr || result.stdout}`);
+if (!process.env.SKIP_BUILD) {
+  const result = spawnSync('node', ['src/frontend/build.js'], {
+    cwd: baseDir,
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      BUILD_PLATFORM: 'userscript',
+    },
+  });
+  assert.strictEqual(result.status, 0, `build-frontend failed: ${result.stderr || result.stdout}`);
+}
 assert.ok(fs.existsSync(distPath), 'dist/app.js should exist after build');
 
 const contents = fs.readFileSync(distPath, 'utf8');

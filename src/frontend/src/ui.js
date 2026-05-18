@@ -88,6 +88,7 @@ export function createCheckboxToggleWithInput(labelText, inputValue) {
   textInput.type = 'text';
   textInput.value = inputValue;
   textInput.placeholder = inputValue;
+  textInput.setAttribute('aria-label', `${labelText} replacement name`);
   textInput.style.cssText =
     'border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; font-size: 12px; width: 110px; outline: none;';
 
