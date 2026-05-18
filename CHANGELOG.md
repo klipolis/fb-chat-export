@@ -1,4 +1,96 @@
-# Messenger Chat Exporter � Changelog
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
+uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## v5.3.5 (2026-05-18)
+
+### Changed
+
+- Scan progress shows elapsed seconds alongside message count.
+- Closing the panel mid-scan cancels the scan and re-enables controls.
+- Stop flag is now a boolean; scan button state is fully managed by a central helper.
+
+## v5.3.4 (2026-05-18)
+
+### Fixed
+
+- Date fields clear their error highlight as soon as the user starts typing.
+- Download falls back gracefully when the browser restricts blob URL creation.
+
+### Dev
+
+- Scan state transitions centralised; in-flight download cleanup cancelled before a new scan starts.
+
+## v5.3.3 (2026-05-18)
+
+### Dev
+
+- Panel status area and download button are stable DOM nodes, updated in place.
+- Release validation verifies both build artifacts exist.
+
+## v5.3.2 (2026-05-18)
+
+### Added
+
+- Build produces both readable and minified output files.
+
+### Fixed
+
+- Screen readers no longer announce the decorative panel arrow.
+- Date fields show an error message for invalid input.
+
+## v5.3.1 (2026-05-18)
+
+### Fixed
+
+- Panel checkboxes and options now work correctly on load.
+- Check/Uncheck all toggle reflects current selection state.
+- Memory used by the download is released after each scan.
+
+## v5.3.0 (2026-05-17)
+
+### Dev
+
+- Changelog, license, and security audit checks added to CI.
+- ESLint updated to v10 with flat config.
+- All dev dependencies updated to latest versions.
+- Node version constraint relaxed to `>=26.0.0`.
+
+## v5.2.2 (2026-05-17)� Changelog
+## v5.3.3 (2026-05-18)
+
+### Changed
+
+- Panel status messages update a dedicated text node; the download button stays in the DOM and is shown or hidden in place.
+- Terms link built from DOM elements, eliminating the last `innerHTML` use in the panel.
+
+### Dev
+
+- Release validation now also checks that the minified build artifact exists.
+
+## v5.3.2 (2026-05-18)
+
+### Added
+
+- Build now produces both `dist/app.js` (readable) and `dist/app.min.js` (minified). Both include the userscript header and version annotation.
+
+### Changed
+
+- Decorative panel arrow is now hidden from screen readers.
+- Date fields show an inline error message when the entered value is not a valid date.
+- All static label text in the panel uses `textContent` instead of `innerText`, consistent with best practice for non-layout text.
+
+## v5.3.1 (2026-05-18)
+
+### Fixed
+
+- Panel controls (calls, anonymize, summary, content, length) now respond correctly — a naming mismatch caused all checkboxes to be unreachable and threw an error on load.
+- "All" link replaced with a "Check all" / "Uncheck all" toggle that reflects current state.
+- Blob URL created for the download file is now released after the download completes, preventing a memory leak on repeated scans.
+
 ## v5.3.0 (2026-05-17)
 
 ### Added
