@@ -9,6 +9,11 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Facebook reactions (👍, ❤️, 😂, 😮, 😢, 👏) are recognised as a distinct `reaction` message type and excluded from the character-count summary.
+- Name anonymisation now supports multiple explicit sender mappings (e.g. mapping both "You" and a contact name to separate pseudonyms) alongside an automatic fallback for any other detected name.
+- `build:raw` script writes anonymised names back to raw HTML files on demand; the default build no longer modifies raw HTML.
+- `build:raw-clean` script strips Facebook-internal utility classes and inline styles from raw HTML files without running full optimisation.
+- Audio call messages where the sender name matches the anonymisation target are handled correctly without double-replacement.
 - Date inputs accept `YYYY/MM/DD`, `DD.MM.YYYY`, and `DD/MM/YYYY` in addition to `YYYY-MM-DD`.
 - Panel open/closed state is remembered across page loads.
 - Last-used date range is restored automatically on next visit.
@@ -18,16 +23,25 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Scan stopped by the user shows "Stopped" instead of "Done".
 - Both readable and minified output files are produced by the build.
 - Automated release validation verifies both build artifacts.
+- Release procedure is documented in RELEASING.md.
 
 ### Fixed
 
 - Messages with a time-only or day-of-week date (e.g. "Monday 4:41pm") now parse the correct sender and date when the aria-label includes a trailing conversation name.
+- Sender names containing more than two words are no longer mistaken for senders (e.g. long conversation names used as fallback labels).
 - All panel controls (calls, anonymize, summary, content, length) now work correctly on load.
 - Invalid date input is focused automatically when an error is shown.
 - Date fields clear their error highlight as soon as the user starts typing.
 - Messages near midnight are no longer incorrectly filtered due to a timezone mismatch.
 - Download falls back gracefully when the browser restricts blob URL creation.
 - Screen readers no longer announce the decorative panel arrow.
+- Date-range input labels are now properly associated with their inputs via `for`/`id`.
+- Download button stays disabled after use instead of re-enabling after 10 seconds.
+- Messages with identical text from different positions in the conversation are no longer incorrectly deduplicated.
+
+### Changed
+
+- Exported message content is no longer included by default when calling `formatLine` without options — callers must opt in with `includeContent: true`.
 - Call duration is now read from the call timer element only, not surrounding message text.
 
 ### Dev
@@ -45,6 +59,16 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `engines.pnpm` constraint added to `package.json`.
 - `formatLine` option combinations, `buildSummary` edge cases, and `parseLocalDate` format variants covered by tests.
 - `test-ui.js` DOM sandbox no longer mutates the Node global `document`.
+- `isValidSender`, `findValidDatePrefix`, and extended `normalizeDateToSimple` cases covered by unit tests.
+- `anonymizeChatNames` accepts an optional name map; `demo/anonymize-names.json` supplies default replacements (`You` → `Youghurt`, detected name → `Alpha`) used by the server build and tests.
+- `anonymizeChatNames` skips replacing a name that is already the target value (guards against double-anonymization on re-runs).
+- Anonymize panel now shows two name fields: one for your own name and one for the other person; both replace in the export.
+- `build:ci` explicitly runs the test suite after the build step rather than relying on it being embedded in the `build` script.
+- Golden snapshot files validated for UTF-8 encoding, LF line endings, and no trailing whitespace as part of the test run.
+- `messageRules` now covers sticker, GIF, and poll message types so they are no longer classified as `text`; `getContentMeta` handles content text and length omission for each.
+- Download panel shows a "Save again" link after the first download so the file can be re-saved without re-scanning.
+- `docs/README.md` now documents the exported `.txt` file format including the header, summary block, and per-message line structure.
+- Integration test added: mock DOM nodes processed through `buildEntriesFromDocument` → `buildSummary` → `formatExportHeader` → assembled export text, verifying the full scan-to-export wiring.
 
 ## v5.3.0 (2026-05-17)
 

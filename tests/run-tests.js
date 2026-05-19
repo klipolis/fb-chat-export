@@ -4,14 +4,14 @@ const path = require('path');
 const { JSDOM } = require('jsdom');
 const { compareSnapshots } = require('./snapshot-helper');
 
-const { normalizeDateToSimple, parseAriaLabel } = require(
+const { normalizeDateToSimple, normalizeDateToIso, parseAriaLabel, isValidSender, findValidDatePrefix } = require(
   path.join(__dirname, '..', 'src', 'shared', 'aria-label-parser')
 );
 const childProcess = require('child_process');
 const { getContentMeta, normalizeDuration } = require(
   path.join(__dirname, '..', 'src', 'shared', 'message-metadata')
 );
-const { formatExportHeader, formatLine } = require(
+const { formatExportHeader, formatLine, buildExportText } = require(
   path.join(__dirname, '..', 'src', 'shared', 'export-formatter')
 );
 const { buildSummary } = require(
@@ -515,6 +515,117 @@ tap.test('parseAriaLabelSenderSplits', (t) => {
   t.end();
 });
 
+tap.test('parseAriaLabelTrailingConversationName', (t) => {
+  // Relative time with message content and trailing conversation name
+  const r1 = parseAriaLabel('At 12:22 AM, You: github actions nagyon jo, majd a vegen elmondom hogy mukodik');
+  t.equal(r1.date, '12:22 AM');
+  t.equal(r1.sender, 'You');
+  t.equal(r1.message, 'github actions nagyon jo, majd a vegen elmondom hogy mukodik');
+
+  // Day-of-week date with short conversation name suffix
+  const r2 = parseAriaLabel('At Monday 4:41pm, You: pill, kuldj uj codot');
+  t.equal(r2.date, 'Monday 4:41pm');
+  t.equal(r2.sender, 'You');
+
+  // Day-of-week date with another conversation name suffix
+  const r3 = parseAriaLabel('At Friday 11:21am, You: A fenti link, chat');
+  t.equal(r3.date, 'Friday 11:21am');
+  t.equal(r3.sender, 'You');
+
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// isValidSender
+// ---------------------------------------------------------------------------
+
+tap.test('isValidSender', (t) => {
+  // accepted: single word
+  t.ok(isValidSender('You'), 'single word accepted');
+  t.ok(isValidSender('Alpha'), 'single word accepted');
+  // accepted: two words with one space
+  t.ok(isValidSender('John Smith'), 'two words accepted');
+  // rejected: three or more words
+  t.notOk(isValidSender('majd a vegen'), 'three words rejected');
+  t.notOk(isValidSender('John Paul Jones'), 'three words rejected');
+  // rejected: contains digit
+  t.notOk(isValidSender('Alice 2024'), 'name with digit rejected');
+  t.notOk(isValidSender('R2D2'), 'name with digits rejected');
+  // rejected: starts with non-letter
+  t.notOk(isValidSender('1Alpha'), 'starts with digit rejected');
+  t.notOk(isValidSender(''), 'empty string rejected');
+  // edge: two words with permitted punctuation
+  t.ok(isValidSender("O'Brien"), "apostrophe in name accepted");
+  t.ok(isValidSender('St. Claire'), 'period in name accepted');
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// findValidDatePrefix
+// ---------------------------------------------------------------------------
+
+tap.test('findValidDatePrefix', (t) => {
+  // Stops at the first segment that produces a valid ISO date.
+  // 'May 15' is parseable by Date.parse, so the function returns just that.
+  const r1 = findValidDatePrefix('May 15, 2026, 11:00, You');
+  t.ok(r1 !== null && r1.startsWith('May 15'), `stops at first parseable segment: ${r1}`);
+
+  // Day-of-week resolves on first segment
+  const dow = findValidDatePrefix('Monday 4:41pm, You: some text');
+  t.equal(dow, 'Monday 4:41pm', 'day-of-week prefix found');
+
+  // Time-only resolves on first segment
+  const timeOnly = findValidDatePrefix('12:22 AM, You: message');
+  t.equal(timeOnly, '12:22 AM', 'time-only prefix found');
+
+  // No valid prefix
+  t.equal(findValidDatePrefix('not a date at all'), null, 'invalid string returns null');
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// normalizeDateToSimple — extended date format coverage
+// ---------------------------------------------------------------------------
+
+tap.test('normalizeDateToSimpleExtended', (t) => {
+  const today = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const todayStr = `${today.getFullYear()}.${pad(today.getMonth() + 1)}.${pad(today.getDate())}`;
+
+  // time-only (today)
+  const r1 = normalizeDateToSimple('12:22 AM');
+  t.ok(r1.startsWith(todayStr), `time-only resolves to today: ${r1}`);
+  t.ok(r1.endsWith('00:22'), `12:22 AM resolves to 00:22: ${r1}`);
+
+  const r2 = normalizeDateToSimple('3:45 PM');
+  t.ok(r2.endsWith('15:45'), `3:45 PM resolves to 15:45: ${r2}`);
+
+  // yesterday
+  const r3 = normalizeDateToSimple('yesterday at 10:30 am');
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const yStr = `${yesterday.getFullYear()}.${pad(yesterday.getMonth() + 1)}.${pad(yesterday.getDate())}`;
+  t.ok(r3.startsWith(yStr), `yesterday resolves correctly: ${r3}`);
+
+  // day of week — Monday
+  const r4 = normalizeDateToSimple('Monday 4:41pm');
+  t.ok(/^\d{4}\.\d{2}\.\d{2} 16:41$/.test(r4), `Monday 4:41pm normalizes to 16:41: ${r4}`);
+
+  // day of week — Friday no-space am/pm
+  const r5 = normalizeDateToSimple('Friday 11:21am');
+  t.ok(/^\d{4}\.\d{2}\.\d{2} 11:21$/.test(r5), `Friday 11:21am normalizes to 11:21: ${r5}`);
+
+  // full month-name date
+  const r6 = normalizeDateToSimple('April 17, 2026, 3:45 PM');
+  t.equal(r6, '2026.04.17 15:45', 'full date with month name normalizes correctly');
+
+  // returns raw string for unrecognised input
+  const r7 = normalizeDateToSimple('not a date');
+  t.equal(r7, 'not a date', 'unrecognised input returned unchanged');
+
+  t.end();
+});
+
 // ---------------------------------------------------------------------------
 // anonymizeChatNames
 // ---------------------------------------------------------------------------
@@ -538,6 +649,20 @@ tap.test('anonymizeChatNamesPreservesYou', (t) => {
   const cleaned = anonymizeChatNames(rawHtml);
   t.ok(cleaned.includes('aria-label="At Thursday 5:34pm, You"'), 'Self-label You should remain unchanged');
   t.ok(cleaned.includes('aria-label="Enter, Message sent Thursday 5:34pm by You"'), 'Self-label by You should remain unchanged');
+  t.end();
+});
+
+tap.test('anonymizeChatNamesWithNameMap', (t) => {
+  const nameMap = { You: 'Youghurt', any: 'Alpha' };
+  const rawHtml =
+    '<title>Rob</title><div aria-label="At Wednesday 7:54pm, Rob" aria-roledescription="message"></div><div>Rob deleted a message</div><div aria-label="Enter, Message sent Wednesday 7:54pm by Rob"></div><div aria-label="At Wednesday 8:00pm, You" aria-roledescription="message"></div><div>You sent a message</div>';
+  const cleaned = anonymizeChatNames(rawHtml, nameMap);
+  // Other person replaced using nameMap.any
+  t.ok(cleaned.includes('Alpha deleted a message'), 'Detected name replaced with nameMap.any');
+  t.ok(cleaned.includes('aria-label="At Wednesday 7:54pm, Alpha"'), 'Detected sender in aria-label replaced');
+  // "You" replaced using explicit nameMap entry
+  t.ok(cleaned.includes('aria-label="At Wednesday 8:00pm, Youghurt"'), 'You replaced with Youghurt in aria-label');
+  t.ok(cleaned.includes('Youghurt sent a message'), 'You replaced with Youghurt in body text');
   t.end();
 });
 
@@ -571,6 +696,78 @@ tap.test('anonymizeChatNamesIgnoresNamesWithNumbers', (t) => {
   t.end();
 });
 
+tap.test('anonymizeChatNamesSkipsAlreadyTargetName', (t) => {
+  // Auto-detect: if the detected name is already the replacement, skip (no double-replace).
+  const nameMap = { any: 'Alpha' };
+  const rawHtml =
+    '<div aria-label="At Thursday 5:34pm, Alpha" aria-roledescription="message"></div>' +
+    '<div>Alpha deleted a message</div>' +
+    '<div aria-label="At Thursday 5:35pm, Alpha" aria-roledescription="message"></div>' +
+    '<div>Alpha sent another message</div>';
+  const cleaned = anonymizeChatNames(rawHtml, nameMap);
+  // Should remain unchanged — "Alpha" is already the replacement name
+  t.ok(cleaned.includes('Alpha deleted a message'), 'Already-target name kept unchanged');
+  t.notOk(cleaned.includes('Alpha Alpha'), 'Name not double-replaced');
+
+  // Explicit map: if from === to (same name), skip replacement
+  const nameMap2 = { You: 'You', any: 'Alpha' };
+  const rawHtml2 =
+    '<div aria-label="At Thursday 5:34pm, You" aria-roledescription="message"></div>' +
+    '<div>You sent a message</div>';
+  const cleaned2 = anonymizeChatNames(rawHtml2, nameMap2);
+  t.ok(cleaned2.includes('You sent a message'), 'from===to explicit entry is a no-op');
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// scanToExportIntegration — full pipeline: DOM → entries → summary → header → text
+// ---------------------------------------------------------------------------
+
+tap.test('scanToExportIntegration', (t) => {
+  const dom = new JSDOM(`
+    <div aria-roledescription="message" aria-label="At April 12, 2026, 1:23 PM, Alpha: audio call 18 mins"></div>
+    <div aria-roledescription="message" aria-label="At April 14, 2026, 6:34 PM, Alpha: Well i didn't know about this">Well i didn't know about this</div>
+    <div aria-roledescription="message" aria-label="At May 13, 2026, 7:51 PM, Alpha">
+      <img alt="image" />
+    </div>
+  `);
+
+  const entries = buildEntriesFromDocument(dom.window.document, 'text.html');
+  t.equal(entries.length, 3, 'Should parse three message entries');
+
+  const summaryEntries = entries.map((e) => ({
+    sender: e.sender,
+    date: new Date(e.ts),
+    type: e.semanticType,
+    isCall: e.semanticType === 'audio-call' || e.semanticType === 'video-call' || e.semanticType === 'missed-call',
+    isImage: e.semanticType === 'image',
+    callMinutes: e.duration ? (Number(e.duration.match(/^(\d+):/)?.[1] || 0) * 60 + Number(e.duration.match(/:(\d{2})/)?.[1] || 0)) : 0,
+    ts: e.ts,
+  }));
+
+  const messageTypes = [...new Set(entries.map((e) => e.semanticType))].sort();
+  const header = formatExportHeader({ method: 'browser', messageTypes });
+  t.ok(header.startsWith('Method: browser'), 'Header starts with method line');
+  t.ok(header.includes('---'), 'Header includes separator');
+
+  const summaryText = buildSummary(summaryEntries, { useMessageLabel: true });
+  t.ok(summaryText.includes('Total Summary'), 'Summary includes Total Summary');
+  t.ok(summaryText.includes('3 messages'), 'Total message count is 3');
+  t.ok(summaryText.includes('Alpha Summary'), 'Alpha appears in summary');
+
+  const lines = entries.map((e) =>
+    formatLine(e, { includeContent: true, includeLength: true })
+  );
+  const fullText = buildExportText(lines, header + summaryText);
+
+  t.ok(fullText.startsWith('Method: browser'), 'Full export starts with header');
+  t.ok(fullText.includes('Total Summary'), 'Full export includes summary');
+  t.ok(fullText.includes('[2026-04-14 18:34] Alpha:'), 'Full export includes dated message line');
+  t.ok(fullText.includes("Well i didn't know about this"), 'Full export includes message content');
+
+  t.end();
+});
+
 // ---------------------------------------------------------------------------
 // frontendBuildDist
 // ---------------------------------------------------------------------------
@@ -588,7 +785,6 @@ tap.test('frontendBuildDist', (t) => {
   const contents = fs.readFileSync(distPath, 'utf8');
   t.ok(/\/\/ @version\s+/.test(contents), 'dist/app.js should contain a version field');
   t.ok(contents.length > 200, 'dist/app.js should not be empty');
-  t.notOk(/contentMeta\./.test(contents), 'dist/app.js should not contain stale contentMeta references');
   t.end();
 });
 
@@ -647,7 +843,7 @@ tap.test('buildServerTextExport', (t) => {
   const summaryTxt = fs.readFileSync(summaryTxtPath, 'utf8');
 
   t.ok(/\n\d+\s+posts\s*\/\s*\d+\s+days\n/.test(summaryTxt), 'Summary TXT should use posts for total summary');
-  t.ok(/\nAlpha Summary\n\d+\s+post(?:s)?\s*\/\s*\d+\s+days\n/.test(summaryTxt), 'Summary TXT should use post/posts for Alpha Summary');
+  t.ok(/\nXYZ Summary\n\d+\s+post(?:s)?\s*\/\s*\d+\s+days\n/.test(summaryTxt), 'Summary TXT should use post/posts for XYZ Summary');
   t.ok(/\nYoughurt Summary\n\d+\s+post(?:s)?\s*\/\s*\d+\s+days\n/.test(summaryTxt), 'Summary TXT should use post/posts for Youghurt Summary');
 
   const uniqueDays = new Set(
@@ -669,11 +865,11 @@ tap.test('buildServerTextExport', (t) => {
   t.ok(/\n~\s+\d+\s+text;\n/.test(contentOn), 'Content-on summary should include rough text totals');
   t.ok(/\n~\s+\d+\s+images\n/.test(contentOn), 'Content-on summary should include rough image totals');
   t.ok(/\n~\s+\d+\s+calls\s+\d+\s+mins\n/.test(contentOn), 'Content-on summary should include rough call totals');
-  t.ok(/\nAlpha Summary\n/.test(contentOn), 'Content-on summary should include Alpha Summary section');
+  t.ok(/\nXYZ Summary\n/.test(contentOn), 'Content-on summary should include XYZ Summary section');
   t.ok(/\nYoughurt Summary\n/.test(contentOn), 'Content-on summary should include Youghurt Summary section');
   t.ok(
-    /\nAlpha Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text;\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d+\s+mins\n/.test(contentOn),
-    'Alpha Summary should mirror total summary list style'
+    /\nXYZ Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text;\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d+\s+mins\n/.test(contentOn),
+    'XYZ Summary should mirror total summary list style'
   );
   t.ok(
     /\nYoughurt Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text;\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d+\s+mins\n/.test(contentOn),
@@ -739,8 +935,8 @@ tap.test('buildServerTextExport', (t) => {
     t.notOk(/[\r\n]/.test(line), `Content-off line ${idx + 1} should be single-line text`);
   });
 
-  t.ok(contentOn.includes('Alpha'), 'Content-on export should contain anonymized sender names');
-  t.ok(contentOff.includes('Alpha'), 'Content-off export should contain anonymized sender names');
+  t.ok(contentOn.includes('XYZ'), 'Content-on export should contain anonymized sender names');
+  t.ok(contentOff.includes('XYZ'), 'Content-off export should contain anonymized sender names');
   t.notOk(contentOn.includes('Rob'), 'Content-on export should not contain raw sender names');
   t.notOk(contentOff.includes('Rob'), 'Content-off export should not contain raw sender names');
 

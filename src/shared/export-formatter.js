@@ -31,7 +31,7 @@ function formatDate(raw) {
 }
 
 function formatLine(entry, options = {}) {
-  const includeContent = options.includeContent !== false;
+  const includeContent = options.includeContent === true;
   const includeLength = options.includeLength !== false;
   const dateText = entry.dateText || 'unknown';
   const sender = entry.sender || 'Unknown';
@@ -75,7 +75,7 @@ function formatSummarySection(entries = [], options = {}) {
   });
 
   return buildSummary(summaryEntries, {
-    fixedParticipants: ['Alpha', 'Youghurt'],
+    fixedParticipants: options.fixedParticipants || ['Alpha', 'Youghurt'],
     useMessageLabel: Boolean(options.useMessageLabel),
   });
 }

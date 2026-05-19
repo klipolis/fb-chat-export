@@ -37,6 +37,9 @@ This file now serves as a central index for split requirement documents.
 - Keep per-person summary totals excluding `deleted/unsent` and missed call types.
 - Count call totals in summaries using only audio/video calls and voice notes/messages (not missed calls).
 - Keep anonymized self sender output as `Youghurt` in final exports.
+- Default build (`build:server` / `build`) reads raw HTML files but never modifies them. Use `build:raw` to write anonymised names back to raw files.
+- `build:raw-clean` strips Facebook-internal utility classes (tokens starting with `x`) and inline `style` attributes from raw HTML files without running full optimisation.
+- Support multiple explicit sender-to-pseudonym mappings in `anonymize-names.json`; use an `any` key to assign a fallback pseudonym to any auto-detected name not covered by explicit entries.
 - Keep generated `dist/`, `demo/output-html/`, and `demo/output-json/` artifacts in source control.
 - Keep build-specific `dist/app.js` versioning separate from `package.json` using `BUILD_VERSION`.
 - Use minor version bumps for release-level changelog entries that contain feature or contract updates.

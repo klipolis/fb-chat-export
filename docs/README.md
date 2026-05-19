@@ -77,6 +77,58 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - Click `Scan Messages` and download the resulting `.txt` file.
 - After scan completion, the ready notice is minimal and shows conversation name, date interval, and elapsed scan time.
 
+## Export format
+
+The exported `.txt` file contains three sections separated by `---`:
+
+**Header** — method and list of message types encountered:
+
+```
+Method: browser
+Message types:
+- image
+- text
+---
+```
+
+**Summary block** (included when the Summary toggle is on) — total and per-participant counts:
+
+```
+Total Summary
+42 messages / 5 days
+~ 30 text;
+~ 8 images
+~ 4 calls 65 mins
+
+Alice Summary
+25 messages / 5 days
+~ 18 text;
+~ 5 images
+~ 2 calls 45 mins
+
+Bob Summary
+17 messages / 4 days
+~ 12 text;
+~ 3 images
+~ 2 calls 20 mins
+
+---
+```
+
+**Message lines** — one line per message:
+
+```
+[YYYY-MM-DD HH:MM] Sender: type length chars / content text
+[YYYY-MM-DD HH:MM] Sender: image
+[YYYY-MM-DD HH:MM] Sender: voice-note D:MM mins
+[YYYY-MM-DD HH:MM] Sender: missed-audio-call
+```
+
+- `length chars` is omitted for images, calls, and voice messages.
+- `/ content text` is included when the `Include content` toggle is on.
+- Call lines include duration (e.g. `18:00 mins`) when available.
+- The server build labels counts as `posts`; the browser export labels them as `messages`.
+
 ## Developer guide
 
 - Open the project in VS Code and use the terminal in `support/`.

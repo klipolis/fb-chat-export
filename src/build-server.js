@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');
-const { ensureDir, emptyDir, anonymizeChatNames } = require('./shared/utils');
+const { ensureDir, emptyDir, anonymizeChatNames, collectAutoName } = require('./shared/utils');
 const { createOptimizedHtml } = require('./shared/optimize-html');
 const { runCreateNodes } = require('./shared/create-nodes');
 const {
@@ -26,12 +26,17 @@ const relOptimized = './demo/output-html';
 const relPreview = './demo/output-json';
 const relExport = './demo/output-txt';
 
-function optimizeFile(fileName) {
+const anonymizeNamesPath = path.join(baseDir, 'demo/anonymize-names.json');
+const anonymizeNameMap = fs.existsSync(anonymizeNamesPath)
+  ? JSON.parse(fs.readFileSync(anonymizeNamesPath, 'utf8'))
+  : {};
+
+const writeRaw = process.env.BUILD_RAW === 'true';
+
+function optimizeFile(fileName, rawHtml, cleanedHtml) {
   const inputPath = path.join(rawDir, fileName);
   const outputPath = path.join(optimizedDir, fileName);
-  const rawHtml = fs.readFileSync(inputPath, 'utf8');
-  const cleanedHtml = anonymizeChatNames(rawHtml);
-  if (cleanedHtml !== rawHtml) {
+  if (writeRaw && cleanedHtml !== rawHtml) {
     fs.writeFileSync(inputPath, cleanedHtml, 'utf8');
   }
   const html = createOptimizedHtml(cleanedHtml);
@@ -64,12 +69,14 @@ function getFileRecord(fileName) {
   };
 }
 
-function buildTextEntries(files) {
+function buildTextEntries(files, cleanedHtmlByFile) {
   const entries = [];
 
   files.forEach((fileName) => {
-    const rawHtml = fs.readFileSync(path.join(rawDir, fileName), 'utf8');
-    const document = new JSDOM(rawHtml).window.document;
+    const html =
+      cleanedHtmlByFile?.get(fileName) ??
+      fs.readFileSync(path.join(rawDir, fileName), 'utf8');
+    const document = new JSDOM(html).window.document;
     const docEntries = buildEntriesFromDocument(document, fileName);
     if (!docEntries.length) {
       return;
@@ -108,9 +115,17 @@ function buildTextExport(files, options = {}) {
   return buildExportText(lines, `${headerText}${summaryText}`);
 }
 
-function writeTextExports(files) {
+function summaryParticipants() {
+  const any = anonymizeNameMap.any || 'Alpha';
+  const explicit = Object.entries(anonymizeNameMap)
+    .filter(([k]) => k !== 'any')
+    .map(([, v]) => v);
+  return [any, ...explicit];
+}
+
+function writeTextExports(files, cleanedHtmlByFile) {
   ensureDir(exportDir);
-  const sortedEntries = buildTextEntries(files);
+  const sortedEntries = buildTextEntries(files, cleanedHtmlByFile);
   const contentOnLines = sortedEntries.map((entry) =>
     formatLine(entry, { includeContent: true, includeLength: true })
   );
@@ -122,8 +137,9 @@ function writeTextExports(files) {
     method: 'server',
     messageTypes: files.map((fileName) => path.parse(fileName).name),
   });
-  const summaryTextForContentOn = formatSummarySection(sortedEntries, { useMessageLabel: true });
-  const summaryTextForSummaryOnly = formatSummarySection(sortedEntries);
+  const participants = summaryParticipants();
+  const summaryTextForContentOn = formatSummarySection(sortedEntries, { useMessageLabel: true, fixedParticipants: participants });
+  const summaryTextForSummaryOnly = formatSummarySection(sortedEntries, { fixedParticipants: participants });
   const contentOn = buildExportText(contentOnLines, `${headerText}${summaryTextForContentOn}`);
   const contentOff = buildExportText(contentOffLines, headerText);
 
@@ -161,17 +177,30 @@ function main() {
     process.exit(1);
   }
 
+  // Read all raw HTML before modifying anything, then detect the
+  // "any" replacement name once across all files (two-pass approach).
+  const rawHtmlByFile = new Map(
+    files.map((fileName) => [
+      fileName,
+      fs.readFileSync(path.join(rawDir, fileName), 'utf8'),
+    ])
+  );
+  const preDetectedName = collectAutoName(
+    Array.from(rawHtmlByFile.values()),
+    anonymizeNameMap
+  );
+
+  // Build anonymised HTML for every file (used for both optimised output
+  // and text-export entry parsing, so names are correct without write-back).
+  const cleanedHtmlByFile = new Map(
+    files.map((fileName) => [
+      fileName,
+      anonymizeChatNames(rawHtmlByFile.get(fileName), anonymizeNameMap, preDetectedName),
+    ])
+  );
+
   const fileRecords = files.map((fileName) => {
-    const filePath = path.join(rawDir, fileName);
-    const rawHtml = fs.readFileSync(filePath, 'utf8');
-    const cleanedHtml = anonymizeChatNames(rawHtml);
-    const hasChanged = cleanedHtml !== rawHtml;
-
-    if (hasChanged) {
-      fs.writeFileSync(filePath, cleanedHtml, 'utf8');
-    }
-
-    optimizeFile(fileName);
+    optimizeFile(fileName, rawHtmlByFile.get(fileName), cleanedHtmlByFile.get(fileName));
     return getFileRecord(fileName);
   });
 
@@ -186,7 +215,7 @@ function main() {
   }
 
   runCreateNodes();
-  const exportPaths = writeTextExports(files);
+  const exportPaths = writeTextExports(files, cleanedHtmlByFile);
   console.log(`Done: HTML + JSON in ./demo/output-html and ./demo/output-json`);
   exportPaths.forEach((exportPath) => {
     console.log(`Generated chat text export: ${path.relative(baseDir, exportPath)}`);

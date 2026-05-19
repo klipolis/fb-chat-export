@@ -4,34 +4,38 @@ function normalizeLabel(text) {
     .trim();
 }
 
+function isValidSender(value) {
+  if (!/^[A-Za-z][A-Za-z .'-]{0,80}$/i.test(value)) return false;
+  if (/\d/.test(value)) return false;
+  return value.trim().split(/\s+/).length <= 2;
+}
+
+function splitSenderAndMessage(value) {
+  const text = normalizeLabel(value);
+  const firstWordMatch = text.match(/^([A-Za-z][A-Za-z .'-]{0,80}?)(?:\s+([\s\S]*))?$/);
+  if (!firstWordMatch) return null;
+  const sender = normalizeLabel(firstWordMatch[1]);
+  const message = normalizeLabel(firstWordMatch[2] || '');
+  if (!isValidSender(sender)) return null;
+  return { sender, message };
+}
+
+function findValidDatePrefix(text) {
+  const parts = text
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+  let candidate = '';
+  for (let i = 0; i < Math.min(parts.length, 3); i += 1) {
+    candidate = candidate ? `${candidate}, ${parts[i]}` : parts[i];
+    if (normalizeDateToIso(candidate)) return candidate;
+  }
+  return null;
+}
+
 function parseAriaLabel(ariaLabel) {
   const label = normalizeLabel(ariaLabel).replace(/\s*,\s*/g, ', ');
   let match;
-
-  const isValidSender = (value) => /^[A-Za-z][A-Za-z .'-]{0,80}$/i.test(value) && !/\d/.test(value);
-
-  const splitSenderAndMessage = (value) => {
-    const text = normalizeLabel(value);
-    const firstWordMatch = text.match(/^([A-Za-z][A-Za-z .'-]{0,80}?)(?:\s+([\s\S]*))?$/);
-    if (!firstWordMatch) return null;
-    const sender = normalizeLabel(firstWordMatch[1]);
-    const message = normalizeLabel(firstWordMatch[2] || '');
-    if (!isValidSender(sender)) return null;
-    return { sender, message };
-  };
-
-  const findValidDatePrefix = (text) => {
-    const parts = text
-      .split(',')
-      .map((part) => part.trim())
-      .filter(Boolean);
-    let candidate = '';
-    for (let i = 0; i < Math.min(parts.length, 3); i += 1) {
-      candidate = candidate ? `${candidate}, ${parts[i]}` : parts[i];
-      if (normalizeDateToIso(candidate)) return candidate;
-    }
-    return null;
-  };
 
   match = label.match(/^At\s+(.+?),\s*([A-Za-z]+(?:\s+[A-Za-z]+){0,2})\s+[-–—]\s*([\s\S]*)$/i);
   if (match) {
@@ -275,4 +279,6 @@ module.exports = {
   normalizeDateToSimple,
   normalizeDateToIso,
   normalizeLabel,
+  isValidSender,
+  findValidDatePrefix,
 };

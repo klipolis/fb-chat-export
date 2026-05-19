@@ -109,6 +109,26 @@
           matchLabel: /voice(?:[- ]message|[- ]note)|audio(?:[- ]message|[- ]note)/i
         },
         {
+          type: "sticker",
+          matchFile: /^sticker\.html$/i,
+          matchLabel: /sticker/i
+        },
+        {
+          type: "gif",
+          matchFile: /^(?:animated-)?gif\.html$/i,
+          matchLabel: /\bgif\b/i
+        },
+        {
+          type: "poll",
+          matchFile: /^poll\.html$/i,
+          matchLabel: /\bpoll\b/i
+        },
+        {
+          type: "reaction",
+          matchFile: /^reaction\.html$/i,
+          matchLabel: /👍|❤|😂|😮|😢|👏|😠|like button|thumbs up/i
+        },
+        {
           type: "you-text",
           matchFile: /you - text message/i,
           matchLabel: /you:/i
@@ -140,28 +160,32 @@
       function normalizeLabel(text) {
         return String(text || "").replace(/\s+/g, " ").trim();
       }
+      function isValidSender(value) {
+        if (!/^[A-Za-z][A-Za-z .'-]{0,80}$/i.test(value)) return false;
+        if (/\d/.test(value)) return false;
+        return value.trim().split(/\s+/).length <= 2;
+      }
+      function splitSenderAndMessage(value) {
+        const text = normalizeLabel(value);
+        const firstWordMatch = text.match(/^([A-Za-z][A-Za-z .'-]{0,80}?)(?:\s+([\s\S]*))?$/);
+        if (!firstWordMatch) return null;
+        const sender = normalizeLabel(firstWordMatch[1]);
+        const message = normalizeLabel(firstWordMatch[2] || "");
+        if (!isValidSender(sender)) return null;
+        return { sender, message };
+      }
+      function findValidDatePrefix(text) {
+        const parts = text.split(",").map((part) => part.trim()).filter(Boolean);
+        let candidate = "";
+        for (let i = 0; i < Math.min(parts.length, 3); i += 1) {
+          candidate = candidate ? `${candidate}, ${parts[i]}` : parts[i];
+          if (normalizeDateToIso3(candidate)) return candidate;
+        }
+        return null;
+      }
       function parseAriaLabel2(ariaLabel) {
         const label = normalizeLabel(ariaLabel).replace(/\s*,\s*/g, ", ");
         let match;
-        const isValidSender = (value) => /^[A-Za-z][A-Za-z .'-]{0,80}$/i.test(value) && !/\d/.test(value);
-        const splitSenderAndMessage = (value) => {
-          const text = normalizeLabel(value);
-          const firstWordMatch = text.match(/^([A-Za-z][A-Za-z .'-]{0,80}?)(?:\s+([\s\S]*))?$/);
-          if (!firstWordMatch) return null;
-          const sender = normalizeLabel(firstWordMatch[1]);
-          const message = normalizeLabel(firstWordMatch[2] || "");
-          if (!isValidSender(sender)) return null;
-          return { sender, message };
-        };
-        const findValidDatePrefix = (text) => {
-          const parts = text.split(",").map((part) => part.trim()).filter(Boolean);
-          let candidate = "";
-          for (let i = 0; i < Math.min(parts.length, 3); i += 1) {
-            candidate = candidate ? `${candidate}, ${parts[i]}` : parts[i];
-            if (normalizeDateToIso3(candidate)) return candidate;
-          }
-          return null;
-        };
         match = label.match(/^At\s+(.+?),\s*([A-Za-z]+(?:\s+[A-Za-z]+){0,2})\s+[-–—]\s*([\s\S]*)$/i);
         if (match) {
           let sender = match[2].trim();
@@ -374,7 +398,9 @@
         parseAriaLabel: parseAriaLabel2,
         normalizeDateToSimple,
         normalizeDateToIso: normalizeDateToIso3,
-        normalizeLabel
+        normalizeLabel,
+        isValidSender,
+        findValidDatePrefix
       };
     }
   });
@@ -564,6 +590,12 @@
           }
         } else if (type === "voice-message") {
           contentText = "voice message";
+        } else if (type === "sticker") {
+          contentText = "sticker";
+        } else if (type === "gif") {
+          contentText = "gif";
+        } else if (type === "reaction") {
+          contentText = contentText;
         } else if (type === "image") {
           contentText = "image sent";
         } else if (type === "video-call" || type === "audio-call" || type === "missed-call") {
@@ -571,7 +603,7 @@
           contentText = hasCallPhrase ? normalizedText : type.replace(/-/g, " ");
         }
         const timedTypes = /* @__PURE__ */ new Set(["voice-message", "video-call", "audio-call"]);
-        const noLengthTypes = /* @__PURE__ */ new Set(["image", "missed-call", "unsent", ...timedTypes]);
+        const noLengthTypes = /* @__PURE__ */ new Set(["image", "missed-call", "unsent", "sticker", "gif", "reaction", ...timedTypes]);
         const duration = timedTypes.has(type) ? rawDuration : null;
         const linkHasTextContent = type === "link" && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
         const shouldOmitLength = noLengthTypes.has(type) || type === "link" && !linkHasTextContent;
@@ -583,7 +615,7 @@
           link: resolvedLink || void 0,
           voiceDurationSource: rawMeta.duration ? "timer" : timerText ? "label" : void 0,
           isCall: type === "video-call" || type === "missed-call" || type === "audio-call",
-          isImage: type === "image",
+          isImage: type === "image" || type === "sticker" || type === "gif",
           duration
         };
       }
@@ -880,7 +912,7 @@ ${types}
         return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
       }
       function formatLine2(entry, options = {}) {
-        const includeContent = options.includeContent !== false;
+        const includeContent = options.includeContent === true;
         const includeLength = options.includeLength !== false;
         const dateText = entry.dateText || "unknown";
         const sender = entry.sender || "Unknown";
@@ -921,7 +953,7 @@ ${types}
           };
         });
         return buildSummary2(summaryEntries, {
-          fixedParticipants: ["Alpha", "Youghurt"],
+          fixedParticipants: options.fixedParticipants || ["Alpha", "Youghurt"],
           useMessageLabel: Boolean(options.useMessageLabel)
         });
       }
@@ -1003,11 +1035,14 @@ ${types}
   function createLabelInput(labelText, placeholder, value) {
     const wrap = document.createElement("div");
     wrap.style.cssText = "display: flex; align-items: center; gap: 6px;";
-    const label = document.createElement("span");
+    const inputId = `lbl-${labelText.replace(/\s+/g, "-").toLowerCase()}-${Math.random().toString(36).slice(2, 7)}`;
+    const label = document.createElement("label");
     label.textContent = labelText;
+    label.htmlFor = inputId;
     label.style.cssText = "color: #777; font-size: 12px; width: 32px;";
     const input = document.createElement("input");
     input.type = "text";
+    input.id = inputId;
     input.placeholder = placeholder;
     input.value = value;
     input.style.cssText = "border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; font-size: 12px; width: 100px; outline: none;";
@@ -1028,9 +1063,9 @@ ${types}
     wrap.appendChild(text);
     return { wrap, input };
   }
-  function createCheckboxToggleWithInput(labelText, inputValue) {
+  function createCheckboxToggleWithInput(labelText, selfValue, otherValue) {
     const wrap = document.createElement("div");
-    wrap.style.cssText = "display: flex; align-items: center; gap: 6px; color: #555; font-size: 12px;";
+    wrap.style.cssText = "display: flex; align-items: center; gap: 4px; color: #555; font-size: 12px;";
     const checkboxLabel = document.createElement("label");
     checkboxLabel.style.cssText = "display: flex; align-items: center; gap: 6px; cursor: pointer;";
     const input = document.createElement("input");
@@ -1041,15 +1076,21 @@ ${types}
     text.textContent = labelText;
     checkboxLabel.appendChild(input);
     checkboxLabel.appendChild(text);
-    const textInput = document.createElement("input");
-    textInput.type = "text";
-    textInput.value = inputValue;
-    textInput.placeholder = inputValue;
-    textInput.setAttribute("aria-label", `${labelText} replacement name`);
-    textInput.style.cssText = "border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; font-size: 12px; width: 110px; outline: none;";
+    const makeNameInput = (value, ariaLabel) => {
+      const el = document.createElement("input");
+      el.type = "text";
+      el.value = value;
+      el.placeholder = value;
+      el.setAttribute("aria-label", ariaLabel);
+      el.style.cssText = "border: 1px solid #ccc; border-radius: 4px; padding: 4px 6px; font-size: 12px; width: 72px; outline: none;";
+      return el;
+    };
+    const textInput = makeNameInput(selfValue, "Your replacement name");
+    const textInput2 = makeNameInput(otherValue, "Other person replacement name");
     wrap.appendChild(checkboxLabel);
     wrap.appendChild(textInput);
-    return { wrap, input, textInput };
+    wrap.appendChild(textInput2);
+    return { wrap, input, textInput, textInput2 };
   }
   function createLinkAction(labelText, onClick) {
     const link = document.createElement("a");
@@ -1111,8 +1152,13 @@ ${types}
     noticeMsg.textContent = "Ready.";
     const downloadBtn = createButton("Download .txt", "#27ae60");
     downloadBtn.style.cssText += " display: none; margin-left: 10px; vertical-align: middle;";
+    const saveAgainLink = document.createElement("a");
+    saveAgainLink.textContent = "Save again";
+    saveAgainLink.href = "#";
+    saveAgainLink.style.cssText = "display: none; margin-left: 8px; font-size: 11px; color: #27ae60; vertical-align: middle;";
     notice.appendChild(noticeMsg);
     notice.appendChild(downloadBtn);
+    notice.appendChild(saveAgainLink);
     const body = document.createElement("div");
     body.style.cssText = "display: flex; gap: 10px; padding: 8px 10px; align-items: flex-end;";
     const leftCol = document.createElement("div");
@@ -1138,8 +1184,9 @@ ${types}
     const {
       wrap: anonymizeWrap,
       input: anonymizeChk,
-      textInput: anonymizeInput
-    } = createCheckboxToggleWithInput("Anonymize as", "Youghurt");
+      textInput: anonymizeInput,
+      textInput2: anonymizeOtherInput
+    } = createCheckboxToggleWithInput("Anonymize", "Youghurt", "Alpha");
     const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle("Summary");
     const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle("Content");
     const { wrap: lengthWrap, input: lengthChk } = createCheckboxToggle("Length");
@@ -1289,23 +1336,36 @@ ${types}
       sessionStorage.setItem("fbExportTo", toInput.value.trim());
       setScanState("scanning");
       downloadBtn.style.display = "none";
+      saveAgainLink.style.display = "none";
       noticeMsg.textContent = "Scanning: 0";
       const collected = /* @__PURE__ */ new Map();
       let reachedFromDate = false;
       function collectVisible() {
-        document.querySelectorAll('[aria-roledescription="message"]').forEach((el) => {
-          const key = el.getAttribute("aria-label");
+        const allMessages = document.querySelectorAll('[aria-roledescription="message"]');
+        allMessages.forEach((el) => {
+          const ariaLabel = el.getAttribute("aria-label");
+          const timeEl = el.querySelector("time[datetime]");
+          const timeStamp = timeEl ? timeEl.getAttribute("datetime") : "";
+          const key = ariaLabel ? `${ariaLabel}|${timeStamp}` : null;
           if (!key || collected.has(key)) return;
           const { rawDate, sender, text, type, isCall, isImage, duration, contentLength } = extractMessageParts(el);
           if (!rawDate || !sender) return;
-          const timeEl = el.querySelector("time[datetime]");
           const resolvedRaw = timeEl ? timeEl.getAttribute("datetime") : resolveRelativeDate(rawDate);
           const msgDate = /^\d{4}-\d{2}-\d{2}$/.test(resolvedRaw) ? (() => {
             const [y, m, d] = resolvedRaw.split("-").map(Number);
             return new Date(y, m - 1, d);
           })() : new Date(resolvedRaw);
           const displayDate = formatDate(resolvedRaw);
-          const authorLabel = anonymizeChk.checked && String(sender).toLowerCase() === "you" ? anonymizeInput.value.trim() || "Youghurt" : sender;
+          const authorLabel = (() => {
+            if (!anonymizeChk.checked) return sender;
+            const selfName = anonymizeInput.value.trim() || "Youghurt";
+            const otherName = anonymizeOtherInput.value.trim() || "Alpha";
+            const senderLower = String(sender).toLowerCase();
+            if (senderLower === "you") {
+              return selfName.toLowerCase() === "you" ? sender : selfName;
+            }
+            return senderLower === otherName.toLowerCase() ? sender : otherName;
+          })();
           const callMinutes = (() => {
             const timer = el.querySelector('[role="timer"], time');
             const src = timer ? timer.textContent || "" : el.getAttribute("aria-label") || "";
@@ -1392,27 +1452,35 @@ ${types}
           if (stopRequested || reachedFromDate || scroller.scrollTop <= 0 && stableCount >= 3) {
             let setupDownload = function(downloadUrl) {
               noticeMsg.textContent = `${doneLabel}: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
+              function triggerDownload(url) {
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = fileName;
+                a.click();
+              }
               downloadBtn.style.display = "";
+              saveAgainLink.style.display = "none";
+              saveAgainLink.onclick = null;
               if (downloadHandler) downloadBtn.removeEventListener("click", downloadHandler);
               downloadHandler = () => {
                 if (downloadBtn.getAttribute("aria-disabled") === "true") return;
                 downloadBtn.setAttribute("aria-disabled", "true");
                 downloadBtn.style.opacity = "0.5";
                 downloadBtn.style.cursor = "not-allowed";
-                const originalLabel = downloadBtn.textContent;
                 downloadBtn.textContent = "Downloaded";
-                const a = document.createElement("a");
-                a.href = downloadUrl;
-                a.download = fileName;
-                a.click();
-                downloadRevokeTimeout = setTimeout(() => {
-                  if (downloadUrl.startsWith("blob:")) URL.revokeObjectURL(downloadUrl);
-                  downloadRevokeTimeout = null;
-                  downloadBtn.removeAttribute("aria-disabled");
-                  downloadBtn.style.opacity = "1";
-                  downloadBtn.style.cursor = "pointer";
-                  downloadBtn.textContent = originalLabel;
-                }, 1e4);
+                saveAgainLink.style.display = "";
+                saveAgainLink.onclick = (e) => {
+                  e.preventDefault();
+                  triggerDownload(downloadUrl);
+                };
+                triggerDownload(downloadUrl);
+                if (downloadUrl.startsWith("blob:")) {
+                  if (downloadRevokeTimeout) clearTimeout(downloadRevokeTimeout);
+                  downloadRevokeTimeout = setTimeout(() => {
+                    URL.revokeObjectURL(downloadUrl);
+                    downloadRevokeTimeout = null;
+                  }, 6e4);
+                }
               };
               downloadBtn.addEventListener("click", downloadHandler);
               setScanState("idle");
@@ -1423,6 +1491,7 @@ ${types}
             if (messages.length === 0) {
               noticeMsg.textContent = "No messages found.";
               downloadBtn.style.display = "none";
+              saveAgainLink.style.display = "none";
               setScanState("idle");
               return;
             }

@@ -1,0 +1,14 @@
+{
+  "title": "reaction",
+  "locate": {
+    "message": "[aria-roledescription=\"message\"]",
+    "label": "[aria-label]",
+    "textContent": ".html-div"
+  },
+  "data_preview": {
+    "original_date": "11:16 AM",
+    "optimised_date": "2026.05.19 11:16",
+    "content": "👍",
+    "content_type": "reaction"
+  }
+}

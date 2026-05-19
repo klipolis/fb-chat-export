@@ -235,6 +235,12 @@ function getContentMeta({
     }
   } else if (type === 'voice-message') {
     contentText = 'voice message';
+  } else if (type === 'sticker') {
+    contentText = 'sticker';
+  } else if (type === 'gif') {
+    contentText = 'gif';
+  } else if (type === 'reaction') {
+    contentText = contentText;
   } else if (type === 'image') {
     contentText = 'image sent';
   } else if (type === 'video-call' || type === 'audio-call' || type === 'missed-call') {
@@ -243,7 +249,7 @@ function getContentMeta({
   }
 
   const timedTypes = new Set(['voice-message', 'video-call', 'audio-call']);
-  const noLengthTypes = new Set(['image', 'missed-call', 'unsent', ...timedTypes]);
+  const noLengthTypes = new Set(['image', 'missed-call', 'unsent', 'sticker', 'gif', 'reaction', ...timedTypes]);
 
   const duration = timedTypes.has(type) ? rawDuration : null;
   const linkHasTextContent =
@@ -258,7 +264,7 @@ function getContentMeta({
     link: resolvedLink || undefined,
     voiceDurationSource: rawMeta.duration ? 'timer' : timerText ? 'label' : undefined,
     isCall: type === 'video-call' || type === 'missed-call' || type === 'audio-call',
-    isImage: type === 'image',
+    isImage: type === 'image' || type === 'sticker' || type === 'gif',
     duration,
   };
 }

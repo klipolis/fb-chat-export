@@ -57,6 +57,26 @@ module.exports = [
     matchLabel: /voice(?:[- ]message|[- ]note)|audio(?:[- ]message|[- ]note)/i,
   },
   {
+    type: 'sticker',
+    matchFile: /^sticker\.html$/i,
+    matchLabel: /sticker/i,
+  },
+  {
+    type: 'gif',
+    matchFile: /^(?:animated-)?gif\.html$/i,
+    matchLabel: /\bgif\b/i,
+  },
+  {
+    type: 'poll',
+    matchFile: /^poll\.html$/i,
+    matchLabel: /\bpoll\b/i,
+  },
+  {
+    type: 'reaction',
+    matchFile: /^reaction\.html$/i,
+    matchLabel: /👍|❤|😂|😮|😢|👏|😠|like button|thumbs up/i,
+  },
+  {
     type: 'you-text',
     matchFile: /you - text message/i,
     matchLabel: /you:/i,

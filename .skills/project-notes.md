@@ -1,6 +1,8 @@
 # Project Notes
 
 - The helper pipeline should preserve raw HTML in `demo/input-html-raw` while writing cleaned snapshots to `demo/output-html`.
+- Default server build reads raw HTML without modifying it; raw write-back is opt-in via `BUILD_RAW=true` (`build:raw` script).
+- `build:raw-clean` strips Facebook utility class tokens (starting with `x`) and inline styles from raw HTML for readability without full optimisation.
 - Anonymization of raw HTML should be limited to sender/receiver names in message metadata and profile `alt` attributes, not message body content.
 - `create-nodes.js` should generate JSON previews directly in `demo/output-json` and avoid nested `nodes` arrays.
 - Build server should also generate a text export from `demo/input-html-raw` in `demo/output-txt/`, mirroring the user-facing export line format.

@@ -7,6 +7,7 @@ Message types:
 - link-text
 - missed-audio-call
 - missed-video-call
+- reaction
 - text-image-replied
 - text-replied
 - text
@@ -14,15 +15,16 @@ Message types:
 - voice-note
 ---
 
-[2026-04-12 13:23] Youghurt: audio-call 18:00 mins
-[2026-04-14 18:34] Alpha: text-image-replied 29 chars
-[2026-04-16 10:55] Alpha: text-replied 210 chars
-[2026-05-13 19:51] Alpha: image
-[2026-05-13 19:51] Alpha: link-text 890 chars
-[2026-05-13 19:52] Alpha: voice-note 0:20 mins
-[2026-05-13 19:54] Alpha: deleted
-[2026-05-14 17:34] Alpha: missed-audio-call
-[2026-05-15 13:51] Alpha: link-embed-no-text
-[2026-05-19 00:26] Alpha: text 34 chars
-[2026-05-19 11:14] Alpha: video-call 31:00 mins
-[2026-05-19 11:15] Alpha: missed-video-call
+[2026-04-12 13:23] XYZ: audio-call 18:00 mins
+[2026-04-14 18:34] XYZ: text-image-replied 29 chars
+[2026-04-16 10:55] XYZ: text-replied 210 chars
+[2026-05-13 19:51] XYZ: image
+[2026-05-13 19:51] XYZ: link-text 890 chars
+[2026-05-13 19:52] Barnabas: voice-note 0:20 mins
+[2026-05-13 19:54] XYZ: deleted
+[2026-05-14 17:34] XYZ: missed-audio-call
+[2026-05-15 13:51] XYZ: link-embed-no-text
+[2026-05-19 00:26] XYZ: text 34 chars
+[2026-05-19 11:14] XYZ: video-call 31:00 mins
+[2026-05-19 11:15] XYZ: missed-video-call
+[2026-05-19 11:16] Youghurt: reaction

@@ -30,12 +30,16 @@ export function createLabelInput(labelText, placeholder, value) {
   const wrap = document.createElement('div');
   wrap.style.cssText = 'display: flex; align-items: center; gap: 6px;';
 
-  const label = document.createElement('span');
+  const inputId = `lbl-${labelText.replace(/\s+/g, '-').toLowerCase()}-${Math.random().toString(36).slice(2, 7)}`;
+
+  const label = document.createElement('label');
   label.textContent = labelText;
+  label.htmlFor = inputId;
   label.style.cssText = 'color: #777; font-size: 12px; width: 32px;';
 
   const input = document.createElement('input');
   input.type = 'text';
+  input.id = inputId;
   input.placeholder = placeholder;
   input.value = value;
   input.style.cssText =
@@ -64,10 +68,10 @@ export function createCheckboxToggle(labelText) {
   return { wrap, input };
 }
 
-export function createCheckboxToggleWithInput(labelText, inputValue) {
+export function createCheckboxToggleWithInput(labelText, selfValue, otherValue) {
   const wrap = document.createElement('div');
   wrap.style.cssText =
-    'display: flex; align-items: center; gap: 6px; color: #555; font-size: 12px;';
+    'display: flex; align-items: center; gap: 4px; color: #555; font-size: 12px;';
 
   const checkboxLabel = document.createElement('label');
   checkboxLabel.style.cssText =
@@ -84,17 +88,24 @@ export function createCheckboxToggleWithInput(labelText, inputValue) {
   checkboxLabel.appendChild(input);
   checkboxLabel.appendChild(text);
 
-  const textInput = document.createElement('input');
-  textInput.type = 'text';
-  textInput.value = inputValue;
-  textInput.placeholder = inputValue;
-  textInput.setAttribute('aria-label', `${labelText} replacement name`);
-  textInput.style.cssText =
-    'border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; font-size: 12px; width: 110px; outline: none;';
+  const makeNameInput = (value, ariaLabel) => {
+    const el = document.createElement('input');
+    el.type = 'text';
+    el.value = value;
+    el.placeholder = value;
+    el.setAttribute('aria-label', ariaLabel);
+    el.style.cssText =
+      'border: 1px solid #ccc; border-radius: 4px; padding: 4px 6px; font-size: 12px; width: 72px; outline: none;';
+    return el;
+  };
+
+  const textInput = makeNameInput(selfValue, 'Your replacement name');
+  const textInput2 = makeNameInput(otherValue, 'Other person replacement name');
 
   wrap.appendChild(checkboxLabel);
   wrap.appendChild(textInput);
-  return { wrap, input, textInput };
+  wrap.appendChild(textInput2);
+  return { wrap, input, textInput, textInput2 };
 }
 
 export function createLinkAction(labelText, onClick) {

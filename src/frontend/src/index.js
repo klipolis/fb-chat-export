@@ -67,8 +67,14 @@ import {
   const downloadBtn = createButton('Download .txt', '#27ae60');
   downloadBtn.style.cssText += ' display: none; margin-left: 10px; vertical-align: middle;';
 
+  const saveAgainLink = document.createElement('a');
+  saveAgainLink.textContent = 'Save again';
+  saveAgainLink.href = '#';
+  saveAgainLink.style.cssText = 'display: none; margin-left: 8px; font-size: 11px; color: #27ae60; vertical-align: middle;';
+
   notice.appendChild(noticeMsg);
   notice.appendChild(downloadBtn);
+  notice.appendChild(saveAgainLink);
 
   // body: inputs + scan button
   const body = document.createElement('div');
@@ -104,7 +110,8 @@ import {
     wrap: anonymizeWrap,
     input: anonymizeChk,
     textInput: anonymizeInput,
-  } = createCheckboxToggleWithInput('Anonymize as', 'Youghurt');
+    textInput2: anonymizeOtherInput,
+  } = createCheckboxToggleWithInput('Anonymize', 'Youghurt', 'Alpha');
   const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle('Summary');
   const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle('Content');
   const { wrap: lengthWrap, input: lengthChk } = createCheckboxToggle('Length');
@@ -279,6 +286,7 @@ import {
     sessionStorage.setItem('fbExportTo', toInput.value.trim());
     setScanState('scanning');
     downloadBtn.style.display = 'none';
+    saveAgainLink.style.display = 'none';
     noticeMsg.textContent = 'Scanning: 0';
 
     const collected = new Map();
@@ -286,14 +294,17 @@ import {
     let reachedFromDate = false;
 
     function collectVisible() {
-      document.querySelectorAll('[aria-roledescription="message"]').forEach((el) => {
-        const key = el.getAttribute('aria-label');
+      const allMessages = document.querySelectorAll('[aria-roledescription="message"]');
+      allMessages.forEach((el) => {
+        const ariaLabel = el.getAttribute('aria-label');
+        const timeEl = el.querySelector('time[datetime]');
+        const timeStamp = timeEl ? timeEl.getAttribute('datetime') : '';
+        const key = ariaLabel ? `${ariaLabel}|${timeStamp}` : null;
         if (!key || collected.has(key)) return;
         const { rawDate, sender, text, type, isCall, isImage, duration, contentLength } =
           extractMessageParts(el);
         if (!rawDate || !sender) return;
 
-        const timeEl = el.querySelector('time[datetime]');
         const resolvedRaw = timeEl ? timeEl.getAttribute('datetime') : resolveRelativeDate(rawDate);
         // Date-only ISO strings (e.g. "2026-05-15") parse as UTC midnight in all browsers.
         // Re-parse them as local midnight to match what parseLocalDate produces.
@@ -301,10 +312,18 @@ import {
           ? (() => { const [y, m, d] = resolvedRaw.split('-').map(Number); return new Date(y, m - 1, d); })()
           : new Date(resolvedRaw);
         const displayDate = formatDate(resolvedRaw);
-        const authorLabel =
-          anonymizeChk.checked && String(sender).toLowerCase() === 'you'
-            ? anonymizeInput.value.trim() || 'Youghurt'
-            : sender;
+        const authorLabel = (() => {
+          if (!anonymizeChk.checked) return sender;
+          const selfName = anonymizeInput.value.trim() || 'Youghurt';
+          const otherName = anonymizeOtherInput.value.trim() || 'Alpha';
+          const senderLower = String(sender).toLowerCase();
+          if (senderLower === 'you') {
+            // already the target name — keep as-is
+            return selfName.toLowerCase() === 'you' ? sender : selfName;
+          }
+          // other person — skip if already the target name
+          return senderLower === otherName.toLowerCase() ? sender : otherName;
+        })();
         const callMinutes = (() => {
           const timer = el.querySelector('[role="timer"], time');
           const src = timer ? (timer.textContent || '') : (el.getAttribute('aria-label') || '');
@@ -417,6 +436,7 @@ import {
         if (messages.length === 0) {
           noticeMsg.textContent = 'No messages found.';
           downloadBtn.style.display = 'none';
+          saveAgainLink.style.display = 'none';
           setScanState('idle');
           return;
         }
@@ -445,27 +465,32 @@ import {
 
         function setupDownload(downloadUrl) {
           noticeMsg.textContent = `${doneLabel}: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
+          function triggerDownload(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+          }
           downloadBtn.style.display = '';
+          saveAgainLink.style.display = 'none';
+          saveAgainLink.onclick = null;
           if (downloadHandler) downloadBtn.removeEventListener('click', downloadHandler);
           downloadHandler = () => {
             if (downloadBtn.getAttribute('aria-disabled') === 'true') return;
             downloadBtn.setAttribute('aria-disabled', 'true');
             downloadBtn.style.opacity = '0.5';
             downloadBtn.style.cursor = 'not-allowed';
-            const originalLabel = downloadBtn.textContent;
             downloadBtn.textContent = 'Downloaded';
-            const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = fileName;
-            a.click();
-            downloadRevokeTimeout = setTimeout(() => {
-              if (downloadUrl.startsWith('blob:')) URL.revokeObjectURL(downloadUrl);
-              downloadRevokeTimeout = null;
-              downloadBtn.removeAttribute('aria-disabled');
-              downloadBtn.style.opacity = '1';
-              downloadBtn.style.cursor = 'pointer';
-              downloadBtn.textContent = originalLabel;
-            }, 10000);
+            saveAgainLink.style.display = '';
+            saveAgainLink.onclick = (e) => { e.preventDefault(); triggerDownload(downloadUrl); };
+            triggerDownload(downloadUrl);
+            if (downloadUrl.startsWith('blob:')) {
+              if (downloadRevokeTimeout) clearTimeout(downloadRevokeTimeout);
+              downloadRevokeTimeout = setTimeout(() => {
+                URL.revokeObjectURL(downloadUrl);
+                downloadRevokeTimeout = null;
+              }, 60000);
+            }
           };
           downloadBtn.addEventListener('click', downloadHandler);
           setScanState('idle');
