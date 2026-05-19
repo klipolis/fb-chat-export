@@ -183,7 +183,8 @@
           if (tailParts.length >= 3) {
             const maybeSender = tailParts[tailParts.length - 1];
             const maybeDate = tailParts.slice(0, -1).join(", ");
-            if (isValidSender(maybeSender)) {
+            const hasInlineSenderColon = tailParts.slice(1, -1).some((p) => /^[A-Za-z][A-Za-z .'-]{0,40}:\s/.test(p));
+            if (!hasInlineSenderColon && isValidSender(maybeSender)) {
               return {
                 date: maybeDate.trim(),
                 sender: maybeSender.trim(),
@@ -193,7 +194,16 @@
           }
           if (tailParts.length >= 2) {
             const maybeDate = tailParts[0];
-            const senderAndMessage = splitSenderAndMessage(tailParts.slice(1).join(", "));
+            const rest = tailParts.slice(1).join(", ");
+            const inlineMatch = rest.match(/^([A-Za-z][A-Za-z .'-]{0,40}):\s*([\s\S]*)$/);
+            if (inlineMatch && isValidSender(inlineMatch[1])) {
+              return {
+                date: maybeDate.trim(),
+                sender: inlineMatch[1].trim(),
+                message: inlineMatch[2].trim()
+              };
+            }
+            const senderAndMessage = splitSenderAndMessage(rest);
             if (senderAndMessage) {
               return {
                 date: maybeDate.trim(),

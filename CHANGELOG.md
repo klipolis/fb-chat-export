@@ -21,6 +21,7 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Messages with a time-only or day-of-week date (e.g. "Monday 4:41pm") now parse the correct sender and date when the aria-label includes a trailing conversation name.
 - All panel controls (calls, anonymize, summary, content, length) now work correctly on load.
 - Invalid date input is focused automatically when an error is shown.
 - Date fields clear their error highlight as soon as the user starts typing.
