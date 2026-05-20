@@ -12,6 +12,10 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Summary now includes a breakdown section for every participant in the export, not just the first two.
 - Sticker and animated gif messages are no longer counted as images in the summary; they count toward the text total alongside reactions.
+- Reaction messages using an emoji image (`<img>` element) instead of an SVG icon are now correctly classified as `reaction` type.
+- The JSON preview format has been reorganised: `html_locale`, `title`, and `type` are now top-level fields; `data_raw` captures values as extracted from the HTML; `data_preview` contains processed display values; `locate` has been removed.
+- Reaction messages always produce `null` content in both `data_raw` and `data_preview`.
+- `video-link` is a new message type for messages whose body is a video platform URL (YouTube, Vimeo). The URL is used as content; the type appears in the export line and JSON preview. The HTML optimiser now preserves plain URL text inside `<a>` tags so the message wrapper is not incorrectly stripped as empty.
 
 ### Fixed
 

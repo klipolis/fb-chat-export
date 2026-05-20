@@ -249,7 +249,9 @@ function getContentMeta({
   } else if (type === 'gif') {
     contentText = 'gif';
   } else if (type === 'reaction') {
-    contentText = contentText;
+    contentText = null;
+  } else if (type === 'video-link') {
+    contentText = resolvedLink || message || 'video link';
   } else if (type === 'image') {
     contentText = 'image sent';
   } else if (type === 'video-call' || type === 'audio-call' || type === 'missed-call') {
@@ -258,7 +260,7 @@ function getContentMeta({
   }
 
   const timedTypes = new Set(['voice-message', 'video-call', 'audio-call']);
-  const noLengthTypes = new Set(['image', 'missed-call', 'unsent', 'sticker', 'gif', 'reaction', ...timedTypes]);
+  const noLengthTypes = new Set(['image', 'missed-call', 'unsent', 'sticker', 'gif', 'reaction', 'video-link', ...timedTypes]);
 
   const duration = timedTypes.has(type) ? rawDuration : null;
   const linkHasTextContent =

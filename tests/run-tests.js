@@ -283,53 +283,41 @@ tap.test('browserExportDomRegression', (t) => {
 
 function validatePreviewNode(t, node, fileName) {
   t.equal(typeof node.title, 'string', `${fileName}: title must be string`);
+  t.equal(typeof node.type, 'string', `${fileName}: type must be string`);
   t.ok(node.timestamp, `${fileName}: timestamp is required`);
-  t.ok(node.locate && typeof node.locate === 'object', `${fileName}: locate is required`);
-  t.equal(typeof node.locate.message, 'string');
-  t.equal(typeof node.locate.label, 'string');
-  t.equal(typeof node.locate.textContent, 'string');
+
+  const raw = node.data_raw;
   const preview = node.data_preview;
+  t.ok(raw && typeof raw === 'object', `${fileName}: data_raw is required`);
   t.ok(preview && typeof preview === 'object', `${fileName}: data_preview is required`);
-  t.equal(typeof preview.content_type, 'string');
-  t.ok('content' in preview, `${fileName}: content is required`);
-  t.ok(typeof preview.content === 'string');
-  if (preview.raw_meta) {
-    t.equal(typeof preview.raw_meta, 'object');
-    if (preview.raw_meta.duration) t.equal(typeof preview.raw_meta.duration, 'string');
-    if (preview.raw_meta.link) t.equal(typeof preview.raw_meta.link, 'string');
+
+  // data_raw keys must always be present
+  t.ok('date' in raw, `${fileName}: data_raw.date is required`);
+  t.ok('content' in raw, `${fileName}: data_raw.content is required`);
+  t.ok('duration' in raw, `${fileName}: data_raw.duration is required`);
+  t.ok('length' in raw, `${fileName}: data_raw.length is required`);
+  t.equal(raw.length, null, `${fileName}: data_raw.length must be null`);
+
+  // data_preview keys must always be present
+  t.ok('date' in preview, `${fileName}: data_preview.date is required`);
+  t.equal(typeof preview.date, 'string', `${fileName}: data_preview.date must be string`);
+  t.ok('content' in preview, `${fileName}: data_preview.content is required`);
+  t.ok(preview.content === null || typeof preview.content === 'string', `${fileName}: data_preview.content must be string or null`);
+  t.ok('duration' in preview, `${fileName}: data_preview.duration is required`);
+  t.ok('length' in preview, `${fileName}: data_preview.length is required`);
+
+  // reactions: content must be null in both sections
+  if (node.type === 'reaction') {
+    t.equal(raw.content, null, `${fileName}: reaction data_raw.content must be null`);
+    t.equal(preview.content, null, `${fileName}: reaction data_preview.content must be null`);
+    t.equal(preview.length, null, `${fileName}: reaction data_preview.length must be null`);
   }
-  if (['voice-message', 'video-call', 'audio-call'].includes(preview.content_type)) {
-    if (preview.duration !== undefined) {
-      t.equal(
-        preview.content_length,
-        undefined,
-        `${fileName}: timed preview with duration should omit content_length`
-      );
-    }
-    if (preview.raw_meta) {
-      t.equal(
-        typeof preview.raw_meta.duration,
-        'string',
-        `${fileName}: timed preview must include raw_meta.duration`
-      );
-    }
-  }
-  if (preview.content_type === 'link') {
-    const hasTextRichLink =
-      typeof preview.content === 'string' &&
-      /^https?:\/\//i.test(preview.content) &&
-      /\s+\S+/.test(preview.content.replace(/^https?:\/\/\S+\s*/, ''));
-    if (hasTextRichLink) {
-      t.ok(
-        /^\d+ chars$/.test(preview.content_length),
-        `${fileName}: text-rich link preview should include content_length`
-      );
-    } else {
-      t.equal(
-        preview.content_length,
-        undefined,
-        `${fileName}: non-text link preview should not include content_length`
-      );
+
+  // timed types: duration is string, length must be null
+  if (['voice-message', 'video-call', 'audio-call'].includes(node.type)) {
+    if (preview.duration !== null) {
+      t.equal(typeof preview.duration, 'string', `${fileName}: timed type duration must be string`);
+      t.equal(preview.length, null, `${fileName}: timed type with duration should have null length`);
     }
   }
 }
@@ -363,10 +351,10 @@ tap.test('rawHtmlRegression', (t) => {
     '2026.05.15 00:00',
     metaMap
   )[0];
-  t.equal(voiceNode.data_preview.content_type, 'voice-message');
+  t.equal(voiceNode.type, 'voice-message');
   t.equal(voiceNode.data_preview.duration, '0:20 mins');
-  t.equal(voiceNode.data_preview.raw_meta.duration, '0:20', 'voice-note raw_meta.duration should keep raw input value');
-  t.equal(voiceNode.data_preview.content_length, undefined);
+  t.equal(voiceNode.data_raw.duration, '0:20', 'voice-note raw duration should keep raw input value');
+  t.equal(voiceNode.data_preview.length, null);
 
   const videoNode = parseMessageNodes(
     createOptimizedHtml(fs.readFileSync(path.join(rawDir, 'video-call.html'), 'utf8')),
@@ -374,10 +362,10 @@ tap.test('rawHtmlRegression', (t) => {
     '2026.05.15 00:00',
     metaMap
   )[0];
-  t.equal(videoNode.data_preview.content_type, 'video-call');
+  t.equal(videoNode.type, 'video-call');
   t.equal(videoNode.data_preview.duration, '31:00 mins');
-  t.equal(videoNode.data_preview.raw_meta.duration, '31 mins', 'video-call raw_meta.duration should keep raw input value');
-  t.equal(videoNode.data_preview.content_length, undefined);
+  t.equal(videoNode.data_raw.duration, '31 mins', 'video-call raw duration should keep raw input value');
+  t.equal(videoNode.data_preview.length, null);
 
   const embeddedLinkNode = parseMessageNodes(
     createOptimizedHtml(fs.readFileSync(path.join(rawDir, 'link-embed-no-text.html'), 'utf8')),
@@ -385,8 +373,8 @@ tap.test('rawHtmlRegression', (t) => {
     '2026.05.15 00:00',
     metaMap
   )[0];
-  t.equal(embeddedLinkNode.data_preview.content_type, 'link');
-  t.equal(embeddedLinkNode.data_preview.content_length, undefined);
+  t.equal(embeddedLinkNode.type, 'link');
+  t.equal(embeddedLinkNode.data_preview.length, null);
 
   t.end();
 });
@@ -442,7 +430,7 @@ tap.test('testTextFileDoesNotBecomeLink', (t) => {
     metaMap
   );
   t.equal(nodes.length, 1, 'text.html should produce one node');
-  t.equal(nodes[0].data_preview.content_type, 'text', 'text.html should be classified as text');
+  t.equal(nodes[0].type, 'text', 'text.html should be classified as text');
   t.not(nodes[0].data_preview.content, 'link', 'text.html content should not be reduced to link');
   t.end();
 });
@@ -460,7 +448,7 @@ tap.test('testImageFileIsImageType', (t) => {
     metaMap
   );
   t.equal(nodes.length, 1, 'image.html should produce one node');
-  t.equal(nodes[0].data_preview.content_type, 'image', 'image.html should be classified as image');
+  t.equal(nodes[0].type, 'image', 'image.html should be classified as image');
   t.equal(nodes[0].data_preview.content, 'image sent', 'image message preview should use image sent content');
   t.end();
 });
@@ -1099,6 +1087,8 @@ tap.test('chooseRuleAllEntries', (t) => {
     { file: 'animated-gif.html', label: '', expected: 'gif' },
     { file: 'poll.html', label: '', expected: 'poll' },
     { file: 'reaction.html', label: '', expected: 'reaction' },
+    { file: 'reaction-emoji.html', label: '', expected: 'reaction' },
+    { file: 'video-link.html', label: '', expected: 'video-link' },
     { file: 'text.html', label: '', expected: 'text' },
     { file: '', label: 'Missed audio call', expected: 'missed-call' },
     { file: '', label: 'Missed video call', expected: 'missed-call' },
@@ -1110,6 +1100,8 @@ tap.test('chooseRuleAllEntries', (t) => {
     { file: '', label: 'sticker', expected: 'sticker' },
     { file: '', label: 'This is a gif', expected: 'gif' },
     { file: '', label: '👍', expected: 'reaction' },
+    { file: '', label: 'At 11:16 AM, You: 🥳', expected: 'reaction' },
+    { file: '', label: 'At 11:57 AM, You: https://youtube.com/shorts/IKS2vNOcZ7A', expected: 'video-link' },
     { file: '', label: 'Hello how are you', expected: 'text' },
   ];
 

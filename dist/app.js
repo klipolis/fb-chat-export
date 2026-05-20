@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat Exporter
 // @namespace    http://tampermonkey.net/
-// @version      5.4.0
+// @version      5.5.0
 // @description  Export chat conversations to text file
 // @match        https://www.facebook.com/messages/*
 // @grant        none
@@ -79,6 +79,11 @@
           matchLabel: /image/i
         },
         {
+          type: "video-link",
+          matchFile: /^video-link\.html$/i,
+          matchLabel: /\byoutube\.com\/|youtu\.be\/|vimeo\.com\//i
+        },
+        {
           type: "link",
           matchFile: /^link-embed-no-text\.html$/i,
           matchLabel: /open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location/i
@@ -125,8 +130,8 @@
         },
         {
           type: "reaction",
-          matchFile: /^reaction\.html$/i,
-          matchLabel: /👍|❤|😂|😮|😢|👏|😠|like button|thumbs up/i
+          matchFile: /^reaction(?:-emoji)?\.html$/i,
+          matchLabel: /👍|❤|😂|😮|😢|👏|😠|: \p{Extended_Pictographic}\uFE0F?\s*$|like button|thumbs up/u
         },
         {
           type: "you-text",
@@ -598,7 +603,9 @@
         } else if (type === "gif") {
           contentText = "gif";
         } else if (type === "reaction") {
-          contentText = contentText;
+          contentText = null;
+        } else if (type === "video-link") {
+          contentText = resolvedLink || message || "video link";
         } else if (type === "image") {
           contentText = "image sent";
         } else if (type === "video-call" || type === "audio-call" || type === "missed-call") {
@@ -606,7 +613,7 @@
           contentText = hasCallPhrase ? normalizedText : type.replace(/-/g, " ");
         }
         const timedTypes = /* @__PURE__ */ new Set(["voice-message", "video-call", "audio-call"]);
-        const noLengthTypes = /* @__PURE__ */ new Set(["image", "missed-call", "unsent", "sticker", "gif", "reaction", ...timedTypes]);
+        const noLengthTypes = /* @__PURE__ */ new Set(["image", "missed-call", "unsent", "sticker", "gif", "reaction", "video-link", ...timedTypes]);
         const duration = timedTypes.has(type) ? rawDuration : null;
         const linkHasTextContent = type === "link" && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
         const shouldOmitLength = noLengthTypes.has(type) || type === "link" && !linkHasTextContent;
@@ -920,7 +927,7 @@ ${types}
         }
         if (includeLength && entry.contentLength) parts.push(entry.contentLength);
         const base = `[${dateText}] ${sender}: ${parts.join(" ")}`;
-        const contentTypes = /* @__PURE__ */ new Set(["text", "link"]);
+        const contentTypes = /* @__PURE__ */ new Set(["text", "link", "video-link"]);
         const shouldShowTextContent = includeContent && contentTypes.has(entry.semanticType) && entry.content;
         if (shouldShowTextContent) {
           return `${base} / ${entry.content}
@@ -946,7 +953,7 @@ ${types}
             type: fileType,
             isCall,
             isImage: fileType === "image",
-            callMinutes: isTimedCall ? durationToMinutes(entry.duration) : 0
+            callMinutes: isTimedCall ? durationToMinutes2(entry.duration) : 0
           };
         });
         return buildSummary2(summaryEntries, {
@@ -954,7 +961,7 @@ ${types}
           useMessageLabel: Boolean(options.useMessageLabel)
         });
       }
-      function durationToMinutes(duration) {
+      function durationToMinutes2(duration) {
         if (!duration) return 0;
         const normalized = normalizeDuration2(duration) || duration;
         const hms = String(normalized).match(/^(\d+):(\d{2}):(\d{2})\s+mins$/i);
@@ -977,7 +984,8 @@ ${types}
         formatDate,
         formatLine: formatLine2,
         formatSummarySection,
-        buildSummaryData
+        buildSummaryData,
+        durationToMinutes: durationToMinutes2
       };
     }
   });
@@ -1363,12 +1371,7 @@ ${types}
             }
             return senderLower === otherName.toLowerCase() ? sender : otherName;
           })();
-          const callMinutes = (() => {
-            const timer = el.querySelector('[role="timer"], time');
-            const src = timer ? timer.textContent || "" : el.getAttribute("aria-label") || "";
-            const m = src.match(/(\d+)\s*min/i);
-            return m ? Number(m[1]) : 0;
-          })();
+          const callMinutes = (0, import_export_formatter.durationToMinutes)(duration);
           if (!includeCallsChk.checked && isCall) return;
           if (fromDate && !isNaN(msgDate) && msgDate < fromDate) {
             reachedFromDate = true;

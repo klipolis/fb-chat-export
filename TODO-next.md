@@ -10,7 +10,15 @@ Items that were considered and deliberately not implemented are listed in the **
 
 ## Message types
 
+- **Voice-note filename vs type name** — The raw sample is named `voice-note.html` but the classified type is `voice-message`. Aligning them would reduce confusion in golden snapshots and the message-types header.
+- **video-link: duration from embed title** — The YouTube embed card includes a video title in the raw HTML. Future work could extract that title as additional display context, or extract duration from a timer if present.
+- **video-link: additional platforms** — The current `matchLabel` covers YouTube and Vimeo. Extending to TikTok (`tiktok.com/`), Instagram Reels (`instagram.com/reel/`), etc. would improve browser-path classification when a plain video URL is pasted.
+
 ## Test coverage
+
+- **Reaction emoji content extraction** — Verify that the `<img alt="[emoji]">` alt text is accessible from the optimised HTML if richer display content is ever needed in `data_preview`.
+- **Content-off export: reactions** — Add an assertion that reaction lines appear in content-off output without content, since `formatLine` only outputs content for `text`, `link`, and `video-link` types.
+- **video-link in text export** — Add an assertion that the YouTube URL appears after `/` in the content-on TXT export line for `video-link.html`.
 
 ---
 

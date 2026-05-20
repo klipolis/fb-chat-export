@@ -23,7 +23,10 @@ function normalizeTagStrings(html) {
 }
 
 function removeLinkContent(html) {
-  return html.replace(/<a[^>]*>[\s\S]*?<\/a>/gi, '<a></a>');
+  return html.replace(/<a[^>]*>([\s\S]*?)<\/a>/gi, (_match, content) => {
+    const trimmed = content.trim();
+    return /^https?:\/\/\S+$/i.test(trimmed) ? trimmed : '<a></a>';
+  });
 }
 
 function removeCallActionNodes(html) {

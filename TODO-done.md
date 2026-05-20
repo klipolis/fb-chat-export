@@ -47,6 +47,12 @@ Won't-implement decisions are also recorded here for reference.
 
 **Missed-call label rule broadened** — `matchLabel` for missed-call rules now matches "missed audio call" and "missed video call" in addition to "missed call". Rule order changed: missed-call entries precede audio-call to prevent ambiguous partial matches.
 
+**Reaction emoji-image support** — The `reaction` rule's `matchFile` now covers `reaction-emoji.html` and `matchLabel` uses a Unicode property escape pattern to match any reaction where the full aria-label ends with `: [emoji]`. Reactions using an `<img alt="🥳">` element are classified as `reaction` type with `null` content.
+
+**JSON preview schema reorganised** — `html_locale`, `title`, and `type` are now top-level fields on every preview JSON file. `data_raw` holds the values as extracted from the HTML (date, raw content, raw duration, length always null). `data_preview` holds processed display values (date, content, duration, length). The `locate` section and `raw_meta` sub-object have been removed. All four keys are always present in both sections.
+
+**video-link type** — Messages whose body is a plain video platform URL (YouTube Shorts, Vimeo, etc.) are classified as `video-link` type. The URL is extracted as content from `resolvedLink` and shown in content-on TXT export after `/`. No duration or length. The HTML optimiser (`removeLinkContent`) now preserves plain URL text inside `<a>` tags instead of replacing it with `<a></a>`, so the message wrapper is not stripped as empty by `removeEmptyChildren`. `matchLabel` covers `youtube.com/`, `youtu.be/`, and `vimeo.com/` for the browser path.
+
 ---
 
 ## Anonymisation

@@ -16,6 +16,8 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 - The message type in JSON and TXT must reflect the raw file category, not a later visual guess.
 - When a specific aria-label rule matches (anything other than the catch-all text fallback), the type is locked and heuristic overrides are skipped (`labelTypeLocked`). This applies in the frontend where no filename is available.
 - Missed-call label rules (`/missed[\s-]*(?:audio\s+|video\s+)?call/i`) appear before audio-call in the rule list to prevent "Missed audio call" from matching the audio-call rule first.
+- The `reaction` rule's `matchFile` covers `reaction.html` and `reaction-emoji.html`. Its `matchLabel` uses a Unicode property escape (`\p{Extended_Pictographic}` with `/u` flag) to match any aria-label that ends with `: [emoji]`, handling both SVG-icon and `<img alt="...">` reaction variants.
+- The `video-link` rule's `matchFile` covers `video-link.html`. Its `matchLabel` matches `youtube.com/`, `youtu.be/`, and `vimeo.com/` for the browser path. The rule appears before the generic `link` rules so it takes priority. The HTML optimiser preserves plain URL text inside `<a>` tags (rather than replacing them with empty `<a></a>`) so the message wrapper survives `removeEmptyChildren`. Content is the resolved URL; no length or duration.
 
 ## Name Extraction Rules
 - Prefer the sender parsed from `aria-label`.
@@ -63,11 +65,12 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 
 ## JSON Export Rules
 - Generated JSON should stay flat and simple to consume.
-- `data_preview.content_type` is the primary semantic type field.
-- `data_preview.content` should match the intended user-facing label or text.
-- `data_preview.duration` should exist only when duration is actually known.
-- `content_link` should appear for link previews.
-- `content_length` should be omitted when the type does not need it.
+- Top-level fields on every preview JSON file: `html_locale` (string or null), `title` (string), `type` (string, primary semantic type).
+- `data_raw` captures values as extracted from the HTML: `date`, `content` (null for reaction), `duration` (raw value or null), `length` (always null).
+- `data_preview` holds processed display values: `date`, `content` (null for reaction), `duration` (normalised or null), `length` ("N chars" or null). All four keys are always present.
+- `locate` and `raw_meta` have been removed from the schema.
+- Reaction messages always have `content: null` in both `data_raw` and `data_preview`.
+- `data_preview.length` is null for all timed types (voice-message, audio-call, video-call) and reactions.
 
 ## Validation Rules
 - The build must regenerate both TXT and JSON outputs from the current raw inputs.

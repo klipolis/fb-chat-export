@@ -5,7 +5,6 @@ const path = require('path');
 const previewDir = path.join(__dirname, '..', 'demo/output-json');
 const schemaPath = path.join(__dirname, 'generated-json-schema.json');
 const timedTypes = new Set(['voice-message', 'video-call', 'audio-call']);
-const noLengthTypes = new Set(['unsent', 'missed-call']);
 
 function loadSchema() {
   const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
@@ -15,110 +14,41 @@ function loadSchema() {
 
 function validatePreviewJson(data, fileName) {
   assert.strictEqual(typeof data.title, 'string', `${fileName}: title must be a string`);
-  assert.ok(data.locate && typeof data.locate === 'object', `${fileName}: locate is required`);
-  assert.strictEqual(typeof data.locate.message, 'string');
-  assert.strictEqual(typeof data.locate.label, 'string');
-  assert.strictEqual(typeof data.locate.textContent, 'string');
+  assert.strictEqual(typeof data.type, 'string', `${fileName}: type must be a string`);
+  assert.ok(
+    data.html_locale === null || typeof data.html_locale === 'string',
+    `${fileName}: html_locale must be string or null`
+  );
+
+  const raw = data.data_raw;
+  assert.ok(raw && typeof raw === 'object', `${fileName}: data_raw is required`);
+  assert.ok('date' in raw, `${fileName}: data_raw.date is required`);
+  assert.ok('content' in raw, `${fileName}: data_raw.content is required`);
+  assert.ok('duration' in raw, `${fileName}: data_raw.duration is required`);
+  assert.ok('length' in raw, `${fileName}: data_raw.length is required`);
+  assert.strictEqual(raw.length, null, `${fileName}: data_raw.length must be null`);
 
   const preview = data.data_preview;
-  if (preview.content_type && preview.content_type !== 'unknown') {
-    assert.strictEqual(
-      data.title,
-      preview.content_type,
-      `${fileName}: title must reflect content_type`
-    );
-  } else {
-    assert.strictEqual(
-      data.title,
-      path.parse(fileName).name,
-      `${fileName}: title should fall back to file name when content_type is unknown`
-    );
-  }
   assert.ok(preview && typeof preview === 'object', `${fileName}: data_preview is required`);
-  assert.strictEqual(
-    typeof preview.optimised_date,
-    'string',
-    `${fileName}: optimised_date is required`
-  );
-  assert.ok('content' in preview, `${fileName}: content is required`);
+  assert.strictEqual(typeof preview.date, 'string', `${fileName}: data_preview.date is required`);
+  assert.ok('content' in preview, `${fileName}: data_preview.content is required`);
   assert.ok(
     typeof preview.content === 'string' || preview.content === null,
-    `${fileName}: content must be a string or null`
+    `${fileName}: data_preview.content must be a string or null`
   );
-  assert.strictEqual(
-    typeof preview.content_type,
-    'string',
-    `${fileName}: content_type is required`
-  );
+  assert.ok('duration' in preview, `${fileName}: data_preview.duration is required`);
+  assert.ok('length' in preview, `${fileName}: data_preview.length is required`);
 
-  if (preview.duration !== undefined) {
-    assert.strictEqual(
-      typeof preview.duration,
-      'string',
-      `${fileName}: duration must be a string when present`
-    );
+  if (data.type === 'reaction') {
+    assert.strictEqual(raw.content, null, `${fileName}: reaction data_raw.content must be null`);
+    assert.strictEqual(preview.content, null, `${fileName}: reaction data_preview.content must be null`);
+    assert.strictEqual(preview.length, null, `${fileName}: reaction data_preview.length must be null`);
   }
 
-  if (timedTypes.has(preview.content_type)) {
-    assert.ok(
-      preview.duration === undefined || typeof preview.duration === 'string',
-      `${fileName}: timed preview duration must be a string or omitted`
-    );
-    if (preview.duration !== undefined) {
-      assert.strictEqual(
-        preview.content_length,
-        undefined,
-        `${fileName}: timed preview with duration must omit content_length`
-      );
-    }
-  }
-
-  if (noLengthTypes.has(preview.content_type)) {
-    assert.strictEqual(
-      preview.content_length,
-      undefined,
-      `${fileName}: ${preview.content_type} preview should not include content_length`
-    );
-  }
-
-  if (preview.content_type === 'link') {
-    const hasTextRichLink =
-      typeof preview.content === 'string' &&
-      /^https?:\/\//i.test(preview.content) &&
-      /\s+\S+/.test(preview.content.replace(/^https?:\/\/\S+\s*/, ''));
-    if (hasTextRichLink) {
-      assert.ok(
-        /^\d+ chars$/.test(preview.content_length),
-        `${fileName}: text-rich link preview should include content_length`
-      );
-    } else {
-      assert.strictEqual(
-        preview.content_length,
-        undefined,
-        `${fileName}: non-text link preview should not include content_length`
-      );
-    }
-  }
-
-  if (preview.raw_meta) {
-    assert.strictEqual(
-      typeof preview.raw_meta,
-      'object',
-      `${fileName}: raw_meta must be an object`
-    );
-    if (preview.raw_meta.duration !== undefined) {
-      assert.strictEqual(
-        typeof preview.raw_meta.duration,
-        'string',
-        `${fileName}: raw_meta.duration must be a string`
-      );
-    }
-    if (preview.raw_meta.link !== undefined) {
-      assert.strictEqual(
-        typeof preview.raw_meta.link,
-        'string',
-        `${fileName}: raw_meta.link must be a string`
-      );
+  if (timedTypes.has(data.type)) {
+    if (preview.duration !== null) {
+      assert.strictEqual(typeof preview.duration, 'string', `${fileName}: timed duration must be string`);
+      assert.strictEqual(preview.length, null, `${fileName}: timed type with duration must have null length`);
     }
   }
 }

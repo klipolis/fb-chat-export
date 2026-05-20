@@ -80,6 +80,11 @@ function extractRawDuration(text) {
   return null;
 }
 
+function extractHtmlLocale(html) {
+  const match = String(html || '').match(/\blang="([^"]+)"/i);
+  return match ? match[1] : null;
+}
+
 function extractPlainText(html) {
   return String(html || '')
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -273,35 +278,23 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
       timerText: rawMeta.duration || '',
     });
 
-    const preview = {
-      original_date: originalDate,
-      optimised_date: simpleDate || originalDate,
-      content: contentMeta.text,
-      content_type: contentMeta.type,
-    };
-
-    if (contentMeta.duration !== undefined && contentMeta.duration !== null) {
-      preview.duration = contentMeta.duration;
-    }
-    if (contentMeta.link !== undefined) preview.content_link = contentMeta.link;
-    if (contentMeta.contentLength !== undefined) preview.content_length = contentMeta.contentLength;
-    if (Object.keys(rawMeta).length) {
-      preview.raw_meta = rawMeta;
-    }
-    const locate = {
-      message: selectors.message,
-      label: selectors.messageLabel,
-      textContent: selectors.messageText,
-    };
-    if (contentMeta.voiceDurationSource) {
-      locate.voice_duration_source = contentMeta.voiceDurationSource;
-    }
-
     nodes.push({
+      html_locale: null,
       title: contentMeta.type,
+      type: contentMeta.type,
       timestamp,
-      locate,
-      data_preview: preview,
+      data_raw: {
+        date: originalDate,
+        content: contentMeta.type === 'reaction' ? null : (message || null),
+        duration: rawMeta.duration || null,
+        length: null,
+      },
+      data_preview: {
+        date: simpleDate || originalDate,
+        content: contentMeta.text,
+        duration: contentMeta.duration || null,
+        length: contentMeta.contentLength || null,
+      },
     });
 
     messageTagRe.lastIndex = end;
@@ -312,29 +305,20 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
 
 function createNodeJson(fileName, metaMap, exportDate) {
   const html = fs.readFileSync(path.join(optimizedDir, fileName), 'utf8');
+  const htmlLocale = extractHtmlLocale(html);
   const nodes = parseMessageNodes(html, fileName, exportDate, metaMap);
-  const route = path.join('demo/output-html', fileName).replace(/\\/g, '/');
   const uniqueNodes = [...new Map(nodes.map((node) => [node.data_preview.content, node])).values()];
   const node = uniqueNodes.length ? uniqueNodes[0] : null;
   const output = {
-    title: node
-      ? node.data_preview.content_type || path.parse(fileName).name
-      : path.parse(fileName).name,
-    locate: node
-      ? node.locate
-      : {
-          message: selectors.message,
-          label: selectors.messageLabel,
-          textContent: selectors.messageText,
-        },
+    html_locale: htmlLocale,
+    title: node ? node.type : path.parse(fileName).name,
+    type: node ? node.type : 'unknown',
+    data_raw: node
+      ? node.data_raw
+      : { date: null, content: null, duration: null, length: null },
     data_preview: node
       ? node.data_preview
-      : {
-          original_date: null,
-          optimised_date: exportDate,
-          content: null,
-          content_type: 'unknown',
-        },
+      : { date: exportDate, content: null, duration: null, length: null },
   };
 
   const targetPath = path.join(nodesDir, `${path.parse(fileName).name}.json`);

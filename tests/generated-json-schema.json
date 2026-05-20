@@ -2,42 +2,33 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Messenger Chat Export Preview",
   "type": "object",
-  "required": ["title", "locate", "data_preview"],
+  "required": ["html_locale", "title", "type", "data_raw", "data_preview"],
   "properties": {
-    "title": {
-      "type": "string"
-    },
-    "locate": {
+    "html_locale": { "type": ["string", "null"] },
+    "title": { "type": "string" },
+    "type": { "type": "string" },
+    "data_raw": {
       "type": "object",
-      "required": ["message", "label", "textContent"],
+      "required": ["date", "content", "duration", "length"],
       "properties": {
-        "message": { "type": "string" },
-        "label": { "type": "string" },
-        "textContent": { "type": "string" }
-      }
+        "date": { "type": ["string", "null"] },
+        "content": { "type": ["string", "null"] },
+        "duration": { "type": ["string", "null"] },
+        "length": { "type": "null" }
+      },
+      "additionalProperties": false
     },
     "data_preview": {
       "type": "object",
-      "required": ["optimised_date", "content", "content_type"],
+      "required": ["date", "content", "duration", "length"],
       "properties": {
-        "original_date": { "type": ["string", "null"] },
-        "optimised_date": { "type": "string" },
+        "date": { "type": "string" },
         "content": { "type": ["string", "null"] },
-        "content_type": { "type": "string" },
-        "duration": { "type": "string" },
-        "content_link": { "type": "string" },
-        "content_length": { "type": "string" },
-        "raw_meta": {
-          "type": "object",
-          "properties": {
-            "duration": { "type": "string" },
-            "link": { "type": "string" }
-          },
-          "additionalProperties": true
-        }
+        "duration": { "type": ["string", "null"] },
+        "length": { "type": ["string", "null"] }
       },
-      "additionalProperties": true
+      "additionalProperties": false
     }
   },
-  "additionalProperties": true
+  "additionalProperties": false
 }

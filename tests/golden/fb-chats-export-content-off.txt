@@ -7,11 +7,13 @@ Message types:
 - link-text
 - missed-audio-call
 - missed-video-call
+- reaction-emoji
 - reaction
 - text-image-replied
 - text-replied
 - text
 - video-call
+- video-link
 - voice-note
 ---
 
@@ -20,10 +22,12 @@ Message types:
 [2026-04-16 10:55] XYZ: text-replied 210 chars
 [2026-05-14 17:34] XYZ: missed-audio-call
 [2026-05-15 13:51] XYZ: link-embed-no-text
+[2026-05-19 22:25] Youghurt: reaction-emoji
 [2026-05-20 00:26] XYZ: text 34 chars
 [2026-05-20 11:14] XYZ: video-call 31:00 mins
 [2026-05-20 11:15] XYZ: missed-video-call
 [2026-05-20 11:16] Youghurt: reaction
+[2026-05-20 11:57] Youghurt: video-link
 [2026-05-20 19:51] XYZ: image
 [2026-05-20 19:51] XYZ: link-text 890 chars
 [2026-05-20 19:52] Barnabas: voice-note 0:20 mins

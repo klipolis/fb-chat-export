@@ -44,7 +44,7 @@ function formatLine(entry, options = {}) {
   if (includeLength && entry.contentLength) parts.push(entry.contentLength);
 
   const base = `[${dateText}] ${sender}: ${parts.join(' ')}`;
-  const contentTypes = new Set(['text', 'link']);
+  const contentTypes = new Set(['text', 'link', 'video-link']);
   const shouldShowTextContent =
     includeContent && contentTypes.has(entry.semanticType) && entry.content;
   if (shouldShowTextContent) {
@@ -105,4 +105,5 @@ module.exports = {
   formatLine,
   formatSummarySection,
   buildSummaryData,
+  durationToMinutes,
 };

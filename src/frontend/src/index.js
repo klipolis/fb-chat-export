@@ -1,7 +1,7 @@
 ﻿import { getContentMeta, normalizeDuration } from '../../shared/message-metadata.js';
 import { parseAriaLabel, normalizeDateToIso } from '../../shared/aria-label-parser.js';
 import { buildSummary } from '../../shared/export-summary.js';
-import { formatExportHeader, formatLine } from '../../shared/export-formatter.js';
+import { formatExportHeader, formatLine, durationToMinutes } from '../../shared/export-formatter.js';
 import {
   parseLocalDate,
   resolveRelativeDate,
@@ -324,12 +324,7 @@ import {
           // other person — skip if already the target name
           return senderLower === otherName.toLowerCase() ? sender : otherName;
         })();
-        const callMinutes = (() => {
-          const timer = el.querySelector('[role="timer"], time');
-          const src = timer ? (timer.textContent || '') : (el.getAttribute('aria-label') || '');
-          const m = src.match(/(\d+)\s*min/i);
-          return m ? Number(m[1]) : 0;
-        })();
+        const callMinutes = durationToMinutes(duration);
 
         if (!includeCallsChk.checked && isCall) return;
         if (fromDate && !isNaN(msgDate) && msgDate < fromDate) {

@@ -7,17 +7,19 @@ Message types:
 - link-text
 - missed-audio-call
 - missed-video-call
+- reaction-emoji
 - reaction
 - text-image-replied
 - text-replied
 - text
 - video-call
+- video-link
 - voice-note
 ---
 
 Total Summary
-13 posts / 6 days
-~ 6 text;
+15 posts / 7 days
+~ 8 text;
 ~ 1 images
 ~ 3 calls 50 mins
 
@@ -28,8 +30,8 @@ XYZ Summary
 ~ 1 calls 31 mins
 
 Youghurt Summary
-2 posts / 2 days
-~ 1 text;
+4 posts / 3 days
+~ 3 text;
 ~ 0 images
 ~ 1 calls 18 mins
 

@@ -25,6 +25,11 @@ module.exports = [
     matchLabel: /image/i,
   },
   {
+    type: 'video-link',
+    matchFile: /^video-link\.html$/i,
+    matchLabel: /\byoutube\.com\/|youtu\.be\/|vimeo\.com\//i,
+  },
+  {
     type: 'link',
     matchFile: /^link-embed-no-text\.html$/i,
     matchLabel:
@@ -73,8 +78,8 @@ module.exports = [
   },
   {
     type: 'reaction',
-    matchFile: /^reaction\.html$/i,
-    matchLabel: /👍|❤|😂|😮|😢|👏|😠|like button|thumbs up/i,
+    matchFile: /^reaction(?:-emoji)?\.html$/i,
+    matchLabel: /👍|❤|😂|😮|😢|👏|😠|: \p{Extended_Pictographic}\uFE0F?\s*$|like button|thumbs up/u,
   },
   {
     type: 'you-text',
