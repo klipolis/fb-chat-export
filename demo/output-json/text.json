@@ -1,15 +1,17 @@
 {
+  "html_locale": null,
   "title": "text",
-  "locate": {
-    "message": "[aria-roledescription=\"message\"]",
-    "label": "[aria-label]",
-    "textContent": ".html-div"
+  "type": "text",
+  "data_raw": {
+    "date": "12:26 AM",
+    "content": "Do you have that photo and a link?",
+    "duration": null,
+    "length": null
   },
   "data_preview": {
-    "original_date": "12:26 AM",
-    "optimised_date": "2026.05.20 00:26",
+    "date": "2026.05.20 00:26",
     "content": "Do you have that photo and a link?",
-    "content_type": "text",
-    "content_length": "34 chars"
+    "duration": null,
+    "length": "34 chars"
   }
 }

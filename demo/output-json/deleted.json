@@ -1,14 +1,17 @@
 {
+  "html_locale": null,
   "title": "unsent",
-  "locate": {
-    "message": "[aria-roledescription=\"message\"]",
-    "label": "[aria-label]",
-    "textContent": ".html-div"
+  "type": "unsent",
+  "data_raw": {
+    "date": "Wednesday 7:54pm",
+    "content": "XYZ deleted a message",
+    "duration": null,
+    "length": null
   },
   "data_preview": {
-    "original_date": "Wednesday 7:54pm",
-    "optimised_date": "2026.05.20 19:54",
+    "date": "2026.05.20 19:54",
     "content": "message unsent",
-    "content_type": "unsent"
+    "duration": null,
+    "length": null
   }
 }

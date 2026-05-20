@@ -1,19 +1,17 @@
 {
+  "html_locale": null,
   "title": "audio-call",
-  "locate": {
-    "message": "[aria-roledescription=\"message\"]",
-    "label": "[aria-label]",
-    "textContent": ".html-div",
-    "voice_duration_source": "timer"
+  "type": "audio-call",
+  "data_raw": {
+    "date": "April 12, 2026, 1:23 PM",
+    "content": "Audio call 18 mins",
+    "duration": "18 mins",
+    "length": null
   },
   "data_preview": {
-    "original_date": "April 12, 2026, 1:23 PM",
-    "optimised_date": "2026.04.12 13:23",
+    "date": "2026.04.12 13:23",
     "content": "Audio call 18 mins",
-    "content_type": "audio-call",
     "duration": "18:00 mins",
-    "raw_meta": {
-      "duration": "18 mins"
-    }
+    "length": null
   }
 }

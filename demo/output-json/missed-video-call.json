@@ -1,14 +1,17 @@
 {
+  "html_locale": null,
   "title": "missed-call",
-  "locate": {
-    "message": "[aria-roledescription=\"message\"]",
-    "label": "[aria-label]",
-    "textContent": ".html-div"
+  "type": "missed-call",
+  "data_raw": {
+    "date": "11:15 AM",
+    "content": "video call",
+    "duration": null,
+    "length": null
   },
   "data_preview": {
-    "original_date": "11:15 AM",
-    "optimised_date": "2026.05.20 11:15",
+    "date": "2026.05.20 11:15",
     "content": "video call",
-    "content_type": "missed-call"
+    "duration": null,
+    "length": null
   }
 }

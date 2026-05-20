@@ -1,19 +1,17 @@
 {
+  "html_locale": null,
   "title": "voice-message",
-  "locate": {
-    "message": "[aria-roledescription=\"message\"]",
-    "label": "[aria-label]",
-    "textContent": ".html-div",
-    "voice_duration_source": "timer"
+  "type": "voice-message",
+  "data_raw": {
+    "date": "Wednesday 7:52pm",
+    "content": "0:20",
+    "duration": "0:20",
+    "length": null
   },
   "data_preview": {
-    "original_date": "Wednesday 7:52pm",
-    "optimised_date": "2026.05.20 19:52",
+    "date": "2026.05.20 19:52",
     "content": "voice message",
-    "content_type": "voice-message",
     "duration": "0:20 mins",
-    "raw_meta": {
-      "duration": "0:20"
-    }
+    "length": null
   }
 }

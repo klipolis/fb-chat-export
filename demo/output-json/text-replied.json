@@ -1,15 +1,17 @@
 {
+  "html_locale": null,
   "title": "text",
-  "locate": {
-    "message": "[aria-roledescription=\"message\"]",
-    "label": "[aria-label]",
-    "textContent": ".html-div"
+  "type": "text",
+  "data_raw": {
+    "date": "April 16, 2026, 10:55 AM",
+    "content": "I now realised what happened. It must have been related to reviewers I added at a later stage from when we wen through that, and maybe I was duplicating and editing a reviewer who had the cancellation option on",
+    "duration": null,
+    "length": null
   },
   "data_preview": {
-    "original_date": "April 16, 2026, 10:55 AM",
-    "optimised_date": "2026.04.16 10:55",
+    "date": "2026.04.16 10:55",
     "content": "I now realised what happened. It must have been related to reviewers I added at a later stage from when we wen through that, and maybe I was duplicating and editing a reviewer who had the cancellation option on",
-    "content_type": "text",
-    "content_length": "210 chars"
+    "duration": null,
+    "length": "210 chars"
   }
 }
