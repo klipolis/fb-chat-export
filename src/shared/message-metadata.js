@@ -140,6 +140,15 @@ function getContentMeta({
   const fileTypeLocked = Boolean(
     rule && rule.matchFile && rule.matchFile.test(String(fileName || '').toLowerCase())
   );
+  const labelTypeLocked =
+    !fileTypeLocked &&
+    Boolean(
+      rule &&
+        rule.matchLabel &&
+        rule.matchLabel.test(String(ariaLabel || '').toLowerCase()) &&
+        rule.type !== 'text' &&
+        rule.type !== 'you-text'
+    );
   let type = normalizeContentType(rule.type || 'text');
   const rawLink =
     rawMeta.link || extractLink(normalizedText) || extractLink(normalizedLabel) || null;
@@ -193,7 +202,7 @@ function getContentMeta({
     imageKeyword.test(normalizedText) ||
     imageKeyword.test(normalizedLabel);
 
-  if (!fileTypeLocked) {
+  if (!fileTypeLocked && !labelTypeLocked) {
     if (unsent) {
       type = 'unsent';
     } else if (callMatch) {
@@ -264,7 +273,7 @@ function getContentMeta({
     link: resolvedLink || undefined,
     voiceDurationSource: rawMeta.duration ? 'timer' : timerText ? 'label' : undefined,
     isCall: type === 'video-call' || type === 'missed-call' || type === 'audio-call',
-    isImage: type === 'image' || type === 'sticker' || type === 'gif',
+    isImage: type === 'image',
     duration,
   };
 }

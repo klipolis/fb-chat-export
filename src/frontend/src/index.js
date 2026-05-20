@@ -191,22 +191,22 @@ import {
     const normalizedText = (labelText || el.innerText).replace(/\s+/g, ' ').trim();
     const normalizedLabel = label.replace(/\s+/g, ' ').trim().toLowerCase();
     const timerEl = el.querySelector('[role="timer"]');
+    const timerText = timerEl ? timerEl.innerText : '';
     const hasImage = Boolean(el.querySelector('img'));
     const hasPlayButton = Boolean(el.querySelector('[aria-label="Play"]'));
     const hasLink =
       Boolean(el.querySelector('a[href]')) ||
       /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedText) ||
       /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedLabel);
-    const durationText = timerEl ? timerEl.innerText : normalizedText;
     const contentMeta = getContentMeta({
       fileName: '',
       ariaLabel: label,
       message: normalizedText,
-      rawMeta: { duration: durationText },
+      rawMeta: { duration: timerText || normalizedText },
       hasImage,
       hasPlayButton,
       hasLink,
-      timerText: durationText,
+      timerText,
     });
 
     return {
@@ -460,7 +460,10 @@ import {
             ? `${(elapsedMs / 1000).toFixed(1)} seconds`
             : `${(elapsedMs / 60000).toFixed(2)} minutes`;
         const displayPersonName = getDisplayPersonName();
-        const fileName = formatExportFileName();
+        const fileName = formatExportFileName(undefined, {
+          fromDate: fromInput.value.trim() || '',
+          toDate: toInput.value.trim() || '',
+        });
         const doneLabel = stopRequested ? 'Stopped' : 'Done';
 
         function setupDownload(downloadUrl) {

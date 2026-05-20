@@ -7,6 +7,8 @@ Won't-implement decisions are also recorded here for reference.
 
 ## Won't implement (by design)
 
+46. **Additional reaction sample files** — The `reaction` rule's `matchLabel` already covers all common Facebook emoji reactions (❤️, 😮, 😢, 😂, 👏, 🙁). Adding a separate raw HTML file for each emoji variant would expand the golden snapshot set without exercising any new code paths; the existing `reaction.html` is sufficient for rule verification.
+
 41. **Like / reaction counts in summary** — The `reaction` type is excluded from `~ N text;` via `noLengthTypes`. A separate summary counter adds complexity for emoji reactions; they are intentionally omitted from the summary body.
 
 43. **Emoji content length** — The `reaction` type is in `noLengthTypes` so no char count is shown. Unicode code-point reporting for other emoji in text messages is an edge case not worth the added complexity.
@@ -15,10 +17,57 @@ Won't-implement decisions are also recorded here for reference.
 
 50. **`@updateURL` / `@downloadURL` header fields** — Auto-update links are deliberately omitted. Users install from a known URL; silent auto-update without explicit user review is undesirable for a script with DOM access. Deliberate ignore.
 
+---
 
+## Anonymisation
 
+44. **Build-server name detection: two-pass** — All raw HTML files are read first; `collectAutoName` runs once globally; each file is then anonymised with the pre-detected name. Explicit-map target names are excluded from auto-detection via `makeExcludeSet`, preventing the replacement alias from being re-detected on subsequent runs.
 
-## Frontend — UX / behaviour
+**Raw HTML write-back is opt-in** — Default build reads raw files without modifying them. `build:raw` (via `BUILD_RAW=true`) writes anonymised names back; `build:raw-clean` strips Facebook utility classes and inline styles for readability without full optimisation.
+
+**Multi-person explicit name map** — `anonymize-names.json` supports multiple explicit sender → pseudonym pairs (e.g. `You → Youghurt`, `Rob → Barnabas`) plus an `any` key for any auto-detected name.
+
+---
+
+## Summary
+
+**N-participant summary** — Summary sections are generated for every participant in the export. The two-participant cap and `Unknown N` padding are removed; the auto-detect path uses all unique senders.
+
+47. **Non-duration types count as text in summary** — Any message that is not a timed call (audio-call, video-call, voice-note, voice-message) and not a photo image counts toward the text total in the summary, because the recipient had to see or acknowledge it. Sticker, gif, reaction, link, and similar types all contribute to `~ N text`.
+
+48. **Sticker and gif treated as reaction in summary** — Stickers and animated gifs are not counted as images in any summary path. They are visual messages treated the same as reactions: they count toward the text total, not the image count. The `isImage` flag in message metadata now only applies to `image` type.
+
+---
+
+## Message type detection
+
+**Text messages no longer misclassified as voice-message (frontend)** — When no `[role="timer"]` element is present, the message body text is no longer passed as `timerText`. Previously, any non-empty message body caused `voiceMatch` to return true and override the type to `voice-message`.
+
+**Label-locked type classification** — When `chooseRule` finds a specific label rule match (not the text fallback), the resulting type is now locked and the heuristic override chain is skipped. This prevents re-classification of messages that were already correctly identified by the aria-label.
+
+**Missed-call label rule broadened** — `matchLabel` for missed-call rules now matches "missed audio call" and "missed video call" in addition to "missed call". Rule order changed: missed-call entries precede audio-call to prevent ambiguous partial matches.
+
+---
+
+## Anonymisation
+
+45. **Time-only date edge case** — A test assertion verifies that a time-only aria-label (e.g. `"11:16 AM"`) resolves to today's date via `normalizeDateToSimple`.
+
+---
+
+## Export format
+
+49. **Export filename includes date range** — `formatExportFileName` now accepts optional `fromDate` and `toDate` parameters and produces filenames like `fb-export-2026-05-01–2026-05-19-content-on.txt`. Falls back to the previous fixed names when no dates are provided. The frontend passes the user-selected date range automatically.
+
+---
+
+## Test coverage
+
+51. **`chooseRule` unit tests** — Table-driven test covering every `matchFile` entry (all raw file name patterns) and common `matchLabel` cases. Verifies that file-name matching takes priority and that all label heuristics resolve to the expected type.
+
+52. **`formatExportHeader` all type combos** — Test with all 16 recognised message types verifies that every type appears in the header, that the `Method:` line is correct, and that the `---` separator is present.
+
+---
 
 1. **Date input: accept slash-separated format** — `parseLocalDate` now accepts `YYYY/MM/DD`, `DD.MM.YYYY`, `DD/MM/YYYY`, `DD-MM-YYYY` in addition to `YYYY-MM-DD`.
 

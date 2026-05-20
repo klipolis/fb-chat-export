@@ -75,7 +75,7 @@ function formatSummarySection(entries = [], options = {}) {
   });
 
   return buildSummary(summaryEntries, {
-    fixedParticipants: options.fixedParticipants || ['Alpha', 'Youghurt'],
+    fixedParticipants: options.fixedParticipants || null,
     useMessageLabel: Boolean(options.useMessageLabel),
   });
 }

@@ -16,34 +16,40 @@ Message types:
 ---
 
 Total Summary
-13 messages / 7 days
+13 messages / 6 days
 ~ 6 text;
 ~ 1 images
-~ 2 calls 49 mins
+~ 3 calls 50 mins
 
 XYZ Summary
-11 messages / 7 days
+10 messages / 5 days
 ~ 5 text;
 ~ 1 images
-~ 2 calls 49 mins
+~ 1 calls 31 mins
 
 Youghurt Summary
-1 message / 1 day
+2 messages / 2 days
 ~ 1 text;
 ~ 0 images
-~ 0 calls 0 mins
+~ 1 calls 18 mins
+
+Barnabas Summary
+1 message / 1 day
+~ 0 text;
+~ 0 images
+~ 1 calls 1 mins
 
 ---
-[2026-04-12 13:23] XYZ: audio-call 18:00 mins
+[2026-04-12 13:23] Youghurt: audio-call 18:00 mins
 [2026-04-14 18:34] XYZ: text-image-replied 29 chars / Well i didn't know about this
 [2026-04-16 10:55] XYZ: text-replied 210 chars / I now realised what happened. It must have been related to reviewers I added at a later stage from when we wen through that, and maybe I was duplicating and editing a reviewer who had the cancellation option on
-[2026-05-13 19:51] XYZ: image
-[2026-05-13 19:51] XYZ: link-text 890 chars / https://www.scan.co.uk/ Yep - that’s the *Sennheiser IE 100 PRO In-Ear Monitoring* headphones, in Red. *Current UK prices for the wired version:* - *From £73.00* new — that’s the cheapest across 9 stores right now - *Typical range*: £73 - £100 depending on retailer and colour - *Scan.co.uk*: £79.00 for Black, £82.00 for Clear - *Thomann UK*: £85.00 for Clear - *idealo shows*: New from £73.00, refurbished from £26.38 - *Red version specifically*: Around £100.13 on idealo d8b549da157ec2c6e04e *Note*: There’s also a _Wireless_ version that costs more — from £84.70 to £90.35+. The box in your photo is the wired model. 13cc462b Prices change fast and stock varies by colour, but £73-£85 is the going rate for new wired IE 100 PROs in the UK as of now. Red tends to be slightly pricier than Black/Clear at some retailers. Want me to check a specific store like Amazon UK or Argos for you?
-[2026-05-13 19:52] Barnabas: voice-note 0:20 mins
-[2026-05-13 19:54] XYZ: deleted
 [2026-05-14 17:34] XYZ: missed-audio-call
 [2026-05-15 13:51] XYZ: link-embed-no-text / https://www.google.com/maps/search/?api=1&query=Hall%20Mead%20Nursery%2C%20Nazeing%20Road%20Waltham%20Abbey%20England%20EN9%202EU%20United%20Kingdom
-[2026-05-19 00:26] XYZ: text 34 chars / Do you have that photo and a link?
-[2026-05-19 11:14] XYZ: video-call 31:00 mins
-[2026-05-19 11:15] XYZ: missed-video-call
-[2026-05-19 11:16] Youghurt: reaction
+[2026-05-20 00:26] XYZ: text 34 chars / Do you have that photo and a link?
+[2026-05-20 11:14] XYZ: video-call 31:00 mins
+[2026-05-20 11:15] XYZ: missed-video-call
+[2026-05-20 11:16] Youghurt: reaction
+[2026-05-20 19:51] XYZ: image
+[2026-05-20 19:51] XYZ: link-text 890 chars / https://www.scan.co.uk/ Yep - that’s the *Sennheiser IE 100 PRO In-Ear Monitoring* headphones, in Red. *Current UK prices for the wired version:* - *From £73.00* new — that’s the cheapest across 9 stores right now - *Typical range*: £73 - £100 depending on retailer and colour - *Scan.co.uk*: £79.00 for Black, £82.00 for Clear - *Thomann UK*: £85.00 for Clear - *idealo shows*: New from £73.00, refurbished from £26.38 - *Red version specifically*: Around £100.13 on idealo d8b549da157ec2c6e04e *Note*: There’s also a _Wireless_ version that costs more — from £84.70 to £90.35+. The box in your photo is the wired model. 13cc462b Prices change fast and stock varies by colour, but £73-£85 is the going rate for new wired IE 100 PROs in the UK as of now. Red tends to be slightly pricier than Black/Clear at some retailers. Want me to check a specific store like Amazon UK or Argos for you?
+[2026-05-20 19:52] Barnabas: voice-note 0:20 mins
+[2026-05-20 19:54] XYZ: deleted

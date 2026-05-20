@@ -14,6 +14,8 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 - Each raw file should resolve to a stable message type defined in `src/shared/rules/message-rules.js`.
 - Heuristics may support parsing, but file rules should win when a file name clearly identifies the message type.
 - The message type in JSON and TXT must reflect the raw file category, not a later visual guess.
+- When a specific aria-label rule matches (anything other than the catch-all text fallback), the type is locked and heuristic overrides are skipped (`labelTypeLocked`). This applies in the frontend where no filename is available.
+- Missed-call label rules (`/missed[\s-]*(?:audio\s+|video\s+)?call/i`) appear before audio-call in the rule list to prevent "Missed audio call" from matching the audio-call rule first.
 
 ## Name Extraction Rules
 - Prefer the sender parsed from `aria-label`.
@@ -53,7 +55,9 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 - Summary heading should use `Total Summary`.
 - Rough count lines should use `~` prefixed list items.
 - Top-level rough counts should equal the sum of person-summary rough counts.
+- A summary section is generated for every participant present in the export; there is no cap on the number of participants.
 - Person summary totals should exclude `deleted/unsent` and missed call message types.
+- Only `image` type counts as an image in the summary; `sticker` and `gif` count toward the text total (treated the same as `reaction`).
 - Call counts in summaries should include audio/video and voice note/message entries, excluding missed calls.
 - Summary count lines should not use a `Total:` prefix.
 

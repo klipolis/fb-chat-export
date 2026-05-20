@@ -5,6 +5,20 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## v5.5.0 (2026-05-18)
+
+### Added
+
+- Summary now includes a breakdown section for every participant in the export, not just the first two.
+- Sticker and animated gif messages are no longer counted as images in the summary; they count toward the text total alongside reactions.
+
+### Fixed
+
+- Text messages are no longer misclassified as voice-message in the browser scan when no audio timer element is present.
+- Message type classification now stops at the first matching rule; once a type is identified from the aria-label, heuristic overrides are skipped.
+- Downloaded export filename now includes the selected date range (e.g. `fb-export-2026-05-01–2026-05-19-content-on.txt`).
+
 ## v5.4.0 (2026-05-18)
 
 ### Added

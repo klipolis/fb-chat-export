@@ -72,10 +72,7 @@ function buildSummaryData(entries = [], options = {}) {
 
   let selectedParticipants;
   if (Array.isArray(options.fixedParticipants) && options.fixedParticipants.length) {
-    selectedParticipants = options.fixedParticipants.slice(0, 2);
-    while (selectedParticipants.length < 2) {
-      selectedParticipants.push(`Unknown ${selectedParticipants.length + 1}`);
-    }
+    selectedParticipants = [...options.fixedParticipants];
   } else {
     const participantNames = [];
     entries.forEach((entry) => {
@@ -83,10 +80,7 @@ function buildSummaryData(entries = [], options = {}) {
         participantNames.push(entry.sender);
       }
     });
-    selectedParticipants = participantNames.slice(0, 2);
-    while (selectedParticipants.length < 2) {
-      selectedParticipants.push(`Unknown ${selectedParticipants.length + 1}`);
-    }
+    selectedParticipants = participantNames;
   }
 
   const participantSummaries = selectedParticipants.map((name) => {

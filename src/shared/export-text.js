@@ -20,10 +20,13 @@ function normalizeExportSender(sender) {
   return sender || 'Unknown';
 }
 
-function formatExportFileName(mode = 'content-on') {
-  return mode === 'content-off'
-    ? 'fb-chats-export-content-off.txt'
-    : 'fb-chats-export-content-on.txt';
+function formatExportFileName(mode = 'content-on', { fromDate, toDate } = {}) {
+  const from = fromDate ? String(fromDate).slice(0, 10) : '';
+  const to = toDate ? String(toDate).slice(0, 10) : '';
+  const range = from || to ? `${from || 'start'}\u2013${to || 'end'}` : '';
+  const base = range ? `fb-export-${range}` : mode === 'content-off' ? 'fb-chats-export-content-off' : 'fb-chats-export-content-on';
+  const suffix = range ? (mode === 'content-off' ? '-content-off' : '-content-on') : '';
+  return `${base}${suffix}.txt`;
 }
 
 function extractMessageEntry(el, fileName) {

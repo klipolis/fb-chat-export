@@ -59,6 +59,16 @@
           matchLabel: /deleted/i
         },
         {
+          type: "missed-call",
+          matchFile: /^missed-audio-call\.html$/i,
+          matchLabel: /missed[\s-]*(?:audio\s+|video\s+)?call/i
+        },
+        {
+          type: "missed-call",
+          matchFile: /^missed-video-call\.html$/i,
+          matchLabel: /missed[\s-]*(?:audio\s+|video\s+)?call/i
+        },
+        {
           type: "audio-call",
           matchFile: /^audio-call\.html$/i,
           matchLabel: /audio call/i
@@ -77,16 +87,6 @@
           type: "link",
           matchFile: /^link-text\.html$/i,
           matchLabel: /open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location/i
-        },
-        {
-          type: "missed-call",
-          matchFile: /^missed-audio-call\.html$/i,
-          matchLabel: /missed[- ]call/i
-        },
-        {
-          type: "missed-call",
-          matchFile: /^missed-video-call\.html$/i,
-          matchLabel: /missed[- ]call/i
         },
         {
           type: "text",
@@ -525,6 +525,9 @@
         const fileTypeLocked = Boolean(
           rule && rule.matchFile && rule.matchFile.test(String(fileName || "").toLowerCase())
         );
+        const labelTypeLocked = !fileTypeLocked && Boolean(
+          rule && rule.matchLabel && rule.matchLabel.test(String(ariaLabel || "").toLowerCase()) && rule.type !== "text" && rule.type !== "you-text"
+        );
         let type = normalizeContentType(rule.type || "text");
         const rawLink = rawMeta.link || extractLink(normalizedText) || extractLink(normalizedLabel) || null;
         const link = rawLink ? normalizeFacebookRedirect(rawLink) : null;
@@ -550,7 +553,7 @@
         );
         const imageKeyword = /\b(?:image sent|photo sent|picture sent|sent image|sent photo|sent picture)\b/i;
         const imageMatch = hasImage && (imageKeyword.test(normalizedText) || imageKeyword.test(normalizedLabel)) || imageKeyword.test(normalizedText) || imageKeyword.test(normalizedLabel);
-        if (!fileTypeLocked) {
+        if (!fileTypeLocked && !labelTypeLocked) {
           if (unsent) {
             type = "unsent";
           } else if (callMatch) {
@@ -615,7 +618,7 @@
           link: resolvedLink || void 0,
           voiceDurationSource: rawMeta.duration ? "timer" : timerText ? "label" : void 0,
           isCall: type === "video-call" || type === "missed-call" || type === "audio-call",
-          isImage: type === "image" || type === "sticker" || type === "gif",
+          isImage: type === "image",
           duration
         };
       }
@@ -750,10 +753,7 @@
         });
         let selectedParticipants;
         if (Array.isArray(options.fixedParticipants) && options.fixedParticipants.length) {
-          selectedParticipants = options.fixedParticipants.slice(0, 2);
-          while (selectedParticipants.length < 2) {
-            selectedParticipants.push(`Unknown ${selectedParticipants.length + 1}`);
-          }
+          selectedParticipants = [...options.fixedParticipants];
         } else {
           const participantNames = [];
           entries.forEach((entry) => {
@@ -761,10 +761,7 @@
               participantNames.push(entry.sender);
             }
           });
-          selectedParticipants = participantNames.slice(0, 2);
-          while (selectedParticipants.length < 2) {
-            selectedParticipants.push(`Unknown ${selectedParticipants.length + 1}`);
-          }
+          selectedParticipants = participantNames;
         }
         const participantSummaries = selectedParticipants.map((name) => {
           const participantEntries = entries.filter((entry) => (entry.sender || "Unknown") === name);
@@ -953,7 +950,7 @@ ${types}
           };
         });
         return buildSummary2(summaryEntries, {
-          fixedParticipants: options.fixedParticipants || ["Alpha", "Youghurt"],
+          fixedParticipants: options.fixedParticipants || null,
           useMessageLabel: Boolean(options.useMessageLabel)
         });
       }
@@ -1249,19 +1246,19 @@ ${types}
       const normalizedText = (labelText || el.innerText).replace(/\s+/g, " ").trim();
       const normalizedLabel = label.replace(/\s+/g, " ").trim().toLowerCase();
       const timerEl = el.querySelector('[role="timer"]');
+      const timerText = timerEl ? timerEl.innerText : "";
       const hasImage = Boolean(el.querySelector("img"));
       const hasPlayButton = Boolean(el.querySelector('[aria-label="Play"]'));
       const hasLink = Boolean(el.querySelector("a[href]")) || /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedText) || /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedLabel);
-      const durationText = timerEl ? timerEl.innerText : normalizedText;
       const contentMeta = (0, import_message_metadata.getContentMeta)({
         fileName: "",
         ariaLabel: label,
         message: normalizedText,
-        rawMeta: { duration: durationText },
+        rawMeta: { duration: timerText || normalizedText },
         hasImage,
         hasPlayButton,
         hasLink,
-        timerText: durationText
+        timerText
       });
       return {
         rawDate,
@@ -1508,7 +1505,10 @@ ${types}
             const elapsedMs = Date.now() - scanStartedAt;
             const elapsed = elapsedMs < 6e4 ? `${(elapsedMs / 1e3).toFixed(1)} seconds` : `${(elapsedMs / 6e4).toFixed(2)} minutes`;
             const displayPersonName = getDisplayPersonName();
-            const fileName = formatExportFileName();
+            const fileName = formatExportFileName(void 0, {
+              fromDate: fromInput.value.trim() || "",
+              toDate: toInput.value.trim() || ""
+            });
             const doneLabel = stopRequested ? "Stopped" : "Done";
             try {
               setupDownload(URL.createObjectURL(blob));

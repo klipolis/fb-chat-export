@@ -26,3 +26,4 @@ When writing or editing `CHANGELOG.md`:
 - Section headers per release: `### Added`, `### Changed`, `### Fixed`, `### Removed`, `### Dev`. Include only sections with entries.
 - Keep each entry as short as possible — one sentence per change. Do not repeat information across entries. Avoid mentioning function names, file names, or internal identifiers.
 - Do not start a new version heading for changes that have not been committed yet. Add all new entries to the existing latest version block.
+- When starting a new version block after a commit, choose the next version based on what is being added: only `### Fixed` entries → patch bump (e.g. 5.4.0 → 5.4.1); any `### Added` or `### Changed` entries → minor bump (e.g. 5.4.0 → 5.5.0). Always check `package.json` for the current version before picking the new one.

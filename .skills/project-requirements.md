@@ -35,6 +35,7 @@ This file now serves as a central index for split requirement documents.
 - Keep TXT summary structure schema-driven and reusable through `tests/generated-txt-schema.json` summary concepts.
 - Keep total summary rough counts derived from summed person summary counts for consistency.
 - Keep per-person summary totals excluding `deleted/unsent` and missed call types.
+- Generate a summary section for every participant present in the export; do not cap at two.
 - Count call totals in summaries using only audio/video calls and voice notes/messages (not missed calls).
 - Keep anonymized self sender output as `Youghurt` in final exports.
 - Default build (`build:server` / `build`) reads raw HTML files but never modifies them. Use `build:raw` to write anonymised names back to raw files.
@@ -45,6 +46,7 @@ This file now serves as a central index for split requirement documents.
 - Use minor version bumps for release-level changelog entries that contain feature or contract updates.
 - Keep `package.json` version aligned with the topmost changelog release heading.
 - Update changelog entries for every new helper or export schema change.
+- The browser-scan export filename includes the user-selected date range when available.
 
 ## Changelog writing rules
 
@@ -55,5 +57,7 @@ This file now serves as a central index for split requirement documents.
 - CI, test tooling, and refactor changes with no user-visible effect belong under `### Dev` only.
 - Section headers per release: `### Added`, `### Changed`, `### Fixed`, `### Removed`, `### Dev`. Use only sections that have entries.
 - Keep each entry as short as possible — one sentence per change. Do not repeat information across entries. Avoid mentioning function names, file names, or internal identifiers.
+- Do not start a new version heading for uncommitted changes. Add those entries to the existing latest version block.
+- When starting a new version block after a commit: only `### Fixed` entries → patch bump (e.g. 5.4.0 → 5.4.1); any `### Added` or `### Changed` entries → minor bump (e.g. 5.4.0 → 5.5.0). Check `package.json` for the current version first.
 
 

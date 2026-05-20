@@ -8,11 +8,14 @@ const { normalizeDateToSimple, normalizeDateToIso, parseAriaLabel, isValidSender
   path.join(__dirname, '..', 'src', 'shared', 'aria-label-parser')
 );
 const childProcess = require('child_process');
-const { getContentMeta, normalizeDuration } = require(
+const { getContentMeta, normalizeDuration, chooseRule } = require(
   path.join(__dirname, '..', 'src', 'shared', 'message-metadata')
 );
 const { formatExportHeader, formatLine, buildExportText } = require(
   path.join(__dirname, '..', 'src', 'shared', 'export-formatter')
+);
+const { formatExportFileName } = require(
+  path.join(__dirname, '..', 'src', 'shared', 'export-text')
 );
 const { buildSummary } = require(
   path.join(__dirname, '..', 'src', 'shared', 'export-summary')
@@ -1038,6 +1041,135 @@ tap.test('buildSummaryEdgeCases', (t) => {
     { useMessageLabel: true }
   );
   t.ok(singleMsg.includes('Alice'), 'single-participant summary includes sender name');
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// timeOnlyDateResolvesToToday
+// ---------------------------------------------------------------------------
+
+tap.test('timeOnlyDateResolvesToToday', (t) => {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const expectedPrefix = `${yyyy}.${mm}.${dd}`;
+
+  const result = normalizeDateToSimple('11:16 AM');
+  t.ok(
+    result && result.startsWith(expectedPrefix),
+    `time-only label should resolve to today (${expectedPrefix}), got ${result}`
+  );
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// textMessageDoesNotBecomeVoiceMessage
+// ---------------------------------------------------------------------------
+
+tap.test('textMessageDoesNotBecomeVoiceMessage', (t) => {
+  const meta = getContentMeta({
+    fileName: '',
+    ariaLabel: 'At 3:30 PM, John: Hello how are you doing today',
+    message: 'Hello how are you doing today',
+    timerText: '',
+  });
+  t.equal(meta.type, 'text', 'text message with no timer should not be classified as voice-message');
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// chooseRuleAllEntries
+// ---------------------------------------------------------------------------
+
+tap.test('chooseRuleAllEntries', (t) => {
+  const cases = [
+    { file: 'deleted.html', label: '', expected: 'unsent' },
+    { file: 'missed-audio-call.html', label: '', expected: 'missed-call' },
+    { file: 'missed-video-call.html', label: '', expected: 'missed-call' },
+    { file: 'audio-call.html', label: '', expected: 'audio-call' },
+    { file: 'image.html', label: '', expected: 'image' },
+    { file: 'link-embed-no-text.html', label: '', expected: 'link' },
+    { file: 'link-text.html', label: '', expected: 'link' },
+    { file: 'text-image-replied.html', label: '', expected: 'text' },
+    { file: 'text-replied.html', label: '', expected: 'text' },
+    { file: 'video-call.html', label: '', expected: 'video-call' },
+    { file: 'voice-note.html', label: '', expected: 'voice-message' },
+    { file: 'sticker.html', label: '', expected: 'sticker' },
+    { file: 'animated-gif.html', label: '', expected: 'gif' },
+    { file: 'poll.html', label: '', expected: 'poll' },
+    { file: 'reaction.html', label: '', expected: 'reaction' },
+    { file: 'text.html', label: '', expected: 'text' },
+    { file: '', label: 'Missed audio call', expected: 'missed-call' },
+    { file: '', label: 'Missed video call', expected: 'missed-call' },
+    { file: '', label: 'audio call 5 mins', expected: 'audio-call' },
+    { file: '', label: 'image sent', expected: 'image' },
+    { file: '', label: 'open attachment', expected: 'link' },
+    { file: '', label: 'voice message 1:05', expected: 'voice-message' },
+    { file: '', label: 'voice note', expected: 'voice-message' },
+    { file: '', label: 'sticker', expected: 'sticker' },
+    { file: '', label: 'This is a gif', expected: 'gif' },
+    { file: '', label: '👍', expected: 'reaction' },
+    { file: '', label: 'Hello how are you', expected: 'text' },
+  ];
+
+  cases.forEach(({ file, label, expected }) => {
+    const rule = chooseRule(file, label);
+    t.equal(
+      rule && rule.type === 'you-text' ? 'text' : rule && rule.type,
+      expected,
+      `chooseRule(${JSON.stringify(file)}, ${JSON.stringify(label)}) → ${expected}`
+    );
+  });
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// formatExportHeaderAllTypes
+// ---------------------------------------------------------------------------
+
+tap.test('formatExportHeaderAllTypes', (t) => {
+  const allTypes = [
+    'audio-call', 'deleted', 'gif', 'image', 'link-embed-no-text', 'link-text',
+    'missed-audio-call', 'missed-video-call', 'poll', 'reaction',
+    'sticker', 'text', 'text-image-replied', 'text-replied', 'video-call', 'voice-note',
+  ];
+  const header = formatExportHeader({ method: 'server', messageTypes: allTypes });
+  t.equal(header.split('\n')[0], 'Method: server', 'header starts with method line');
+  t.equal(header.split('\n')[1], 'Message types:', 'second line is message types label');
+  allTypes.forEach((type) => {
+    t.ok(header.includes(`- ${type}`), `header includes type: ${type}`);
+  });
+  const sep = header.split('\n').find((l) => l === '---');
+  t.ok(sep, 'header includes --- separator');
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// formatExportFileNameDateRange
+// ---------------------------------------------------------------------------
+
+tap.test('formatExportFileNameDateRange', (t) => {
+  t.equal(
+    formatExportFileName('content-on', { fromDate: '2026-05-01', toDate: '2026-05-19' }),
+    'fb-export-2026-05-01\u20132026-05-19-content-on.txt',
+    'content-on with date range'
+  );
+  t.equal(
+    formatExportFileName('content-off', { fromDate: '2026-05-01', toDate: '2026-05-19' }),
+    'fb-export-2026-05-01\u20132026-05-19-content-off.txt',
+    'content-off with date range'
+  );
+  t.equal(
+    formatExportFileName('content-on'),
+    'fb-chats-export-content-on.txt',
+    'no date range falls back to fixed name'
+  );
+  t.equal(
+    formatExportFileName('content-off'),
+    'fb-chats-export-content-off.txt',
+    'content-off no date range falls back to fixed name'
+  );
   t.end();
 });
 

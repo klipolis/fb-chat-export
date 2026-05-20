@@ -5,6 +5,16 @@ module.exports = [
     matchLabel: /deleted/i,
   },
   {
+    type: 'missed-call',
+    matchFile: /^missed-audio-call\.html$/i,
+    matchLabel: /missed[\s-]*(?:audio\s+|video\s+)?call/i,
+  },
+  {
+    type: 'missed-call',
+    matchFile: /^missed-video-call\.html$/i,
+    matchLabel: /missed[\s-]*(?:audio\s+|video\s+)?call/i,
+  },
+  {
     type: 'audio-call',
     matchFile: /^audio-call\.html$/i,
     matchLabel: /audio call/i,
@@ -25,16 +35,6 @@ module.exports = [
     matchFile: /^link-text\.html$/i,
     matchLabel:
       /open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location/i,
-  },
-  {
-    type: 'missed-call',
-    matchFile: /^missed-audio-call\.html$/i,
-    matchLabel: /missed[- ]call/i,
-  },
-  {
-    type: 'missed-call',
-    matchFile: /^missed-video-call\.html$/i,
-    matchLabel: /missed[- ]call/i,
   },
   {
     type: 'text',
