@@ -108,6 +108,12 @@ function buildTextExport(files, options = {}) {
   const headerText = formatExportHeader({
     method: 'server',
     messageTypes: files.map((fileName) => path.parse(fileName).name),
+    exportOptions: {
+      includeContent: true,
+      includeLength: true,
+      includeSummary: Boolean(options.includeSummary),
+    },
+    aliasMap: anonymizeNameMap,
   });
   const summaryText = options.includeSummary
     ? formatSummarySection(sorted, { useMessageLabel: options.useMessageLabel })
@@ -133,17 +139,43 @@ function writeTextExports(files, cleanedHtmlByFile) {
     formatLine(entry, { includeContent: false, includeLength: true })
   );
 
-  const headerText = formatExportHeader({
+  const headerTextContentOn = formatExportHeader({
     method: 'server',
     messageTypes: files.map((fileName) => path.parse(fileName).name),
+    exportOptions: {
+      includeContent: true,
+      includeLength: true,
+      includeSummary: true,
+    },
+    aliasMap: anonymizeNameMap,
+  });
+  const headerTextContentOff = formatExportHeader({
+    method: 'server',
+    messageTypes: files.map((fileName) => path.parse(fileName).name),
+    exportOptions: {
+      includeContent: false,
+      includeLength: true,
+      includeSummary: false,
+    },
+    aliasMap: anonymizeNameMap,
+  });
+  const headerTextSummaryOnly = formatExportHeader({
+    method: 'server',
+    messageTypes: files.map((fileName) => path.parse(fileName).name),
+    exportOptions: {
+      includeContent: false,
+      includeLength: false,
+      includeSummary: true,
+    },
+    aliasMap: anonymizeNameMap,
   });
   const participants = summaryParticipants();
   const summaryTextForContentOn = formatSummarySection(sortedEntries, { useMessageLabel: true, fixedParticipants: participants });
   const summaryTextForSummaryOnly = formatSummarySection(sortedEntries, { fixedParticipants: participants });
-  const contentOn = buildExportText(contentOnLines, `${headerText}${summaryTextForContentOn}`);
-  const contentOff = buildExportText(contentOffLines, headerText);
+  const contentOn = buildExportText(contentOnLines, `${headerTextContentOn}${summaryTextForContentOn}`);
+  const contentOff = buildExportText(contentOffLines, headerTextContentOff);
 
-  const summaryOnly = buildExportText([], `${headerText}${summaryTextForSummaryOnly}`);
+  const summaryOnly = buildExportText([], `${headerTextSummaryOnly}${summaryTextForSummaryOnly}`);
 
   const onPath = path.join(exportDir, formatExportFileName('content-on'));
   const offPath = path.join(exportDir, formatExportFileName('content-off'));

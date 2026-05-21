@@ -63,9 +63,21 @@ if (!hasContent) {
 // Determine version bump
 // ---------------------------------------------------------------------------
 
-const args = process.argv.slice(2).filter((a) => a !== '--dry-run');
-const dryRun = process.argv.includes('--dry-run');
-const forceBump = args[0];
+const args = process.argv.slice(2);
+const dryRun = args.includes('--dry-run');
+const helpRequested = args.includes('--help') || args.includes('-h');
+const normalizedArgs = args.filter((a) => a !== '--dry-run' && a !== '--help' && a !== '-h');
+
+if (helpRequested) {
+  console.log('Usage: node scripts/do-release.js [patch|minor|major] [--dry-run] [--help]');
+  console.log('  patch      release as a patch version');
+  console.log('  minor      release as a minor version');
+  console.log('  major      release as a major version');
+  console.log('  --dry-run  calculate the version without writing files');
+  process.exit(0);
+}
+
+const forceBump = normalizedArgs[0];
 let bumpType;
 
 if (forceBump && ['patch', 'minor', 'major'].includes(forceBump)) {
@@ -113,6 +125,13 @@ const after = lines.slice(nextHeadingIdx);
 const freshUnreleased = ['## [Unreleased]', ''];
 
 const newLines = [...before, ...freshUnreleased, '', ...releasedBlock, ...after];
+
+if (dryRun) {
+  console.log('do-release: dry run — no files written');
+  console.log(`do-release: calculated version ${newVersion}`);
+  process.exit(0);
+}
+
 fs.writeFileSync(changelogPath, newLines.join('\n'), 'utf8');
 console.log(`do-release: CHANGELOG.md — [Unreleased] → ${newHeading}`);
 

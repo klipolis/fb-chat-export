@@ -25,7 +25,7 @@
     "roughTextLine": "^~\\s+\\d+\\s+text;$",
     "roughImagesLine": "^~\\s+\\d+\\s+images$",
     "roughCallsLine": "^~\\s+\\d+\\s+calls\\s+\\d+\\s+mins$",
-    "personSummaryTitle": "^(XYZ|Youghurt|Barnabas) Summary$"
+    "personSummaryTitle": "^.{1,80} Summary$"
   },
   "summaryConcept": {
     "totalSummaryTitle": "Total Summary",

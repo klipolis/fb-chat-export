@@ -3,7 +3,7 @@ module.exports = {
   extends: ['@commitlint/config-conventional'],
   rules: {
     // Allow longer subjects — export-tool commits can be descriptive
-    'subject-max-length': [1, 'warn', 120],
+    'subject-max-length': [2, 'always', 120],
     // Enforce recognised types only
     'type-enum': [
       2,

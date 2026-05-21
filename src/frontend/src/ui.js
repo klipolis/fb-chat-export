@@ -108,6 +108,154 @@ export function createCheckboxToggleWithInput(labelText, selfValue, otherValue) 
   return { wrap, input, textInput, textInput2 };
 }
 
+export function createAliasRows() {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display: flex; flex-direction: column; gap: 6px;';
+
+  const header = document.createElement('div');
+  header.style.cssText = 'display: flex; align-items: center; gap: 6px; color: #555; font-size: 12px;';
+
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.checked = false;
+  checkbox.style.cssText = 'cursor: pointer;';
+
+  const label = document.createElement('span');
+  label.textContent = 'Alias';
+
+  header.appendChild(checkbox);
+  header.appendChild(label);
+
+  const rows = document.createElement('div');
+  rows.style.cssText = 'display: flex; flex-direction: column; gap: 4px; padding-left: 22px;';
+
+  const addButton = document.createElement('button');
+  addButton.type = 'button';
+  addButton.textContent = 'Add';
+  addButton.style.cssText =
+    'border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; font-size: 12px; cursor: pointer; background: #f7f7f7;';
+
+  const makeTextInput = (value, ariaLabel, disabled) => {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = value;
+    input.placeholder = value;
+    input.setAttribute('aria-label', ariaLabel);
+    input.disabled = Boolean(disabled);
+    input.style.cssText =
+      'border: 1px solid #ccc; border-radius: 4px; padding: 4px 6px; font-size: 12px; width: 100px; outline: none;';
+    return input;
+  };
+
+  const validateName = (name) => {
+    const cleaned = String(name || '').trim();
+    if (!cleaned) return false;
+    const parts = cleaned.split(/\s+/);
+    if (parts.length > 2) return false;
+    return parts.every((part) => /^[A-Za-z][A-Za-z.'-]*$/.test(part));
+  };
+
+  const createRow = (orig, alias, fixed) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display: flex; align-items: center; gap: 4px;';
+    row.className = 'alias-row';
+
+    const originalInput = makeTextInput(orig, 'Original sender name', fixed);
+    const aliasInput = makeTextInput(alias, 'Alias name', false);
+    const error = document.createElement('span');
+    error.style.cssText = 'color: red; font-size: 11px; display: none;';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.textContent = '×';
+    removeBtn.title = 'Remove alias row';
+    removeBtn.style.cssText =
+      'border: none; background: transparent; color: #888; font-size: 14px; cursor: pointer; padding: 0;';
+    if (fixed) removeBtn.style.display = 'none';
+
+    const validateRow = () => {
+      const originalValue = originalInput.value.trim();
+      const aliasValue = aliasInput.value.trim();
+      const validOriginal = Boolean(originalValue && validateName(originalValue));
+      const validAlias = Boolean(aliasValue && validateName(aliasValue));
+      const valid = validOriginal && validAlias;
+      originalInput.style.borderColor = validOriginal ? '#ccc' : 'red';
+      aliasInput.style.borderColor = validAlias ? '#ccc' : 'red';
+      if (!valid) {
+        error.textContent = 'Names must be 1-2 words, letters only, dot/apostrophe/hyphen allowed.';
+        error.style.display = 'block';
+      } else {
+        error.style.display = 'none';
+      }
+      return valid;
+    };
+
+    originalInput.addEventListener('blur', validateRow);
+    aliasInput.addEventListener('blur', validateRow);
+
+    removeBtn.addEventListener('click', () => {
+      row.remove();
+    });
+
+    row.appendChild(originalInput);
+    row.appendChild(aliasInput);
+    row.appendChild(removeBtn);
+    row.appendChild(error);
+
+    rows.appendChild(row);
+    return row;
+  };
+
+  const addRow = (orig, alias, fixed) => createRow(orig, alias, fixed);
+
+  addRow('You', 'Youghurt', true);
+  addRow('any', 'Alpha', true);
+
+  addButton.addEventListener('click', () => {
+    addRow('', '', false);
+  });
+
+  checkbox.addEventListener('change', () => {
+    rows.style.opacity = checkbox.checked ? '1' : '0.6';
+  });
+
+  const getAliasMap = () => {
+    const map = {};
+    Array.from(rows.querySelectorAll('.alias-row')).forEach((row) => {
+      const inputs = row.querySelectorAll('input[type="text"]');
+      if (inputs.length < 2) return;
+      const original = inputs[0].value.trim();
+      const aliasValue = inputs[1].value.trim();
+      if (!original || !aliasValue) return;
+      map[original.toLowerCase()] = aliasValue;
+    });
+    return map;
+  };
+
+  const validateAll = () => {
+    let valid = true;
+    Array.from(rows.querySelectorAll('.alias-row')).forEach((row) => {
+      const inputs = row.querySelectorAll('input[type="text"]');
+      if (inputs.length < 2) return;
+      const originalValue = inputs[0].value.trim();
+      const aliasValue = inputs[1].value.trim();
+      const rowValid = Boolean(originalValue && aliasValue && validateName(originalValue) && validateName(aliasValue));
+      if (!rowValid) {
+        valid = false;
+        inputs[0].style.borderColor = originalValue && validateName(originalValue) ? '#ccc' : 'red';
+        inputs[1].style.borderColor = aliasValue && validateName(aliasValue) ? '#ccc' : 'red';
+      }
+    });
+    return valid;
+  };
+
+  wrap.appendChild(header);
+  wrap.appendChild(rows);
+  wrap.appendChild(addButton);
+
+  return { wrap, input: checkbox, getAliasMap, validateAll };
+}
+
 export function createLinkAction(labelText, onClick) {
   const link = document.createElement('a');
   link.href = '#';

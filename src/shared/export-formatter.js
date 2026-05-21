@@ -2,9 +2,25 @@ const { normalizeDuration } = require('./message-metadata');
 const { normalizeDateToIso } = require('./aria-label-parser');
 const { buildSummary, buildSummaryData } = require('./export-summary');
 
-function formatExportHeader({ method, messageTypes }) {
+function formatExportHeader({ method, messageTypes, exportOptions = {}, aliasMap = {} }) {
   const types = messageTypes.map((type) => `- ${type}`).join('\n');
-  return `Method: ${method}\nMessage types:\n${types}\n---\n\n`;
+  const optionLines = Object.keys(exportOptions)
+    .sort()
+    .map((key) => `  ${key} : ${exportOptions[key]}`)
+    .join('\n');
+  const aliasLines = Object.entries(aliasMap)
+    .filter(([key]) => key && aliasMap[key])
+    .map(([key, value]) => `  ${key} : ${value}`)
+    .join('\n');
+
+  let header = `Method: ${method}\nMessage types:\n${types}\n`;
+  if (optionLines) {
+    header += `Options:\n${optionLines}\n`;
+  }
+  if (aliasLines) {
+    header += `Aliases:\n${aliasLines}\n`;
+  }
+  return `${header}---\n\n`;
 }
 
 function buildExportText(lines, headerLines = '') {

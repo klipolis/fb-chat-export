@@ -56,6 +56,25 @@ function formatUrlCompact(url) {
   }
 }
 
+function stripTrackingParams(url) {
+  if (!url) return url;
+  try {
+    const parsed = new URL(url);
+    for (const key of Array.from(parsed.searchParams.keys())) {
+      if (
+        key.toLowerCase().startsWith('utm_') ||
+        ['fbclid', 'gclid', 'dclid', 'msclkid', 'ref', 'ref_src', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'].includes(key.toLowerCase())
+      ) {
+        parsed.searchParams.delete(key);
+      }
+    }
+    parsed.hash = '';
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
 function normalizeFacebookRedirect(url) {
   try {
     const parsed = new URL(url);
@@ -297,6 +316,7 @@ module.exports = {
   normalizeLabel,
   normalizeDuration,
   formatUrlCompact,
+  stripTrackingParams,
   extractLink,
   extractPinnedLocationLink,
   chooseRule,

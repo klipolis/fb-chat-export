@@ -11,7 +11,7 @@ import {
 import {
   createButton,
   createCheckboxToggle,
-  createCheckboxToggleWithInput,
+  createAliasRows,
   createLabelInput,
   createLinkAction,
 } from './ui.js';
@@ -106,20 +106,17 @@ import {
     'display: flex; flex-direction: column; gap: 8px; min-width: 160px; padding-left: 10px;';
 
   const { wrap: includeCallsWrap, input: includeCallsChk } = createCheckboxToggle('Calls');
-  const {
-    wrap: anonymizeWrap,
-    input: anonymizeChk,
-    textInput: anonymizeInput,
-    textInput2: anonymizeOtherInput,
-  } = createCheckboxToggleWithInput('Anonymize', 'Youghurt', 'Alpha');
+  const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows } = createAliasRows();
   const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle('Summary');
   const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle('Content');
+  const { wrap: rawLinkWrap, input: rawLinkChk } = createCheckboxToggle('Raw link');
   const { wrap: lengthWrap, input: lengthChk } = createCheckboxToggle('Length');
   function setAllChecked(state) {
     includeCallsChk.checked = state;
-    anonymizeChk.checked = state;
+    aliasChk.checked = state;
     summaryChk.checked = state;
     includeContentChk.checked = state;
+    rawLinkChk.checked = state;
     lengthChk.checked = state;
     selectAllLink.textContent = state ? 'Uncheck all' : 'Check all';
   }
@@ -127,9 +124,10 @@ import {
   const selectAllLink = createLinkAction('Check all', () => {
     const allChecked =
       includeCallsChk.checked &&
-      anonymizeChk.checked &&
+      aliasChk.checked &&
       summaryChk.checked &&
       includeContentChk.checked &&
+      rawLinkChk.checked &&
       lengthChk.checked;
     setAllChecked(!allChecked);
   });
@@ -139,9 +137,10 @@ import {
   leftCol.appendChild(actionBtn);
 
   rightCol.appendChild(includeCallsWrap);
-  rightCol.appendChild(anonymizeWrap);
+  rightCol.appendChild(aliasWrap);
   rightCol.appendChild(summaryWrap);
   rightCol.appendChild(includeContentWrap);
+  rightCol.appendChild(rawLinkWrap);
   rightCol.appendChild(lengthWrap);
   rightCol.appendChild(selectAllLink);
 
@@ -213,6 +212,7 @@ import {
       rawDate,
       sender,
       text: contentMeta.text,
+      link: contentMeta.link,
       type: contentMeta.type,
       isCall: contentMeta.isCall,
       isImage: contentMeta.isImage,
@@ -229,6 +229,14 @@ import {
       if (e.key === 'Enter') actionBtn.click();
     });
   });
+
+  includeContentChk.addEventListener('change', () => {
+    rawLinkChk.disabled = !includeContentChk.checked;
+    rawLinkChk.checked = rawLinkChk.checked && includeContentChk.checked;
+    rawLinkWrap.style.opacity = includeContentChk.checked ? '1' : '0.6';
+  });
+  rawLinkChk.disabled = !includeContentChk.checked;
+  rawLinkWrap.style.opacity = includeContentChk.checked ? '1' : '0.6';
 
   let downloadRevokeTimeout = null;
   let scrollTimeout = null;
@@ -275,6 +283,10 @@ import {
       toInput.focus();
       return;
     }
+    if (aliasChk.checked && !validateAliasRows()) {
+      noticeMsg.textContent = 'Alias fields contain invalid names.';
+      return;
+    }
     fromInput.style.borderColor = toInput.style.borderColor = '#ccc';
 
     if (downloadRevokeTimeout !== null) {
@@ -301,7 +313,7 @@ import {
         const timeStamp = timeEl ? timeEl.getAttribute('datetime') : '';
         const key = ariaLabel ? `${ariaLabel}|${timeStamp}` : null;
         if (!key || collected.has(key)) return;
-        const { rawDate, sender, text, type, isCall, isImage, duration, contentLength } =
+        const { rawDate, sender, text, link, type, isCall, isImage, duration, contentLength } =
           extractMessageParts(el);
         if (!rawDate || !sender) return;
 
@@ -313,16 +325,15 @@ import {
           : new Date(resolvedRaw);
         const displayDate = formatDate(resolvedRaw);
         const authorLabel = (() => {
-          if (!anonymizeChk.checked) return sender;
-          const selfName = anonymizeInput.value.trim() || 'Youghurt';
-          const otherName = anonymizeOtherInput.value.trim() || 'Alpha';
-          const senderLower = String(sender).toLowerCase();
-          if (senderLower === 'you') {
-            // already the target name — keep as-is
-            return selfName.toLowerCase() === 'you' ? sender : selfName;
+          if (!aliasChk.checked) return sender;
+          const aliasMap = getAliasMap();
+          const normalizedSender = String(sender).trim();
+          const explicitMatch = aliasMap[normalizedSender.toLowerCase()];
+          if (explicitMatch) return explicitMatch;
+          if (aliasMap.any && normalizedSender.toLowerCase() !== 'you') {
+            return aliasMap.any;
           }
-          // other person — skip if already the target name
-          return senderLower === otherName.toLowerCase() ? sender : otherName;
+          return sender;
         })();
         const callMinutes = durationToMinutes(duration);
 
@@ -338,7 +349,10 @@ import {
           dateText: displayDate,
           sender: authorLabel,
           duration,
-          content: text,
+          content:
+            rawLinkChk.checked && (type === 'link' || type === 'video-link')
+              ? link || text
+              : text,
           contentLength,
         };
         const finalLine = formatLine(lineEntry, {
@@ -442,7 +456,19 @@ import {
         const messageTypes = Array.from(
           new Set(sortedEntries.map((entry) => entry.type).filter(Boolean))
         ).sort();
-        const headerText = formatExportHeader({ method: 'browser', messageTypes });
+        const headerText = formatExportHeader({
+          method: 'browser',
+          messageTypes,
+          exportOptions: {
+            calls: includeCallsChk.checked,
+            alias: aliasChk.checked,
+            summary: summaryChk.checked,
+            content: includeContentChk.checked,
+            rawLink: rawLinkChk.checked,
+            length: lengthChk.checked,
+          },
+          aliasMap: getAliasMap(),
+        });
 
         const blob = new Blob([headerText + summaryText + messages.join('')], {
           type: 'text/plain',

@@ -16,11 +16,18 @@ function relativePath(p) {
   return rel.startsWith('.') ? rel : `./${rel}`;
 }
 
-function stripUrlQuery(url) {
+function stripTrackingParams(url) {
   if (!url) return url;
   try {
     const u = new URL(url);
-    u.search = '';
+    for (const key of Array.from(u.searchParams.keys())) {
+      if (
+        key.toLowerCase().startsWith('utm_') ||
+        ['fbclid', 'gclid', 'dclid', 'msclkid', 'ref', 'ref_src'].includes(key.toLowerCase())
+      ) {
+        u.searchParams.delete(key);
+      }
+    }
     u.hash = '';
     return u.toString();
   } catch {
@@ -300,7 +307,7 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
         content: contentMeta.type === 'reaction'
           ? null
           : contentMeta.type === 'video-link'
-            ? (stripUrlQuery(message) || null)
+            ? (stripTrackingParams(message) || null)
             : (message || null),
         duration: rawMeta.duration || null,
         length: null,
