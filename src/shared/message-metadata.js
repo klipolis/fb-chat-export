@@ -11,10 +11,7 @@ function normalizeDuration(text) {
     const hours = Math.floor(safeSeconds / 3600);
     const minutes = Math.floor((safeSeconds % 3600) / 60);
     const seconds = safeSeconds % 60;
-    if (hours > 0) {
-      return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} mins`;
-    }
-    return `${minutes}:${String(seconds).padStart(2, '0')} mins`;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   };
 
   // Standard duration format: H:MM:SS mins
@@ -43,6 +40,20 @@ function normalizeDuration(text) {
   }
 
   return null;
+}
+
+function formatUrlCompact(url) {
+  if (!url) return url;
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/\./g, '_');
+    const cleanPath = parsed.pathname.replace(/\/+$/, '');
+    if (!cleanPath) return `${host}...`;
+    const truncPath = cleanPath.length > 10 ? `${cleanPath.slice(0, 10)}...` : `${cleanPath}...`;
+    return host + truncPath;
+  } catch {
+    return url;
+  }
 }
 
 function normalizeFacebookRedirect(url) {
@@ -214,12 +225,12 @@ function getContentMeta({
       } else if (/audio/.test(callText)) {
         type = 'audio-call';
       } else {
-        type = 'voice-message';
+        type = 'voice-note';
       }
     } else if (explicitLink) {
       type = 'link';
     } else if (voiceMatch) {
-      type = 'voice-message';
+      type = 'voice-note';
     } else if (imageMatch) {
       type = 'image';
     }
@@ -242,8 +253,8 @@ function getContentMeta({
     } else {
       contentText = resolvedLink || 'link';
     }
-  } else if (type === 'voice-message') {
-    contentText = 'voice message';
+  } else if (type === 'voice-note') {
+    contentText = 'voice note';
   } else if (type === 'sticker') {
     contentText = 'sticker';
   } else if (type === 'gif') {
@@ -251,7 +262,7 @@ function getContentMeta({
   } else if (type === 'reaction') {
     contentText = null;
   } else if (type === 'video-link') {
-    contentText = resolvedLink || message || 'video link';
+    contentText = formatUrlCompact(resolvedLink || message) || 'video link';
   } else if (type === 'image') {
     contentText = 'image sent';
   } else if (type === 'video-call' || type === 'audio-call' || type === 'missed-call') {
@@ -259,7 +270,7 @@ function getContentMeta({
     contentText = hasCallPhrase ? normalizedText : type.replace(/-/g, ' ');
   }
 
-  const timedTypes = new Set(['voice-message', 'video-call', 'audio-call']);
+  const timedTypes = new Set(['voice-note', 'video-call', 'audio-call']);
   const noLengthTypes = new Set(['image', 'missed-call', 'unsent', 'sticker', 'gif', 'reaction', 'video-link', ...timedTypes]);
 
   const duration = timedTypes.has(type) ? rawDuration : null;
@@ -285,6 +296,7 @@ module.exports = {
   normalizeDateToSimple,
   normalizeLabel,
   normalizeDuration,
+  formatUrlCompact,
   extractLink,
   extractPinnedLocationLink,
   chooseRule,

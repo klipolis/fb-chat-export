@@ -83,17 +83,9 @@ function formatSummarySection(entries = [], options = {}) {
 function durationToMinutes(duration) {
   if (!duration) return 0;
   const normalized = normalizeDuration(duration) || duration;
-  const hms = String(normalized).match(/^(\d+):(\d{2}):(\d{2})\s+mins$/i);
-  const ms = String(normalized).match(/^(\d+):(\d{2})\s+mins$/i);
-  const mins = String(normalized).match(/^(\d+)\s+mins$/i);
+  const hms = String(normalized).match(/^(\d+):(\d{2}):(\d{2})$/);
   if (hms) {
     return Number(hms[1]) * 60 + Number(hms[2]) + Math.ceil(Number(hms[3]) / 60);
-  }
-  if (ms) {
-    return Number(ms[1]) + Math.ceil(Number(ms[2]) / 60);
-  }
-  if (mins) {
-    return Number(mins[1]);
   }
   return 0;
 }

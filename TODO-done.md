@@ -1,21 +1,8 @@
 # TODO — Completed tasks
 
 Moved here from `TODO-next.md` once confirmed implemented.
-Won't-implement decisions are also recorded here for reference.
-
----
-
-## Won't implement (by design)
-
-46. **Additional reaction sample files** — The `reaction` rule's `matchLabel` already covers all common Facebook emoji reactions (❤️, 😮, 😢, 😂, 👏, 🙁). Adding a separate raw HTML file for each emoji variant would expand the golden snapshot set without exercising any new code paths; the existing `reaction.html` is sufficient for rule verification.
-
-41. **Like / reaction counts in summary** — The `reaction` type is excluded from `~ N text;` via `noLengthTypes`. A separate summary counter adds complexity for emoji reactions; they are intentionally omitted from the summary body.
-
-43. **Emoji content length** — The `reaction` type is in `noLengthTypes` so no char count is shown. Unicode code-point reporting for other emoji in text messages is an edge case not worth the added complexity.
-
-40. **Subresource Integrity (SRI) for the userscript** — The userscript has no external `@require` dependencies, so there is nothing to pin with SRI. Deliberate ignore.
-
-50. **`@updateURL` / `@downloadURL` header fields** — Auto-update links are deliberately omitted. Users install from a known URL; silent auto-update without explicit user review is undesirable for a script with DOM access. Deliberate ignore.
+Won't-implement decisions are in [TODO-ignore.md](TODO-ignore.md).
+Future / requires-new-samples items are in [TODO-future.md](TODO-future.md).
 
 ---
 
@@ -41,7 +28,11 @@ Won't-implement decisions are also recorded here for reference.
 
 ## Message type detection
 
-**Text messages no longer misclassified as voice-message (frontend)** — When no `[role="timer"]` element is present, the message body text is no longer passed as `timerText`. Previously, any non-empty message body caused `voiceMatch` to return true and override the type to `voice-message`.
+**Text messages no longer misclassified as voice-note (frontend)** — When no `[role="timer"]` element is present, the message body text is no longer passed as `timerText`. Previously, any non-empty message body caused `voiceMatch` to return true and override the type to `voice-note`.
+
+**voice-note type aligned with filename** — The classified type was `voice-message` while the raw sample file is `voice-note.html` and the export line already displayed `voice-note`. The rule type, `timedTypes` set, all metadata branches, export-text redundancy check, export-summary `isCountedCall`, JSON preview, and all test assertions have been updated to use `voice-note` consistently. Content text changed from `"voice message"` to `"voice note"`.
+
+**Frontend summary call duration fixed** — `callMinutes` in `collectVisible()` was derived from a raw `(\d+)\s*min` regex on DOM timer text, which returned 0 whenever the timer shows `"18:00"` without the word "min". It now calls `durationToMinutes(contentMeta.duration)` — the same logic the server path uses — so duration totals in the browser summary are accurate.
 
 **Label-locked type classification** — When `chooseRule` finds a specific label rule match (not the text fallback), the resulting type is now locked and the heuristic override chain is skipped. This prevents re-classification of messages that were already correctly identified by the aria-label.
 
@@ -52,6 +43,16 @@ Won't-implement decisions are also recorded here for reference.
 **JSON preview schema reorganised** — `html_locale`, `title`, and `type` are now top-level fields on every preview JSON file. `data_raw` holds the values as extracted from the HTML (date, raw content, raw duration, length always null). `data_preview` holds processed display values (date, content, duration, length). The `locate` section and `raw_meta` sub-object have been removed. All four keys are always present in both sections.
 
 **video-link type** — Messages whose body is a plain video platform URL (YouTube Shorts, Vimeo, etc.) are classified as `video-link` type. The URL is extracted as content from `resolvedLink` and shown in content-on TXT export after `/`. No duration or length. The HTML optimiser (`removeLinkContent`) now preserves plain URL text inside `<a>` tags instead of replacing it with `<a></a>`, so the message wrapper is not stripped as empty by `removeEmptyChildren`. `matchLabel` covers `youtube.com/`, `youtu.be/`, and `vimeo.com/` for the browser path.
+
+---
+
+## Output formatting
+
+**Duration format** — `normalizeDuration` now outputs `MM:SS` / `HH:MM:SS` clock format (e.g. `18:00`, `00:20`) without a trailing "mins" suffix. `durationToMinutes` updated to match. All golden snapshots, JSON demo outputs, and test assertions updated.
+
+**Video-link compact URL** — `formatUrlCompact` strips the scheme, replaces domain dots with underscores, and truncates the path at 10 characters with `...` (e.g. `youtube_com/shorts/IK...`). Applied to video-link `data_preview.content` in TXT export. JSON `data_raw.content` stores the full URL without query string; `data_preview.content` stores the compact form.
+
+**Frontend date parsing (no-"At" prefix)** — `parseAriaLabel` lazy-regex replaced with an iterative comma-split loop; messages with full calendar-date aria-labels (e.g. `"May 7, 2026, 7:09 AM, You: text"`) are now correctly parsed into separate date, sender, and content fields.
 
 ---
 

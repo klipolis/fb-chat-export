@@ -22,7 +22,7 @@ function isMissedCall(entry) {
 
 function isCountedCall(entry) {
   const type = String(entry.type || entry.fileType || '').toLowerCase();
-  return ['audio-call', 'video-call', 'voice-note', 'voice-message'].includes(type);
+  return ['audio-call', 'video-call', 'voice-note'].includes(type);
 }
 
 function buildSummaryData(entries = [], options = {}) {

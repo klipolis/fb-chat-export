@@ -38,7 +38,7 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 
 ## Duration Rules
 - Timed message types should carry a normalized duration when a timer or equivalent raw metadata is present.
-- Duration values should be written in minute-based text such as `18 mins` or `0:20 mins`.
+- Duration values are written in clock format without a unit suffix: `MM:SS` for under one hour (e.g. `18:00`, `00:20`), `HH:MM:SS` for one hour or more (e.g. `01:30:00`).
 - Do not infer duration from arbitrary message body text unless the raw DOM contains a timer or explicit duration metadata.
 - Missed-call items should not fabricate a duration field.
 
@@ -51,7 +51,7 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 - TXT exports have two modes:
 - `content-on`: show content when allowed by the export mode.
 - `content-off`: suppress the trailing content section.
-- For link message types in `content-on`, output the URL content after `/`.
+- For link message types in `content-on`, output the URL content after `/`. For `video-link`, the content uses a compact URL form: scheme stripped, domain dots replaced with underscores, path truncated to 10 characters with `...` (e.g. `youtube_com/shorts/IK...`). The raw URL in `data_raw.content` is the full resolved URL without query string.
 - The plain line format should be easy to scan by developers and reviewers.
 - Summary sections should be schema-driven from `tests/generated-txt-schema.json` and end with `---`.
 - Summary heading should use `Total Summary`.
@@ -60,7 +60,8 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 - A summary section is generated for every participant present in the export; there is no cap on the number of participants.
 - Person summary totals should exclude `deleted/unsent` and missed call message types.
 - Only `image` type counts as an image in the summary; `sticker` and `gif` count toward the text total (treated the same as `reaction`).
-- Call counts in summaries should include audio/video and voice note/message entries, excluding missed calls.
+- Call counts in summaries should include audio/video and voice-note entries, excluding missed calls.
+- The frontend path derives `callMinutes` from the normalised `contentMeta.duration` via `durationToMinutes`, not from a raw timer-text regex, so duration counting is consistent with the server path.
 - Summary count lines should not use a `Total:` prefix.
 
 ## JSON Export Rules
@@ -70,7 +71,7 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 - `data_preview` holds processed display values: `date`, `content` (null for reaction), `duration` (normalised or null), `length` ("N chars" or null). All four keys are always present.
 - `locate` and `raw_meta` have been removed from the schema.
 - Reaction messages always have `content: null` in both `data_raw` and `data_preview`.
-- `data_preview.length` is null for all timed types (voice-message, audio-call, video-call) and reactions.
+- `data_preview.length` is null for all timed types (voice-note, audio-call, video-call) and reactions.
 
 ## Validation Rules
 - The build must regenerate both TXT and JSON outputs from the current raw inputs.

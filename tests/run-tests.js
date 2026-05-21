@@ -68,11 +68,11 @@ tap.test('normalizeDateToSimple', (t) => {
 // ---------------------------------------------------------------------------
 
 tap.test('normalizeDuration', (t) => {
-  t.equal(normalizeDuration('0:20'), '0:20 mins');
-  t.equal(normalizeDuration('1:23:45'), '1:23:45 mins');
-  t.equal(normalizeDuration('31 mins'), '31:00 mins');
-  t.equal(normalizeDuration('45 sec'), '0:45 mins');
-  t.equal(normalizeDuration('2 min'), '2:00 mins');
+  t.equal(normalizeDuration('0:20'), '00:00:20');
+  t.equal(normalizeDuration('1:23:45'), '01:23:45');
+  t.equal(normalizeDuration('31 mins'), '00:31:00');
+  t.equal(normalizeDuration('45 sec'), '00:00:45');
+  t.equal(normalizeDuration('2 min'), '00:02:00');
   t.equal(normalizeDuration('1:23 PM'), null);
   t.end();
 });
@@ -98,10 +98,10 @@ tap.test('getContentMeta', (t) => {
     message: 'voice message',
     timerText: '1:05',
   });
-  t.equal(voiceMeta.type, 'voice-message');
-  t.equal(voiceMeta.text, 'voice message');
+  t.equal(voiceMeta.type, 'voice-note');
+  t.equal(voiceMeta.text, 'voice note');
   t.equal(voiceMeta.contentLength, undefined);
-  t.equal(voiceMeta.duration, '1:05 mins');
+  t.equal(voiceMeta.duration, '00:01:05');
 
   const shortVoiceMeta = getContentMeta({
     fileName: 'voice-test.html',
@@ -109,10 +109,10 @@ tap.test('getContentMeta', (t) => {
     message: 'voice message',
     timerText: '0:20 mins',
   });
-  t.equal(shortVoiceMeta.type, 'voice-message');
-  t.equal(shortVoiceMeta.text, 'voice message');
+  t.equal(shortVoiceMeta.type, 'voice-note');
+  t.equal(shortVoiceMeta.text, 'voice note');
   t.equal(shortVoiceMeta.contentLength, undefined);
-  t.equal(shortVoiceMeta.duration, '0:20 mins');
+  t.equal(shortVoiceMeta.duration, '00:00:20');
 
   const missedCallMeta = getContentMeta({
     fileName: 'missed-call.html',
@@ -185,7 +185,7 @@ tap.test('getContentMeta', (t) => {
   t.equal(videoMeta.type, 'video-call');
   t.equal(videoMeta.text, 'video call');
   t.equal(videoMeta.contentLength, undefined);
-  t.equal(videoMeta.duration, '31:00 mins');
+  t.equal(videoMeta.duration, '00:31:00');
 
   t.end();
 });
@@ -214,7 +214,7 @@ tap.test('browserExportFormatting', (t) => {
   );
   t.equal(
     formattedLine,
-    '[2026-05-17 11:00] Alpha: text 0:20 mins 5 / Hello\n',
+    '[2026-05-17 11:00] Alpha: text 00:00:20 5 / Hello\n',
     'Browser line formatting should include type, duration, length, and content'
   );
 
@@ -314,7 +314,7 @@ function validatePreviewNode(t, node, fileName) {
   }
 
   // timed types: duration is string, length must be null
-  if (['voice-message', 'video-call', 'audio-call'].includes(node.type)) {
+  if (['voice-note', 'video-call', 'audio-call'].includes(node.type)) {
     if (preview.duration !== null) {
       t.equal(typeof preview.duration, 'string', `${fileName}: timed type duration must be string`);
       t.equal(preview.length, null, `${fileName}: timed type with duration should have null length`);
@@ -351,8 +351,8 @@ tap.test('rawHtmlRegression', (t) => {
     '2026.05.15 00:00',
     metaMap
   )[0];
-  t.equal(voiceNode.type, 'voice-message');
-  t.equal(voiceNode.data_preview.duration, '0:20 mins');
+  t.equal(voiceNode.type, 'voice-note');
+  t.equal(voiceNode.data_preview.duration, '00:00:20');
   t.equal(voiceNode.data_raw.duration, '0:20', 'voice-note raw duration should keep raw input value');
   t.equal(voiceNode.data_preview.length, null);
 
@@ -363,7 +363,7 @@ tap.test('rawHtmlRegression', (t) => {
     metaMap
   )[0];
   t.equal(videoNode.type, 'video-call');
-  t.equal(videoNode.data_preview.duration, '31:00 mins');
+  t.equal(videoNode.data_preview.duration, '00:31:00');
   t.equal(videoNode.data_raw.duration, '31 mins', 'video-call raw duration should keep raw input value');
   t.equal(videoNode.data_preview.length, null);
 
@@ -522,6 +522,25 @@ tap.test('parseAriaLabelTrailingConversationName', (t) => {
   const r3 = parseAriaLabel('At Friday 11:21am, You: A fenti link, chat');
   t.equal(r3.date, 'Friday 11:21am');
   t.equal(r3.sender, 'You');
+
+  t.end();
+});
+
+tap.test('parseAriaLabelCalendarDateNoPrefix', (t) => {
+  // Full calendar date without "At " prefix (e.g. from Messenger locale that omits "At")
+  const r1 = parseAriaLabel('May 7, 2026, 7:09 AM, You: Hosting limitations, Google Mail or Microsoft better');
+  t.equal(r1.date, 'May 7, 2026, 7:09 AM', 'Full date correctly extracted without At prefix');
+  t.equal(r1.sender, 'You', 'Sender correctly extracted when date has multiple commas');
+  t.equal(r1.message, 'Hosting limitations, Google Mail or Microsoft better', 'Message with commas preserved');
+
+  const r2 = parseAriaLabel('April 29, 2026, 11:45 AM, Mimi: And also, another customer writes:Hello');
+  t.equal(r2.date, 'April 29, 2026, 11:45 AM');
+  t.equal(r2.sender, 'Mimi');
+  t.ok(r2.message.startsWith('And also'), 'Message extracted correctly');
+
+  const r3 = parseAriaLabel('May 5, 2026, 7:48 PM, Mimi: Also wanted to ask you one thing');
+  t.equal(r3.date, 'May 5, 2026, 7:48 PM');
+  t.equal(r3.sender, 'Mimi');
 
   t.end();
 });
@@ -910,7 +929,7 @@ tap.test('buildServerTextExport', (t) => {
     t.ok(bodyLinesOff.some((line) => line.includes(` ${typeName}`)), `Content-off body should include one line for ${typeName}`);
   });
 
-  t.ok(bodyLinesOn.some((line) => line.includes('video-call 31:00 mins')), 'Video call lines should include duration in canonical format');
+  t.ok(bodyLinesOn.some((line) => line.includes('video-call 00:31:00')), 'Video call lines should include duration in canonical format');
   t.ok(bodyLinesOn.some((line) => /\blink-text\b(?:\s+\d+ chars)?\s*\/\s*https?:\/\//i.test(line)), 'link-text line should include URL content in content-on export');
   t.ok(bodyLinesOn.some((line) => /\blink-embed-no-text\b\s*\/\s*https?:\/\//i.test(line)), 'link-embed-no-text line should include URL content in content-on export');
   t.ok(bodyLinesOn.some((line) => /\blink-text\b\s+\d+ chars\s*\/\s*https?:\/\//i.test(line)), 'link-text lines with text should include content length');
@@ -930,6 +949,16 @@ tap.test('buildServerTextExport', (t) => {
   t.ok(contentOff.includes('XYZ'), 'Content-off export should contain anonymized sender names');
   t.notOk(contentOn.includes('Rob'), 'Content-on export should not contain raw sender names');
   t.notOk(contentOff.includes('Rob'), 'Content-off export should not contain raw sender names');
+
+  // video-link: URL must appear after / in content-on
+  t.ok(bodyLinesOn.some((line) => /\bvideo-link\b\s*\/\s*\w+_\w+\//i.test(line)), 'video-link line in content-on should include compact URL (domain_tld/path) after /');
+  // video-link: no slash-content in content-off
+  t.notOk(bodyLinesOff.some((line) => /\bvideo-link\b.*\s\/\s/i.test(line)), 'video-link line in content-off should not include content after /');
+
+  // reactions: content-off lines should not include slash-delimited content for reaction type
+  t.notOk(bodyLinesOff.some((line) => /\breaction\b.*\s\/\s/i.test(line)), 'reaction lines in content-off should not include content after /');
+  // reactions: content-on lines should also not include slash-content (reactions have null content)
+  t.notOk(bodyLinesOn.some((line) => /\breaction\b.*\s\/\s/i.test(line)), 'reaction lines in content-on should not include content after / (null content)');
 
   t.end();
 });
@@ -1082,7 +1111,7 @@ tap.test('chooseRuleAllEntries', (t) => {
     { file: 'text-image-replied.html', label: '', expected: 'text' },
     { file: 'text-replied.html', label: '', expected: 'text' },
     { file: 'video-call.html', label: '', expected: 'video-call' },
-    { file: 'voice-note.html', label: '', expected: 'voice-message' },
+    { file: 'voice-note.html', label: '', expected: 'voice-note' },
     { file: 'sticker.html', label: '', expected: 'sticker' },
     { file: 'animated-gif.html', label: '', expected: 'gif' },
     { file: 'poll.html', label: '', expected: 'poll' },
@@ -1095,8 +1124,8 @@ tap.test('chooseRuleAllEntries', (t) => {
     { file: '', label: 'audio call 5 mins', expected: 'audio-call' },
     { file: '', label: 'image sent', expected: 'image' },
     { file: '', label: 'open attachment', expected: 'link' },
-    { file: '', label: 'voice message 1:05', expected: 'voice-message' },
-    { file: '', label: 'voice note', expected: 'voice-message' },
+    { file: '', label: 'voice message 1:05', expected: 'voice-note' },
+    { file: '', label: 'voice note', expected: 'voice-note' },
     { file: '', label: 'sticker', expected: 'sticker' },
     { file: '', label: 'This is a gif', expected: 'gif' },
     { file: '', label: '👍', expected: 'reaction' },

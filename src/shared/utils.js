@@ -36,7 +36,7 @@ function extractAriaLabelCandidates(html) {
   const candidates = [];
   html.replace(/aria-label="([^"]*)"/g, (_, label) => {
     const byRegex = /\bby\s+([A-Za-z]+(?:\s+[A-Za-z]+){0,2})(?=\s*[:]|$)/gi;
-    const atRegex = /\bAt\s+.+,\s*([A-Za-z][A-Za-z .'\-]{0,40})(?=\s*[:]|$)/gi;
+    const atRegex = /\bAt\s+.+,\s*([A-Za-z][A-Za-z .'\\-]{0,40})(?=\s*[:]|$)/gi;
     let match;
     while ((match = byRegex.exec(label))) {
       const name = normalizeName(match[1]);

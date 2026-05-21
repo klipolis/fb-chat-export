@@ -6,22 +6,49 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## v5.5.0 (2026-05-18)
+## [Unreleased]
 
 ### Added
 
-- Summary now includes a breakdown section for every participant in the export, not just the first two.
+- `pnpm run release` automates the release process: renames `[Unreleased]` to the new version heading, inserts a fresh empty `[Unreleased]` above it, and bumps `package.json` version. Supports `patch`, `minor`, `major` override arguments; defaults to minor if any `Added`/`Changed` entries are present, otherwise patch.
+- Pre-commit hook now also blocks commits when the `[Unreleased]` section in `CHANGELOG.md` is empty, via `scripts/check-unreleased.js`.
+- `pnpm run check:unreleased` exposes the changelog guard as a standalone command.
+
+### Fixed
+
+- Duration values in exports and JSON previews now always use strict `HH:MM:SS` three-part format (e.g. `00:18:00`, `00:00:20`) with zero-padded hours, eliminating the previous `MM:SS` two-part form.
+- `validate-generated-txt.js` summary validator is now dynamic: it accepts any number of per-sender summary sections instead of being hardcoded to two.
+- `export-config.json` `personSummaryTitle` pattern is now dynamic (`^.{1,80} Summary$`) instead of listing hardcoded sender aliases.
+- `export-config.json` `messageTypes` updated to include `reaction-emoji`, `reaction`, and `video-link`; `duration` pattern updated to match the strict `HH:MM:SS` format.
+
+
+- `pnpm run release` automates the release process: renames `[Unreleased]` to the new version heading, inserts a fresh empty `[Unreleased]` above it, and bumps `package.json` version. Supports `patch`, `minor`, `major` override arguments; defaults to minor if any `Added`/`Changed` entries are present, otherwise patch.
+- Pre-commit hook now also blocks commits when the `[Unreleased]` section in `CHANGELOG.md` is empty, via `scripts/check-unreleased.js`.
+- `pnpm run check:unreleased` exposes the changelog guard as a standalone command.
+
+### Fixed
+
+- Duration values in exports and JSON previews now always use strict `HH:MM:SS` three-part format (e.g. `00:18:00`, `00:00:20`) with zero-padded hours, eliminating the previous `MM:SS` two-part form.
+- `validate-generated-txt.js` summary validator is now dynamic: it accepts any number of per-sender summary sections instead of being hardcoded to two.
+- `export-config.json` `personSummaryTitle` pattern is now dynamic (`^.{1,80} Summary$`) instead of listing hardcoded sender aliases.
+- `export-config.json` `messageTypes` updated to include `reaction-emoji`, `reaction`, and `video-link`; `duration` pattern updated to match the strict `HH:MM:SS` format.
+
 - Sticker and animated gif messages are no longer counted as images in the summary; they count toward the text total alongside reactions.
 - Reaction messages using an emoji image (`<img>` element) instead of an SVG icon are now correctly classified as `reaction` type.
 - The JSON preview format has been reorganised: `html_locale`, `title`, and `type` are now top-level fields; `data_raw` captures values as extracted from the HTML; `data_preview` contains processed display values; `locate` has been removed.
 - Reaction messages always produce `null` content in both `data_raw` and `data_preview`.
 - `video-link` is a new message type for messages whose body is a video platform URL (YouTube, Vimeo). The URL is used as content; the type appears in the export line and JSON preview. The HTML optimiser now preserves plain URL text inside `<a>` tags so the message wrapper is not incorrectly stripped as empty.
+- The voice-note message type is now consistently named `voice-note` everywhere — in the rule, JSON preview, and content text — matching the raw sample filename.
 
 ### Fixed
 
 - Text messages are no longer misclassified as voice-message in the browser scan when no audio timer element is present.
 - Message type classification now stops at the first matching rule; once a type is identified from the aria-label, heuristic overrides are skipped.
 - Downloaded export filename now includes the selected date range (e.g. `fb-export-2026-05-01–2026-05-19-content-on.txt`).
+- Call duration totals in the browser summary are now counted correctly; previously, timers in `HH:MM` format without the word "min" were counted as 0 minutes.
+- Messages whose aria-label uses a full calendar date (e.g. "May 7, 2026, 7:09 AM, You: text") without the "At" prefix are now correctly parsed; date, sender, and content are each placed in the right field.
+- Duration values in exports and JSON previews now use `HH:MM:SS` / `MM:SS` clock format (e.g. `18:00`, `00:20`) without a trailing "mins" label.
+- Video-link URLs in TXT exports are shortened to a compact form: scheme and dots are stripped, the domain dots replaced with underscores, and the path is truncated to 10 characters with an ellipsis (e.g. `youtube_com/shorts/IK...`). The raw URL in JSON `data_raw` keeps the full address without query string.
 
 ## v5.4.0 (2026-05-18)
 

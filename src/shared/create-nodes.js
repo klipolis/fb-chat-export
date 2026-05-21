@@ -16,6 +16,18 @@ function relativePath(p) {
   return rel.startsWith('.') ? rel : `./${rel}`;
 }
 
+function stripUrlQuery(url) {
+  if (!url) return url;
+  try {
+    const u = new URL(url);
+    u.search = '';
+    u.hash = '';
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
@@ -285,7 +297,11 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
       timestamp,
       data_raw: {
         date: originalDate,
-        content: contentMeta.type === 'reaction' ? null : (message || null),
+        content: contentMeta.type === 'reaction'
+          ? null
+          : contentMeta.type === 'video-link'
+            ? (stripUrlQuery(message) || null)
+            : (message || null),
         duration: rawMeta.duration || null,
         length: null,
       },

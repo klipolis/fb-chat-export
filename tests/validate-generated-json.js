@@ -4,7 +4,7 @@ const path = require('path');
 
 const previewDir = path.join(__dirname, '..', 'demo/output-json');
 const schemaPath = path.join(__dirname, 'generated-json-schema.json');
-const timedTypes = new Set(['voice-message', 'video-call', 'audio-call']);
+const timedTypes = new Set(['voice-note', 'video-call', 'audio-call']);
 
 function loadSchema() {
   const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));

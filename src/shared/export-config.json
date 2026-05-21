@@ -8,21 +8,24 @@
     "link-text",
     "missed-audio-call",
     "missed-video-call",
+    "reaction-emoji",
+    "reaction",
     "text-image-replied",
     "text-replied",
     "text",
     "video-call",
+    "video-link",
     "voice-note"
   ],
   "patterns": {
     "entryLine": "^\\[\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}\\]\\s[^:]+:\\s[^/]+(?:\\s/\\s.*)?$",
-    "duration": "\\d+:\\d{2}(?::\\d{2})?\\s+mins",
+    "duration": "\\d{2}:\\d{2}:\\d{2}",
     "totalSummaryTitle": "^Total Summary$",
     "totalLine": "^\\d+\\s+(?:message|messages)\\s*/\\s*\\d+\\s+(?:day|days)$",
     "roughTextLine": "^~\\s+\\d+\\s+text;$",
     "roughImagesLine": "^~\\s+\\d+\\s+images$",
     "roughCallsLine": "^~\\s+\\d+\\s+calls\\s+\\d+\\s+mins$",
-    "personSummaryTitle": "^(Alpha|Youghurt) Summary$"
+    "personSummaryTitle": "^(XYZ|Youghurt|Barnabas) Summary$"
   },
   "summaryConcept": {
     "totalSummaryTitle": "Total Summary",

@@ -5,7 +5,7 @@ Thank you for contributing! This repository uses `pnpm` and standard Node.js too
 ## Getting started
 
 1. Clone the repository and change into the `support/` folder.
-2. Run `pnpm install --frozen-lockfile`.
+2. Run `pnpm install --frozen-lockfile`. This also installs the Husky Git hooks automatically via the `prepare` script.
 3. Use `pnpm run build:ci` to verify the repository end-to-end.
 
 ## Code style and validation
@@ -15,6 +15,36 @@ Thank you for contributing! This repository uses `pnpm` and standard Node.js too
 - Docs link validation: `pnpm run link:docs`
 - Full tests: `pnpm test`
 - Release validation: `pnpm run release:check`
+
+## Commit messages
+
+This repository follows [Conventional Commits](https://www.conventionalcommits.org/).
+Husky enforces this automatically via a `commit-msg` hook.
+
+Format: `<type>(<optional scope>): <subject>`
+
+Allowed types: `feat`, `fix`, `chore`, `docs`, `test`, `refactor`, `perf`, `ci`, `revert`
+
+Examples:
+```
+feat: add voice-note compact duration display
+fix: parse aria-labels without At prefix
+chore: release v5.5.0
+```
+
+- Subject must be lowercase with no trailing period.
+- Breaking changes: use `feat!:` or `fix!:` and describe in the commit body.
+
+## Git hooks (Husky)
+
+Two hooks run automatically on every commit:
+
+| Hook | Command | Purpose |
+|---|---|---|
+| `pre-commit` | `pnpm run lint` | ESLint on source and test files |
+| `commit-msg` | `commitlint` | Validates the commit message format |
+
+To bypass hooks in exceptional circumstances: `git commit --no-verify` (use sparingly).
 
 ## Branch and PR workflow
 
@@ -26,16 +56,15 @@ Thank you for contributing! This repository uses `pnpm` and standard Node.js too
 ## Release process
 
 - Increment `package.json` version when preparing a release.
-- Add a changelog entry in `CHANGELOG.md`.
+- Move the `[Unreleased]` section in `CHANGELOG.md` to a new versioned heading.
 - Use `pnpm run release:check` to validate release readiness.
 - Tag the release with `pnpm run release:tag`.
 
 ## Changelog rules
 
-Every entry in `CHANGELOG.md` must describe an **active change** — something that was added, fixed, changed, or removed in that release. Entries that only describe what was retained, preserved, or left unchanged are not permitted.
+Every entry in `CHANGELOG.md` must describe an **active change** — something that was added, fixed, changed, or removed in that release.
 
-Write in plain, user-facing language:
-
+- **Always add new entries to the `## [Unreleased]` section** at the top of `CHANGELOG.md`. Never add entries inside an already-versioned section.
 - Use active voice and present tense: "Exports now include attachments" not "Attachment export support has been added".
 - Describe what the user observes or benefits from, not what file or variable changed internally.
 - Do not mention internal identifiers, environment variable names, or implementation file paths.

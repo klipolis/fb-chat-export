@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat Exporter
 // @namespace    http://tampermonkey.net/
-// @version      5.5.0
+// @version      5.4.0
 // @description  Export chat conversations to text file
 // @match        https://www.facebook.com/messages/*
 // @grant        none
@@ -109,7 +109,7 @@
           matchLabel: /video[- ]call/i
         },
         {
-          type: "voice-message",
+          type: "voice-note",
           matchFile: /^voice-note\.html$/i,
           matchLabel: /voice(?:[- ]message|[- ]note)|audio(?:[- ]message|[- ]note)/i
         },
@@ -254,13 +254,22 @@
             };
           }
         }
-        match = label.match(/^(.+?),\s*([^:]+):\s*([\s\S]*)$/i);
-        if (match && isValidSender(match[2])) {
-          return {
-            date: match[1].trim(),
-            sender: match[2].trim(),
-            message: match[3].trim()
-          };
+        {
+          const labelParts = label.split(",");
+          for (let i = 1; i < labelParts.length; i++) {
+            const datePart = labelParts.slice(0, i).join(",").trim();
+            const senderRest = labelParts.slice(i).join(",").trim();
+            const colonIdx = senderRest.indexOf(":");
+            if (colonIdx < 0) continue;
+            const potentialSender = senderRest.slice(0, colonIdx).trim();
+            if (isValidSender(potentialSender)) {
+              return {
+                date: datePart,
+                sender: potentialSender,
+                message: senderRest.slice(colonIdx + 1).trim()
+              };
+            }
+          }
         }
         match = label.match(/^Enter,\s*([^:]+?)\s+sent\s+(.+?)\s+by\s+([^:]+):\s*([\s\S]*)$/i);
         if (match) {
@@ -424,10 +433,7 @@
           const hours = Math.floor(safeSeconds / 3600);
           const minutes = Math.floor(safeSeconds % 3600 / 60);
           const seconds = safeSeconds % 60;
-          if (hours > 0) {
-            return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")} mins`;
-          }
-          return `${minutes}:${String(seconds).padStart(2, "0")} mins`;
+          return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
         };
         const hhmmss = normalized.match(/^(\d+):(\d{2}):(\d{2})(?!\s*(?:am|pm)\b)/i);
         if (hhmmss && !suffix) {
@@ -449,6 +455,19 @@
           return formatFromSeconds(parseInt(secMatch[1], 10));
         }
         return null;
+      }
+      function formatUrlCompact(url) {
+        if (!url) return url;
+        try {
+          const parsed = new URL(url);
+          const host = parsed.hostname.replace(/\./g, "_");
+          const cleanPath = parsed.pathname.replace(/\/+$/, "");
+          if (!cleanPath) return `${host}...`;
+          const truncPath = cleanPath.length > 10 ? `${cleanPath.slice(0, 10)}...` : `${cleanPath}...`;
+          return host + truncPath;
+        } catch {
+          return url;
+        }
       }
       function normalizeFacebookRedirect(url) {
         try {
@@ -570,12 +589,12 @@
             } else if (/audio/.test(callText)) {
               type = "audio-call";
             } else {
-              type = "voice-message";
+              type = "voice-note";
             }
           } else if (explicitLink) {
             type = "link";
           } else if (voiceMatch) {
-            type = "voice-message";
+            type = "voice-note";
           } else if (imageMatch) {
             type = "image";
           }
@@ -596,8 +615,8 @@
           } else {
             contentText = resolvedLink || "link";
           }
-        } else if (type === "voice-message") {
-          contentText = "voice message";
+        } else if (type === "voice-note") {
+          contentText = "voice note";
         } else if (type === "sticker") {
           contentText = "sticker";
         } else if (type === "gif") {
@@ -605,14 +624,14 @@
         } else if (type === "reaction") {
           contentText = null;
         } else if (type === "video-link") {
-          contentText = resolvedLink || message || "video link";
+          contentText = formatUrlCompact(resolvedLink || message) || "video link";
         } else if (type === "image") {
           contentText = "image sent";
         } else if (type === "video-call" || type === "audio-call" || type === "missed-call") {
           const hasCallPhrase = /\bcall\b/i.test(normalizedText);
           contentText = hasCallPhrase ? normalizedText : type.replace(/-/g, " ");
         }
-        const timedTypes = /* @__PURE__ */ new Set(["voice-message", "video-call", "audio-call"]);
+        const timedTypes = /* @__PURE__ */ new Set(["voice-note", "video-call", "audio-call"]);
         const noLengthTypes = /* @__PURE__ */ new Set(["image", "missed-call", "unsent", "sticker", "gif", "reaction", "video-link", ...timedTypes]);
         const duration = timedTypes.has(type) ? rawDuration : null;
         const linkHasTextContent = type === "link" && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
@@ -634,6 +653,7 @@
         normalizeDateToSimple,
         normalizeLabel,
         normalizeDuration: normalizeDuration2,
+        formatUrlCompact,
         extractLink,
         extractPinnedLocationLink,
         chooseRule,
@@ -655,21 +675,24 @@
           "link-text",
           "missed-audio-call",
           "missed-video-call",
+          "reaction-emoji",
+          "reaction",
           "text-image-replied",
           "text-replied",
           "text",
           "video-call",
+          "video-link",
           "voice-note"
         ],
         patterns: {
           entryLine: "^\\[\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}\\]\\s[^:]+:\\s[^/]+(?:\\s/\\s.*)?$",
-          duration: "\\d+:\\d{2}(?::\\d{2})?\\s+mins",
+          duration: "\\d{2}:\\d{2}:\\d{2}",
           totalSummaryTitle: "^Total Summary$",
           totalLine: "^\\d+\\s+(?:message|messages)\\s*/\\s*\\d+\\s+(?:day|days)$",
           roughTextLine: "^~\\s+\\d+\\s+text;$",
           roughImagesLine: "^~\\s+\\d+\\s+images$",
           roughCallsLine: "^~\\s+\\d+\\s+calls\\s+\\d+\\s+mins$",
-          personSummaryTitle: "^(Alpha|Youghurt) Summary$"
+          personSummaryTitle: "^(XYZ|Youghurt|Barnabas) Summary$"
         },
         summaryConcept: {
           totalSummaryTitle: "Total Summary",
@@ -715,7 +738,7 @@
       }
       function isCountedCall(entry) {
         const type = String(entry.type || entry.fileType || "").toLowerCase();
-        return ["audio-call", "video-call", "voice-note", "voice-message"].includes(type);
+        return ["audio-call", "video-call", "voice-note"].includes(type);
       }
       function buildSummaryData(entries = [], options = {}) {
         if (!entries.length) {
@@ -964,17 +987,9 @@ ${types}
       function durationToMinutes2(duration) {
         if (!duration) return 0;
         const normalized = normalizeDuration2(duration) || duration;
-        const hms = String(normalized).match(/^(\d+):(\d{2}):(\d{2})\s+mins$/i);
-        const ms = String(normalized).match(/^(\d+):(\d{2})\s+mins$/i);
-        const mins = String(normalized).match(/^(\d+)\s+mins$/i);
+        const hms = String(normalized).match(/^(\d+):(\d{2}):(\d{2})$/);
         if (hms) {
           return Number(hms[1]) * 60 + Number(hms[2]) + Math.ceil(Number(hms[3]) / 60);
-        }
-        if (ms) {
-          return Number(ms[1]) + Math.ceil(Number(ms[2]) / 60);
-        }
-        if (mins) {
-          return Number(mins[1]);
         }
         return 0;
       }
@@ -1459,6 +1474,10 @@ ${types}
                 a.click();
               }
               downloadBtn.style.display = "";
+              downloadBtn.removeAttribute("aria-disabled");
+              downloadBtn.style.opacity = "";
+              downloadBtn.style.cursor = "";
+              downloadBtn.textContent = "Save";
               saveAgainLink.style.display = "none";
               saveAgainLink.onclick = null;
               if (downloadHandler) downloadBtn.removeEventListener("click", downloadHandler);

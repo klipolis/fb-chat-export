@@ -57,7 +57,7 @@ module.exports = [
     matchLabel: /video[- ]call/i,
   },
   {
-    type: 'voice-message',
+    type: 'voice-note',
     matchFile: /^voice-note\.html$/i,
     matchLabel: /voice(?:[- ]message|[- ]note)|audio(?:[- ]message|[- ]note)/i,
   },

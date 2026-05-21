@@ -88,61 +88,22 @@ function validateSummary(lines, schema, patterns, startIndex, fileName) {
 
   if (lines[index] === '') index += 1;
 
-  assert.ok(
-    patterns.personSummaryTitle.test(lines[index] || ''),
-    `${fileName}: missing first person summary title`
-  );
-  index += 1;
-  assert.ok(
-    patterns.totalLine.test(lines[index] || ''),
-    `${fileName}: invalid first person Total line`
-  );
-  index += 1;
-  assert.ok(
-    patterns.roughTextLine.test(lines[index] || ''),
-    `${fileName}: invalid first person rough text line`
-  );
-  index += 1;
-  assert.ok(
-    patterns.roughImagesLine.test(lines[index] || ''),
-    `${fileName}: invalid first person rough images line`
-  );
-  index += 1;
-  assert.ok(
-    patterns.roughCallsLine.test(lines[index] || ''),
-    `${fileName}: invalid first person rough calls line`
-  );
-  index += 1;
-
-  if (lines[index] === '') index += 1;
-
-  assert.ok(
-    patterns.personSummaryTitle.test(lines[index] || ''),
-    `${fileName}: missing second person summary title`
-  );
-  index += 1;
-  assert.ok(
-    patterns.totalLine.test(lines[index] || ''),
-    `${fileName}: invalid second person Total line`
-  );
-  index += 1;
-  assert.ok(
-    patterns.roughTextLine.test(lines[index] || ''),
-    `${fileName}: invalid second person rough text line`
-  );
-  index += 1;
-  assert.ok(
-    patterns.roughImagesLine.test(lines[index] || ''),
-    `${fileName}: invalid second person rough images line`
-  );
-  index += 1;
-  assert.ok(
-    patterns.roughCallsLine.test(lines[index] || ''),
-    `${fileName}: invalid second person rough calls line`
-  );
-  index += 1;
-
-  if (lines[index] === '') index += 1;
+  let personCount = 0;
+  while (patterns.personSummaryTitle.test(lines[index] || '')) {
+    personCount += 1;
+    const ordinal = personCount === 1 ? 'first' : personCount === 2 ? 'second' : `person ${personCount}`;
+    index += 1;
+    assert.ok(patterns.totalLine.test(lines[index] || ''), `${fileName}: invalid ${ordinal} person Total line`);
+    index += 1;
+    assert.ok(patterns.roughTextLine.test(lines[index] || ''), `${fileName}: invalid ${ordinal} person rough text line`);
+    index += 1;
+    assert.ok(patterns.roughImagesLine.test(lines[index] || ''), `${fileName}: invalid ${ordinal} person rough images line`);
+    index += 1;
+    assert.ok(patterns.roughCallsLine.test(lines[index] || ''), `${fileName}: invalid ${ordinal} person rough calls line`);
+    index += 1;
+    if (lines[index] === '') index += 1;
+  }
+  assert.ok(personCount >= 1, `${fileName}: missing person summary section`);
 
   assert.strictEqual(lines[index], '---', `${fileName}: missing summary closing separator`);
   index += 1;

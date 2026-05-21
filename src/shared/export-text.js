@@ -73,7 +73,7 @@ function extractMessageEntry(el, fileName) {
   const timestamp = Number.isFinite(Date.parse(resolvedDate)) ? Date.parse(resolvedDate) : 0;
 
   const isRedundantVoiceText =
-    contentMeta.type === 'voice-message' &&
+    contentMeta.type === 'voice-note' &&
     /^voice(?:[- ]message|[- ]note)$/i.test(contentMeta.text);
   const isRedundantLinkText = contentMeta.type === 'link' && /^link$/i.test(contentMeta.text);
   const body = isRedundantVoiceText

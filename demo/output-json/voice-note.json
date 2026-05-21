@@ -1,7 +1,7 @@
 {
   "html_locale": null,
-  "title": "voice-message",
-  "type": "voice-message",
+  "title": "voice-note",
+  "type": "voice-note",
   "data_raw": {
     "date": "Wednesday 7:52pm",
     "content": "0:20",
@@ -10,8 +10,8 @@
   },
   "data_preview": {
     "date": "2026.05.20 19:52",
-    "content": "voice message",
-    "duration": "0:20 mins",
+    "content": "voice note",
+    "duration": "00:00:20",
     "length": null
   }
 }

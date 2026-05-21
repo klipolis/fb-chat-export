@@ -114,13 +114,25 @@ function parseAriaLabel(ariaLabel) {
     }
   }
 
-  match = label.match(/^(.+?),\s*([^:]+):\s*([\s\S]*)$/i);
-  if (match && isValidSender(match[2])) {
-    return {
-      date: match[1].trim(),
-      sender: match[2].trim(),
-      message: match[3].trim(),
-    };
+  // Iterate through each comma position to find the first valid date/sender boundary.
+  // This handles formats like "Month DD, YYYY, H:MM AM, Sender: message" where the
+  // lazy-quantifier approach would pick the wrong split (e.g. sender="2026, 7").
+  {
+    const labelParts = label.split(',');
+    for (let i = 1; i < labelParts.length; i++) {
+      const datePart = labelParts.slice(0, i).join(',').trim();
+      const senderRest = labelParts.slice(i).join(',').trim();
+      const colonIdx = senderRest.indexOf(':');
+      if (colonIdx < 0) continue;
+      const potentialSender = senderRest.slice(0, colonIdx).trim();
+      if (isValidSender(potentialSender)) {
+        return {
+          date: datePart,
+          sender: potentialSender,
+          message: senderRest.slice(colonIdx + 1).trim(),
+        };
+      }
+    }
   }
 
   match = label.match(/^Enter,\s*([^:]+?)\s+sent\s+(.+?)\s+by\s+([^:]+):\s*([\s\S]*)$/i);

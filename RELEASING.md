@@ -6,8 +6,9 @@
    Run `pnpm test` and verify all tests pass (or confirm any pre-existing failures are known and documented).
 
 2. **Update `CHANGELOG.md`.**
-   Add all new entries under the latest unreleased version heading.
+   Rename the `## [Unreleased]` heading to the new version with today's date (e.g. `## v5.5.0 (2026-05-21)`).
    Follow the rules in `AGENTS.md`: active-change entries only, plain user-facing language, no internal names.
+   Create a fresh empty `## [Unreleased]` section above the new versioned heading for subsequent work.
 
 3. **Bump the version.**
    Update the `version` field in `package.json` and the version comment at the top of `src/frontend/build.js` (the userscript `@version` tag is derived from this during the build).

@@ -470,6 +470,10 @@ import {
             a.click();
           }
           downloadBtn.style.display = '';
+          downloadBtn.removeAttribute('aria-disabled');
+          downloadBtn.style.opacity = '';
+          downloadBtn.style.cursor = '';
+          downloadBtn.textContent = 'Save';
           saveAgainLink.style.display = 'none';
           saveAgainLink.onclick = null;
           if (downloadHandler) downloadBtn.removeEventListener('click', downloadHandler);

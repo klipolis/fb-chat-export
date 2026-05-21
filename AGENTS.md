@@ -25,5 +25,26 @@ When writing or editing `CHANGELOG.md`:
 - CI, test tooling, and refactor changes with no user-visible effect belong under `### Dev` only.
 - Section headers per release: `### Added`, `### Changed`, `### Fixed`, `### Removed`, `### Dev`. Include only sections with entries.
 - Keep each entry as short as possible — one sentence per change. Do not repeat information across entries. Avoid mentioning function names, file names, or internal identifiers.
-- Do not start a new version heading for changes that have not been committed yet. Add all new entries to the existing latest version block.
-- When starting a new version block after a commit, choose the next version based on what is being added: only `### Fixed` entries → patch bump (e.g. 5.4.0 → 5.4.1); any `### Added` or `### Changed` entries → minor bump (e.g. 5.4.0 → 5.5.0). Always check `package.json` for the current version before picking the new one.
+- **Always add new entries to the `## [Unreleased]` section at the top of the file.** Never add entries inside a versioned section (e.g. `## v5.5.0`). If no `[Unreleased]` section exists, create one immediately after the file header.
+- Never modify a versioned section that has already been released (i.e. one that has a date and a version number in its heading).
+- When a release is made, the `[Unreleased]` heading is replaced with the new version heading (e.g. `## v5.5.0 (2026-05-21)`). Version choice: only `### Fixed` entries → patch bump; any `### Added` or `### Changed` entries → minor bump. Always check `package.json` for the current version before picking the new one.
+
+## Commit message rules (AI agents must follow these)
+
+This repository uses [Conventional Commits](https://www.conventionalcommits.org/). Husky enforces this via a `commit-msg` hook running commitlint.
+
+Format: `<type>(<optional scope>): <subject>`
+
+Allowed types: `feat`, `fix`, `chore`, `docs`, `test`, `refactor`, `perf`, `ci`, `revert`
+
+Examples:
+- `feat: add voice-note compact duration display`
+- `fix: parse aria-labels without At prefix`
+- `chore: release v5.5.0`
+- `test: add parseAriaLabel calendar-date cases`
+- `docs: update CONTRIBUTING with husky setup`
+
+Rules:
+- Subject is lowercase, no trailing period.
+- Do not reference internal file names or function names in the subject.
+- Breaking changes: add `!` after the type (e.g. `feat!: redesign export format`) and describe in the commit body.
