@@ -26,6 +26,6 @@
 - Keep frontend build entry rooted at `src/frontend/build.js` with root handoff from `src/build.js`.
 - Keep frontend completion notice minimal: show conversation name, date interval, and elapsed scan time.
 - Keep server and frontend summary generation reusing shared schema concepts from `tests/generated-txt-schema.json`.
-- Keep anonymized self label as `Youghurt` across frontend and server export outputs.
+- Keep aliased self label as `Youghurt` across frontend and server export outputs.
 
 

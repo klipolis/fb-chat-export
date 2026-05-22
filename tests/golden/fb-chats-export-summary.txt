@@ -15,6 +15,14 @@ Message types:
 - video-call
 - video-link
 - voice-note
+Options:
+  includeContent : false
+  includeLength : false
+  includeSummary : true
+Aliases:
+  You : Youghurt
+  Rob : Barnabas
+  any : XYZ
 ---
 
 Total Summary

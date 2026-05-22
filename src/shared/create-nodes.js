@@ -297,6 +297,13 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
       timerText: rawMeta.duration || '',
     });
 
+    const rawDuration = normalizeDuration(rawMeta.duration) || null;
+    const rawContent = contentMeta.type === 'reaction'
+      ? null
+      : contentMeta.link
+        ? stripTrackingParams(rawMeta.link || contentMeta.link) || null
+        : (message || null);
+
     nodes.push({
       html_locale: null,
       title: contentMeta.type,
@@ -304,12 +311,8 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
       timestamp,
       data_raw: {
         date: originalDate,
-        content: contentMeta.type === 'reaction'
-          ? null
-          : contentMeta.type === 'video-link'
-            ? (stripTrackingParams(message) || null)
-            : (message || null),
-        duration: rawMeta.duration || null,
+        content: rawContent,
+        duration: rawDuration,
         length: null,
       },
       data_preview: {

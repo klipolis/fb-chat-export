@@ -55,8 +55,8 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Facebook reactions (👍, ❤️, 😂, 😮, 😢, 👏) are recognised as a distinct `reaction` message type and excluded from the character-count summary.
-- Name anonymisation now supports multiple explicit sender mappings (e.g. mapping both "You" and a contact name to separate pseudonyms) alongside an automatic fallback for any other detected name.
-- `build:raw` script writes anonymised names back to raw HTML files on demand; the default build no longer modifies raw HTML.
+- Name aliasing now supports multiple explicit sender mappings (e.g. mapping both "You" and a contact name to separate pseudonyms) alongside an automatic fallback for any other detected name.
+- `build:raw` script writes aliased names back to raw HTML files on demand; the default build no longer modifies raw HTML.
 - `build:raw-clean` script strips Facebook-internal utility classes and inline styles from raw HTML files without running full optimisation.
 - Audio call messages where the sender name matches the anonymisation target are handled correctly without double-replacement.
 - Date inputs accept `YYYY/MM/DD`, `DD.MM.YYYY`, and `DD/MM/YYYY` in addition to `YYYY-MM-DD`.
@@ -74,7 +74,7 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Messages with a time-only or day-of-week date (e.g. "Monday 4:41pm") now parse the correct sender and date when the aria-label includes a trailing conversation name.
 - Sender names containing more than two words are no longer mistaken for senders (e.g. long conversation names used as fallback labels).
-- All panel controls (calls, anonymize, summary, content, length) now work correctly on load.
+- All panel controls (calls, alias, summary, content, length) now work correctly on load.
 - Invalid date input is focused automatically when an error is shown.
 - Date fields clear their error highlight as soon as the user starts typing.
 - Messages near midnight are no longer incorrectly filtered due to a timezone mismatch.
@@ -105,9 +105,9 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `formatLine` option combinations, `buildSummary` edge cases, and `parseLocalDate` format variants covered by tests.
 - `test-ui.js` DOM sandbox no longer mutates the Node global `document`.
 - `isValidSender`, `findValidDatePrefix`, and extended `normalizeDateToSimple` cases covered by unit tests.
-- `anonymizeChatNames` accepts an optional name map; `demo/anonymize-names.json` supplies default replacements (`You` → `Youghurt`, detected name → `Alpha`) used by the server build and tests.
-- `anonymizeChatNames` skips replacing a name that is already the target value (guards against double-anonymization on re-runs).
-- Anonymize panel now shows two name fields: one for your own name and one for the other person; both replace in the export.
+- `aliasChatNames` accepts an optional name map; `demo/alias-names.json` supplies default replacements (`You` → `Youghurt`, detected name → `Alpha`) used by the server build and tests.
+- `aliasChatNames` skips replacing a name that is already the target value (guards against double-aliasing on re-runs).
+- Alias panel now shows two name fields: one for your own name and one for the other person; both replace in the export.
 - `build:ci` explicitly runs the test suite after the build step rather than relying on it being embedded in the `build` script.
 - Golden snapshot files validated for UTF-8 encoding, LF line endings, and no trailing whitespace as part of the test run.
 - `messageRules` now covers sticker, GIF, and poll message types so they are no longer classified as `text`; `getContentMeta` handles content text and length omission for each.
@@ -147,7 +147,7 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Export summary now uses a `Total Summary` block followed by per-person summary lines.
 - Per-person summary counts exclude deleted, unsent, and missed call messages.
 - Total summary counts are derived from the sum of per-person counts.
-- Anonymized self name changed to `Youghurt`.
+- Aliased self name changed to `Youghurt`.
 - Call summary now includes audio calls, video calls, and voice notes; missed calls are excluded.
 - Removed `Total:` prefix from summary count lines.
 

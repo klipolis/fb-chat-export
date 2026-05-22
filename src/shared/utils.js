@@ -105,7 +105,7 @@ function collectAutoName(htmlArray, nameMap = {}) {
   return pickBestName(allCandidates, htmlArray.join('\n'), excludeNames);
 }
 
-function anonymizeChatNames(html, nameMap = {}, preDetectedName) {
+function aliasChatNames(html, nameMap = {}, preDetectedName) {
   const replacementName = nameMap.any || 'Alpha';
   const excludeNames = makeExcludeSet(nameMap);
   let result = html;
@@ -123,17 +123,17 @@ function anonymizeChatNames(html, nameMap = {}, preDetectedName) {
 
   if (selectedName) {
     const senderRegex = new RegExp(`\\b${escapeRegExp(selectedName)}\\b`, 'gi');
-    const anonymizeText = (text) => text.replace(senderRegex, replacementName);
+    const aliasText = (text) => text.replace(senderRegex, replacementName);
 
     result = result.replace(/aria-label="([^"]*)"/g, (match, label) => {
-      const updated = anonymizeText(label);
+      const updated = aliasText(label);
       return updated === label ? match : `aria-label="${updated}"`;
     });
 
     result = result.replace(
       /(<img\b[^>]*\balt=")([^"]*)("[^>]*>)/gi,
       (match, prefix, altText, suffix) => {
-        const updatedAlt = anonymizeText(altText);
+        const updatedAlt = aliasText(altText);
         return updatedAlt === altText ? match : `${prefix}${updatedAlt}${suffix}`;
       }
     );
@@ -142,7 +142,7 @@ function anonymizeChatNames(html, nameMap = {}, preDetectedName) {
   }
 
   // Apply explicit name entries from the map (e.g. "You" -> "Youghurt").
-  // Skip entries where source and target are the same (already anonymized).
+  // Skip entries where source and target are the same (already aliased).
   for (const [from, to] of Object.entries(nameMap)) {
     if (from === 'any') continue;
     if (from.toLowerCase() === to.toLowerCase()) continue;
@@ -170,6 +170,6 @@ function anonymizeChatNames(html, nameMap = {}, preDetectedName) {
 module.exports = {
   ensureDir,
   emptyDir,
-  anonymizeChatNames,
+  aliasChatNames,
   collectAutoName,
 };

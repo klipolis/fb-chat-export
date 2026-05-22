@@ -17,7 +17,7 @@ This file now serves as a central index for split requirement documents.
 - Push final flattened JSON exports to `demo/output-json/`.
 - Avoid nested `nodes` wrappers in exported JSON; use `data_preview.optimised_date` in a simple 24-hour date/time format.
 - Use `aria-label` as the primary message dedupe key and remove `data-message-id` dependencies.
-- Anonymize only sender/receiver labels in raw HTML, including `aria-label` and profile image `alt` values, while preserving message text and chat titles.
+- Alias only sender/receiver labels in raw HTML, including `aria-label` and profile image `alt` values, while preserving message text and chat titles.
 - Prioritize explicit `link` classification for raw files whose filename indicates link data, and never override link types with image heuristics.
 - For link-type exports, prefer canonical URL values as message content when URLs are available in raw metadata or message anchors.
 - Parse dash-form labels (`At <date>, <sender> - <message>`) so conversational tokens remain in message text and sender names stay clean.
@@ -37,10 +37,10 @@ This file now serves as a central index for split requirement documents.
 - Keep per-person summary totals excluding `deleted/unsent` and missed call types.
 - Generate a summary section for every participant present in the export; do not cap at two.
 - Count call totals in summaries using only audio/video calls and voice notes/messages (not missed calls).
-- Keep anonymized self sender output as `Youghurt` in final exports.
-- Default build (`build:server` / `build`) reads raw HTML files but never modifies them. Use `build:raw` to write anonymised names back to raw files.
+- Keep aliased self sender output as `Youghurt` in final exports.
+- Default build (`build:server` / `build`) reads raw HTML files but never modifies them. Use `build:raw` to write alias names back to raw files.
 - `build:raw-clean` strips Facebook-internal utility classes (tokens starting with `x`) and inline `style` attributes from raw HTML files without running full optimisation.
-- Support multiple explicit sender-to-pseudonym mappings in `anonymize-names.json`; use an `any` key to assign a fallback pseudonym to any auto-detected name not covered by explicit entries.
+- Support multiple explicit sender-to-pseudonym mappings in `alias-names.json`; use an `any` key to assign a fallback pseudonym to any auto-detected name not covered by explicit entries.
 - Keep generated `dist/`, `demo/output-html/`, and `demo/output-json/` artifacts in source control.
 - Keep build-specific `dist/app.js` versioning separate from `package.json` using `BUILD_VERSION`.
 - Use minor version bumps for release-level changelog entries that contain feature or contract updates.

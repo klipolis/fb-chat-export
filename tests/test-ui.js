@@ -52,7 +52,7 @@ tap.test('createCheckboxToggle returns wrap and input, unchecked by default', (t
 tap.test('createCheckboxToggleWithInput returns wrap, input, and textInput', (t) => {
   const w = makeWindow();
   const ui = loadUi(w);
-  const result = ui.createCheckboxToggleWithInput('Anonymize as', 'Youghurt');
+  const result = ui.createCheckboxToggleWithInput('Alias as', 'Youghurt');
   t.ok(result.wrap, 'has wrap element');
   t.ok(result.input, 'has input element');
   t.ok(result.textInput, 'has textInput element');

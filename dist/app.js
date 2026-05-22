@@ -469,6 +469,21 @@
           return url;
         }
       }
+      function stripTrackingParams2(url) {
+        if (!url) return url;
+        try {
+          const parsed = new URL(url);
+          for (const key of Array.from(parsed.searchParams.keys())) {
+            if (key.toLowerCase().startsWith("utm_") || ["fbclid", "gclid", "dclid", "msclkid", "ref", "ref_src", "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"].includes(key.toLowerCase())) {
+              parsed.searchParams.delete(key);
+            }
+          }
+          parsed.hash = "";
+          return parsed.toString();
+        } catch {
+          return url;
+        }
+      }
       function normalizeFacebookRedirect(url) {
         try {
           const parsed = new URL(url);
@@ -654,6 +669,7 @@
         normalizeLabel,
         normalizeDuration: normalizeDuration2,
         formatUrlCompact,
+        stripTrackingParams: stripTrackingParams2,
         extractLink,
         extractPinnedLocationLink,
         chooseRule,
@@ -692,7 +708,7 @@
           roughTextLine: "^~\\s+\\d+\\s+text;$",
           roughImagesLine: "^~\\s+\\d+\\s+images$",
           roughCallsLine: "^~\\s+\\d+\\s+calls\\s+\\d+\\s+mins$",
-          personSummaryTitle: "^(XYZ|Youghurt|Barnabas) Summary$"
+          personSummaryTitle: "^.{1,80} Summary$"
         },
         summaryConcept: {
           totalSummaryTitle: "Total Summary",
@@ -908,12 +924,25 @@
       var { normalizeDuration: normalizeDuration2 } = require_message_metadata();
       var { normalizeDateToIso: normalizeDateToIso3 } = require_aria_label_parser();
       var { buildSummary: buildSummary2, buildSummaryData } = require_export_summary();
-      function formatExportHeader2({ method, messageTypes }) {
+      function formatExportHeader2({ method, messageTypes, exportOptions = {}, aliasMap = {} }) {
         const types = messageTypes.map((type) => `- ${type}`).join("\n");
-        return `Method: ${method}
+        const optionLines = Object.keys(exportOptions).sort().map((key) => `  ${key} : ${exportOptions[key]}`).join("\n");
+        const aliasLines = Object.entries(aliasMap).filter(([key]) => key && aliasMap[key]).map(([key, value]) => `  ${key} : ${value}`).join("\n");
+        let header = `Method: ${method}
 Message types:
 ${types}
----
+`;
+        if (optionLines) {
+          header += `Options:
+${optionLines}
+`;
+        }
+        if (aliasLines) {
+          header += `Aliases:
+${aliasLines}
+`;
+        }
+        return `${header}---
 
 `;
       }
@@ -1083,34 +1112,125 @@ ${types}
     wrap.appendChild(text);
     return { wrap, input };
   }
-  function createCheckboxToggleWithInput(labelText, selfValue, otherValue) {
+  function createAliasRows() {
     const wrap = document.createElement("div");
-    wrap.style.cssText = "display: flex; align-items: center; gap: 4px; color: #555; font-size: 12px;";
-    const checkboxLabel = document.createElement("label");
-    checkboxLabel.style.cssText = "display: flex; align-items: center; gap: 6px; cursor: pointer;";
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.checked = false;
-    input.style.cssText = "cursor: pointer;";
-    const text = document.createElement("span");
-    text.textContent = labelText;
-    checkboxLabel.appendChild(input);
-    checkboxLabel.appendChild(text);
-    const makeNameInput = (value, ariaLabel) => {
-      const el = document.createElement("input");
-      el.type = "text";
-      el.value = value;
-      el.placeholder = value;
-      el.setAttribute("aria-label", ariaLabel);
-      el.style.cssText = "border: 1px solid #ccc; border-radius: 4px; padding: 4px 6px; font-size: 12px; width: 72px; outline: none;";
-      return el;
+    wrap.style.cssText = "display: flex; flex-direction: column; gap: 6px;";
+    const header = document.createElement("div");
+    header.style.cssText = "display: flex; align-items: center; gap: 6px; color: #555; font-size: 12px;";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = false;
+    checkbox.style.cssText = "cursor: pointer;";
+    const label = document.createElement("span");
+    label.textContent = "Alias";
+    header.appendChild(checkbox);
+    header.appendChild(label);
+    const rows = document.createElement("div");
+    rows.style.cssText = "display: flex; flex-direction: column; gap: 4px; padding-left: 22px;";
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.textContent = "Add";
+    addButton.style.cssText = "border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; font-size: 12px; cursor: pointer; background: #f7f7f7;";
+    const makeTextInput = (value, ariaLabel, disabled) => {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = value;
+      input.placeholder = value;
+      input.setAttribute("aria-label", ariaLabel);
+      input.disabled = Boolean(disabled);
+      input.style.cssText = "border: 1px solid #ccc; border-radius: 4px; padding: 4px 6px; font-size: 12px; width: 100px; outline: none;";
+      return input;
     };
-    const textInput = makeNameInput(selfValue, "Your replacement name");
-    const textInput2 = makeNameInput(otherValue, "Other person replacement name");
-    wrap.appendChild(checkboxLabel);
-    wrap.appendChild(textInput);
-    wrap.appendChild(textInput2);
-    return { wrap, input, textInput, textInput2 };
+    const validateName = (name) => {
+      const cleaned = String(name || "").trim();
+      if (!cleaned) return false;
+      const parts = cleaned.split(/\s+/);
+      if (parts.length > 2) return false;
+      return parts.every((part) => /^[A-Za-z][A-Za-z.'-]*$/.test(part));
+    };
+    const createRow = (orig, alias, fixed) => {
+      const row = document.createElement("div");
+      row.style.cssText = "display: flex; align-items: center; gap: 4px;";
+      row.className = "alias-row";
+      const originalInput = makeTextInput(orig, "Original sender name", fixed);
+      const aliasInput = makeTextInput(alias, "Alias name", false);
+      const error = document.createElement("span");
+      error.style.cssText = "color: red; font-size: 11px; display: none;";
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.textContent = "\xD7";
+      removeBtn.title = "Remove alias row";
+      removeBtn.style.cssText = "border: none; background: transparent; color: #888; font-size: 14px; cursor: pointer; padding: 0;";
+      if (fixed) removeBtn.style.display = "none";
+      const validateRow = () => {
+        const originalValue = originalInput.value.trim();
+        const aliasValue = aliasInput.value.trim();
+        const validOriginal = Boolean(originalValue && validateName(originalValue));
+        const validAlias = Boolean(aliasValue && validateName(aliasValue));
+        const valid = validOriginal && validAlias;
+        originalInput.style.borderColor = validOriginal ? "#ccc" : "red";
+        aliasInput.style.borderColor = validAlias ? "#ccc" : "red";
+        if (!valid) {
+          error.textContent = "Names must be 1-2 words, letters only, dot/apostrophe/hyphen allowed.";
+          error.style.display = "block";
+        } else {
+          error.style.display = "none";
+        }
+        return valid;
+      };
+      originalInput.addEventListener("blur", validateRow);
+      aliasInput.addEventListener("blur", validateRow);
+      removeBtn.addEventListener("click", () => {
+        row.remove();
+      });
+      row.appendChild(originalInput);
+      row.appendChild(aliasInput);
+      row.appendChild(removeBtn);
+      row.appendChild(error);
+      rows.appendChild(row);
+      return row;
+    };
+    const addRow = (orig, alias, fixed) => createRow(orig, alias, fixed);
+    addRow("You", "Youghurt", true);
+    addRow("any", "Alpha", true);
+    addButton.addEventListener("click", () => {
+      addRow("", "", false);
+    });
+    checkbox.addEventListener("change", () => {
+      rows.style.opacity = checkbox.checked ? "1" : "0.6";
+    });
+    const getAliasMap = () => {
+      const map = {};
+      Array.from(rows.querySelectorAll(".alias-row")).forEach((row) => {
+        const inputs = row.querySelectorAll('input[type="text"]');
+        if (inputs.length < 2) return;
+        const original = inputs[0].value.trim();
+        const aliasValue = inputs[1].value.trim();
+        if (!original || !aliasValue) return;
+        map[original] = aliasValue;
+      });
+      return map;
+    };
+    const validateAll = () => {
+      let valid = true;
+      Array.from(rows.querySelectorAll(".alias-row")).forEach((row) => {
+        const inputs = row.querySelectorAll('input[type="text"]');
+        if (inputs.length < 2) return;
+        const originalValue = inputs[0].value.trim();
+        const aliasValue = inputs[1].value.trim();
+        const rowValid = Boolean(originalValue && aliasValue && validateName(originalValue) && validateName(aliasValue));
+        if (!rowValid) {
+          valid = false;
+          inputs[0].style.borderColor = originalValue && validateName(originalValue) ? "#ccc" : "red";
+          inputs[1].style.borderColor = aliasValue && validateName(aliasValue) ? "#ccc" : "red";
+        }
+      });
+      return valid;
+    };
+    wrap.appendChild(header);
+    wrap.appendChild(rows);
+    wrap.appendChild(addButton);
+    return { wrap, input: checkbox, getAliasMap, validateAll };
   }
   function createLinkAction(labelText, onClick) {
     const link = document.createElement("a");
@@ -1201,34 +1321,32 @@ ${types}
     const rightCol = document.createElement("div");
     rightCol.style.cssText = "display: flex; flex-direction: column; gap: 8px; min-width: 160px; padding-left: 10px;";
     const { wrap: includeCallsWrap, input: includeCallsChk } = createCheckboxToggle("Calls");
-    const {
-      wrap: anonymizeWrap,
-      input: anonymizeChk,
-      textInput: anonymizeInput,
-      textInput2: anonymizeOtherInput
-    } = createCheckboxToggleWithInput("Anonymize", "Youghurt", "Alpha");
+    const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows } = createAliasRows();
     const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle("Summary");
     const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle("Content");
+    const { wrap: rawLinkWrap, input: rawLinkChk } = createCheckboxToggle("Raw link");
     const { wrap: lengthWrap, input: lengthChk } = createCheckboxToggle("Length");
     function setAllChecked(state) {
       includeCallsChk.checked = state;
-      anonymizeChk.checked = state;
+      aliasChk.checked = state;
       summaryChk.checked = state;
       includeContentChk.checked = state;
+      rawLinkChk.checked = state;
       lengthChk.checked = state;
       selectAllLink.textContent = state ? "Uncheck all" : "Check all";
     }
     const selectAllLink = createLinkAction("Check all", () => {
-      const allChecked = includeCallsChk.checked && anonymizeChk.checked && summaryChk.checked && includeContentChk.checked && lengthChk.checked;
+      const allChecked = includeCallsChk.checked && aliasChk.checked && summaryChk.checked && includeContentChk.checked && rawLinkChk.checked && lengthChk.checked;
       setAllChecked(!allChecked);
     });
     leftCol.appendChild(fromWrap);
     leftCol.appendChild(toWrap);
     leftCol.appendChild(actionBtn);
     rightCol.appendChild(includeCallsWrap);
-    rightCol.appendChild(anonymizeWrap);
+    rightCol.appendChild(aliasWrap);
     rightCol.appendChild(summaryWrap);
     rightCol.appendChild(includeContentWrap);
+    rightCol.appendChild(rawLinkWrap);
     rightCol.appendChild(lengthWrap);
     rightCol.appendChild(selectAllLink);
     setAllChecked(true);
@@ -1272,12 +1390,14 @@ ${types}
       const timerText = timerEl ? timerEl.innerText : "";
       const hasImage = Boolean(el.querySelector("img"));
       const hasPlayButton = Boolean(el.querySelector('[aria-label="Play"]'));
-      const hasLink = Boolean(el.querySelector("a[href]")) || /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedText) || /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedLabel);
+      const anchor = el.querySelector("a[href]");
+      const originalHref = anchor ? anchor.getAttribute("href") : null;
+      const hasLink = Boolean(originalHref) || /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedText) || /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedLabel);
       const contentMeta = (0, import_message_metadata.getContentMeta)({
         fileName: "",
         ariaLabel: label,
         message: normalizedText,
-        rawMeta: { duration: timerText || normalizedText },
+        rawMeta: { duration: timerText || normalizedText, link: originalHref },
         hasImage,
         hasPlayButton,
         hasLink,
@@ -1287,6 +1407,8 @@ ${types}
         rawDate,
         sender,
         text: contentMeta.text,
+        link: contentMeta.link,
+        originalHref,
         type: contentMeta.type,
         isCall: contentMeta.isCall,
         isImage: contentMeta.isImage,
@@ -1305,6 +1427,13 @@ ${types}
         if (e.key === "Enter") actionBtn.click();
       });
     });
+    includeContentChk.addEventListener("change", () => {
+      rawLinkChk.disabled = !includeContentChk.checked;
+      rawLinkChk.checked = rawLinkChk.checked && includeContentChk.checked;
+      rawLinkWrap.style.opacity = includeContentChk.checked ? "1" : "0.6";
+    });
+    rawLinkChk.disabled = !includeContentChk.checked;
+    rawLinkWrap.style.opacity = includeContentChk.checked ? "1" : "0.6";
     let downloadRevokeTimeout = null;
     let scrollTimeout = null;
     let downloadHandler = null;
@@ -1346,6 +1475,10 @@ ${types}
         toInput.focus();
         return;
       }
+      if (aliasChk.checked && !validateAliasRows()) {
+        noticeMsg.textContent = "Alias fields contain invalid names.";
+        return;
+      }
       fromInput.style.borderColor = toInput.style.borderColor = "#ccc";
       if (downloadRevokeTimeout !== null) {
         clearTimeout(downloadRevokeTimeout);
@@ -1368,7 +1501,18 @@ ${types}
           const timeStamp = timeEl ? timeEl.getAttribute("datetime") : "";
           const key = ariaLabel ? `${ariaLabel}|${timeStamp}` : null;
           if (!key || collected.has(key)) return;
-          const { rawDate, sender, text, type, isCall, isImage, duration, contentLength } = extractMessageParts(el);
+          const {
+            rawDate,
+            sender,
+            text,
+            link,
+            originalHref,
+            type,
+            isCall,
+            isImage,
+            duration,
+            contentLength
+          } = extractMessageParts(el);
           if (!rawDate || !sender) return;
           const resolvedRaw = timeEl ? timeEl.getAttribute("datetime") : resolveRelativeDate(rawDate);
           const msgDate = /^\d{4}-\d{2}-\d{2}$/.test(resolvedRaw) ? (() => {
@@ -1377,14 +1521,10 @@ ${types}
           })() : new Date(resolvedRaw);
           const displayDate = formatDate(resolvedRaw);
           const authorLabel = (() => {
-            if (!anonymizeChk.checked) return sender;
-            const selfName = anonymizeInput.value.trim() || "Youghurt";
-            const otherName = anonymizeOtherInput.value.trim() || "Alpha";
-            const senderLower = String(sender).toLowerCase();
-            if (senderLower === "you") {
-              return selfName.toLowerCase() === "you" ? sender : selfName;
-            }
-            return senderLower === otherName.toLowerCase() ? sender : otherName;
+            if (!aliasChk.checked) return sender;
+            const aliasMap = getAliasMap();
+            const normalizedSender = String(sender).trim();
+            return aliasMap[normalizedSender] || aliasMap[normalizedSender.toLowerCase()] || aliasMap[normalizedSender.toUpperCase()] || aliasMap.any || sender;
           })();
           const callMinutes = (0, import_export_formatter.durationToMinutes)(duration);
           if (!includeCallsChk.checked && isCall) return;
@@ -1399,7 +1539,7 @@ ${types}
             dateText: displayDate,
             sender: authorLabel,
             duration,
-            content: text,
+            content: includeContentChk.checked ? rawLinkChk.checked && (type === "link" || type === "video-link") ? (0, import_message_metadata.stripTrackingParams)(link || originalHref || text) || text : originalHref || text : text,
             contentLength
           };
           const finalLine = (0, import_export_formatter.formatLine)(lineEntry, {
@@ -1518,7 +1658,19 @@ ${types}
             const messageTypes = Array.from(
               new Set(sortedEntries.map((entry) => entry.type).filter(Boolean))
             ).sort();
-            const headerText = (0, import_export_formatter.formatExportHeader)({ method: "browser", messageTypes });
+            const headerText = (0, import_export_formatter.formatExportHeader)({
+              method: "browser",
+              messageTypes,
+              exportOptions: {
+                calls: includeCallsChk.checked,
+                alias: aliasChk.checked,
+                summary: summaryChk.checked,
+                content: includeContentChk.checked,
+                rawLink: rawLinkChk.checked,
+                length: lengthChk.checked
+              },
+              aliasMap: getAliasMap()
+            });
             const blob = new Blob([headerText + summaryText + messages.join("")], {
               type: "text/plain"
             });

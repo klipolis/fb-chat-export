@@ -73,7 +73,7 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - Generate `dist/app.js` by running `pnpm run build:frontend`, then load it in the browser.
 - Start at the bottom of the conversation, or keep the current view if the visible date is within the export range.
 - Set `From` / `To` dates to narrow the export range.
-- Toggle `Include calls`, `Anonymize as`, `Summary`, `Include content`, and `Length` as needed.
+- Toggle `Include calls`, `Alias`, `Raw link`, `Summary`, `Include content`, and `Length` as needed.
 - Click `Scan Messages` and download the resulting `.txt` file.
 - After scan completion, the ready notice is minimal and shows conversation name, date interval, and elapsed scan time.
 
@@ -81,13 +81,19 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 
 The exported `.txt` file contains three sections separated by `---`:
 
-**Header** — method and list of message types encountered:
+**Header** — method, message types, option state, and alias map:
 
 ```
 Method: browser
 Message types:
 - image
 - text
+Options:
+  content : true
+  rawLink : false
+Aliases:
+  You : Youghurt
+  any : Alpha
 ---
 ```
 
@@ -141,10 +147,10 @@ Bob Summary
 - Run `pnpm run validate:dist` to verify the generated bundle header and versioned dist artifact.
 - Run `pnpm run lint` to verify JavaScript style and catch syntax issues early.
 - Run `pnpm run audit` to check dependency security status.
-- `build:server` now runs non-interactively by default and uses `ANONYMIZE_RAW=true` when set.
+- `build:server` now runs non-interactively by default and uses `BUILD_RAW=true` when set.
 - Use `pnpm run build:ci` to run the full CI-aligned build, including linting, build, and validation.
 - Use `pnpm run build:ci:frontend` to run only the frontend build in CI mode.
-- Set `ANONYMIZE_RAW=true` to anonymize raw chat names during server builds.
+- Set `BUILD_RAW=true` to write aliased raw HTML files during server builds.
 - Use `BUILD_VERSION=<build-id>` with `pnpm run build:frontend` to generate a build-specific bundle version without updating `package.json`.
 - Use `pnpm run release:check` to verify changelog, schema, and dist sync before tagging.
 - Use `pnpm run release:tag` to validate and tag the current package version automatically.

@@ -227,7 +227,7 @@ export function createAliasRows() {
       const original = inputs[0].value.trim();
       const aliasValue = inputs[1].value.trim();
       if (!original || !aliasValue) return;
-      map[original.toLowerCase()] = aliasValue;
+      map[original] = aliasValue;
     });
     return map;
   };

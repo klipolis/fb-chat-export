@@ -15,6 +15,14 @@ Message types:
 - video-call
 - video-link
 - voice-note
+Options:
+  includeContent : true
+  includeLength : true
+  includeSummary : true
+Aliases:
+  You : Youghurt
+  Rob : Barnabas
+  any : XYZ
 ---
 
 Total Summary
@@ -45,15 +53,15 @@ Barnabas Summary
 [2026-04-12 13:23] Youghurt: audio-call 00:18:00
 [2026-04-14 18:34] XYZ: text-image-replied 29 chars / Well i didn't know about this
 [2026-04-16 10:55] XYZ: text-replied 210 chars / I now realised what happened. It must have been related to reviewers I added at a later stage from when we wen through that, and maybe I was duplicating and editing a reviewer who had the cancellation option on
-[2026-05-15 13:51] XYZ: link-embed-no-text / https://www.google.com/maps/search/?api=1&query=Hall%20Mead%20Nursery%2C%20Nazeing%20Road%20Waltham%20Abbey%20England%20EN9%202EU%20United%20Kingdom
 [2026-05-19 22:25] Youghurt: reaction-emoji
 [2026-05-20 19:51] XYZ: image
 [2026-05-20 19:51] XYZ: link-text 890 chars / https://www.scan.co.uk/ Yep - that’s the *Sennheiser IE 100 PRO In-Ear Monitoring* headphones, in Red. *Current UK prices for the wired version:* - *From £73.00* new — that’s the cheapest across 9 stores right now - *Typical range*: £73 - £100 depending on retailer and colour - *Scan.co.uk*: £79.00 for Black, £82.00 for Clear - *Thomann UK*: £85.00 for Clear - *idealo shows*: New from £73.00, refurbished from £26.38 - *Red version specifically*: Around £100.13 on idealo d8b549da157ec2c6e04e *Note*: There’s also a _Wireless_ version that costs more — from £84.70 to £90.35+. The box in your photo is the wired model. 13cc462b Prices change fast and stock varies by colour, but £73-£85 is the going rate for new wired IE 100 PROs in the UK as of now. Red tends to be slightly pricier than Black/Clear at some retailers. Want me to check a specific store like Amazon UK or Argos for you?
 [2026-05-20 19:52] Barnabas: voice-note 00:00:20
 [2026-05-20 19:54] XYZ: deleted
-[2026-05-21 00:26] XYZ: text 34 chars / Do you have that photo and a link?
-[2026-05-21 11:14] XYZ: video-call 00:31:00
-[2026-05-21 11:15] XYZ: missed-video-call
-[2026-05-21 11:16] Youghurt: reaction
-[2026-05-21 11:57] Youghurt: video-link / youtube_com/shorts/IK...
 [2026-05-21 17:34] XYZ: missed-audio-call
+[2026-05-22 00:26] XYZ: text 34 chars / Do you have that photo and a link?
+[2026-05-22 11:14] XYZ: video-call 00:31:00
+[2026-05-22 11:15] XYZ: missed-video-call
+[2026-05-22 11:16] Youghurt: reaction
+[2026-05-22 11:57] Youghurt: video-link / youtube_com/shorts/IK...
+[2026-05-22 13:51] XYZ: link-embed-no-text / https://www.google.com/maps/search/?api=1&query=Hall%20Mead%20Nursery%2C%20Nazeing%20Road%20Waltham%20Abbey%20England%20EN9%202EU%20United%20Kingdom

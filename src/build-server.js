@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');
-const { ensureDir, emptyDir, anonymizeChatNames, collectAutoName } = require('./shared/utils');
+const { ensureDir, emptyDir, aliasChatNames, collectAutoName } = require('./shared/utils');
 const { createOptimizedHtml } = require('./shared/optimize-html');
 const { runCreateNodes } = require('./shared/create-nodes');
 const {
@@ -26,9 +26,9 @@ const relOptimized = './demo/output-html';
 const relPreview = './demo/output-json';
 const relExport = './demo/output-txt';
 
-const anonymizeNamesPath = path.join(baseDir, 'demo/anonymize-names.json');
-const anonymizeNameMap = fs.existsSync(anonymizeNamesPath)
-  ? JSON.parse(fs.readFileSync(anonymizeNamesPath, 'utf8'))
+const aliasNamesPath = path.join(baseDir, 'demo/alias-names.json');
+const aliasNameMap = fs.existsSync(aliasNamesPath)
+  ? JSON.parse(fs.readFileSync(aliasNamesPath, 'utf8'))
   : {};
 
 const writeRaw = process.env.BUILD_RAW === 'true';
@@ -113,7 +113,7 @@ function buildTextExport(files, options = {}) {
       includeLength: true,
       includeSummary: Boolean(options.includeSummary),
     },
-    aliasMap: anonymizeNameMap,
+    aliasMap: aliasNameMap,
   });
   const summaryText = options.includeSummary
     ? formatSummarySection(sorted, { useMessageLabel: options.useMessageLabel })
@@ -122,8 +122,8 @@ function buildTextExport(files, options = {}) {
 }
 
 function summaryParticipants() {
-  const any = anonymizeNameMap.any || 'Alpha';
-  const explicit = Object.entries(anonymizeNameMap)
+  const any = aliasNameMap.any || 'Alpha';
+  const explicit = Object.entries(aliasNameMap)
     .filter(([k]) => k !== 'any')
     .map(([, v]) => v);
   return [any, ...explicit];
@@ -147,7 +147,7 @@ function writeTextExports(files, cleanedHtmlByFile) {
       includeLength: true,
       includeSummary: true,
     },
-    aliasMap: anonymizeNameMap,
+    aliasMap: aliasNameMap,
   });
   const headerTextContentOff = formatExportHeader({
     method: 'server',
@@ -157,7 +157,7 @@ function writeTextExports(files, cleanedHtmlByFile) {
       includeLength: true,
       includeSummary: false,
     },
-    aliasMap: anonymizeNameMap,
+    aliasMap: aliasNameMap,
   });
   const headerTextSummaryOnly = formatExportHeader({
     method: 'server',
@@ -167,7 +167,7 @@ function writeTextExports(files, cleanedHtmlByFile) {
       includeLength: false,
       includeSummary: true,
     },
-    aliasMap: anonymizeNameMap,
+    aliasMap: aliasNameMap,
   });
   const participants = summaryParticipants();
   const summaryTextForContentOn = formatSummarySection(sortedEntries, { useMessageLabel: true, fixedParticipants: participants });
@@ -219,15 +219,15 @@ function main() {
   );
   const preDetectedName = collectAutoName(
     Array.from(rawHtmlByFile.values()),
-    anonymizeNameMap
+    aliasNameMap
   );
 
-  // Build anonymised HTML for every file (used for both optimised output
+  // Build aliased HTML for every file (used for both optimized output
   // and text-export entry parsing, so names are correct without write-back).
   const cleanedHtmlByFile = new Map(
     files.map((fileName) => [
       fileName,
-      anonymizeChatNames(rawHtmlByFile.get(fileName), anonymizeNameMap, preDetectedName),
+      aliasChatNames(rawHtmlByFile.get(fileName), aliasNameMap, preDetectedName),
     ])
   );
 

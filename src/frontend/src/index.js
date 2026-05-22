@@ -1,4 +1,4 @@
-﻿import { getContentMeta, normalizeDuration } from '../../shared/message-metadata.js';
+﻿import { getContentMeta, normalizeDuration, stripTrackingParams } from '../../shared/message-metadata.js';
 import { parseAriaLabel, normalizeDateToIso } from '../../shared/aria-label-parser.js';
 import { buildSummary } from '../../shared/export-summary.js';
 import { formatExportHeader, formatLine, durationToMinutes } from '../../shared/export-formatter.js';
@@ -193,15 +193,17 @@ import {
     const timerText = timerEl ? timerEl.innerText : '';
     const hasImage = Boolean(el.querySelector('img'));
     const hasPlayButton = Boolean(el.querySelector('[aria-label="Play"]'));
+    const anchor = el.querySelector('a[href]');
+    const originalHref = anchor ? anchor.getAttribute('href') : null;
     const hasLink =
-      Boolean(el.querySelector('a[href]')) ||
+      Boolean(originalHref) ||
       /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedText) ||
       /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedLabel);
     const contentMeta = getContentMeta({
       fileName: '',
       ariaLabel: label,
       message: normalizedText,
-      rawMeta: { duration: timerText || normalizedText },
+      rawMeta: { duration: timerText || normalizedText, link: originalHref },
       hasImage,
       hasPlayButton,
       hasLink,
@@ -213,6 +215,7 @@ import {
       sender,
       text: contentMeta.text,
       link: contentMeta.link,
+      originalHref,
       type: contentMeta.type,
       isCall: contentMeta.isCall,
       isImage: contentMeta.isImage,
@@ -313,8 +316,18 @@ import {
         const timeStamp = timeEl ? timeEl.getAttribute('datetime') : '';
         const key = ariaLabel ? `${ariaLabel}|${timeStamp}` : null;
         if (!key || collected.has(key)) return;
-        const { rawDate, sender, text, link, type, isCall, isImage, duration, contentLength } =
-          extractMessageParts(el);
+        const {
+          rawDate,
+          sender,
+          text,
+          link,
+          originalHref,
+          type,
+          isCall,
+          isImage,
+          duration,
+          contentLength,
+        } = extractMessageParts(el);
         if (!rawDate || !sender) return;
 
         const resolvedRaw = timeEl ? timeEl.getAttribute('datetime') : resolveRelativeDate(rawDate);
@@ -328,12 +341,13 @@ import {
           if (!aliasChk.checked) return sender;
           const aliasMap = getAliasMap();
           const normalizedSender = String(sender).trim();
-          const explicitMatch = aliasMap[normalizedSender.toLowerCase()];
-          if (explicitMatch) return explicitMatch;
-          if (aliasMap.any && normalizedSender.toLowerCase() !== 'you') {
-            return aliasMap.any;
-          }
-          return sender;
+          return (
+            aliasMap[normalizedSender] ||
+            aliasMap[normalizedSender.toLowerCase()] ||
+            aliasMap[normalizedSender.toUpperCase()] ||
+            aliasMap.any ||
+            sender
+          );
         })();
         const callMinutes = durationToMinutes(duration);
 
@@ -349,10 +363,11 @@ import {
           dateText: displayDate,
           sender: authorLabel,
           duration,
-          content:
-            rawLinkChk.checked && (type === 'link' || type === 'video-link')
-              ? link || text
-              : text,
+          content: includeContentChk.checked
+            ? rawLinkChk.checked && (type === 'link' || type === 'video-link')
+              ? stripTrackingParams(link || originalHref || text) || text
+              : originalHref || text
+            : text,
           contentLength,
         };
         const finalLine = formatLine(lineEntry, {

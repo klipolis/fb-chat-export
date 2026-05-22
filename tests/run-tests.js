@@ -29,7 +29,7 @@ const { createOptimizedHtml } = require(
 const { buildAllMessageMetaMap, parseMessageNodes } = require(
   path.join(__dirname, '..', 'src', 'shared', 'create-nodes')
 );
-const { anonymizeChatNames } = require(path.join(__dirname, '..', 'src', 'shared', 'utils'));
+const { aliasChatNames } = require(path.join(__dirname, '..', 'src', 'shared', 'utils'));
 
 const rawDir = path.join(__dirname, '..', 'demo/input-html-raw');
 
@@ -195,10 +195,19 @@ tap.test('getContentMeta', (t) => {
 // ---------------------------------------------------------------------------
 
 tap.test('browserExportFormatting', (t) => {
-  const header = formatExportHeader({ method: 'browser', messageTypes: ['text', 'image'] });
+  const header = formatExportHeader({
+    method: 'browser',
+    messageTypes: ['text', 'image'],
+    exportOptions: { content: true, rawLink: true },
+    aliasMap: { You: 'Youghurt' },
+  });
   t.ok(header.includes('Method: browser'), 'Browser header should include method browser');
   t.ok(header.includes('- text'), 'Browser header should list text message type');
   t.ok(header.includes('- image'), 'Browser header should list image message type');
+  t.ok(header.includes('Options:'), 'Browser header should include Options block');
+  t.ok(header.includes('  content : true'), 'Browser header should include content option');
+  t.ok(header.includes('Aliases:'), 'Browser header should include Aliases block');
+  t.ok(header.includes('  You : Youghurt'), 'Browser header should include alias entries');
 
   const formattedLine = formatLine(
     {
@@ -353,7 +362,7 @@ tap.test('rawHtmlRegression', (t) => {
   )[0];
   t.equal(voiceNode.type, 'voice-note');
   t.equal(voiceNode.data_preview.duration, '00:00:20');
-  t.equal(voiceNode.data_raw.duration, '0:20', 'voice-note raw duration should keep raw input value');
+  t.equal(voiceNode.data_raw.duration, '00:00:20', 'voice-note raw duration should be normalized to HH:MM:SS');
   t.equal(voiceNode.data_preview.length, null);
 
   const videoNode = parseMessageNodes(
@@ -364,7 +373,7 @@ tap.test('rawHtmlRegression', (t) => {
   )[0];
   t.equal(videoNode.type, 'video-call');
   t.equal(videoNode.data_preview.duration, '00:31:00');
-  t.equal(videoNode.data_raw.duration, '31 mins', 'video-call raw duration should keep raw input value');
+  t.equal(videoNode.data_raw.duration, '00:31:00', 'video-call raw duration should be normalized to HH:MM:SS');
   t.equal(videoNode.data_preview.length, null);
 
   const embeddedLinkNode = parseMessageNodes(
@@ -637,36 +646,36 @@ tap.test('normalizeDateToSimpleExtended', (t) => {
 });
 
 // ---------------------------------------------------------------------------
-// anonymizeChatNames
+// aliasChatNames
 // ---------------------------------------------------------------------------
 
-tap.test('anonymizeChatNames', (t) => {
+tap.test('aliasChatNames', (t) => {
   const rawHtml =
-    '<title>Rob</title><div aria-label="At Wednesday 7:54pm, Rob" aria-roledescription="message"><img alt="Rob Leon"></div><div>Rob deleted a message</div><div aria-label="Enter, Message sent Wednesday 7:54pm by Rob"></div><div>Message body mentioning Rob should be anonymized.</div>';
-  const cleaned = anonymizeChatNames(rawHtml);
-  t.ok(cleaned.includes('aria-label="At Wednesday 7:54pm, Alpha"'), 'Sender aria-label should be anonymized');
-  t.ok(cleaned.includes('aria-label="Enter, Message sent Wednesday 7:54pm by Alpha"'), 'Enter message sender should be anonymized');
-  t.ok(cleaned.includes('<img alt="Alpha Leon"'), 'Profile alt text sender word should be anonymized');
-  t.notOk(cleaned.includes('Rob deleted a message'), 'Message content should be anonymized');
-  t.notOk(cleaned.includes('Message body mentioning Rob should be anonymized.'), 'Message body text references should be anonymized');
-  t.ok(cleaned.includes('<title>Alpha</title>'), 'Chat title should be anonymized');
+    '<title>Rob</title><div aria-label="At Wednesday 7:54pm, Rob" aria-roledescription="message"><img alt="Rob Leon"></div><div>Rob deleted a message</div><div aria-label="Enter, Message sent Wednesday 7:54pm by Rob"></div><div>Message body mentioning Rob should be aliased.</div>';
+  const cleaned = aliasChatNames(rawHtml);
+  t.ok(cleaned.includes('aria-label="At Wednesday 7:54pm, Alpha"'), 'Sender aria-label should be aliased');
+  t.ok(cleaned.includes('aria-label="Enter, Message sent Wednesday 7:54pm by Alpha"'), 'Enter message sender should be aliased');
+  t.ok(cleaned.includes('<img alt="Alpha Leon"'), 'Profile alt text sender word should be aliased');
+  t.notOk(cleaned.includes('Rob deleted a message'), 'Message content should be aliased');
+  t.notOk(cleaned.includes('Message body mentioning Rob should be aliased.'), 'Message body text references should be aliased');
+  t.ok(cleaned.includes('<title>Alpha</title>'), 'Chat title should be aliased');
   t.end();
 });
 
-tap.test('anonymizeChatNamesPreservesYou', (t) => {
+tap.test('aliasChatNamesPreservesYou', (t) => {
   const rawHtml =
     '<div aria-label="At Thursday 5:34pm, You" aria-roledescription="message"></div><div aria-label="Enter, Message sent Thursday 5:34pm by You"></div>';
-  const cleaned = anonymizeChatNames(rawHtml);
+  const cleaned = aliasChatNames(rawHtml);
   t.ok(cleaned.includes('aria-label="At Thursday 5:34pm, You"'), 'Self-label You should remain unchanged');
   t.ok(cleaned.includes('aria-label="Enter, Message sent Thursday 5:34pm by You"'), 'Self-label by You should remain unchanged');
   t.end();
 });
 
-tap.test('anonymizeChatNamesWithNameMap', (t) => {
+tap.test('aliasChatNamesWithNameMap', (t) => {
   const nameMap = { You: 'Youghurt', any: 'Alpha' };
   const rawHtml =
     '<title>Rob</title><div aria-label="At Wednesday 7:54pm, Rob" aria-roledescription="message"></div><div>Rob deleted a message</div><div aria-label="Enter, Message sent Wednesday 7:54pm by Rob"></div><div aria-label="At Wednesday 8:00pm, You" aria-roledescription="message"></div><div>You sent a message</div>';
-  const cleaned = anonymizeChatNames(rawHtml, nameMap);
+  const cleaned = aliasChatNames(rawHtml, nameMap);
   // Other person replaced using nameMap.any
   t.ok(cleaned.includes('Alpha deleted a message'), 'Detected name replaced with nameMap.any');
   t.ok(cleaned.includes('aria-label="At Wednesday 7:54pm, Alpha"'), 'Detected sender in aria-label replaced');
@@ -676,37 +685,37 @@ tap.test('anonymizeChatNamesWithNameMap', (t) => {
   t.end();
 });
 
-tap.test('anonymizeChatNamesOnlyReplacesShortSenderNames', (t) => {
+tap.test('aliasChatNamesOnlyReplacesShortSenderNames', (t) => {
   const rawHtml =
     '<div aria-label="At Wednesday 7:54pm, Rob" aria-roledescription="message"></div><div>Rob deleted a message</div><div aria-label="Enter, Message sent Wednesday 7:54pm by Rob"></div><div>All of this is a long phrase that is not a sender name</div>';
-  const cleaned = anonymizeChatNames(rawHtml);
-  t.ok(cleaned.includes('Alpha deleted a message'), 'Valid short sender name should be anonymized');
-  t.ok(cleaned.includes('All of this is a long phrase that is not a sender name'), 'Long non-name phrases should not be anonymized');
+  const cleaned = aliasChatNames(rawHtml);
+  t.ok(cleaned.includes('Alpha deleted a message'), 'Valid short sender name should be aliased');
+  t.ok(cleaned.includes('All of this is a long phrase that is not a sender name'), 'Long non-name phrases should not be aliased');
   t.end();
 });
 
-tap.test('anonymizeChatNamesPreservesRawDateText', (t) => {
+tap.test('aliasChatNamesPreservesRawDateText', (t) => {
   const rawHtml =
     '<title>Rob</title><div aria-label="At May 15, 2026, Rob" aria-roledescription="message"></div><div>Rob deleted a message</div><div aria-label="Enter, Message sent May 15, 2026 by Rob"></div>';
-  const cleaned = anonymizeChatNames(rawHtml);
+  const cleaned = aliasChatNames(rawHtml);
   t.ok(cleaned.includes('May 15, 2026'), 'Raw date text should remain unchanged');
   t.ok(
     cleaned.includes('Alpha deleted a message') || cleaned.includes('Alpha'),
-    'Confirmed sender name should be anonymized'
+    'Confirmed sender name should be aliased'
   );
   t.end();
 });
 
-tap.test('anonymizeChatNamesIgnoresNamesWithNumbers', (t) => {
+tap.test('aliasChatNamesIgnoresNamesWithNumbers', (t) => {
   const rawHtml =
     '<div aria-label="At Thursday 5:34pm, Alice 2024" aria-roledescription="message"></div><div>Alice 2024 deleted a message</div>';
-  const cleaned = anonymizeChatNames(rawHtml);
-  t.ok(cleaned.includes('Alice 2024'), 'Numeric names should not be anonymized');
+  const cleaned = aliasChatNames(rawHtml);
+  t.ok(cleaned.includes('Alice 2024'), 'Numeric names should not be aliased');
   t.notOk(cleaned.includes('Alpha 2024'), 'Numeric names should not be replaced with Alpha');
   t.end();
 });
 
-tap.test('anonymizeChatNamesSkipsAlreadyTargetName', (t) => {
+tap.test('aliasChatNamesSkipsAlreadyTargetName', (t) => {
   // Auto-detect: if the detected name is already the replacement, skip (no double-replace).
   const nameMap = { any: 'Alpha' };
   const rawHtml =
@@ -714,7 +723,7 @@ tap.test('anonymizeChatNamesSkipsAlreadyTargetName', (t) => {
     '<div>Alpha deleted a message</div>' +
     '<div aria-label="At Thursday 5:35pm, Alpha" aria-roledescription="message"></div>' +
     '<div>Alpha sent another message</div>';
-  const cleaned = anonymizeChatNames(rawHtml, nameMap);
+  const cleaned = aliasChatNames(rawHtml, nameMap);
   // Should remain unchanged — "Alpha" is already the replacement name
   t.ok(cleaned.includes('Alpha deleted a message'), 'Already-target name kept unchanged');
   t.notOk(cleaned.includes('Alpha Alpha'), 'Name not double-replaced');
@@ -724,7 +733,7 @@ tap.test('anonymizeChatNamesSkipsAlreadyTargetName', (t) => {
   const rawHtml2 =
     '<div aria-label="At Thursday 5:34pm, You" aria-roledescription="message"></div>' +
     '<div>You sent a message</div>';
-  const cleaned2 = anonymizeChatNames(rawHtml2, nameMap2);
+  const cleaned2 = aliasChatNames(rawHtml2, nameMap2);
   t.ok(cleaned2.includes('You sent a message'), 'from===to explicit entry is a no-op');
   t.end();
 });
@@ -898,10 +907,11 @@ tap.test('buildServerTextExport', (t) => {
   const bodyLinesOn = bodyAfterSummary
     .split(/\r?\n/)
     .filter((line) => /^\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}\]/.test(line));
-  const bodyLinesOff = contentOff
+  const bodyStartOff = contentOff.indexOf('\n---\n');
+  const bodyAfterHeaderOff = bodyStartOff > -1 ? contentOff.slice(bodyStartOff + '\n---\n'.length) : contentOff;
+  const bodyLinesOff = bodyAfterHeaderOff
     .split(/\r?\n/)
-    .filter(Boolean)
-    .slice(3 + rawFiles.length);
+    .filter((line) => /^\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}\]/.test(line));
 
   t.equal(bodyLinesOn.length, rawFiles.length, 'Content-on export should contain one message per raw file');
   t.equal(bodyLinesOff.length, rawFiles.length, 'Content-off export should contain one message per raw file');
@@ -945,10 +955,10 @@ tap.test('buildServerTextExport', (t) => {
     t.notOk(/[\r\n]/.test(line), `Content-off line ${idx + 1} should be single-line text`);
   });
 
-  t.ok(contentOn.includes('XYZ'), 'Content-on export should contain anonymized sender names');
-  t.ok(contentOff.includes('XYZ'), 'Content-off export should contain anonymized sender names');
-  t.notOk(contentOn.includes('Rob'), 'Content-on export should not contain raw sender names');
-  t.notOk(contentOff.includes('Rob'), 'Content-off export should not contain raw sender names');
+  t.ok(bodyLinesOn.some((line) => line.includes('XYZ')), 'Content-on export should contain aliased sender names');
+  t.ok(bodyLinesOff.some((line) => line.includes('XYZ')), 'Content-off export should contain aliased sender names');
+  t.notOk(bodyLinesOn.some((line) => line.includes('Rob')), 'Content-on body should not contain raw sender names');
+  t.notOk(bodyLinesOff.some((line) => line.includes('Rob')), 'Content-off body should not contain raw sender names');
 
   // video-link: URL must appear after / in content-on
   t.ok(bodyLinesOn.some((line) => /\bvideo-link\b\s*\/\s*\w+_\w+\//i.test(line)), 'video-link line in content-on should include compact URL (domain_tld/path) after /');

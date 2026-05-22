@@ -8,11 +8,11 @@ Future / requires-new-samples items are in [TODO-future.md](TODO-future.md).
 
 ## Anonymisation
 
-44. **Build-server name detection: two-pass** — All raw HTML files are read first; `collectAutoName` runs once globally; each file is then anonymised with the pre-detected name. Explicit-map target names are excluded from auto-detection via `makeExcludeSet`, preventing the replacement alias from being re-detected on subsequent runs.
+44. **Build-server name detection: two-pass** — All raw HTML files are read first; `collectAutoName` runs once globally; each file is then aliased with the pre-detected name. Explicit-map target names are excluded from auto-detection via `makeExcludeSet`, preventing the replacement alias from being re-detected on subsequent runs.
 
-**Raw HTML write-back is opt-in** — Default build reads raw files without modifying them. `build:raw` (via `BUILD_RAW=true`) writes anonymised names back; `build:raw-clean` strips Facebook utility classes and inline styles for readability without full optimisation.
+**Raw HTML write-back is opt-in** — Default build reads raw files without modifying them. `build:raw` (via `BUILD_RAW=true`) writes aliased names back; `build:raw-clean` strips Facebook utility classes and inline styles for readability without full optimisation.
 
-**Multi-person explicit name map** — `anonymize-names.json` supports multiple explicit sender → pseudonym pairs (e.g. `You → Youghurt`, `Rob → Barnabas`) plus an `any` key for any auto-detected name.
+**Multi-person explicit name map** — `alias-names.json` supports multiple explicit sender → pseudonym pairs (e.g. `You → Youghurt`, `Rob → Barnabas`) plus an `any` key for any auto-detected name.
 
 ---
 
@@ -163,11 +163,11 @@ Future / requires-new-samples items are in [TODO-future.md](TODO-future.md).
 
 ## Testing
 
-**`anonymizeChatNames` name-map support** — function accepts an optional `nameMap` parameter; `demo/anonymize-names.json` defines default replacements (`You` → `Youghurt`, detected name → `Alpha`). Build-server loads the file automatically. Tests added for name-map behaviour.
+**`aliasChatNames` name-map support** — function accepts an optional `nameMap` parameter; `demo/alias-names.json` defines default replacements (`You` → `Youghurt`, detected name → `Alpha`). Build-server loads the file automatically. Tests added for name-map behaviour.
 
-**`anonymizeChatNames` already-target guard** — replacement is skipped when the detected name already equals the target (prevents double-anonymization on re-runs). Same guard applied to explicit map entries where source and target are identical.
+**`aliasChatNames` already-target guard** — replacement is skipped when the detected name already equals the target (prevents double-aliasing on re-runs). Same guard applied to explicit map entries where source and target are identical.
 
-**Anonymize panel: other-person name field** — the Anonymize panel option now includes a second text input for the other person’s replacement name (default `Alpha`). Both sender types are anonymized in the export output.
+**Alias panel: other-person name field** — the Alias panel option now includes a second text input for the other person’s replacement name (default `Alpha`). Both sender types are aliased in the export output.
 
 **Download panel: "Save again" link** — a secondary link appears after the first download so the file can be re-saved without re-running the scan.
 
