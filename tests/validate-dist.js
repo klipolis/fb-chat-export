@@ -32,8 +32,26 @@ tap.test('validate dist artifacts', (t) => {
   t.ok(/\/\/ ==UserScript==/.test(minContents), 'dist/app.min.js should contain a userscript header');
   t.ok(/\/\/ @version\s+/.test(minContents), 'dist/app.min.js should contain a version annotation');
   t.ok(minContents.length > 200, 'dist/app.min.js should not be empty');
-  t.ok(!/contentMeta\./.test(minContents), 'dist/app.min.js should not contain stale contentMeta references (variable should be mangled)');
+  t.ok(!/contentMeta\./.test(minContents), 'dist/app.min.js should not contain stale contentMeta references');
   t.ok(minContents.length < contents.length, 'dist/app.min.js should be smaller than dist/app.js');
 
+  t.end();
+});
+
+tap.test('userscript header file is included in dist builds', (t) => {
+  const headerTxtPath = path.join(baseDir, 'src', 'platforms', 'userscript', 'header.txt');
+  t.ok(fs.existsSync(headerTxtPath), 'userscript header template missing');
+
+  const headerText = fs.readFileSync(headerTxtPath, 'utf8').split(/\r?\n/).filter(Boolean);
+  const distContents = fs.readFileSync(distPath, 'utf8');
+  const minContents = fs.readFileSync(minDistPath, 'utf8');
+
+  headerText.forEach((line) => {
+    t.ok(distContents.includes(line), `dist/app.js should include header line: ${line}`);
+    t.ok(minContents.includes(line), `dist/app.min.js should include header line: ${line}`);
+  });
+
+  t.ok(distContents.startsWith('// ==UserScript=='), 'dist/app.js should start with userscript header block');
+  t.ok(minContents.startsWith('// ==UserScript=='), 'dist/app.min.js should start with userscript header block');
   t.end();
 });

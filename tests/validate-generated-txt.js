@@ -2,7 +2,7 @@ const tap = require('tap');
 const fs = require('fs');
 const path = require('path');
 
-const txtDir = path.join(__dirname, '..', 'demo/output-txt');
+const txtDir = path.join(__dirname, '..', 'dataset/output-txt');
 const runtimeConfig = require(path.join(__dirname, '..', 'src', 'shared', 'export-config.json'));
 
 function loadSchema(t) {
@@ -31,6 +31,7 @@ function compilePatterns(schema) {
     totalSummaryTitle: new RegExp(schema.patterns.totalSummaryTitle),
     totalLine: new RegExp(schema.patterns.totalLine),
     roughTextLine: new RegExp(schema.patterns.roughTextLine),
+    roughWordsLine: new RegExp(schema.patterns.roughWordsLine),
     roughImagesLine: new RegExp(schema.patterns.roughImagesLine),
     roughCallsLine: new RegExp(schema.patterns.roughCallsLine),
     personSummaryTitle: new RegExp(schema.patterns.personSummaryTitle),
@@ -83,9 +84,10 @@ function validateSummary(t, lines, schema, patterns, startIndex, fileName) {
 
   t.ok(
     patterns.roughTextLine.test(lines[index] || ''),
-    `${fileName}: invalid rough text total line`
+    `${fileName}: invalid rough text/words total line`
   );
   index += 1;
+
 
   t.ok(
     patterns.roughImagesLine.test(lines[index] || ''),
@@ -108,7 +110,7 @@ function validateSummary(t, lines, schema, patterns, startIndex, fileName) {
     index += 1;
     t.ok(patterns.totalLine.test(lines[index] || ''), `${fileName}: invalid ${ordinal} person Total line`);
     index += 1;
-    t.ok(patterns.roughTextLine.test(lines[index] || ''), `${fileName}: invalid ${ordinal} person rough text line`);
+    t.ok(patterns.roughTextLine.test(lines[index] || ''), `${fileName}: invalid ${ordinal} person rough text/words line`);
     index += 1;
     t.ok(patterns.roughImagesLine.test(lines[index] || ''), `${fileName}: invalid ${ordinal} person rough images line`);
     index += 1;

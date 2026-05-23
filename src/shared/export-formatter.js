@@ -27,11 +27,11 @@ function buildExportText(lines, headerLines = '') {
   return `${headerLines}${lines.join('')}`;
 }
 
-function formatDate(raw) {
+function formatDate(raw, referenceDate) {
   let dateValue = raw;
   if (typeof raw === 'string') {
     try {
-      dateValue = normalizeDateToIso(raw) || raw;
+      dateValue = normalizeDateToIso(raw, referenceDate) || raw;
     } catch {
       dateValue = raw;
     }
@@ -80,13 +80,18 @@ function formatSummarySection(entries = [], options = {}) {
       'missed-video-call',
     ].includes(fileType);
     const isTimedCall = ['audio-call', 'video-call', 'voice-note'].includes(fileType);
+    const contentText = String(entry.content || '').trim();
+    const textWords = contentText
+      ? contentText.split(/\s+/).filter(Boolean).length
+      : 0;
     return {
       sender: entry.sender,
       date: Number.isFinite(entry.ts) ? new Date(entry.ts) : new Date(NaN),
       type: fileType,
       isCall,
       isImage: fileType === 'image',
-      callMinutes: isTimedCall ? durationToMinutes(entry.duration) : 0,
+      callSeconds: isTimedCall ? durationToSeconds(entry.duration) : 0,
+      wordCount: isCall || fileType === 'image' ? 0 : textWords,
     };
   });
 
@@ -106,6 +111,16 @@ function durationToMinutes(duration) {
   return 0;
 }
 
+function durationToSeconds(duration) {
+  if (!duration) return 0;
+  const normalized = normalizeDuration(duration) || duration;
+  const hms = String(normalized).match(/^(\d+):(\d{2}):(\d{2})$/);
+  if (hms) {
+    return Number(hms[1]) * 3600 + Number(hms[2]) * 60 + Number(hms[3]);
+  }
+  return 0;
+}
+
 module.exports = {
   formatExportHeader,
   buildExportText,
@@ -114,4 +129,5 @@ module.exports = {
   formatSummarySection,
   buildSummaryData,
   durationToMinutes,
+  durationToSeconds,
 };

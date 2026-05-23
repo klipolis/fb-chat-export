@@ -163,7 +163,7 @@ Future / requires-new-samples items are in [TODO-future.md](TODO-future.md).
 
 ## Testing
 
-**`aliasChatNames` name-map support** — function accepts an optional `nameMap` parameter; `demo/alias-names.json` defines default replacements (`You` → `Youghurt`, detected name → `Alpha`). Build-server loads the file automatically. Tests added for name-map behaviour.
+**`aliasChatNames` name-map support** — function accepts an optional `nameMap` parameter; `dataset/alias-names.json` defines default replacements (`You` → `Youghurt`, detected name → `Alpha`). Build-server loads the file automatically. Tests added for name-map behaviour.
 
 **`aliasChatNames` already-target guard** — replacement is skipped when the detected name already equals the target (prevents double-aliasing on re-runs). Same guard applied to explicit map entries where source and target are identical.
 

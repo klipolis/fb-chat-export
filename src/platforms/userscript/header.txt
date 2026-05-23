@@ -1,0 +1,9 @@
+// ==UserScript==
+// @name         Chat Exporter
+// @namespace    http://tampermonkey.net/
+// @version      %VERSION%
+// @description  Export chat conversations to text file
+// @match        https://www.facebook.com/messages/*
+// @match        https://www.messenger.com/*
+// @grant        none
+// ==/UserScript==

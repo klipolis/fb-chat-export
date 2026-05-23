@@ -105,7 +105,7 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `formatLine` option combinations, `buildSummary` edge cases, and `parseLocalDate` format variants covered by tests.
 - `test-ui.js` DOM sandbox no longer mutates the Node global `document`.
 - `isValidSender`, `findValidDatePrefix`, and extended `normalizeDateToSimple` cases covered by unit tests.
-- `aliasChatNames` accepts an optional name map; `demo/alias-names.json` supplies default replacements (`You` → `Youghurt`, detected name → `Alpha`) used by the server build and tests.
+- `aliasChatNames` accepts an optional name map; `dataset/alias-names.json` supplies default replacements (`You` → `Youghurt`, detected name → `Alpha`) used by the server build and tests.
 - `aliasChatNames` skips replacing a name that is already the target value (guards against double-aliasing on re-runs).
 - Alias panel now shows two name fields: one for your own name and one for the other person; both replace in the export.
 - `build:ci` explicitly runs the test suite after the build step rather than relying on it being embedded in the `build` script.
@@ -176,7 +176,7 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Renamed demo pipeline folders to `demo/input-html-raw/`, `demo/output-html/`, and `demo/output-json/`.
+- Renamed demo pipeline folders to `dataset/input-html-raw/`, `dataset/output-html/`, and `dataset/output-json/`.
 - Frontend and server now share the same message classification and export logic.
 - Build-specific version stamping added to the frontend bundle.
 - Preview exports now include optional call duration.

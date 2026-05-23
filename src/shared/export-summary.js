@@ -8,6 +8,14 @@ const TOTAL_SUMMARY_TITLE = summaryConcept.totalSummaryTitle || 'Total Summary';
 const ROUGH_PREFIX = summaryConcept.roughPrefix || '~';
 const PERSON_SUMMARY_SUFFIX = summaryConcept.personSummarySuffix || ' Summary';
 
+function formatDurationSeconds(seconds) {
+  const totalSeconds = Math.max(0, Number(seconds) || 0);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
 function isIgnoredForIndividualCount(entry) {
   const type = String(entry.type || entry.fileType || '').toLowerCase();
   return ['unsent', 'deleted', 'missed-call', 'missed-audio-call', 'missed-video-call'].includes(
@@ -34,9 +42,10 @@ function buildSummaryData(entries = [], options = {}) {
         days: 0,
         rough: {
           text: 0,
+          words: 0,
           images: 0,
           calls: 0,
-          callMinutes: 0,
+          callSeconds: 0,
         },
       },
       participants: [],
@@ -55,14 +64,14 @@ function buildSummaryData(entries = [], options = {}) {
       count: 0,
       days: new Set(),
       calls: 0,
-      minutes: 0,
+      callSeconds: 0,
       images: 0,
     };
     data.count += 1;
     data.days.add(dayKey);
     if (isCountedCall(entry)) {
       data.calls += 1;
-      data.minutes += Number(entry.callMinutes || 0);
+      data.callSeconds += Number(entry.callSeconds || 0);
     }
     if (entry.isImage) {
       data.images += 1;
@@ -92,7 +101,8 @@ function buildSummaryData(entries = [], options = {}) {
     const participantDays = new Set();
     let participantImages = 0;
     let participantCalls = 0;
-    let participantMinutes = 0;
+    let participantSeconds = 0;
+    let participantWords = 0;
     participantEntries.forEach((entry) => {
       const dayKey = formatDayKey(entry.date);
       participantDays.add(dayKey);
@@ -101,8 +111,9 @@ function buildSummaryData(entries = [], options = {}) {
       if (entry.isImage) participantImages += 1;
       if (isCountedCall(entry) && !isMissedCall(entry)) {
         participantCalls += 1;
-        participantMinutes += Number(entry.callMinutes || 0);
+        participantSeconds += Number(entry.callSeconds || 0);
       }
+      participantWords += Number(entry.wordCount || 0);
     });
 
     const participantText = Math.max(
@@ -115,19 +126,21 @@ function buildSummaryData(entries = [], options = {}) {
       includedEntries,
       participantDays,
       participantText,
+      participantWords,
       participantImages,
       participantCalls,
-      participantMinutes,
+      participantSeconds,
     };
   });
 
   const totalText = participantSummaries.reduce((sum, item) => sum + item.participantText, 0);
   const totalImages = participantSummaries.reduce((sum, item) => sum + item.participantImages, 0);
   const totalCalls = participantSummaries.reduce((sum, item) => sum + item.participantCalls, 0);
-  const totalCallMinutes = participantSummaries.reduce(
-    (sum, item) => sum + item.participantMinutes,
+  const totalCallSeconds = participantSummaries.reduce(
+    (sum, item) => sum + item.participantSeconds,
     0
   );
+  const totalWords = participantSummaries.reduce((sum, item) => sum + item.participantWords, 0);
 
   return {
     total: {
@@ -137,9 +150,10 @@ function buildSummaryData(entries = [], options = {}) {
       days: allDays.size,
       rough: {
         text: totalText,
+        words: totalWords,
         images: totalImages,
         calls: totalCalls,
-        callMinutes: totalCallMinutes,
+        callSeconds: totalCallSeconds,
       },
     },
     participants: participantSummaries.map((summary) => ({
@@ -149,9 +163,10 @@ function buildSummaryData(entries = [], options = {}) {
       days: summary.participantDays.size,
       rough: {
         text: summary.participantText,
+        words: summary.participantWords,
         images: summary.participantImages,
         calls: summary.participantCalls,
-        callMinutes: summary.participantMinutes,
+        callSeconds: summary.participantSeconds,
       },
     })),
   };
@@ -171,13 +186,12 @@ function buildSummary(entries = [], options = {}) {
       : 'posts';
   const totalDayLabel = useMessageLabel ? (summary.total.days === 1 ? 'day' : 'days') : 'days';
 
-  const roughTextLabel = 'text;';
   const detailLines = [
     summary.total.title,
     `${summary.total.messages} ${totalMessageLabel} / ${summary.total.days} ${totalDayLabel}`,
-    `${ROUGH_PREFIX} ${summary.total.rough.text} ${roughTextLabel}`,
+    `${ROUGH_PREFIX} ${summary.total.rough.text} text / ${summary.total.rough.words} words`,
     `${ROUGH_PREFIX} ${summary.total.rough.images} images`,
-    `${ROUGH_PREFIX} ${summary.total.rough.calls} calls ${summary.total.rough.callMinutes} mins`,
+    `${ROUGH_PREFIX} ${summary.total.rough.calls} calls ${formatDurationSeconds(summary.total.rough.callSeconds)}`,
     '',
   ];
 
@@ -195,15 +209,16 @@ function buildSummary(entries = [], options = {}) {
         : 'days'
       : 'days';
 
-    const participantRoughTextLabel = 'text;';
     detailLines.push(participant.title);
     detailLines.push(
       `${participant.messages} ${participantMessageLabel} / ${participant.days} ${participantDayLabel}`
     );
-    detailLines.push(`${ROUGH_PREFIX} ${participant.rough.text} ${participantRoughTextLabel}`);
+    detailLines.push(
+      `${ROUGH_PREFIX} ${participant.rough.text} text / ${participant.rough.words} words`
+    );
     detailLines.push(`${ROUGH_PREFIX} ${participant.rough.images} images`);
     detailLines.push(
-      `${ROUGH_PREFIX} ${participant.rough.calls} calls ${participant.rough.callMinutes} mins`
+      `${ROUGH_PREFIX} ${participant.rough.calls} calls ${formatDurationSeconds(participant.rough.callSeconds)}`
     );
     detailLines.push('');
   });

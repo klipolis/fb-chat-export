@@ -11,7 +11,7 @@
    Create a fresh empty `## [Unreleased]` section above the new versioned heading for subsequent work.
 
 3. **Bump the version.**
-   Update the `version` field in `package.json` and the version comment at the top of `src/frontend/build.js` (the userscript `@version` tag is derived from this during the build).
+   Update the `version` field in `package.json` and the version placeholder in `src/platforms/userscript/header.txt` (the userscript `@version` tag is derived from this during the build).
    The CHANGELOG release heading date must match today's date.
 
 4. **Rebuild the bundle.**
@@ -38,6 +38,6 @@
 
 ## Notes
 
-- The `@version` in the userscript header is set automatically by `src/frontend/build.js` from `package.json`.
+- The `@version` in the userscript header template is set automatically from `src/platforms/userscript/header.txt` by `src/frontend/build.js`.
 - Use `pnpm` (not `npm`) for all package operations — it is managed via Corepack.
 - Do not bump the version until all intended changes for the release are committed and passing tests.

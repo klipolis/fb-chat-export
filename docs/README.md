@@ -6,12 +6,12 @@ This project exports Messenger chat history to a `.txt` file using a Tampermonke
 
 ```mermaid
 flowchart TD
-	A[demo/input-html-raw] --> B[build-server]
-	B --> C[demo/output-html]
+	A[dataset/input-html-raw] --> B[build-server]
+	B --> C[dataset/output-html]
 	B --> D[create-nodes]
-	D --> E[demo/output-json]
-	B --> F[demo/output-txt content-on/content-off]
-	G[src/frontend/src/index.js] --> H[src/frontend/build.js]
+	D --> E[dataset/output-json]
+	B --> F[dataset/output-txt content-on/content-off]
+	G[src/frontend/src/index.js] --> H[src/frontend/builds.js]
 	H --> I[dist/app.js]
 	J[tests/generated-txt-schema.json] --> F
 	J --> I
@@ -48,13 +48,14 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 
 - `src/frontend/`: browser-facing assets, frontend source, and frontend build tooling.
   - `src/frontend/src/`: browser-facing source entrypoint.
-  - `src/frontend/build.js`: frontend build wrapper.
+  - `src/frontend/build.js`: frontend build wrapper that delegates to `src/frontend/builds.js`.
+- `src/platforms/`: platform header and build helper files used by the frontend bundle build.
 - `src/server/`: build scripts such as `build-preview.js`.
 - `src/shared/`: shared helper scripts and node rules.
-- `demo/input-html-raw/`: static raw HTML snapshots.
-- `demo/output-html/`: generated optimized HTML snapshots.
-- `demo/output-json/`: generated JSON preview output.
-- `demo/output-json/raw-input-metadata.json`: build metadata for raw input file stability.
+- `dataset/input-html-raw/`: static raw HTML snapshots.
+- `dataset/output-html/`: generated optimized HTML snapshots.
+- `dataset/output-json/`: generated JSON preview output.
+- `dataset/output-json/raw-input-metadata.json`: build metadata for raw input file stability.
 - `dist/`: generated one-file bundle output.
 - `docs/`: documentation and project notes.
 - `docs/site.md`: documentation landing page with quick start and architecture overview.
@@ -103,20 +104,23 @@ Aliases:
 Total Summary
 42 messages / 5 days
 ~ 30 text;
+~ 320 words
 ~ 8 images
-~ 4 calls 65 mins
+~ 4 calls 01:05:00
 
 Alice Summary
 25 messages / 5 days
 ~ 18 text;
+~ 190 words
 ~ 5 images
-~ 2 calls 45 mins
+~ 2 calls 00:45:00
 
 Bob Summary
 17 messages / 4 days
 ~ 12 text;
+~ 130 words
 ~ 3 images
-~ 2 calls 20 mins
+~ 2 calls 00:20:00
 
 ---
 ```
@@ -126,13 +130,13 @@ Bob Summary
 ```
 [YYYY-MM-DD HH:MM] Sender: type length chars / content text
 [YYYY-MM-DD HH:MM] Sender: image
-[YYYY-MM-DD HH:MM] Sender: voice-note D:MM mins
+[YYYY-MM-DD HH:MM] Sender: voice-note 00:20:00
 [YYYY-MM-DD HH:MM] Sender: missed-audio-call
 ```
 
 - `length chars` is omitted for images, calls, and voice messages.
 - `/ content text` is included when the `Include content` toggle is on.
-- Call lines include duration (e.g. `18:00 mins`) when available.
+- Call lines include duration (e.g. `00:18:00`) when available.
 - The server build labels counts as `posts`; the browser export labels them as `messages`.
 
 ## Developer guide
@@ -140,7 +144,7 @@ Bob Summary
 - Open the project in VS Code and use the terminal in `support/`.
 - Run `nvm use` in the `support/` folder to ensure the correct Node version from `.nvmrc`.
 - Run `pnpm install --frozen-lockfile` once after cloning the repo.
-- Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, build data preview JSON, and generate a text export in `demo/output-txt/`.
+- Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, build data preview JSON, and generate a text export in `dataset/output-txt/`.
 - Run `pnpm run build:frontend` to emit the built bundle into `dist/app.js`.
 - Use `BUILD_PLATFORM=userscript pnpm run build:frontend` to emit a userscript-compatible bundle header.
 - The browser export now writes a stable download file name such as `fb-chats-export-<shortname>.txt`.
@@ -165,9 +169,9 @@ Bob Summary
 - Run `pnpm run build-preview` to generate data preview JSON directly from optimized HTML.
 - Run `pnpm run build:clean` to clear generated build artifacts while preserving raw inputs.
 - Run `pnpm run create:nodes` for lower-level preview export debugging or custom workflows.
-- Run `pnpm run validate:generated-json` to verify final `demo/output-json/` preview schema.
+- Run `pnpm run validate:generated-json` to verify final `dataset/output-json/` preview schema.
 - Run `pnpm run test` to execute automated shared-code regression tests and generated JSON schema validation.
-- Keep `dist/`, `demo/output-html/`, and `demo/output-json/` committed to source control.
+- Keep `dist/`, `dataset/output-html/`, and `dataset/output-json/` committed to source control.
 - Keep `.skills/` for planning and requirements.
 
 ## How to contribute

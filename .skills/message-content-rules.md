@@ -3,7 +3,7 @@
 This file documents the developer-facing rules that map raw Messenger HTML into end-user exports. It is intentionally separate from setup and product requirements because it describes implementation behavior, not user-facing features.
 
 ## Scope
-- Raw HTML in `demo/input-html-raw/` is the source of truth.
+- Raw HTML in `dataset/input-html-raw/` is the source of truth.
 - Message rules map each raw file name to one primary message type.
 - Shared helpers convert the raw content into both JSON preview files and TXT exports.
 - The same semantic rules should be used by server and frontend build paths where possible.
@@ -56,6 +56,7 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 - Summary sections should be schema-driven from `tests/generated-txt-schema.json` and end with `---`.
 - Summary heading should use `Total Summary`.
 - Rough count lines should use `~` prefixed list items.
+- Summary blocks now include a `words` line to report text word count.
 - Top-level rough counts should equal the sum of person-summary rough counts.
 - A summary section is generated for every participant present in the export; there is no cap on the number of participants.
 - Person summary totals should exclude `deleted/unsent` and missed call message types.

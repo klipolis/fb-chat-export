@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const { runCreateNodes } = require('../shared/create-nodes');
 
-const relPreview = './demo/output-json';
+const relPreview = './dataset/output-json';
 
 function main() {
   runCreateNodes();

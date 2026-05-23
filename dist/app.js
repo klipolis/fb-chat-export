@@ -4,6 +4,7 @@
 // @version      5.4.0
 // @description  Export chat conversations to text file
 // @match        https://www.facebook.com/messages/*
+// @match        https://www.messenger.com/*
 // @grant        none
 // ==/UserScript==
 
@@ -706,8 +707,9 @@
           totalSummaryTitle: "^Total Summary$",
           totalLine: "^\\d+\\s+(?:message|messages)\\s*/\\s*\\d+\\s+(?:day|days)$",
           roughTextLine: "^~\\s+\\d+\\s+text;$",
+          roughWordsLine: "^~\\s+\\d+\\s+words$",
           roughImagesLine: "^~\\s+\\d+\\s+images$",
-          roughCallsLine: "^~\\s+\\d+\\s+calls\\s+\\d+\\s+mins$",
+          roughCallsLine: "^~\\s+\\d+\\s+calls\\s+\\d{2}:\\d{2}:\\d{2}$",
           personSummaryTitle: "^.{1,80} Summary$"
         },
         summaryConcept: {
@@ -742,6 +744,13 @@
       var TOTAL_SUMMARY_TITLE = summaryConcept.totalSummaryTitle || "Total Summary";
       var ROUGH_PREFIX = summaryConcept.roughPrefix || "~";
       var PERSON_SUMMARY_SUFFIX = summaryConcept.personSummarySuffix || " Summary";
+      function formatDurationSeconds(seconds) {
+        const totalSeconds = Math.max(0, Number(seconds) || 0);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor(totalSeconds % 3600 / 60);
+        const secs = totalSeconds % 60;
+        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+      }
       function isIgnoredForIndividualCount(entry) {
         const type = String(entry.type || entry.fileType || "").toLowerCase();
         return ["unsent", "deleted", "missed-call", "missed-audio-call", "missed-video-call"].includes(
@@ -765,9 +774,10 @@
               days: 0,
               rough: {
                 text: 0,
+                words: 0,
                 images: 0,
                 calls: 0,
-                callMinutes: 0
+                callSeconds: 0
               }
             },
             participants: []
@@ -783,14 +793,14 @@
             count: 0,
             days: /* @__PURE__ */ new Set(),
             calls: 0,
-            minutes: 0,
+            callSeconds: 0,
             images: 0
           };
           data.count += 1;
           data.days.add(dayKey);
           if (isCountedCall(entry)) {
             data.calls += 1;
-            data.minutes += Number(entry.callMinutes || 0);
+            data.callSeconds += Number(entry.callSeconds || 0);
           }
           if (entry.isImage) {
             data.images += 1;
@@ -817,7 +827,8 @@
           const participantDays = /* @__PURE__ */ new Set();
           let participantImages = 0;
           let participantCalls = 0;
-          let participantMinutes = 0;
+          let participantSeconds = 0;
+          let participantWords = 0;
           participantEntries.forEach((entry) => {
             const dayKey = formatDayKey(entry.date);
             participantDays.add(dayKey);
@@ -826,8 +837,9 @@
             if (entry.isImage) participantImages += 1;
             if (isCountedCall(entry) && !isMissedCall(entry)) {
               participantCalls += 1;
-              participantMinutes += Number(entry.callMinutes || 0);
+              participantSeconds += Number(entry.callSeconds || 0);
             }
+            participantWords += Number(entry.wordCount || 0);
           });
           const participantText = Math.max(
             0,
@@ -839,18 +851,20 @@
             includedEntries,
             participantDays,
             participantText,
+            participantWords,
             participantImages,
             participantCalls,
-            participantMinutes
+            participantSeconds
           };
         });
         const totalText = participantSummaries.reduce((sum, item) => sum + item.participantText, 0);
         const totalImages = participantSummaries.reduce((sum, item) => sum + item.participantImages, 0);
         const totalCalls = participantSummaries.reduce((sum, item) => sum + item.participantCalls, 0);
-        const totalCallMinutes = participantSummaries.reduce(
-          (sum, item) => sum + item.participantMinutes,
+        const totalCallSeconds = participantSummaries.reduce(
+          (sum, item) => sum + item.participantSeconds,
           0
         );
+        const totalWords = participantSummaries.reduce((sum, item) => sum + item.participantWords, 0);
         return {
           total: {
             title: TOTAL_SUMMARY_TITLE,
@@ -859,9 +873,10 @@
             days: allDays.size,
             rough: {
               text: totalText,
+              words: totalWords,
               images: totalImages,
               calls: totalCalls,
-              callMinutes: totalCallMinutes
+              callSeconds: totalCallSeconds
             }
           },
           participants: participantSummaries.map((summary) => ({
@@ -871,9 +886,10 @@
             days: summary.participantDays.size,
             rough: {
               text: summary.participantText,
+              words: summary.participantWords,
               images: summary.participantImages,
               calls: summary.participantCalls,
-              callMinutes: summary.participantMinutes
+              callSeconds: summary.participantSeconds
             }
           }))
         };
@@ -889,8 +905,9 @@
           summary.total.title,
           `${summary.total.messages} ${totalMessageLabel} / ${summary.total.days} ${totalDayLabel}`,
           `${ROUGH_PREFIX} ${summary.total.rough.text} ${roughTextLabel}`,
+          `${ROUGH_PREFIX} ${summary.total.rough.words} words`,
           `${ROUGH_PREFIX} ${summary.total.rough.images} images`,
-          `${ROUGH_PREFIX} ${summary.total.rough.calls} calls ${summary.total.rough.callMinutes} mins`,
+          `${ROUGH_PREFIX} ${summary.total.rough.calls} calls ${formatDurationSeconds(summary.total.rough.callSeconds)}`,
           ""
         ];
         summary.participants.forEach((participant) => {
@@ -902,9 +919,10 @@
             `${participant.messages} ${participantMessageLabel} / ${participant.days} ${participantDayLabel}`
           );
           detailLines.push(`${ROUGH_PREFIX} ${participant.rough.text} ${participantRoughTextLabel}`);
+          detailLines.push(`${ROUGH_PREFIX} ${participant.rough.words} words`);
           detailLines.push(`${ROUGH_PREFIX} ${participant.rough.images} images`);
           detailLines.push(
-            `${ROUGH_PREFIX} ${participant.rough.calls} calls ${participant.rough.callMinutes} mins`
+            `${ROUGH_PREFIX} ${participant.rough.calls} calls ${formatDurationSeconds(participant.rough.callSeconds)}`
           );
           detailLines.push("");
         });
@@ -999,13 +1017,16 @@ ${aliasLines}
             "missed-video-call"
           ].includes(fileType);
           const isTimedCall = ["audio-call", "video-call", "voice-note"].includes(fileType);
+          const contentText = String(entry.content || "").trim();
+          const textWords = contentText ? contentText.split(/\s+/).filter(Boolean).length : 0;
           return {
             sender: entry.sender,
             date: Number.isFinite(entry.ts) ? new Date(entry.ts) : /* @__PURE__ */ new Date(NaN),
             type: fileType,
             isCall,
             isImage: fileType === "image",
-            callMinutes: isTimedCall ? durationToMinutes2(entry.duration) : 0
+            callSeconds: isTimedCall ? durationToSeconds(entry.duration) : 0,
+            wordCount: isCall || fileType === "image" ? 0 : textWords
           };
         });
         return buildSummary2(summaryEntries, {
@@ -1022,6 +1043,15 @@ ${aliasLines}
         }
         return 0;
       }
+      function durationToSeconds(duration) {
+        if (!duration) return 0;
+        const normalized = normalizeDuration2(duration) || duration;
+        const hms = String(normalized).match(/^(\d+):(\d{2}):(\d{2})$/);
+        if (hms) {
+          return Number(hms[1]) * 3600 + Number(hms[2]) * 60 + Number(hms[3]);
+        }
+        return 0;
+      }
       module.exports = {
         formatExportHeader: formatExportHeader2,
         buildExportText,
@@ -1029,7 +1059,8 @@ ${aliasLines}
         formatLine: formatLine2,
         formatSummarySection,
         buildSummaryData,
-        durationToMinutes: durationToMinutes2
+        durationToMinutes: durationToMinutes2,
+        durationToSeconds
       };
     }
   });

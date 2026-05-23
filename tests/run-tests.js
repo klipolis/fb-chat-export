@@ -31,7 +31,8 @@ const { buildAllMessageMetaMap, parseMessageNodes } = require(
 );
 const { aliasChatNames } = require(path.join(__dirname, '..', 'src', 'shared', 'utils'));
 
-const rawDir = path.join(__dirname, '..', 'demo/input-html-raw');
+const rawDir = path.join(__dirname, '..', 'dataset/input-html-raw');
+const referenceDate = '2026.05.15 00:00';
 
 function formatDate(date) {
   const year = date.getFullYear();
@@ -267,7 +268,7 @@ tap.test('browserExportDomRegression', (t) => {
   const dom = new JSDOM(`
     <div aria-roledescription="message" aria-label="At April 17, 2026, 3:45 PM, You: Hello world">Hello world</div>
   `);
-  const entries = buildEntriesFromDocument(dom.window.document, 'text.html');
+  const entries = buildEntriesFromDocument(dom.window.document, 'text.html', referenceDate);
   t.equal(entries.length, 1, 'Should parse one message entry');
 
   const entry = entries[0];
@@ -751,7 +752,7 @@ tap.test('scanToExportIntegration', (t) => {
     </div>
   `);
 
-  const entries = buildEntriesFromDocument(dom.window.document, 'text.html');
+  const entries = buildEntriesFromDocument(dom.window.document, 'text.html', referenceDate);
   t.equal(entries.length, 3, 'Should parse three message entries');
 
   const summaryEntries = entries.map((e) => ({
@@ -813,8 +814,8 @@ tap.test('frontendBuildDist', (t) => {
 
 tap.test('goldenTxtSnapshots', (t) => {
   const baseDir = path.join(__dirname, '..');
-  const actualOnPath = path.join(baseDir, 'demo/output-txt', 'fb-chats-export-content-on.txt');
-  const actualOffPath = path.join(baseDir, 'demo/output-txt', 'fb-chats-export-content-off.txt');
+  const actualOnPath = path.join(baseDir, 'dataset/output-txt', 'fb-chats-export-content-on.txt');
+  const actualOffPath = path.join(baseDir, 'dataset/output-txt', 'fb-chats-export-content-off.txt');
   const goldenOnPath = path.join(baseDir, 'tests', 'golden', 'fb-chats-export-content-on.txt');
   const goldenOffPath = path.join(baseDir, 'tests', 'golden', 'fb-chats-export-content-off.txt');
 
@@ -839,8 +840,8 @@ tap.test('buildServerTextExport', (t) => {
   });
   t.equal(serverBuild.status, 0, `build-server failed: ${serverBuild.stderr || serverBuild.stdout}`);
 
-  const txtDir = path.join(__dirname, '..', 'demo/output-txt');
-  t.ok(fs.existsSync(txtDir), 'demo/output-txt not created');
+  const txtDir = path.join(__dirname, '..', 'dataset/output-txt');
+  t.ok(fs.existsSync(txtDir), 'dataset/output-txt not created');
   const files = fs.readdirSync(txtDir);
   const sortedTxtFiles = files.filter((name) => name.endsWith('.txt')).sort();
   t.strictSame(
@@ -881,17 +882,17 @@ tap.test('buildServerTextExport', (t) => {
   t.ok(contentOff.includes('\n---\n'), 'Content-off export summary should end with ---');
   t.ok(contentOn.includes('\nTotal Summary\n'), 'Content-on export should include a Total Summary block');
   t.ok(/\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n/.test(contentOn), 'Content-on summary should include a total count line');
-  t.ok(/\n~\s+\d+\s+text;\n/.test(contentOn), 'Content-on summary should include rough text totals');
+  t.ok(/\n~\s+\d+\s+text\s*\/\s*\d+\s+words\n/.test(contentOn), 'Content-on summary should include combined rough text/words totals');
   t.ok(/\n~\s+\d+\s+images\n/.test(contentOn), 'Content-on summary should include rough image totals');
-  t.ok(/\n~\s+\d+\s+calls\s+\d+\s+mins\n/.test(contentOn), 'Content-on summary should include rough call totals');
+  t.ok(/\n~\s+\d+\s+calls\s+\d{2}:\d{2}:\d{2}\n/.test(contentOn), 'Content-on summary should include rough call totals');
   t.ok(/\nXYZ Summary\n/.test(contentOn), 'Content-on summary should include XYZ Summary section');
   t.ok(/\nYoughurt Summary\n/.test(contentOn), 'Content-on summary should include Youghurt Summary section');
   t.ok(
-    /\nXYZ Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text;\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d+\s+mins\n/.test(contentOn),
+    /\nXYZ Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text\s*\/\s*\d+\s+words\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d{2}:\d{2}:\d{2}\n/.test(contentOn),
     'XYZ Summary should mirror total summary list style'
   );
   t.ok(
-    /\nYoughurt Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text;\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d+\s+mins\n/.test(contentOn),
+    /\nYoughurt Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text\s*\/\s*\d+\s+words\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d{2}:\d{2}:\d{2}\n/.test(contentOn),
     'Youghurt Summary should mirror total summary list style'
   );
 
@@ -978,7 +979,7 @@ tap.test('buildServerTextExport', (t) => {
 // ---------------------------------------------------------------------------
 
 tap.test('textExportDurationNormalization', (t) => {
-  const txtDir = path.join(__dirname, '..', 'demo/output-txt');
+  const txtDir = path.join(__dirname, '..', 'dataset/output-txt');
   const contentOnPath = path.join(txtDir, 'fb-chats-export-content-on.txt');
   const contentOffPath = path.join(txtDir, 'fb-chats-export-content-off.txt');
 

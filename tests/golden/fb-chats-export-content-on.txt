@@ -26,28 +26,32 @@ Aliases:
 ---
 
 Total Summary
-15 messages / 7 days
+15 messages / 8 days
 ~ 8 text;
+~ 207 words
 ~ 1 images
-~ 3 calls 50 mins
+~ 3 calls 00:49:20
 
 XYZ Summary
-10 messages / 5 days
+10 messages / 6 days
 ~ 5 text;
+~ 206 words
 ~ 1 images
-~ 1 calls 31 mins
+~ 1 calls 00:31:00
 
 Youghurt Summary
 4 messages / 3 days
 ~ 3 text;
+~ 1 words
 ~ 0 images
-~ 1 calls 18 mins
+~ 1 calls 00:18:00
 
 Barnabas Summary
 1 message / 1 day
 ~ 0 text;
+~ 0 words
 ~ 0 images
-~ 1 calls 1 mins
+~ 1 calls 00:00:20
 
 ---
 [2026-04-12 13:23] Youghurt: audio-call 00:18:00

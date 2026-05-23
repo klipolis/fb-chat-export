@@ -29,7 +29,7 @@ function formatExportFileName(mode = 'content-on', { fromDate, toDate } = {}) {
   return `${base}${suffix}.txt`;
 }
 
-function extractMessageEntry(el, fileName) {
+function extractMessageEntry(el, fileName, referenceDate) {
   const ariaLabel = el.getAttribute('aria-label') || '';
   const parsedLabel = parseAriaLabel(ariaLabel);
   const rawDate = parsedLabel.date || '';
@@ -66,7 +66,7 @@ function extractMessageEntry(el, fileName) {
 
   let resolvedDate;
   try {
-    resolvedDate = normalizeDateToIso(rawDate) || rawDate;
+    resolvedDate = normalizeDateToIso(rawDate, referenceDate) || rawDate;
   } catch {
     resolvedDate = rawDate;
   }
@@ -89,7 +89,7 @@ function extractMessageEntry(el, fileName) {
     ts: Number.isFinite(timestamp) && !Number.isNaN(timestamp) ? timestamp : 0,
     fileType,
     semanticType: contentMeta.type,
-    dateText: formatDate(rawDate),
+    dateText: formatDate(rawDate, referenceDate),
     sender: normalizeExportSender(sender),
     content: body,
     duration: contentMeta.duration,
@@ -97,10 +97,10 @@ function extractMessageEntry(el, fileName) {
   };
 }
 
-function buildEntriesFromDocument(document, fileName) {
+function buildEntriesFromDocument(document, fileName, referenceDate) {
   const entries = [];
   document.querySelectorAll('[aria-roledescription="message"]').forEach((el) => {
-    const entry = extractMessageEntry(el, fileName);
+    const entry = extractMessageEntry(el, fileName, referenceDate);
     if (entry && entry.semanticType) {
       entries.push(entry);
     }

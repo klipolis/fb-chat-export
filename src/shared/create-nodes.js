@@ -6,9 +6,9 @@ const { getContentMeta, normalizeDuration } = require('./message-metadata');
 
 const helperDir = path.resolve(__dirname);
 const baseDir = path.resolve(helperDir, '..', '..');
-const rawDir = path.join(baseDir, 'demo/input-html-raw');
-const optimizedDir = path.join(baseDir, 'demo/output-html');
-const nodesDir = path.join(baseDir, 'demo/output-json');
+const rawDir = path.join(baseDir, 'dataset/input-html-raw');
+const optimizedDir = path.join(baseDir, 'dataset/output-html');
+const nodesDir = path.join(baseDir, 'dataset/output-json');
 const metadataDir = path.join(helperDir, 'metadata-generated');
 
 function relativePath(p) {
@@ -200,9 +200,30 @@ function extractDate(ariaLabel) {
   return parsed.date || null;
 }
 
-function generateSimpleDate(ariaLabel) {
+function generateSimpleDate(ariaLabel, referenceDate) {
   const parsed = parseAriaLabel(ariaLabel);
-  return normalizeDateToSimple(parsed.date);
+  return normalizeDateToSimple(parsed.date, referenceDate);
+}
+
+function parseReferenceDate(value) {
+  if (value instanceof Date) return new Date(value.getTime());
+  if (typeof value === 'string') {
+    const match = value.match(/^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})$/);
+    if (match) {
+      return new Date(
+        Number(match[1]),
+        Number(match[2]) - 1,
+        Number(match[3]),
+        Number(match[4]),
+        Number(match[5]),
+        0,
+        0
+      );
+    }
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+  return new Date();
 }
 
 function formatLocalDateTime(date = new Date()) {
@@ -225,10 +246,11 @@ function extractMessageText(ariaLabel) {
 }
 
 function parseMessageNodes(html, fileName, exportDate, metaMap) {
+  const referenceDate = parseReferenceDate(exportDate);
   const nodes = [];
   const messageTagRe = /<([a-zA-Z0-9]+)([^>]*)>/gi;
   let match;
-  const route = path.join('demo/output-html', fileName).replace(/\\/g, '/');
+  const route = path.join('dataset/output-html', fileName).replace(/\\/g, '/');
 
   while ((match = messageTagRe.exec(html)) !== null) {
     const attrs = match[2];
@@ -284,7 +306,7 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
     }
 
     const originalDate = parsedLabel.date;
-    const simpleDate = normalizeDateToSimple(parsedLabel.date);
+    const simpleDate = normalizeDateToSimple(parsedLabel.date, referenceDate);
     const timestamp = simpleDate || originalDate;
     const contentMeta = getContentMeta({
       fileName,

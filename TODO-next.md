@@ -10,6 +10,7 @@ Future / requires-new-samples tasks are in [TODO-future.md](TODO-future.md).
 ## Test coverage
 
 - **Frontend summary integration test** — A headless/unit test that drives `collectVisible()` with mock DOM entries and asserts `buildSummary` receives correct `callMinutes` values; guards against future regressions in the browser-path duration counting.
+- **Userscript header regression test** — Ensure `src/platforms/userscript/header.txt` is preserved in `dist/app.js` and `dist/app.min.js` with the full `// ==UserScript==` block.
 
 - **Rewrite validate-*.js scripts from `assert` to tap** — `validate-generated-txt.js`, `validate-generated-json.js`, `validate-dist.js`, `validate-golden.js`, and `validate-release.js` currently use Node's built-in `assert` module, which throws on first failure with no test count. Rewriting them as tap test suites (one `tap.test()` block each) adds proper counts, labels, and failure isolation. They could then be folded into `test:unit` and removed from the separate `validate:*` scripts in `pnpm run test`. Approximate effort: 3–4 hours; affects the full `pnpm run test` pipeline.
 

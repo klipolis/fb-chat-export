@@ -3,8 +3,8 @@ const path = require('path');
 
 const baseDir = path.resolve(__dirname, '..');
 const dirs = [
-  path.join(baseDir, 'demo/output-html'),
-  path.join(baseDir, 'demo/output-json'),
+  path.join(baseDir, 'dataset/output-html'),
+  path.join(baseDir, 'dataset/output-json'),
   path.join(baseDir, 'dist'),
 ];
 

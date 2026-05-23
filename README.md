@@ -6,7 +6,7 @@ A Messenger chat export project that generates `.txt`, JSON preview, HTML snapsh
 
 - Source files live under `src/`.
 - Frontend source and build tooling are under `src/frontend/`.
-- Data artifacts are stored under `demo/`.
+- Data artifacts are stored under `dataset/`.
 - Built frontend bundle output is stored in `dist/`.
 - Documentation is kept in `docs/`.
 - Release notes live in `CHANGELOG.md`.
@@ -31,7 +31,7 @@ pnpm run build:ci
 - `docs/` - extended documentation and process notes.
 - `docs/site.md` - documentation landing page with quick start and architecture overview.
 - `docs/terms-and-conditions.md`
-- `demo/` - structured raw input and generated output artifacts.
+- `dataset/` - structured raw input and generated output artifacts.
 - `dist/` - generated frontend bundle.
 
 ## More documentation

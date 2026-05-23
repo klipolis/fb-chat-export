@@ -15,23 +15,24 @@ const {
 const { chooseRule } = require('./shared/message-metadata');
 
 const baseDir = path.resolve(__dirname, '..');
-const rawDir = path.join(baseDir, 'demo/input-html-raw');
-const optimizedDir = path.join(baseDir, 'demo/output-html');
-const previewDir = path.join(baseDir, 'demo/output-json');
+const rawDir = path.join(baseDir, 'dataset/input-html-raw');
+const optimizedDir = path.join(baseDir, 'dataset/output-html');
+const previewDir = path.join(baseDir, 'dataset/output-json');
 const rawMetadataPath = path.join(previewDir, 'raw-input-metadata.json');
-const exportDir = path.join(baseDir, 'demo/output-txt');
+const exportDir = path.join(baseDir, 'dataset/output-txt');
 
-const relRaw = './demo/input-html-raw';
-const relOptimized = './demo/output-html';
-const relPreview = './demo/output-json';
-const relExport = './demo/output-txt';
+const relRaw = './dataset/input-html-raw';
+const relOptimized = './dataset/output-html';
+const relPreview = './dataset/output-json';
+const relExport = './dataset/output-txt';
 
-const aliasNamesPath = path.join(baseDir, 'demo/alias-names.json');
+const aliasNamesPath = path.join(baseDir, 'dataset/alias-names.json');
 const aliasNameMap = fs.existsSync(aliasNamesPath)
   ? JSON.parse(fs.readFileSync(aliasNamesPath, 'utf8'))
   : {};
 
 const writeRaw = process.env.BUILD_RAW === 'true';
+const referenceDate = process.env.BUILD_REFERENCE_DATE || '2026.05.22 00:00';
 
 function optimizeFile(fileName, rawHtml, cleanedHtml) {
   const inputPath = path.join(rawDir, fileName);
@@ -69,7 +70,7 @@ function getFileRecord(fileName) {
   };
 }
 
-function buildTextEntries(files, cleanedHtmlByFile) {
+function buildTextEntries(files, cleanedHtmlByFile, referenceDate) {
   const entries = [];
 
   files.forEach((fileName) => {
@@ -77,7 +78,7 @@ function buildTextEntries(files, cleanedHtmlByFile) {
       cleanedHtmlByFile?.get(fileName) ??
       fs.readFileSync(path.join(rawDir, fileName), 'utf8');
     const document = new JSDOM(html).window.document;
-    const docEntries = buildEntriesFromDocument(document, fileName);
+    const docEntries = buildEntriesFromDocument(document, fileName, referenceDate);
     if (!docEntries.length) {
       return;
     }
@@ -102,8 +103,8 @@ function buildTextEntries(files, cleanedHtmlByFile) {
   return entries.sort((a, b) => a.ts - b.ts);
 }
 
-function buildTextExport(files, options = {}) {
-  const sorted = buildTextEntries(files);
+function buildTextExport(files, options = {}, referenceDate) {
+  const sorted = buildTextEntries(files, undefined, referenceDate);
   const lines = sorted.map((entry) => formatLine(entry, options));
   const headerText = formatExportHeader({
     method: 'server',
@@ -129,9 +130,9 @@ function summaryParticipants() {
   return [any, ...explicit];
 }
 
-function writeTextExports(files, cleanedHtmlByFile) {
+function writeTextExports(files, cleanedHtmlByFile, referenceDate) {
   ensureDir(exportDir);
-  const sortedEntries = buildTextEntries(files, cleanedHtmlByFile);
+  const sortedEntries = buildTextEntries(files, cleanedHtmlByFile, referenceDate);
   const contentOnLines = sortedEntries.map((entry) =>
     formatLine(entry, { includeContent: true, includeLength: true })
   );
@@ -247,8 +248,8 @@ function main() {
   }
 
   runCreateNodes();
-  const exportPaths = writeTextExports(files, cleanedHtmlByFile);
-  console.log(`Done: HTML + JSON in ./demo/output-html and ./demo/output-json`);
+  const exportPaths = writeTextExports(files, cleanedHtmlByFile, referenceDate);
+  console.log(`Done: HTML + JSON in ./dataset/output-html and ./dataset/output-json`);
   exportPaths.forEach((exportPath) => {
     console.log(`Generated chat text export: ${path.relative(baseDir, exportPath)}`);
   });

@@ -20,7 +20,7 @@ function splitSenderAndMessage(value) {
   return { sender, message };
 }
 
-function findValidDatePrefix(text) {
+function findValidDatePrefix(text, referenceDate) {
   const parts = text
     .split(',')
     .map((part) => part.trim())
@@ -28,7 +28,7 @@ function findValidDatePrefix(text) {
   let candidate = '';
   for (let i = 0; i < Math.min(parts.length, 3); i += 1) {
     candidate = candidate ? `${candidate}, ${parts[i]}` : parts[i];
-    if (normalizeDateToIso(candidate)) return candidate;
+    if (normalizeDateToIso(candidate, referenceDate)) return candidate;
   }
   return null;
 }
@@ -178,7 +178,28 @@ function parseAriaLabel(ariaLabel) {
   };
 }
 
-function normalizeDateToSimple(dateString) {
+function parseReferenceDate(value) {
+  if (value instanceof Date) return new Date(value.getTime());
+  if (typeof value === 'string') {
+    const match = value.match(/^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})$/);
+    if (match) {
+      return new Date(
+        Number(match[1]),
+        Number(match[2]) - 1,
+        Number(match[3]),
+        Number(match[4]),
+        Number(match[5]),
+        0,
+        0
+      );
+    }
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+  return new Date();
+}
+
+function normalizeDateToSimple(dateString, referenceDate = new Date()) {
   if (!dateString) return null;
   let text = normalizeLabel(dateString).replace(/^At\s+/i, '');
   const parsed = Date.parse(text);
@@ -192,7 +213,7 @@ function normalizeDateToSimple(dateString) {
     return `${year}.${month}.${day} ${hours}:${minutes}`;
   }
 
-  const now = new Date();
+  const now = parseReferenceDate(referenceDate);
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   const relativeMatch = text.match(/^(today|yesterday)(?:\s+at\s+)?(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
@@ -270,9 +291,9 @@ function normalizeDateToSimple(dateString) {
   return text;
 }
 
-function normalizeDateToIso(dateString) {
+function normalizeDateToIso(dateString, referenceDate) {
   if (!dateString) return null;
-  const normalized = normalizeDateToSimple(dateString);
+  const normalized = normalizeDateToSimple(dateString, referenceDate);
   if (!normalized) return null;
 
   const [dayPart, timePart] = normalized.split(' ');
