@@ -11,6 +11,6 @@
 - Support accessible message extraction using `aria-label` values and preserve original/optimized preview metadata.
 - Normalize chat labels into consistent export timestamps, turning same-day times into today's date and weekday labels into recent calendar dates.
 - Keep `export_date` and `data_preview.optimised_date` in the same simple 24-hour format.
-- Preserve built `dist/`, `dataset/output-html/`, and `dataset/output-json/` artifacts in source control while supporting automated CI builds.
+- Preserve built `dist/`, `data-output/optimized-html/`, and `data-output/json-format/` artifacts in source control while supporting automated CI builds.
 - Keep build-specific `dist` versioning separate from the stable project version and support deterministic CI build IDs via `BUILD_VERSION`.- Store automated tests in the dedicated `tests/` directory and validate core shared exports with unit tests.
 

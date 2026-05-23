@@ -2,7 +2,7 @@ const tap = require('tap');
 const fs = require('fs');
 const path = require('path');
 
-const txtDir = path.join(__dirname, '..', 'dataset/output-txt');
+const txtDir = path.join(__dirname, '..', 'data-output/final-export');
 const runtimeConfig = require(path.join(__dirname, '..', 'src', 'shared', 'export-config.json'));
 
 function loadSchema(t) {
@@ -146,7 +146,7 @@ function validateBody(t, lines, patterns, startIndex, fileName, includeContent) 
     } else {
       t.ok(
         !/\s\/\s/.test(line),
-        `${fileName}: content-off export should not contain slash content segments: ${line}`
+        `${fileName}: export-minimal export should not contain slash content segments: ${line}`
       );
     }
 

@@ -5,7 +5,7 @@ Active next tasks are tracked in [TODO-next.md](TODO-next.md).
 
 ---
 
-42. **Sticker and GIF raw samples** — There are no `sticker.html` or `gif.html` files in `dataset/input-html-raw`. Adding them would exercise the sticker/gif rules under the build-server path and extend golden-snapshot coverage.
+42. **Sticker and GIF raw samples** — There are no `sticker.html` or `gif.html` files in `data-input`. Adding them would exercise the sticker/gif rules under the build-server path and extend golden-snapshot coverage.
 
 **video-link: additional platforms** — The current `matchLabel` covers YouTube and Vimeo. Extending to TikTok (`tiktok.com/`), Instagram Reels (`instagram.com/reel/`), etc. would improve browser-path classification when a plain video URL is pasted.
 

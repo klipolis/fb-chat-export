@@ -180,12 +180,12 @@
         if (!isValidSender(sender)) return null;
         return { sender, message };
       }
-      function findValidDatePrefix(text) {
+      function findValidDatePrefix(text, referenceDate) {
         const parts = text.split(",").map((part) => part.trim()).filter(Boolean);
         let candidate = "";
         for (let i = 0; i < Math.min(parts.length, 3); i += 1) {
           candidate = candidate ? `${candidate}, ${parts[i]}` : parts[i];
-          if (normalizeDateToIso3(candidate)) return candidate;
+          if (normalizeDateToIso3(candidate, referenceDate)) return candidate;
         }
         return null;
       }
@@ -311,7 +311,27 @@
           message: colonIndex >= 0 ? label.slice(colonIndex + 1).trim() : label
         };
       }
-      function normalizeDateToSimple(dateString) {
+      function parseReferenceDate(value) {
+        if (value instanceof Date) return new Date(value.getTime());
+        if (typeof value === "string") {
+          const match = value.match(/^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})$/);
+          if (match) {
+            return new Date(
+              Number(match[1]),
+              Number(match[2]) - 1,
+              Number(match[3]),
+              Number(match[4]),
+              Number(match[5]),
+              0,
+              0
+            );
+          }
+          const parsed = new Date(value);
+          if (!Number.isNaN(parsed.getTime())) return parsed;
+        }
+        return /* @__PURE__ */ new Date();
+      }
+      function normalizeDateToSimple(dateString, referenceDate = /* @__PURE__ */ new Date()) {
         if (!dateString) return null;
         let text = normalizeLabel(dateString).replace(/^At\s+/i, "");
         const parsed = Date.parse(text);
@@ -324,7 +344,7 @@
           const minutes = String(date.getMinutes()).padStart(2, "0");
           return `${year}.${month}.${day} ${hours}:${minutes}`;
         }
-        const now = /* @__PURE__ */ new Date();
+        const now = parseReferenceDate(referenceDate);
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const relativeMatch = text.match(/^(today|yesterday)(?:\s+at\s+)?(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
         if (relativeMatch) {
@@ -396,9 +416,9 @@
         }
         return text;
       }
-      function normalizeDateToIso3(dateString) {
+      function normalizeDateToIso3(dateString, referenceDate) {
         if (!dateString) return null;
-        const normalized = normalizeDateToSimple(dateString);
+        const normalized = normalizeDateToSimple(dateString, referenceDate);
         if (!normalized) return null;
         const [dayPart, timePart] = normalized.split(" ");
         if (!dayPart || !timePart) return null;
@@ -706,8 +726,8 @@
           duration: "\\d{2}:\\d{2}:\\d{2}",
           totalSummaryTitle: "^Total Summary$",
           totalLine: "^\\d+\\s+(?:message|messages)\\s*/\\s*\\d+\\s+(?:day|days)$",
-          roughTextLine: "^~\\s+\\d+\\s+text;$",
-          roughWordsLine: "^~\\s+\\d+\\s+words$",
+          roughTextLine: "^~\\s+\\d+\\s+text\\s*/\\s*\\d+\\s+words$",
+          roughWordsLine: "^$",
           roughImagesLine: "^~\\s+\\d+\\s+images$",
           roughCallsLine: "^~\\s+\\d+\\s+calls\\s+\\d{2}:\\d{2}:\\d{2}$",
           personSummaryTitle: "^.{1,80} Summary$"
@@ -719,12 +739,12 @@
         },
         exports: [
           {
-            fileName: "fb-chats-export-content-on.txt",
+            fileName: "fb-chats-export-max.txt",
             includeContent: true,
             includeSummary: true
           },
           {
-            fileName: "fb-chats-export-content-off.txt",
+            fileName: "fb-chats-export-minimal.txt",
             includeContent: false,
             includeSummary: false
           }
@@ -900,12 +920,10 @@
         const useMessageLabel = Boolean(options.useMessageLabel);
         const totalMessageLabel = useMessageLabel ? summary.total.messages === 1 ? "message" : "messages" : summary.total.messages === 1 ? "post" : "posts";
         const totalDayLabel = useMessageLabel ? summary.total.days === 1 ? "day" : "days" : "days";
-        const roughTextLabel = "text;";
         const detailLines = [
           summary.total.title,
           `${summary.total.messages} ${totalMessageLabel} / ${summary.total.days} ${totalDayLabel}`,
-          `${ROUGH_PREFIX} ${summary.total.rough.text} ${roughTextLabel}`,
-          `${ROUGH_PREFIX} ${summary.total.rough.words} words`,
+          `${ROUGH_PREFIX} ${summary.total.rough.text} text / ${summary.total.rough.words} words`,
           `${ROUGH_PREFIX} ${summary.total.rough.images} images`,
           `${ROUGH_PREFIX} ${summary.total.rough.calls} calls ${formatDurationSeconds(summary.total.rough.callSeconds)}`,
           ""
@@ -913,13 +931,13 @@
         summary.participants.forEach((participant) => {
           const participantMessageLabel = useMessageLabel ? participant.messages === 1 ? "message" : "messages" : participant.messages === 1 ? "post" : "posts";
           const participantDayLabel = useMessageLabel ? participant.days === 1 ? "day" : "days" : "days";
-          const participantRoughTextLabel = "text;";
           detailLines.push(participant.title);
           detailLines.push(
             `${participant.messages} ${participantMessageLabel} / ${participant.days} ${participantDayLabel}`
           );
-          detailLines.push(`${ROUGH_PREFIX} ${participant.rough.text} ${participantRoughTextLabel}`);
-          detailLines.push(`${ROUGH_PREFIX} ${participant.rough.words} words`);
+          detailLines.push(
+            `${ROUGH_PREFIX} ${participant.rough.text} text / ${participant.rough.words} words`
+          );
           detailLines.push(`${ROUGH_PREFIX} ${participant.rough.images} images`);
           detailLines.push(
             `${ROUGH_PREFIX} ${participant.rough.calls} calls ${formatDurationSeconds(participant.rough.callSeconds)}`
@@ -967,11 +985,11 @@ ${aliasLines}
       function buildExportText(lines, headerLines = "") {
         return `${headerLines}${lines.join("")}`;
       }
-      function formatDate(raw) {
+      function formatDate(raw, referenceDate) {
         let dateValue = raw;
         if (typeof raw === "string") {
           try {
-            dateValue = normalizeDateToIso3(raw) || raw;
+            dateValue = normalizeDateToIso3(raw, referenceDate) || raw;
           } catch {
             dateValue = raw;
           }

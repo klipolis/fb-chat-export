@@ -6,7 +6,8 @@ A Messenger chat export project that generates `.txt`, JSON preview, HTML snapsh
 
 - Source files live under `src/`.
 - Frontend source and build tooling are under `src/frontend/`.
-- Data artifacts are stored under `dataset/`.
+- Raw input artifacts are stored under `data-input/`.
+- Generated build outputs are stored under `data-output/`.
 - Built frontend bundle output is stored in `dist/`.
 - Documentation is kept in `docs/`.
 - Release notes live in `CHANGELOG.md`.
@@ -30,8 +31,8 @@ pnpm run build:ci
 - `tests/` - automated tests and validation.
 - `docs/` - extended documentation and process notes.
 - `docs/site.md` - documentation landing page with quick start and architecture overview.
-- `docs/terms-and-conditions.md`
-- `dataset/` - structured raw input and generated output artifacts.
+- `data-input/` - raw HTML input snapshots and alias metadata.
+- `data-output/` - generated output artifacts, including HTML, JSON, and TXT.
 - `dist/` - generated frontend bundle.
 
 ## More documentation

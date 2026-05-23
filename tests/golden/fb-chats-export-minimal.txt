@@ -34,9 +34,9 @@ Aliases:
 [2026-05-20 19:52] Barnabas: voice-note 00:00:20
 [2026-05-20 19:54] XYZ: deleted
 [2026-05-21 17:34] XYZ: missed-audio-call
+[2026-05-22 00:26] XYZ: text 34 chars
+[2026-05-22 11:14] XYZ: video-call 00:31:00
+[2026-05-22 11:15] XYZ: missed-video-call
+[2026-05-22 11:16] Youghurt: reaction
+[2026-05-22 11:57] Youghurt: video-link
 [2026-05-22 13:51] XYZ: link-embed-no-text
-[2026-05-23 00:26] XYZ: text 34 chars
-[2026-05-23 11:14] XYZ: video-call 00:31:00
-[2026-05-23 11:15] XYZ: missed-video-call
-[2026-05-23 11:16] Youghurt: reaction
-[2026-05-23 11:57] Youghurt: video-link

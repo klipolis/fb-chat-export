@@ -1,6 +1,6 @@
 # Generated JSON Schema
 
-This document describes the generated preview JSON export contract for `dataset/output-json/*.json`.
+This document describes the generated preview JSON export contract for `data-output/json-format/*.json`.
 
 ## Summary
 

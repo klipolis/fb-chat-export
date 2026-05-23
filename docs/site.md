@@ -19,7 +19,8 @@ This page is a high-level docs landing page for quick onboarding and architectur
 - `src/platforms/` contains platform header templates and frontend build helpers.
 - `src/server/` contains server-side build scripts and preview generation.
 - `src/shared/` contains shared helpers used by both server and frontend code.
-- `dataset/` contains raw input snapshots and generated output artifacts used for debugging and regression.
+- `data-input/` contains raw input snapshots and alias metadata used for debugging and regression.
+- `data-output/` contains generated output artifacts used for debugging and regression.
 - `dist/` contains the bundled frontend app result.
 
 ## Docs and contribution

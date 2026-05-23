@@ -6,6 +6,7 @@ import {
   parseLocalDate,
   resolveRelativeDate,
   getDisplayPersonName,
+  sanitizeFileNamePart,
   formatExportFileName,
 } from '../../shared/frontend-utils.js';
 import {
@@ -99,6 +100,12 @@ import {
     sessionStorage.getItem('fbExportTo') || new Date().toISOString().slice(0, 10)
   );
 
+  const { wrap: fileNameWrap, input: fileNameInput } = createLabelInput(
+    'File:',
+    'Optional custom name',
+    sessionStorage.getItem('fbExportFileName') || ''
+  );
+
   const actionBtn = createButton('Scan Messages', '#0084ff');
 
   const rightCol = document.createElement('div');
@@ -134,6 +141,7 @@ import {
 
   leftCol.appendChild(fromWrap);
   leftCol.appendChild(toWrap);
+  leftCol.appendChild(fileNameWrap);
   leftCol.appendChild(actionBtn);
 
   rightCol.appendChild(includeCallsWrap);
@@ -241,6 +249,28 @@ import {
   rawLinkChk.disabled = !includeContentChk.checked;
   rawLinkWrap.style.opacity = includeContentChk.checked ? '1' : '0.6';
 
+  fileNameInput.addEventListener('input', () => {
+    fileNameInput.style.borderColor = '#ccc';
+  });
+
+  function escapeRegExp(value) {
+    return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function applyAliasToText(text, aliasMap, sender) {
+    let result = String(text || '');
+    for (const [from, to] of Object.entries(aliasMap || {})) {
+      if (!from || !to || from === 'any') continue;
+      const pattern = new RegExp(`\\b${escapeRegExp(from)}\\b`, 'gi');
+      result = result.replace(pattern, to);
+    }
+    if (sender && aliasMap?.any) {
+      const senderPattern = new RegExp(`\\b${escapeRegExp(sender)}\\b`, 'gi');
+      result = result.replace(senderPattern, aliasMap.any);
+    }
+    return result;
+  }
+
   let downloadRevokeTimeout = null;
   let scrollTimeout = null;
   let downloadHandler = null;
@@ -290,6 +320,15 @@ import {
       noticeMsg.textContent = 'Alias fields contain invalid names.';
       return;
     }
+
+    const customBaseName = fileNameInput.value.trim();
+    let customFileName = '';
+    if (customBaseName) {
+      const sanitized = sanitizeFileNamePart(customBaseName);
+      customFileName = `${sanitized}.txt`;
+      sessionStorage.setItem('fbExportFileName', customBaseName);
+    }
+
     fromInput.style.borderColor = toInput.style.borderColor = '#ccc';
 
     if (downloadRevokeTimeout !== null) {
@@ -357,17 +396,31 @@ import {
           return;
         }
         if (toDate && !isNaN(msgDate) && msgDate > toDate) return;
+        const aliasMap = aliasChk.checked ? getAliasMap() : {};
+        const aliasedText = aliasChk.checked ? applyAliasToText(text, aliasMap, sender) : text;
+        const aliasedContent = aliasChk.checked
+          ? applyAliasToText(
+              includeContentChk.checked
+                ? rawLinkChk.checked && (type === 'link' || type === 'video-link')
+                  ? stripTrackingParams(link || originalHref || aliasedText) || aliasedText
+                  : originalHref || aliasedText
+                : aliasedText,
+              aliasMap,
+              sender
+            )
+          : includeContentChk.checked
+          ? rawLinkChk.checked && (type === 'link' || type === 'video-link')
+            ? stripTrackingParams(link || originalHref || text) || text
+            : originalHref || text
+          : text;
+
         const lineEntry = {
           fileType: type,
           semanticType: type,
           dateText: displayDate,
           sender: authorLabel,
           duration,
-          content: includeContentChk.checked
-            ? rawLinkChk.checked && (type === 'link' || type === 'video-link')
-              ? stripTrackingParams(link || originalHref || text) || text
-              : originalHref || text
-            : text,
+          content: aliasedContent,
           contentLength,
         };
         const finalLine = formatLine(lineEntry, {
@@ -496,7 +549,7 @@ import {
             ? `${(elapsedMs / 1000).toFixed(1)} seconds`
             : `${(elapsedMs / 60000).toFixed(2)} minutes`;
         const displayPersonName = getDisplayPersonName();
-        const fileName = formatExportFileName(undefined, {
+        const fileName = customFileName || formatExportFileName(undefined, {
           fromDate: fromInput.value.trim() || '',
           toDate: toInput.value.trim() || '',
         });

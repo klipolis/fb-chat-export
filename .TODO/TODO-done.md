@@ -42,7 +42,7 @@ Future / requires-new-samples items are in [TODO-future.md](TODO-future.md).
 
 **JSON preview schema reorganised** — `html_locale`, `title`, and `type` are now top-level fields on every preview JSON file. `data_raw` holds the values as extracted from the HTML (date, raw content, raw duration, length always null). `data_preview` holds processed display values (date, content, duration, length). The `locate` section and `raw_meta` sub-object have been removed. All four keys are always present in both sections.
 
-**video-link type** — Messages whose body is a plain video platform URL (YouTube Shorts, Vimeo, etc.) are classified as `video-link` type. The URL is extracted as content from `resolvedLink` and shown in content-on TXT export after `/`. No duration or length. The HTML optimiser (`removeLinkContent`) now preserves plain URL text inside `<a>` tags instead of replacing it with `<a></a>`, so the message wrapper is not stripped as empty by `removeEmptyChildren`. `matchLabel` covers `youtube.com/`, `youtu.be/`, and `vimeo.com/` for the browser path.
+**video-link type** — Messages whose body is a plain video platform URL (YouTube Shorts, Vimeo, etc.) are classified as `video-link` type. The URL is extracted as content from `resolvedLink` and shown in export-max TXT export after `/`. No duration or length. The HTML optimiser (`removeLinkContent`) now preserves plain URL text inside `<a>` tags instead of replacing it with `<a></a>`, so the message wrapper is not stripped as empty by `removeEmptyChildren`. `matchLabel` covers `youtube.com/`, `youtu.be/`, and `vimeo.com/` for the browser path.
 
 ---
 
@@ -64,7 +64,7 @@ Future / requires-new-samples items are in [TODO-future.md](TODO-future.md).
 
 ## Export format
 
-49. **Export filename includes date range** — `formatExportFileName` now accepts optional `fromDate` and `toDate` parameters and produces filenames like `fb-export-2026-05-01–2026-05-19-content-on.txt`. Falls back to the previous fixed names when no dates are provided. The frontend passes the user-selected date range automatically.
+49. **Export filename includes date range** — `formatExportFileName` now accepts optional `fromDate` and `toDate` parameters and produces filenames like `fb-export-2026-05-01–2026-05-19-max.txt`. Falls back to the previous fixed names when no dates are provided. The frontend passes the user-selected date range automatically.
 
 ---
 
@@ -163,7 +163,7 @@ Future / requires-new-samples items are in [TODO-future.md](TODO-future.md).
 
 ## Testing
 
-**`aliasChatNames` name-map support** — function accepts an optional `nameMap` parameter; `dataset/alias-names.json` defines default replacements (`You` → `Youghurt`, detected name → `Alpha`). Build-server loads the file automatically. Tests added for name-map behaviour.
+**`aliasChatNames` name-map support** — function accepts an optional `nameMap` parameter; `data-config/alias-names.json` defines default replacements (`You` → `Youghurt`, detected name → `Alpha`). Build-server loads the file automatically. Tests added for name-map behaviour.
 
 **`aliasChatNames` already-target guard** — replacement is skipped when the detected name already equals the target (prevents double-aliasing on re-runs). Same guard applied to explicit map entries where source and target are identical.
 

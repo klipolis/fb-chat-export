@@ -6,11 +6,11 @@ This project exports Messenger chat history to a `.txt` file using a Tampermonke
 
 ```mermaid
 flowchart TD
-	A[dataset/input-html-raw] --> B[build-server]
-	B --> C[dataset/output-html]
+	A[data-input] --> B[build-server]
+	B --> C[data-output/optimized-html]
 	B --> D[create-nodes]
-	D --> E[dataset/output-json]
-	B --> F[dataset/output-txt content-on/content-off]
+	D --> E[data-output/json-format]
+	B --> F[data-output/final-export export-max/export-minimal]
 	G[src/frontend/src/index.js] --> H[src/frontend/builds.js]
 	H --> I[dist/app.js]
 	J[tests/generated-txt-schema.json] --> F
@@ -52,12 +52,14 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - `src/platforms/`: platform header and build helper files used by the frontend bundle build.
 - `src/server/`: build scripts such as `build-preview.js`.
 - `src/shared/`: shared helper scripts and node rules.
-- `dataset/input-html-raw/`: static raw HTML snapshots.
-- `dataset/output-html/`: generated optimized HTML snapshots.
-- `dataset/output-json/`: generated JSON preview output.
-- `dataset/output-json/raw-input-metadata.json`: build metadata for raw input file stability.
+- `data-input/`: static raw HTML snapshots.
+- `data-output/optimized-html/`: generated optimized HTML snapshots.
+- `data-output/json-format/`: generated JSON preview output.
+- `data-output/json-format/raw-input-metadata.json`: build metadata for raw input file stability.
 - `dist/`: generated one-file bundle output.
 - `docs/`: documentation and project notes.
+- `docs/folder-structure.md`: file and folder reference guide.
+- `docs/tech.md`: technology and dependency overview.
 - `docs/site.md`: documentation landing page with quick start and architecture overview.
 - `docs/terms-and-conditions.md`
 - `CHANGELOG.md`: release history and version notes.
@@ -65,6 +67,7 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - `tests/generated-json-schema.json`: formal contract for generated preview JSON exports.
 - `docs/JSON-Schema.md`: human-readable summary of the generated preview JSON contract.
 - `src/shared/metadata-generated/metadata.json`: metadata for generated JSON export files.
+- `.TODO/`: archived TODO notes and task tracking.
 - `.skills/`: planning, requirements, and development material.
 - `.github-next/`: placeholder workflow definitions for future GitHub Actions integration.
 
@@ -144,7 +147,7 @@ Bob Summary
 - Open the project in VS Code and use the terminal in `support/`.
 - Run `nvm use` in the `support/` folder to ensure the correct Node version from `.nvmrc`.
 - Run `pnpm install --frozen-lockfile` once after cloning the repo.
-- Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, build data preview JSON, and generate a text export in `dataset/output-txt/`.
+- Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, build data preview JSON, and generate a text export in `data-output/final-export/`.
 - Run `pnpm run build:frontend` to emit the built bundle into `dist/app.js`.
 - Use `BUILD_PLATFORM=userscript pnpm run build:frontend` to emit a userscript-compatible bundle header.
 - The browser export now writes a stable download file name such as `fb-chats-export-<shortname>.txt`.
@@ -169,9 +172,9 @@ Bob Summary
 - Run `pnpm run build-preview` to generate data preview JSON directly from optimized HTML.
 - Run `pnpm run build:clean` to clear generated build artifacts while preserving raw inputs.
 - Run `pnpm run create:nodes` for lower-level preview export debugging or custom workflows.
-- Run `pnpm run validate:generated-json` to verify final `dataset/output-json/` preview schema.
+- Run `pnpm run validate:generated-json` to verify final `data-output/json-format/` preview schema.
 - Run `pnpm run test` to execute automated shared-code regression tests and generated JSON schema validation.
-- Keep `dist/`, `dataset/output-html/`, and `dataset/output-json/` committed to source control.
+- Keep `dist/`, `data-output/optimized-html/`, and `data-output/json-format/` committed to source control.
 - Keep `.skills/` for planning and requirements.
 
 ## How to contribute

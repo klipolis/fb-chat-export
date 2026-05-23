@@ -82,7 +82,8 @@ Always respect Facebook's Terms of Service: https://www.facebook.com/legal/terms
 ## Repository layout
 
 - `src/` — application source and build scripts.
-- `dataset/` — raw input and generated output artifacts.
+- `data-input/` — raw input and alias configuration.
+- `data-output/` — generated output artifacts.
 - `dist/` — built frontend bundle deliverable.
 - `tests/` — test and validation scripts.
 - `docs/` — project documentation.

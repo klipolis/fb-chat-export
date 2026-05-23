@@ -31,7 +31,7 @@ const { buildAllMessageMetaMap, parseMessageNodes } = require(
 );
 const { aliasChatNames } = require(path.join(__dirname, '..', 'src', 'shared', 'utils'));
 
-const rawDir = path.join(__dirname, '..', 'dataset/input-html-raw');
+const rawDir = path.join(__dirname, '..', 'data-input');
 const referenceDate = '2026.05.15 00:00';
 
 function formatDate(date) {
@@ -809,219 +809,6 @@ tap.test('frontendBuildDist', (t) => {
 });
 
 // ---------------------------------------------------------------------------
-// goldenTxtSnapshots
-// ---------------------------------------------------------------------------
-
-tap.test('goldenTxtSnapshots', (t) => {
-  const baseDir = path.join(__dirname, '..');
-  const actualOnPath = path.join(baseDir, 'dataset/output-txt', 'fb-chats-export-content-on.txt');
-  const actualOffPath = path.join(baseDir, 'dataset/output-txt', 'fb-chats-export-content-off.txt');
-  const goldenOnPath = path.join(baseDir, 'tests', 'golden', 'fb-chats-export-content-on.txt');
-  const goldenOffPath = path.join(baseDir, 'tests', 'golden', 'fb-chats-export-content-off.txt');
-
-  t.ok(fs.existsSync(actualOnPath), 'Content-on TXT export missing for golden snapshot test');
-  t.ok(fs.existsSync(actualOffPath), 'Content-off TXT export missing for golden snapshot test');
-  t.ok(fs.existsSync(goldenOnPath), 'Golden snapshot for content-on TXT missing');
-  t.ok(fs.existsSync(goldenOffPath), 'Golden snapshot for content-off TXT missing');
-
-  compareSnapshots(actualOnPath, goldenOnPath, 'Content-on TXT export differs from golden snapshot');
-  compareSnapshots(actualOffPath, goldenOffPath, 'Content-off TXT export differs from golden snapshot');
-  t.end();
-});
-
-// ---------------------------------------------------------------------------
-// buildServerTextExport
-// ---------------------------------------------------------------------------
-
-tap.test('buildServerTextExport', (t) => {
-  const serverBuild = childProcess.spawnSync('node', ['src/build-server.js'], {
-    encoding: 'utf8',
-    cwd: path.join(__dirname, '..'),
-  });
-  t.equal(serverBuild.status, 0, `build-server failed: ${serverBuild.stderr || serverBuild.stdout}`);
-
-  const txtDir = path.join(__dirname, '..', 'dataset/output-txt');
-  t.ok(fs.existsSync(txtDir), 'dataset/output-txt not created');
-  const files = fs.readdirSync(txtDir);
-  const sortedTxtFiles = files.filter((name) => name.endsWith('.txt')).sort();
-  t.strictSame(
-    sortedTxtFiles,
-    [
-      'fb-chats-export-content-off.txt',
-      'fb-chats-export-content-on.txt',
-      'fb-chats-export-summary.txt',
-    ],
-    'Expected three stable TXT export filenames'
-  );
-
-  const summaryTxtPath = path.join(txtDir, 'fb-chats-export-summary.txt');
-  t.ok(fs.existsSync(summaryTxtPath), 'Expected fb-chats-export-summary.txt to be generated');
-  t.notOk(fs.existsSync(path.join(txtDir, 'fb-chats-export-summary.json')), 'Summary JSON export should not be generated');
-
-  const contentOn = fs.readFileSync(path.join(txtDir, 'fb-chats-export-content-on.txt'), 'utf8');
-  const contentOff = fs.readFileSync(path.join(txtDir, 'fb-chats-export-content-off.txt'), 'utf8');
-  const summaryTxt = fs.readFileSync(summaryTxtPath, 'utf8');
-
-  t.ok(/\n\d+\s+posts\s*\/\s*\d+\s+days\n/.test(summaryTxt), 'Summary TXT should use posts for total summary');
-  t.ok(/\nXYZ Summary\n\d+\s+post(?:s)?\s*\/\s*\d+\s+days\n/.test(summaryTxt), 'Summary TXT should use post/posts for XYZ Summary');
-  t.ok(/\nYoughurt Summary\n\d+\s+post(?:s)?\s*\/\s*\d+\s+days\n/.test(summaryTxt), 'Summary TXT should use post/posts for Youghurt Summary');
-
-  const uniqueDays = new Set(
-    contentOn
-      .split(/\r?\n/)
-      .filter((line) => /^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}\]/.test(line))
-      .map((line) => line.slice(1, 11))
-  ).size;
-  t.ok(summaryTxt.includes(` / ${uniqueDays} days`), 'Summary TXT total days must reflect unique days across all messages');
-
-  t.ok(contentOn.includes('Method: server'), 'Content-on export should include the server method header');
-  t.ok(contentOff.includes('Method: server'), 'Content-off export should include the server method header');
-  t.ok(contentOn.includes('Message types:'), 'Content-on export should include a message types header');
-  t.ok(contentOff.includes('Message types:'), 'Content-off export should include a message types header');
-  t.ok(contentOn.includes('\n---\n'), 'Content-on export summary should end with ---');
-  t.ok(contentOff.includes('\n---\n'), 'Content-off export summary should end with ---');
-  t.ok(contentOn.includes('\nTotal Summary\n'), 'Content-on export should include a Total Summary block');
-  t.ok(/\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n/.test(contentOn), 'Content-on summary should include a total count line');
-  t.ok(/\n~\s+\d+\s+text\s*\/\s*\d+\s+words\n/.test(contentOn), 'Content-on summary should include combined rough text/words totals');
-  t.ok(/\n~\s+\d+\s+images\n/.test(contentOn), 'Content-on summary should include rough image totals');
-  t.ok(/\n~\s+\d+\s+calls\s+\d{2}:\d{2}:\d{2}\n/.test(contentOn), 'Content-on summary should include rough call totals');
-  t.ok(/\nXYZ Summary\n/.test(contentOn), 'Content-on summary should include XYZ Summary section');
-  t.ok(/\nYoughurt Summary\n/.test(contentOn), 'Content-on summary should include Youghurt Summary section');
-  t.ok(
-    /\nXYZ Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text\s*\/\s*\d+\s+words\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d{2}:\d{2}:\d{2}\n/.test(contentOn),
-    'XYZ Summary should mirror total summary list style'
-  );
-  t.ok(
-    /\nYoughurt Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text\s*\/\s*\d+\s+words\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d{2}:\d{2}:\d{2}\n/.test(contentOn),
-    'Youghurt Summary should mirror total summary list style'
-  );
-
-  const rawFiles = fs.readdirSync(rawDir).filter((name) => name.endsWith('.html'));
-  rawFiles.forEach((fileName) => {
-    const sample = path.parse(fileName).name;
-    t.ok(contentOn.includes(`- ${sample}`), `Content-on header should list ${fileName} as dashed item`);
-    t.ok(contentOff.includes(`- ${sample}`), `Content-off header should list ${fileName} as dashed item`);
-  });
-
-  const bodyStartOn = contentOn.lastIndexOf('\n---\n');
-  const bodyAfterSummary = bodyStartOn > -1 ? contentOn.slice(bodyStartOn + '\n---\n'.length) : contentOn;
-  const bodyLinesOn = bodyAfterSummary
-    .split(/\r?\n/)
-    .filter((line) => /^\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}\]/.test(line));
-  const bodyStartOff = contentOff.indexOf('\n---\n');
-  const bodyAfterHeaderOff = bodyStartOff > -1 ? contentOff.slice(bodyStartOff + '\n---\n'.length) : contentOff;
-  const bodyLinesOff = bodyAfterHeaderOff
-    .split(/\r?\n/)
-    .filter((line) => /^\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}\]/.test(line));
-
-  t.equal(bodyLinesOn.length, rawFiles.length, 'Content-on export should contain one message per raw file');
-  t.equal(bodyLinesOff.length, rawFiles.length, 'Content-off export should contain one message per raw file');
-
-  const allMessageDayCount = new Set(
-    bodyLinesOn
-      .map((line) => {
-        const m = line.match(/^\[(\d{4}-\d{2}-\d{2})\s\d{2}:\d{2}\]/);
-        return m ? m[1] : null;
-      })
-      .filter(Boolean)
-  ).size;
-
-  t.ok(summaryTxt.includes('Total Summary'), 'Summary TXT should include Total Summary title');
-  t.ok(summaryTxt.includes('---'), 'Summary TXT should include closing separator');
-  t.ok(summaryTxt.includes(` / ${allMessageDayCount} `), 'Summary TXT should include total day count');
-
-  const basePattern = /^\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}\]\s[^:]+:\s[^/]+(?:\s\/\s.*)?$/;
-  t.ok(bodyLinesOn.every((line) => basePattern.test(line)), 'Each content-on line should match expected format');
-  t.ok(bodyLinesOff.every((line) => basePattern.test(line)), 'Each content-off line should match expected format');
-
-  rawFiles.forEach((fileName) => {
-    const typeName = path.parse(fileName).name;
-    t.ok(bodyLinesOn.some((line) => line.includes(` ${typeName}`)), `Content-on body should include one line for ${typeName}`);
-    t.ok(bodyLinesOff.some((line) => line.includes(` ${typeName}`)), `Content-off body should include one line for ${typeName}`);
-  });
-
-  t.ok(bodyLinesOn.some((line) => line.includes('video-call 00:31:00')), 'Video call lines should include duration in canonical format');
-  t.ok(bodyLinesOn.some((line) => /\blink-text\b(?:\s+\d+ chars)?\s*\/\s*https?:\/\//i.test(line)), 'link-text line should include URL content in content-on export');
-  t.ok(bodyLinesOn.some((line) => /\blink-embed-no-text\b\s*\/\s*https?:\/\//i.test(line)), 'link-embed-no-text line should include URL content in content-on export');
-  t.ok(bodyLinesOn.some((line) => /\blink-text\b\s+\d+ chars\s*\/\s*https?:\/\//i.test(line)), 'link-text lines with text should include content length');
-  t.ok(bodyLinesOff.every((line) => !line.includes(' / ')), 'Content-off export should not include slash-delimited content');
-
-  const offTextLengthLine = bodyLinesOff.find((line) => /\btext\b\s+\d+ chars(?:\s|$)/i.test(line));
-  t.ok(offTextLengthLine, 'Content-off export should include text content length when content is disabled');
-
-  bodyLinesOn.forEach((line, idx) => {
-    t.notOk(/[\r\n]/.test(line), `Content-on line ${idx + 1} should be single-line text`);
-  });
-  bodyLinesOff.forEach((line, idx) => {
-    t.notOk(/[\r\n]/.test(line), `Content-off line ${idx + 1} should be single-line text`);
-  });
-
-  t.ok(bodyLinesOn.some((line) => line.includes('XYZ')), 'Content-on export should contain aliased sender names');
-  t.ok(bodyLinesOff.some((line) => line.includes('XYZ')), 'Content-off export should contain aliased sender names');
-  t.notOk(bodyLinesOn.some((line) => line.includes('Rob')), 'Content-on body should not contain raw sender names');
-  t.notOk(bodyLinesOff.some((line) => line.includes('Rob')), 'Content-off body should not contain raw sender names');
-
-  // video-link: URL must appear after / in content-on
-  t.ok(bodyLinesOn.some((line) => /\bvideo-link\b\s*\/\s*\w+_\w+\//i.test(line)), 'video-link line in content-on should include compact URL (domain_tld/path) after /');
-  // video-link: no slash-content in content-off
-  t.notOk(bodyLinesOff.some((line) => /\bvideo-link\b.*\s\/\s/i.test(line)), 'video-link line in content-off should not include content after /');
-
-  // reactions: content-off lines should not include slash-delimited content for reaction type
-  t.notOk(bodyLinesOff.some((line) => /\breaction\b.*\s\/\s/i.test(line)), 'reaction lines in content-off should not include content after /');
-  // reactions: content-on lines should also not include slash-content (reactions have null content)
-  t.notOk(bodyLinesOn.some((line) => /\breaction\b.*\s\/\s/i.test(line)), 'reaction lines in content-on should not include content after / (null content)');
-
-  t.end();
-});
-
-// ---------------------------------------------------------------------------
-// textExportDurationNormalization
-// ---------------------------------------------------------------------------
-
-tap.test('textExportDurationNormalization', (t) => {
-  const txtDir = path.join(__dirname, '..', 'dataset/output-txt');
-  const contentOnPath = path.join(txtDir, 'fb-chats-export-content-on.txt');
-  const contentOffPath = path.join(txtDir, 'fb-chats-export-content-off.txt');
-
-  t.ok(fs.existsSync(contentOnPath), 'Content-on TXT export should exist');
-  t.ok(fs.existsSync(contentOffPath), 'Content-off TXT export should exist');
-
-  const contentOn = fs.readFileSync(contentOnPath, 'utf8');
-  const contentOff = fs.readFileSync(contentOffPath, 'utf8');
-
-  const bodyStartOn = contentOn.indexOf('\n---\n');
-  const bodyStartOff = contentOff.indexOf('\n---\n');
-
-  t.ok(bodyStartOn > -1, 'Content-on should have --- separator');
-  t.ok(bodyStartOff > -1, 'Content-off should have --- separator');
-
-  const bodyLinesOn = contentOn.substring(bodyStartOn).split(/\r?\n/).filter((line) => /^\[\d{4}-\d{2}-\d{2}/.test(line));
-  const bodyLinesOff = contentOff.substring(bodyStartOff).split(/\r?\n/).filter((line) => /^\[\d{4}-\d{2}-\d{2}/.test(line));
-
-  bodyLinesOn.forEach((line, idx) => {
-    const contentPart = line.substring(line.indexOf('] ') + 2);
-    const durationMatches = contentPart.match(/(\d+:\d{2}(?::\d{2})?|\d+)\s+(?!chars)/);
-    if (durationMatches && /\d+:\d{2}(?::\d{2})?/.test(durationMatches[0])) {
-      t.ok(
-        /\d+:\d{2}(?::\d{2})?\s+mins/.test(contentPart),
-        `Line ${idx + 1} in content-on should have normalized duration: ${line}`
-      );
-    }
-  });
-
-  bodyLinesOff.forEach((line, idx) => {
-    const contentPart = line.substring(line.indexOf('] ') + 2);
-    const durationMatches = contentPart.match(/(\d+:\d{2}(?::\d{2})?|\d+)\s+(?!chars)/);
-    if (durationMatches && /\d+:\d{2}(?::\d{2})?/.test(durationMatches[0])) {
-      t.ok(
-        /\d+:\d{2}(?::\d{2})?\s+mins/.test(contentPart),
-        `Line ${idx + 1} in content-off should have normalized duration: ${line}`
-      );
-    }
-  });
-
-  t.end();
-});
 
 // ---------------------------------------------------------------------------
 // formatLine option combinations
@@ -1183,24 +970,24 @@ tap.test('formatExportHeaderAllTypes', (t) => {
 
 tap.test('formatExportFileNameDateRange', (t) => {
   t.equal(
-    formatExportFileName('content-on', { fromDate: '2026-05-01', toDate: '2026-05-19' }),
-    'fb-export-2026-05-01\u20132026-05-19-content-on.txt',
-    'content-on with date range'
+    formatExportFileName('export-max', { fromDate: '2026-05-01', toDate: '2026-05-19' }),
+    'fb-export-2026-05-01\u20132026-05-19-max.txt',
+    'export-max with date range'
   );
   t.equal(
-    formatExportFileName('content-off', { fromDate: '2026-05-01', toDate: '2026-05-19' }),
-    'fb-export-2026-05-01\u20132026-05-19-content-off.txt',
-    'content-off with date range'
+    formatExportFileName('export-minimal', { fromDate: '2026-05-01', toDate: '2026-05-19' }),
+    'fb-export-2026-05-01\u20132026-05-19-minimal.txt',
+    'export-minimal with date range'
   );
   t.equal(
-    formatExportFileName('content-on'),
-    'fb-chats-export-content-on.txt',
+    formatExportFileName('export-max'),
+    'fb-chats-export-max.txt',
     'no date range falls back to fixed name'
   );
   t.equal(
-    formatExportFileName('content-off'),
-    'fb-chats-export-content-off.txt',
-    'content-off no date range falls back to fixed name'
+    formatExportFileName('export-minimal'),
+    'fb-chats-export-minimal.txt',
+    'export-minimal no date range falls back to fixed name'
   );
   t.end();
 });

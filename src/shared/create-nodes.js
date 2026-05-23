@@ -6,9 +6,9 @@ const { getContentMeta, normalizeDuration } = require('./message-metadata');
 
 const helperDir = path.resolve(__dirname);
 const baseDir = path.resolve(helperDir, '..', '..');
-const rawDir = path.join(baseDir, 'dataset/input-html-raw');
-const optimizedDir = path.join(baseDir, 'dataset/output-html');
-const nodesDir = path.join(baseDir, 'dataset/output-json');
+const rawDir = path.join(baseDir, 'data-input');
+const optimizedDir = path.join(baseDir, 'data-output/optimized-html');
+const nodesDir = path.join(baseDir, 'data-output/json-format');
 const metadataDir = path.join(helperDir, 'metadata-generated');
 
 function relativePath(p) {
@@ -250,7 +250,7 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
   const nodes = [];
   const messageTagRe = /<([a-zA-Z0-9]+)([^>]*)>/gi;
   let match;
-  const route = path.join('dataset/output-html', fileName).replace(/\\/g, '/');
+  const route = path.join('data-output/optimized-html', fileName).replace(/\\/g, '/');
 
   while ((match = messageTagRe.exec(html)) !== null) {
     const attrs = match[2];

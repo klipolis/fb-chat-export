@@ -22,6 +22,15 @@ Future / requires-new-samples tasks are in [TODO-future.md](TODO-future.md).
 
 ---
 
+## Repo structure
+
+- **Centralize runtime configuration in `data-config/`** — Move `alias-names.json` to `data-config/alias-names.json` and keep any platform-specific mirrors under `src/platforms/userscript/` if needed for packaging or userscript packaging metadata. This keeps raw input, output artifacts, and configuration separate.
+- **Keep platform-specific packaging under `src/platforms/userscript/`** — The userscript header, build-time metadata, and any userscript-only config files should live together there. Shared logic stays in `src/shared/` and browser UI lives in `src/frontend/src/`.
+- **Add a frontend custom filename input** — Expose a one-line `File:` input in the export panel so users can choose a stable download name instead of only the generated chat-derived filename.
+- **Apply alias replacements to message text too** — After the scan determines the sender alias, also replace matching names inside the final exported text content. This is a better user-facing alias behavior than only renaming sender labels.
+
+---
+
 ## Export TXT format
 
 - **Options block in TXT header** — After the `Method:` line and before the `---` separator (and before the summary block), add an `Options:` block that lists the state of each export option as `option : true/false`, followed by a `Aliases:` block listing each `Sender : Alias` pair (one per line). Example:
@@ -51,6 +60,15 @@ Future / requires-new-samples tasks are in [TODO-future.md](TODO-future.md).
 
 ## Build tooling
 
-- **Runtime: stay on Node.js (Deno not recommended)** — *Assessment:* Deno 2.0 is Node-compatible at the API level but the ecosystem friction outweighs the benefits for this project. Blockers: (1) pnpm is not supported in Deno — the Deno runtime uses its own module resolution; (2) Husky depends on shell hooks and npm lifecycle scripts (`prepare`) which do not map to Deno; (3) esbuild is invoked via Node API in `src/frontend/build.js`; (4) the frontend output is a browser userscript — Deno adds no value there. Potential upside (built-in TypeScript, `deno fmt`, `deno test`) is achievable in Node.js without migration cost. **Recommendation:** no migration. If TypeScript is wanted, add `tsc --noEmit` as a check-only step.
+- **Runtime: Node.js only** — Node.js remains the supported runtime for this project. Using Deno is intentionally not planned because pnpm, Husky, and esbuild all depend on Node-compatible package and lifecycle behavior. If stronger type checking is desired, add `tsc --noEmit` as a Node-only check step.
+
+---
+
+## Performance and test ideas
+
+- **Incremental raw-file rebuilds** — Add a file-change cache so only changed raw input files are reprocessed during `build:server` instead of rebuilding all outputs every time.
+- **Memory pressure diagnostics** — Add a lightweight memory report to server build logs and document expected heap usage for large raw input sets.
+- **Faster regression tests** — Split slow end-to-end validation into a dedicated `tests/integration/` suite with shared build fixtures and a `tap` helper to reuse a single build invocation.
+- **Stable dataset anchoring** — Document a fixed reference date for relative `today`/`yesterday` parsing so golden snapshots remain stable across calendar days.
 
 

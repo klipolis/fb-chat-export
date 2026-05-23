@@ -15,18 +15,18 @@ const {
 const { chooseRule } = require('./shared/message-metadata');
 
 const baseDir = path.resolve(__dirname, '..');
-const rawDir = path.join(baseDir, 'dataset/input-html-raw');
-const optimizedDir = path.join(baseDir, 'dataset/output-html');
-const previewDir = path.join(baseDir, 'dataset/output-json');
+const rawDir = path.join(baseDir, 'data-input');
+const optimizedDir = path.join(baseDir, 'data-output/optimized-html');
+const previewDir = path.join(baseDir, 'data-output/json-format');
 const rawMetadataPath = path.join(previewDir, 'raw-input-metadata.json');
-const exportDir = path.join(baseDir, 'dataset/output-txt');
+const exportDir = path.join(baseDir, 'data-output/final-export');
 
-const relRaw = './dataset/input-html-raw';
-const relOptimized = './dataset/output-html';
-const relPreview = './dataset/output-json';
-const relExport = './dataset/output-txt';
+const relRaw = './data-input';
+const relOptimized = './data-output/optimized-html';
+const relPreview = './data-output/json-format';
+const relExport = './data-output/final-export';
 
-const aliasNamesPath = path.join(baseDir, 'dataset/alias-names.json');
+const aliasNamesPath = path.join(baseDir, 'data-config/alias-names.json');
 const aliasNameMap = fs.existsSync(aliasNamesPath)
   ? JSON.parse(fs.readFileSync(aliasNamesPath, 'utf8'))
   : {};
@@ -178,8 +178,8 @@ function writeTextExports(files, cleanedHtmlByFile, referenceDate) {
 
   const summaryOnly = buildExportText([], `${headerTextSummaryOnly}${summaryTextForSummaryOnly}`);
 
-  const onPath = path.join(exportDir, formatExportFileName('content-on'));
-  const offPath = path.join(exportDir, formatExportFileName('content-off'));
+  const onPath = path.join(exportDir, formatExportFileName('export-max'));
+  const offPath = path.join(exportDir, formatExportFileName('export-minimal'));
   const summaryPath = path.join(exportDir, 'fb-chats-export-summary.txt');
   fs.writeFileSync(onPath, contentOn, 'utf8');
   fs.writeFileSync(offPath, contentOff, 'utf8');
@@ -249,7 +249,7 @@ function main() {
 
   runCreateNodes();
   const exportPaths = writeTextExports(files, cleanedHtmlByFile, referenceDate);
-  console.log(`Done: HTML + JSON in ./dataset/output-html and ./dataset/output-json`);
+  console.log(`Done: HTML + JSON in ./data-output/optimized-html and ./data-output/json-format`);
   exportPaths.forEach((exportPath) => {
     console.log(`Generated chat text export: ${path.relative(baseDir, exportPath)}`);
   });

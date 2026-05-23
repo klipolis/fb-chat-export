@@ -15,4 +15,6 @@ These are intentional design decisions, not omissions.
 
 50. **`@updateURL` / `@downloadURL` header fields** — Auto-update links are deliberately omitted. Users install from a known URL; silent auto-update without explicit user review is undesirable for a script with DOM access.
 
+51. **Deno migration** — Migration to Deno is intentionally not planned. The project depends on Node-centric tooling such as pnpm, Husky, and esbuild, and the browser userscript output path does not benefit from Deno.
+
 **video-link: duration from embed title** — YouTube embed card titles vary in format and are not a reliable source for duration metadata. Duration extraction for video-link entries is not planned.

@@ -3,7 +3,7 @@
 This file documents the developer-facing rules that map raw Messenger HTML into end-user exports. It is intentionally separate from setup and product requirements because it describes implementation behavior, not user-facing features.
 
 ## Scope
-- Raw HTML in `dataset/input-html-raw/` is the source of truth.
+- Raw HTML in `data-input/` is the source of truth.
 - Message rules map each raw file name to one primary message type.
 - Shared helpers convert the raw content into both JSON preview files and TXT exports.
 - The same semantic rules should be used by server and frontend build paths where possible.
@@ -49,9 +49,9 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 
 ## TXT Export Rules
 - TXT exports have two modes:
-- `content-on`: show content when allowed by the export mode.
-- `content-off`: suppress the trailing content section.
-- For link message types in `content-on`, output the URL content after `/`. For `video-link`, the content uses a compact URL form: scheme stripped, domain dots replaced with underscores, path truncated to 10 characters with `...` (e.g. `youtube_com/shorts/IK...`). The raw URL in `data_raw.content` is the full resolved URL without query string.
+- `export-max`: show content when allowed by the export mode.
+- `export-minimal`: suppress the trailing content section.
+- For link message types in `export-max`, output the URL content after `/`. For `video-link`, the content uses a compact URL form: scheme stripped, domain dots replaced with underscores, path truncated to 10 characters with `...` (e.g. `youtube_com/shorts/IK...`). The raw URL in `data_raw.content` is the full resolved URL without query string.
 - The plain line format should be easy to scan by developers and reviewers.
 - Summary sections should be schema-driven from `tests/generated-txt-schema.json` and end with `---`.
 - Summary heading should use `Total Summary`.
@@ -81,7 +81,7 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 - sender names are valid and readable
 - raw file names map to the expected message types
 - link, duration, and length behavior matches the format rules
-- content-on and content-off exports differ only in the content section
+- export-max and export-minimal exports differ only in the content section
 
 ## Maintenance Notes
 - Update this file whenever a new raw file type is added or an export rule changes.

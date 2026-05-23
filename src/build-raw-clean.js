@@ -2,7 +2,7 @@
  * build-raw-clean
  *
  * Strips Facebook-internal styling tokens from raw HTML files in
- * dataset/input-html-raw/ without running full optimisation.
+ * data-input/ without running full optimisation.
  *
  * What is removed:
  *  - class tokens that start with "x" (Facebook's generated utility classes)
@@ -21,7 +21,7 @@ const fs = require('fs');
 const path = require('path');
 
 const baseDir = path.resolve(__dirname, '..');
-const rawDir = path.join(baseDir, 'dataset/input-html-raw');
+const rawDir = path.join(baseDir, 'data-input');
 
 function cleanXClasses(html) {
   // Remove inline style attributes
@@ -66,7 +66,7 @@ function main() {
   if (changed === 0) {
     console.log('All raw HTML files already clean (no x-classes or inline styles found).');
   } else {
-    console.log(`Done: ${changed} file(s) updated in ./dataset/input-html-raw`);
+    console.log(`Done: ${changed} file(s) updated in ./data-input`);
   }
 }
 

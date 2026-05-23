@@ -44,7 +44,7 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Text messages are no longer misclassified as voice-message in the browser scan when no audio timer element is present.
 - Message type classification now stops at the first matching rule; once a type is identified from the aria-label, heuristic overrides are skipped.
-- Downloaded export filename now includes the selected date range (e.g. `fb-export-2026-05-01–2026-05-19-content-on.txt`).
+- Downloaded export filename now includes the selected date range (e.g. `fb-export-2026-05-01–2026-05-19-max.txt`).
 - Call duration totals in the browser summary are now counted correctly; previously, timers in `HH:MM` format without the word "min" were counted as 0 minutes.
 - Messages whose aria-label uses a full calendar date (e.g. "May 7, 2026, 7:09 AM, You: text") without the "At" prefix are now correctly parsed; date, sender, and content are each placed in the right field.
 - Duration values in exports and JSON previews now use `HH:MM:SS` / `MM:SS` clock format (e.g. `18:00`, `00:20`) without a trailing "mins" label.
@@ -105,7 +105,7 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `formatLine` option combinations, `buildSummary` edge cases, and `parseLocalDate` format variants covered by tests.
 - `test-ui.js` DOM sandbox no longer mutates the Node global `document`.
 - `isValidSender`, `findValidDatePrefix`, and extended `normalizeDateToSimple` cases covered by unit tests.
-- `aliasChatNames` accepts an optional name map; `dataset/alias-names.json` supplies default replacements (`You` → `Youghurt`, detected name → `Alpha`) used by the server build and tests.
+- `aliasChatNames` accepts an optional name map; `data-input/alias-names.json` supplies default replacements (`You` → `Youghurt`, detected name → `Alpha`) used by the server build and tests.
 - `aliasChatNames` skips replacing a name that is already the target value (guards against double-aliasing on re-runs).
 - Alias panel now shows two name fields: one for your own name and one for the other person; both replace in the export.
 - `build:ci` explicitly runs the test suite after the build step rather than relying on it being embedded in the `build` script.
@@ -166,7 +166,7 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- TXT exports now include link URL content in content-on mode.
+- TXT exports now include link URL content in export-max mode.
 - Link content now uses the resolved URL instead of a generic label.
 - Added fallback Google Maps URL for pinned locations with no direct link.
 - Fixed sender name parsing for dash-form aria-labels so leading conversational tokens stay in message content.
@@ -176,7 +176,7 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Renamed demo pipeline folders to `dataset/input-html-raw/`, `dataset/output-html/`, and `dataset/output-json/`.
+- Renamed demo pipeline folders to `data-input/`, `data-output/optimized-html/`, and `data-output/json-format/`.
 - Frontend and server now share the same message classification and export logic.
 - Build-specific version stamping added to the frontend bundle.
 - Preview exports now include optional call duration.
