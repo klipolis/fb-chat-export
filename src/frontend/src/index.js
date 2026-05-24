@@ -414,8 +414,9 @@ import {
             : originalHref || text
           : text;
 
+        const displayType = type === 'reaction' && text ? 'text' : type;
         const lineEntry = {
-          fileType: type,
+          fileType: displayType,
           semanticType: type,
           dateText: displayDate,
           sender: authorLabel,

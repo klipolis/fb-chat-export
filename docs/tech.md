@@ -1,5 +1,14 @@
 # Technical guide
 
+```mermaid
+flowchart TB
+  A[Raw HTML input] --> B[Server build]
+  B --> C[Optimized HTML snapshots]
+  B --> D[JSON preview + TXT export]
+  E[Frontend bundle] --> F[Browser export panel]
+  F --> G[TXT export file]
+```
+
 ## Build flow
 
 The repository produces two main outputs:
@@ -35,7 +44,9 @@ The build-server path reads raw files from `data-input/`, optimizes them into HT
 - `pnpm run build:raw` — run the server build and write aliased raw HTML updates.
 - `pnpm run build:ci` — CI-friendly build with lint, docs checks, build, and test steps.
 - `pnpm run validate:generated-json` — verify the JSON preview schema.
-- `pnpm run lint` — run ESLint on source and tests.
+- `pnpm run lint` — run package JSON validation, TODO checks, and ESLint on source and tests.
+- `pnpm run lint:package` — verify `package.json` ordering and script consistency.
+- `pnpm run lint:todos` — verify `.TODO` files and `.todo/config.json`.
 - `pnpm run lint:docs` — validate markdown quality.
 - `pnpm run link:docs` — check external documentation links.
 
@@ -47,9 +58,11 @@ The generated `.txt` export has three main sections:
 2. Optional summary block
 3. One-line message entries
 
+The server build also writes a detailed summary-only export to `fb-chats-export-summary-detailed.txt`, which emits uncombined message totals and participant counts.
+
 ### Header block
 
-```
+```text
 Method: browser
 Message types:
 - image
@@ -69,7 +82,7 @@ Aliases:
 
 When enabled, the summary block includes totals and per-participant counts:
 
-```
+```text
 Total Summary
 42 messages / 5 days
 ~ 30 text;
@@ -82,7 +95,7 @@ Total Summary
 
 Each message line follows this pattern:
 
-```
+```text
 [YYYY-MM-DD HH:MM] Sender: type length chars / content text
 ```
 

@@ -20,6 +20,13 @@ function splitSenderAndMessage(value) {
   return { sender, message };
 }
 
+let sharedRelativeDateRules = [];
+try {
+  sharedRelativeDateRules = require('../../data-config/frontend_shared.json').relativeDateRules || [];
+} catch (error) {
+  sharedRelativeDateRules = [];
+}
+
 function findValidDatePrefix(text, referenceDate) {
   const parts = text
     .split(',')
@@ -29,6 +36,74 @@ function findValidDatePrefix(text, referenceDate) {
   for (let i = 0; i < Math.min(parts.length, 3); i += 1) {
     candidate = candidate ? `${candidate}, ${parts[i]}` : parts[i];
     if (normalizeDateToIso(candidate, referenceDate)) return candidate;
+  }
+  return null;
+}
+
+function parseRelativeRuleMatch(match, ruleName, now) {
+  if (!match) return null;
+  if (ruleName === 'relativeDay') {
+    const [, when, hourPart, minute, meridiem] = match;
+    const date = new Date(now);
+    if (when.toLowerCase() === 'yesterday') date.setDate(date.getDate() - 1);
+    let hour = Number(hourPart);
+    if (meridiem) {
+      if (meridiem.toLowerCase() === 'pm' && hour < 12) hour += 12;
+      if (meridiem.toLowerCase() === 'am' && hour === 12) hour = 0;
+    }
+    date.setHours(hour, Number(minute), 0, 0);
+    return date;
+  }
+  if (ruleName === 'weekday') {
+    const [, dayName, hourPart = '0', minute = '00', meridiem] = match;
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const targetDow = days.indexOf(dayName.toLowerCase());
+    if (targetDow < 0) return null;
+    const diff = (now.getDay() - targetDow + 7) % 7;
+    const date = new Date(now);
+    date.setDate(date.getDate() - diff);
+    let hour = Number(hourPart);
+    if (meridiem) {
+      if (meridiem.toLowerCase() === 'pm' && hour < 12) hour += 12;
+      if (meridiem.toLowerCase() === 'am' && hour === 12) hour = 0;
+    }
+    date.setHours(hour, Number(minute), 0, 0);
+    return date;
+  }
+  if (ruleName === 'timeOnly') {
+    const [, hourPart, minute, meridiem] = match;
+    const date = new Date(now);
+    let hour = Number(hourPart);
+    if (meridiem) {
+      if (meridiem.toLowerCase() === 'pm' && hour < 12) hour += 12;
+      if (meridiem.toLowerCase() === 'am' && hour === 12) hour = 0;
+    }
+    date.setHours(hour, Number(minute), 0, 0);
+    return date;
+  }
+  return null;
+}
+
+function normalizeSharedRelativeDate(text, referenceDate) {
+  if (!Array.isArray(sharedRelativeDateRules) || sharedRelativeDateRules.length === 0) {
+    return null;
+  }
+  const now = parseReferenceDate(referenceDate);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  for (const rule of sharedRelativeDateRules) {
+    if (!rule || !rule.pattern) continue;
+    const regex = new RegExp(rule.pattern, 'i');
+    const match = text.match(regex);
+    if (!match) continue;
+    const date = parseRelativeRuleMatch(match, rule.name, today);
+    if (!date) continue;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}.${month}.${day} ${hours}:${minutes}`;
   }
   return null;
 }
@@ -212,6 +287,9 @@ function normalizeDateToSimple(dateString, referenceDate = new Date()) {
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${year}.${month}.${day} ${hours}:${minutes}`;
   }
+
+  const sharedNormalized = normalizeSharedRelativeDate(text, referenceDate);
+  if (sharedNormalized) return sharedNormalized;
 
   const now = parseReferenceDate(referenceDate);
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());

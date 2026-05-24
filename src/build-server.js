@@ -192,7 +192,7 @@ function writeTextExports(files, cleanedHtmlByFile, referenceDate) {
 
   const onPath = path.join(exportDir, formatExportFileName('export-max'));
   const offPath = path.join(exportDir, formatExportFileName('export-minimal'));
-  const summaryPath = path.join(exportDir, 'fb-chats-export-summary.txt');
+  const summaryPath = path.join(exportDir, 'fb-chats-export-summary-detailed.txt');
   fs.writeFileSync(onPath, contentOn, 'utf8');
   fs.writeFileSync(offPath, contentOff, 'utf8');
   fs.writeFileSync(summaryPath, summaryOnly, 'utf8');

@@ -1,5 +1,13 @@
 # Documentation Site
 
+```mermaid
+flowchart TB
+  A[Clone repository] --> B[Install dependencies]
+  B --> C[Build or run docs checks]
+  C --> D[Browse user guide or developer docs]
+  D --> E[Run release or validation workflows]
+```
+
 This page is a high-level docs landing page for quick onboarding and architecture overview.
 
 ## Quick start
@@ -26,6 +34,10 @@ This page is a high-level docs landing page for quick onboarding and architectur
 ## Docs and contribution
 
 - `README.md` is the repository landing page.
+- `docs/user-guide/index.md` contains end-user usage instructions and export format details.
+- `docs/developer-guide/index.md` contains build, test, and release guidance.
+- `docs/developer-guide/release-management.md` contains release workflow and changelog rules.
+- `docs/todo-management.md` contains the repository TODO process and numbering rules.
 - `CONTRIBUTING.md` explains how to contribute.
 - `CHANGELOG.md` contains release history and notes.
 - `CODE_OF_CONDUCT.md` describes expected community behavior.

@@ -25,6 +25,9 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - `formatExportHeader` now writes `Options used:` and `Other ones:` lines and separates header sections with blank lines.
 - `data-config/alias-names.json` is now the canonical runtime alias source; duplicate userscript alias packaging metadata was removed.
+- `package.json` script ordering was cleaned and a new `lint:todos` command was added to validate `.TODO` files and `.todo/config.json`.
+- Documentation was reorganised into `docs/user-guide` and `docs/developer-guide`, with Mermaid flowcharts added to key docs and a new release management guide.
+- TODO management docs now explicitly allow additional manual files in `.todo/` to be preserved as-is.
 
 - Sticker and animated gif messages are no longer counted as images in the summary; they count toward the text total alongside reactions.
 - Reaction messages using an emoji image (`<img>` element) instead of an SVG icon are now correctly classified as `reaction` type.

@@ -1,5 +1,14 @@
 # TODO Management
 
+```mermaid
+flowchart TD
+  A[.todo/config.json] --> B[.TODO/TODO-next.md]
+  B --> C[Implement task]
+  C --> D[.TODO/TODO-done.md]
+  A --> E[Maintain task numbering]
+  A --> F[Keep Links section current]
+```
+
 This repository uses a small structured TODO system for developer work tracking.
 
 ## Files
@@ -10,6 +19,8 @@ This repository uses a small structured TODO system for developer work tracking.
 - `.TODO/TODO-ignore.md` — intentionally deferred or rejected items with rationale.
 - `.todo/config.json` — authoritative TODO metadata, including the next task number, file paths, and instructions.
 
+> The `.todo/` directory may also contain other manual or repository-specific files. Keep those files as-is unless a change to TODO metadata is required.
+
 ## How to add a new task
 
 1. Open `.todo/config.json` first.
@@ -17,6 +28,8 @@ This repository uses a small structured TODO system for developer work tracking.
 3. Add one bullet per task in `.TODO/TODO-next.md`.
 4. Use the `currentTaskPrefix` and `taskIdPattern` rules from `.todo/config.json`.
 5. Update `nextTaskNumber` only when you add a new task.
+
+> Use `pnpm run lint:todos` to verify that `.TODO` files and `.todo/config.json` are consistent.
 
 Example:
 

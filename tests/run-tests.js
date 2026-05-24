@@ -894,6 +894,19 @@ tap.test('textMessageDoesNotBecomeVoiceMessage', (t) => {
   t.end();
 });
 
+tap.test('reactionAsciiSmileyPreservesContent', (t) => {
+  const meta = getContentMeta({
+    fileName: '',
+    ariaLabel: 'At 3:30 PM, John: :)',
+    message: ':)',
+    timerText: '',
+  });
+  t.equal(meta.type, 'reaction', 'pure smiley text should be classified as reaction');
+  t.equal(meta.text, ':)', 'ascii smiley content should be preserved for reaction text');
+  t.equal(meta.contentLength, '2 chars', 'smiley content length should count as 2 chars');
+  t.end();
+});
+
 // ---------------------------------------------------------------------------
 // chooseRuleAllEntries
 // ---------------------------------------------------------------------------

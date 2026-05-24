@@ -62,12 +62,12 @@ tap.test('buildServerTextExport', (t) => {
     [
       'fb-chats-export-max.txt',
       'fb-chats-export-minimal.txt',
-      'fb-chats-export-summary.txt',
+      'fb-chats-export-summary-detailed.txt',
     ],
     'Expected three stable TXT export filenames'
   );
 
-  const summaryTxtPath = path.join(txtDir, 'fb-chats-export-summary.txt');
+  const summaryTxtPath = path.join(txtDir, 'fb-chats-export-summary-detailed.txt');
   t.ok(fs.existsSync(summaryTxtPath), 'Expected fb-chats-export-summary.txt to be generated');
   t.notOk(fs.existsSync(path.join(txtDir, 'fb-chats-export-summary.json')), 'Summary JSON export should not be generated');
 

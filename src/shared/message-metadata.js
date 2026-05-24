@@ -279,7 +279,10 @@ function getContentMeta({
   } else if (type === 'gif') {
     contentText = 'gif';
   } else if (type === 'reaction') {
-    contentText = null;
+    const reactionOnlyTextMatch = /^[:;=8Xx][-~]?[)DdpP(/\\\]]$/u;
+    const normalizedReaction = normalizedText.trim();
+    const isAsciiReaction = reactionOnlyTextMatch.test(normalizedReaction);
+    contentText = isAsciiReaction ? normalizedReaction : null;
   } else if (type === 'video-link') {
     contentText = formatUrlCompact(resolvedLink || message) || 'video link';
   } else if (type === 'image') {
