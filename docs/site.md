@@ -9,7 +9,7 @@ This page is a high-level docs landing page for quick onboarding and architectur
 3. Run `pnpm run build:ci` to verify the full pipeline.
 4. Run `pnpm run build:frontend` to generate `dist/app.js`.
 
-> Optional: use `BUILD_PLATFORM=userscript pnpm run build:frontend` to emit a bundle with a Tampermonkey-compatible userscript header.
+> Optional: use `BUILD_PLATFORM=userscript pnpm run build:frontend` to emit a bundle with a Tampermonkey-compatible userscript header. The userscript header template is now stored in `data-config/userscript/header.txt`.
 
 ## Architecture overview
 

@@ -33,7 +33,7 @@ tap.test('validate release sync for changelog, schema, and dist artifacts', (t) 
   t.ok(/^##\s+v\d+\.\d+\.\d+/m.test(changelog), 'CHANGELOG.md must include a top-level release version heading');
   t.ok(
     /(dist\/app\.js|export|TXT|schema)/i.test(changelog),
-    'CHANGELOG.md should reference export, schema, or dist build changes'
+    'CHANGELOG.md references export, schema, or dist build changes'
   );
 
   t.end();

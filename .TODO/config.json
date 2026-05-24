@@ -1,0 +1,18 @@
+{
+  "currentTaskPrefix": "T",
+  "nextTaskNumber": 126,
+  "todoFiles": {
+    "next": ".TODO/TODO-next.md",
+    "done": ".TODO/TODO-done.md",
+    "ignore": ".TODO/TODO-ignore.md",
+    "future": ".TODO/TODO-future.md"
+  },
+  "linksHeader": "Links",
+  "taskIdPattern": "^T\\d{2,}$",
+  "instructions": "Get T-number (task number) from .todo/config file before adding new tasks. Assign a T-number to each new task in TODO-next, keep one task per bullet, move completed tasks to TODO-done, use a Links section for related references, and keep TODO metadata inside .todo.",
+  "suggestions": [
+    "Keep TODO-next focused on important developer and end-user work.",
+    "Use shared config under data-config/frontend_shared.json and data-config/server.json for the date/alias rule source.",
+    "Document relative date calculation rules and deterministic overwriteToday behaviour."
+  ]
+}

@@ -27,12 +27,24 @@ const relPreview = './data-output/json-format';
 const relExport = './data-output/final-export';
 
 const aliasNamesPath = path.join(baseDir, 'data-config/alias-names.json');
-const aliasNameMap = fs.existsSync(aliasNamesPath)
-  ? JSON.parse(fs.readFileSync(aliasNamesPath, 'utf8'))
+const sharedConfigPath = path.join(baseDir, 'data-config/frontend_shared.json');
+const serverConfigPath = path.join(baseDir, 'data-config/server.json');
+
+const sharedConfig = fs.existsSync(sharedConfigPath)
+  ? JSON.parse(fs.readFileSync(sharedConfigPath, 'utf8'))
+  : {};
+const serverConfig = fs.existsSync(serverConfigPath)
+  ? JSON.parse(fs.readFileSync(serverConfigPath, 'utf8'))
   : {};
 
+const aliasNameMap = sharedConfig.aliasNames ||
+  (fs.existsSync(aliasNamesPath)
+    ? JSON.parse(fs.readFileSync(aliasNamesPath, 'utf8'))
+    : {});
+
 const writeRaw = process.env.BUILD_RAW === 'true';
-const referenceDate = process.env.BUILD_REFERENCE_DATE || '2026.05.22 00:00';
+const referenceDate = process.env.BUILD_REFERENCE_DATE ||
+  (serverConfig.overwriteToday ? `${serverConfig.overwriteToday.replace(/-/g, '.')} 00:00` : '2026.05.22 00:00');
 
 function optimizeFile(fileName, rawHtml, cleanedHtml) {
   const inputPath = path.join(rawDir, fileName);

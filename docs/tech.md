@@ -54,12 +54,14 @@ Method: browser
 Message types:
 - image
 - text
-Options:
-  content : true
-  rawLink : false
+
+Options used: content, rawLink
+Other ones: calls, length, summary
+
 Aliases:
   You : Youghurt
   any : Alpha
+
 ---
 ```
 

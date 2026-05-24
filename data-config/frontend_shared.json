@@ -1,0 +1,27 @@
+{
+  "aliasNames": {
+    "You": "Youghurt",
+    "Rob": "Barnabas",
+    "any": "XYZ"
+  },
+  "relativeDateRules": [
+    {
+      "name": "relativeDay",
+      "pattern": "^(today|yesterday)(?:\\s+at\\s+)?(\\d{1,2}):(\\d{2})\\s*(am|pm)?$",
+      "window": "24h",
+      "description": "time-only relative labels are resolved relative to the current day or yesterday"
+    },
+    {
+      "name": "weekday",
+      "pattern": "^(sunday|monday|tuesday|wednesday|thursday|friday|saturday)(?:\\s+(\\d{1,2}):(\\d{2})\\s*(am|pm)?)?$",
+      "window": "7d",
+      "description": "weekday labels resolve to the most recent matching day within the last 7 days"
+    },
+    {
+      "name": "timeOnly",
+      "pattern": "^(?:at\\s*)?(\\d{1,2}):(\\d{2})\\s*(am|pm)?$",
+      "window": "24h",
+      "description": "time-only labels are resolved to the current day if within the last 24 hours"
+    }
+  ]
+}

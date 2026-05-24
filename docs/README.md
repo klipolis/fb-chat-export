@@ -149,7 +149,7 @@ Bob Summary
 - Run `pnpm install --frozen-lockfile` once after cloning the repo.
 - Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, build data preview JSON, and generate a text export in `data-output/final-export/`.
 - Run `pnpm run build:frontend` to emit the built bundle into `dist/app.js`.
-- Use `BUILD_PLATFORM=userscript pnpm run build:frontend` to emit a userscript-compatible bundle header.
+- Use `BUILD_PLATFORM=userscript pnpm run build:frontend` to emit a userscript-compatible bundle header. The userscript header template is stored in `data-config/userscript/header.txt`.
 - The browser export now writes a stable download file name such as `fb-chats-export-<shortname>.txt`.
 - Run `pnpm run validate:dist` to verify the generated bundle header and versioned dist artifact.
 - Run `pnpm run lint` to verify JavaScript style and catch syntax issues early.

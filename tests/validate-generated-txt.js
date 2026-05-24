@@ -51,13 +51,19 @@ function validateHeader(t, lines, schema, fileName) {
   );
 
   let index = 2 + expectedTypeLines.length;
-  if (lines[index] === 'Options:') {
+  while (index < lines.length && lines[index] === '') index += 1;
+
+  if (/^Options\b/.test(lines[index] || '')) {
     index += 1;
+    if (/^Other ones:/.test(lines[index] || '')) {
+      index += 1;
+    }
     while (index < lines.length && lines[index].startsWith('  ')) {
       index += 1;
     }
   }
 
+  while (index < lines.length && lines[index] === '') index += 1;
   if (lines[index] === 'Aliases:') {
     index += 1;
     while (index < lines.length && lines[index].startsWith('  ')) {
@@ -140,13 +146,13 @@ function validateBody(t, lines, patterns, startIndex, fileName, includeContent) 
       if (/\b(?:text|text-replied|text-image-replied|link-text|link-embed-no-text)\b/.test(line)) {
         t.ok(
           /\s\/\s/.test(line),
-          `${fileName}: includeContent export should include slash content segment when applicable: ${line}`
+          `${fileName}: includeContent export includes slash content segment when applicable: ${line}`
         );
       }
     } else {
       t.ok(
         !/\s\/\s/.test(line),
-        `${fileName}: export-minimal export should not contain slash content segments: ${line}`
+        `${fileName}: export-minimal export omits slash content segments: ${line}`
       );
     }
 

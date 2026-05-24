@@ -3,12 +3,16 @@
 Items that are worth doing but require new sample files, significant new scope, or external dependencies not yet available.
 Active next tasks are tracked in [TODO-next.md](TODO-next.md).
 
+## Links
+
+- [TODO-next.md](TODO-next.md)
+- [TODO-done.md](TODO-done.md)
+- [TODO-ignore.md](TODO-ignore.md)
+- [.todo/config.json](../.todo/config.json)
+
 ---
 
-42. **Sticker and GIF raw samples** — There are no `sticker.html` or `gif.html` files in `data-input`. Adding them would exercise the sticker/gif rules under the build-server path and extend golden-snapshot coverage.
-
-**video-link: additional platforms** — The current `matchLabel` covers YouTube and Vimeo. Extending to TikTok (`tiktok.com/`), Instagram Reels (`instagram.com/reel/`), etc. would improve browser-path classification when a plain video URL is pasted.
-
-**voice-note: content text language** — The export content is now `"voice note"` matching the type. If the FB UI label ever includes the actual note transcript or title, that richer text could replace the fallback.
-
-**Reaction emoji content extraction** — Verify that the `<img alt="[emoji]">` alt text is accessible from the optimised HTML if richer display content is ever needed in `data_preview`.
+- T108. **Sticker and GIF raw samples** — Add `sticker.html` and `gif.html` raw input files so the build-server rules and golden snapshots can be verified for sticker/gif classification.
+- T109. **video-link: additional platforms** — Extend `matchLabel` to cover TikTok, Instagram Reels, and similar video-hosting URLs for browser export classification.
+- T110. **voice-note: content text language** — When richer FB UI transcript data is available, replace the current fallback `"voice note"` content with the actual note text.
+- T111. **Reaction emoji content extraction** — Verify whether `<img alt="[emoji]">` alt text can be preserved in optimized HTML and used in `data_preview` when richer reaction content is desired.

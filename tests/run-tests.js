@@ -169,11 +169,11 @@ tap.test('getContentMeta', (t) => {
   t.equal(pinnedLocationMeta.type, 'link');
   t.ok(
     /^https:\/\/www\.google\.com\/maps\/search\//.test(pinnedLocationMeta.text),
-    'Pinned location link content should be mapped to a Google Maps URL'
+    'Pinned location link content is mapped as to a Google Maps URL'
   );
   t.ok(
     /^https:\/\/www\.google\.com\/maps\/search\//.test(pinnedLocationMeta.link),
-    'Pinned location link field should be mapped to a Google Maps URL'
+    'Pinned location link field is mapped as to a Google Maps URL'
   );
   t.equal(pinnedLocationMeta.contentLength, undefined);
 
@@ -202,13 +202,14 @@ tap.test('browserExportFormatting', (t) => {
     exportOptions: { content: true, rawLink: true },
     aliasMap: { You: 'Youghurt' },
   });
-  t.ok(header.includes('Method: browser'), 'Browser header should include method browser');
-  t.ok(header.includes('- text'), 'Browser header should list text message type');
-  t.ok(header.includes('- image'), 'Browser header should list image message type');
-  t.ok(header.includes('Options:'), 'Browser header should include Options block');
-  t.ok(header.includes('  content : true'), 'Browser header should include content option');
-  t.ok(header.includes('Aliases:'), 'Browser header should include Aliases block');
-  t.ok(header.includes('  You : Youghurt'), 'Browser header should include alias entries');
+  t.ok(header.includes('Method: browser'), 'header includes method browser');
+  t.ok(header.includes('- text'), 'header lists text message type');
+  t.ok(header.includes('- image'), 'header lists image message type');
+  t.ok(header.includes('Options used:'), 'header includes Options used line');
+  t.ok(header.includes('Other ones:'), 'header includes Other ones line');
+  t.ok(header.includes('Options used: content, rawLink'), 'header includes active options');
+  t.ok(header.includes('Aliases:'), 'header includes Aliases block');
+  t.ok(header.includes('  You : Youghurt'), 'header includes alias entries');
 
   const formattedLine = formatLine(
     {
@@ -225,7 +226,7 @@ tap.test('browserExportFormatting', (t) => {
   t.equal(
     formattedLine,
     '[2026-05-17 11:00] Alpha: text 00:00:20 5 / Hello\n',
-    'Browser line formatting should include type, duration, length, and content'
+    'Browser line formatting includes type, duration, length, and content'
   );
 
   const summary = buildSummary(
@@ -249,13 +250,13 @@ tap.test('browserExportFormatting', (t) => {
     ],
     { useMessageLabel: true }
   );
-  t.ok(summary.includes('Total Summary'), 'Summary output should include Total Summary title');
+  t.ok(summary.includes('Total Summary'), 'Summary output includes Total Summary title');
   t.ok(
     summary.includes('1 message / 1 day'),
-    'Summary output should use message/day labels with useMessageLabel'
+    'Summary output use message/day labels with useMessageLabel'
   );
-  t.ok(summary.includes('Alpha Summary'), 'Summary output should include Alpha Summary');
-  t.ok(summary.includes('Youghurt Summary'), 'Summary output should include Youghurt Summary');
+  t.ok(summary.includes('Alpha Summary'), 'Summary output includes Alpha Summary');
+  t.ok(summary.includes('Youghurt Summary'), 'Summary output includes Youghurt Summary');
 
   t.end();
 });
@@ -269,19 +270,19 @@ tap.test('browserExportDomRegression', (t) => {
     <div aria-roledescription="message" aria-label="At April 17, 2026, 3:45 PM, You: Hello world">Hello world</div>
   `);
   const entries = buildEntriesFromDocument(dom.window.document, 'text.html', referenceDate);
-  t.equal(entries.length, 1, 'Should parse one message entry');
+  t.equal(entries.length, 1, 'Parses one message entry');
 
   const entry = entries[0];
-  t.equal(entry.sender, 'Youghurt', 'Self-sender should be normalized to Youghurt');
-  t.equal(entry.semanticType, 'text', 'Message type should resolve to text');
-  t.equal(entry.dateText, '2026-04-17 15:45', 'Date text should be normalized to ISO-friendly format');
-  t.equal(entry.content, 'Hello world', 'Text content should be preserved');
+  t.equal(entry.sender, 'Youghurt', 'Self-sender is normalized to Youghurt');
+  t.equal(entry.semanticType, 'text', 'Message type resolve to text');
+  t.equal(entry.dateText, '2026-04-17 15:45', 'Date text is normalized to ISO-friendly format');
+  t.equal(entry.content, 'Hello world', 'Text content is preserved');
 
   const formattedLine = formatLine(entry, { includeContent: true, includeLength: true });
   t.equal(
     formattedLine,
     '[2026-04-17 15:45] Youghurt: text 11 chars / Hello world\n',
-    'Formatted browser line should include duration, length, and content'
+    'Formatted browser line includes duration, length, and content'
   );
 
   t.end();
@@ -327,7 +328,7 @@ function validatePreviewNode(t, node, fileName) {
   if (['voice-note', 'video-call', 'audio-call'].includes(node.type)) {
     if (preview.duration !== null) {
       t.equal(typeof preview.duration, 'string', `${fileName}: timed type duration must be string`);
-      t.equal(preview.length, null, `${fileName}: timed type with duration should have null length`);
+      t.equal(preview.length, null, `${fileName}: timed type with duration have null length`);
     }
   }
 }
@@ -363,7 +364,7 @@ tap.test('rawHtmlRegression', (t) => {
   )[0];
   t.equal(voiceNode.type, 'voice-note');
   t.equal(voiceNode.data_preview.duration, '00:00:20');
-  t.equal(voiceNode.data_raw.duration, '00:00:20', 'voice-note raw duration should be normalized to HH:MM:SS');
+  t.equal(voiceNode.data_raw.duration, '00:00:20', 'voice-note raw duration is normalized to HH:MM:SS');
   t.equal(voiceNode.data_preview.length, null);
 
   const videoNode = parseMessageNodes(
@@ -374,7 +375,7 @@ tap.test('rawHtmlRegression', (t) => {
   )[0];
   t.equal(videoNode.type, 'video-call');
   t.equal(videoNode.data_preview.duration, '00:31:00');
-  t.equal(videoNode.data_raw.duration, '00:31:00', 'video-call raw duration should be normalized to HH:MM:SS');
+  t.equal(videoNode.data_raw.duration, '00:31:00', 'video-call raw duration is normalized to HH:MM:SS');
   t.equal(videoNode.data_preview.length, null);
 
   const embeddedLinkNode = parseMessageNodes(
@@ -401,10 +402,10 @@ tap.test('testLinkFileUsesLinkType', (t) => {
     rawMeta: { link: 'https://www.scan.co.uk/' },
     hasLink: false,
   });
-  t.equal(result.type, 'link', 'link-text files should be classified as link when raw meta link is present');
-  t.ok(result.text.startsWith('https://www.scan.co.uk/'), 'link-text content should be prepended with the URL');
-  t.ok(result.text.includes('image sent'), 'link-text content should keep message text after the URL');
-  t.ok(/\d+ chars$/.test(result.contentLength), 'link-text previews with text should include content_length');
+  t.equal(result.type, 'link', 'link-text files is classified as link when raw meta link is present');
+  t.ok(result.text.startsWith('https://www.scan.co.uk/'), 'link-text content is prepended with the URL');
+  t.ok(result.text.includes('image sent'), 'link-text content keep message text after the URL');
+  t.ok(/\d+ chars$/.test(result.contentLength), 'link-text previews with text includes content_length');
   t.equal(result.link, 'https://www.scan.co.uk/');
   t.end();
 });
@@ -422,8 +423,8 @@ tap.test('testMissedCallNoDuration', (t) => {
     hasLink: false,
   });
   t.equal(result.type, 'missed-call');
-  t.equal(result.duration, null, 'missed calls should not include duration');
-  t.equal(result.contentLength, undefined, 'missed-call previews should not include content_length');
+  t.equal(result.duration, null, 'missed calls does not include duration');
+  t.equal(result.contentLength, undefined, 'missed-call previews does not include content_length');
   t.end();
 });
 
@@ -439,9 +440,9 @@ tap.test('testTextFileDoesNotBecomeLink', (t) => {
     '2026.05.15 00:00',
     metaMap
   );
-  t.equal(nodes.length, 1, 'text.html should produce one node');
-  t.equal(nodes[0].type, 'text', 'text.html should be classified as text');
-  t.not(nodes[0].data_preview.content, 'link', 'text.html content should not be reduced to link');
+  t.equal(nodes.length, 1, 'text.html produces one node');
+  t.equal(nodes[0].type, 'text', 'text.html is classified as text');
+  t.not(nodes[0].data_preview.content, 'link', 'text.html content is not reduced to link');
   t.end();
 });
 
@@ -457,9 +458,9 @@ tap.test('testImageFileIsImageType', (t) => {
     '2026.05.15 00:00',
     metaMap
   );
-  t.equal(nodes.length, 1, 'image.html should produce one node');
-  t.equal(nodes[0].type, 'image', 'image.html should be classified as image');
-  t.equal(nodes[0].data_preview.content, 'image sent', 'image message preview should use image sent content');
+  t.equal(nodes.length, 1, 'image.html produces one node');
+  t.equal(nodes[0].type, 'image', 'image.html is classified as image');
+  t.equal(nodes[0].data_preview.content, 'image sent', 'image message preview use image sent content');
   t.end();
 });
 
@@ -474,7 +475,7 @@ tap.test('testOptimizedHtmlNoEmptyTags', (t) => {
     const optimized = createOptimizedHtml(rawHtml);
     t.ok(
       !/<([a-zA-Z0-9]+)([^>]*)>\s*<\/\1>/.test(optimized),
-      `${fileName}: optimized HTML should not contain empty tags`
+      `${fileName}: optimized HTML not contain empty tags`
     );
   });
   t.end();
@@ -500,7 +501,7 @@ tap.test('parseAriaLabelLinkText', (t) => {
   t.equal(parsed.date, 'Wednesday 7:51pm');
   t.ok(
     parsed.message.startsWith('Yep - that\u2019s the'),
-    'Link text message should preserve leading conversational token in message content'
+    'Link text message preserve leading conversational token in message content'
   );
   t.end();
 });
@@ -508,7 +509,7 @@ tap.test('parseAriaLabelLinkText', (t) => {
 tap.test('parseAriaLabelSenderSplits', (t) => {
   const audioParsed = parseAriaLabel('At April 12, 2026, 1:23 PM, You');
   t.equal(audioParsed.sender, 'You');
-  t.ok(audioParsed.date.includes('April 12, 2026'), 'Audio call date should stay intact');
+  t.ok(audioParsed.date.includes('April 12, 2026'), 'Audio call date stay intact');
 
   const textParsed = parseAriaLabel('At 12:26 AM, Alpha Do you have that photo and a link?');
   t.equal(textParsed.sender, 'Alpha');
@@ -652,14 +653,14 @@ tap.test('normalizeDateToSimpleExtended', (t) => {
 
 tap.test('aliasChatNames', (t) => {
   const rawHtml =
-    '<title>Rob</title><div aria-label="At Wednesday 7:54pm, Rob" aria-roledescription="message"><img alt="Rob Leon"></div><div>Rob deleted a message</div><div aria-label="Enter, Message sent Wednesday 7:54pm by Rob"></div><div>Message body mentioning Rob should be aliased.</div>';
+    '<title>Rob</title><div aria-label="At Wednesday 7:54pm, Rob" aria-roledescription="message"><img alt="Rob Leon"></div><div>Rob deleted a message</div><div aria-label="Enter, Message sent Wednesday 7:54pm by Rob"></div><div>Message body mentioning Rob is aliased.</div>';
   const cleaned = aliasChatNames(rawHtml);
-  t.ok(cleaned.includes('aria-label="At Wednesday 7:54pm, Alpha"'), 'Sender aria-label should be aliased');
-  t.ok(cleaned.includes('aria-label="Enter, Message sent Wednesday 7:54pm by Alpha"'), 'Enter message sender should be aliased');
-  t.ok(cleaned.includes('<img alt="Alpha Leon"'), 'Profile alt text sender word should be aliased');
-  t.notOk(cleaned.includes('Rob deleted a message'), 'Message content should be aliased');
-  t.notOk(cleaned.includes('Message body mentioning Rob should be aliased.'), 'Message body text references should be aliased');
-  t.ok(cleaned.includes('<title>Alpha</title>'), 'Chat title should be aliased');
+  t.ok(cleaned.includes('aria-label="At Wednesday 7:54pm, Alpha"'), 'Sender aria-label is aliased');
+  t.ok(cleaned.includes('aria-label="Enter, Message sent Wednesday 7:54pm by Alpha"'), 'Enter message sender is aliased');
+  t.ok(cleaned.includes('<img alt="Alpha Leon"'), 'Profile alt text sender word is aliased');
+  t.notOk(cleaned.includes('Rob deleted a message'), 'Message content is aliased');
+  t.notOk(cleaned.includes('Message body mentioning Rob is aliased.'), 'Message body text references is aliased');
+  t.ok(cleaned.includes('<title>Alpha</title>'), 'Chat title is aliased');
   t.end();
 });
 
@@ -667,8 +668,8 @@ tap.test('aliasChatNamesPreservesYou', (t) => {
   const rawHtml =
     '<div aria-label="At Thursday 5:34pm, You" aria-roledescription="message"></div><div aria-label="Enter, Message sent Thursday 5:34pm by You"></div>';
   const cleaned = aliasChatNames(rawHtml);
-  t.ok(cleaned.includes('aria-label="At Thursday 5:34pm, You"'), 'Self-label You should remain unchanged');
-  t.ok(cleaned.includes('aria-label="Enter, Message sent Thursday 5:34pm by You"'), 'Self-label by You should remain unchanged');
+  t.ok(cleaned.includes('aria-label="At Thursday 5:34pm, You"'), 'Self-label You remains unchanged');
+  t.ok(cleaned.includes('aria-label="Enter, Message sent Thursday 5:34pm by You"'), 'Self-label by You remains unchanged');
   t.end();
 });
 
@@ -690,8 +691,8 @@ tap.test('aliasChatNamesOnlyReplacesShortSenderNames', (t) => {
   const rawHtml =
     '<div aria-label="At Wednesday 7:54pm, Rob" aria-roledescription="message"></div><div>Rob deleted a message</div><div aria-label="Enter, Message sent Wednesday 7:54pm by Rob"></div><div>All of this is a long phrase that is not a sender name</div>';
   const cleaned = aliasChatNames(rawHtml);
-  t.ok(cleaned.includes('Alpha deleted a message'), 'Valid short sender name should be aliased');
-  t.ok(cleaned.includes('All of this is a long phrase that is not a sender name'), 'Long non-name phrases should not be aliased');
+  t.ok(cleaned.includes('Alpha deleted a message'), 'Valid short sender name is aliased');
+  t.ok(cleaned.includes('All of this is a long phrase that is not a sender name'), 'Long non-name phrases is not aliased');
   t.end();
 });
 
@@ -699,10 +700,10 @@ tap.test('aliasChatNamesPreservesRawDateText', (t) => {
   const rawHtml =
     '<title>Rob</title><div aria-label="At May 15, 2026, Rob" aria-roledescription="message"></div><div>Rob deleted a message</div><div aria-label="Enter, Message sent May 15, 2026 by Rob"></div>';
   const cleaned = aliasChatNames(rawHtml);
-  t.ok(cleaned.includes('May 15, 2026'), 'Raw date text should remain unchanged');
+  t.ok(cleaned.includes('May 15, 2026'), 'Raw date text remains unchanged');
   t.ok(
     cleaned.includes('Alpha deleted a message') || cleaned.includes('Alpha'),
-    'Confirmed sender name should be aliased'
+    'Confirmed sender name is aliased'
   );
   t.end();
 });
@@ -711,8 +712,8 @@ tap.test('aliasChatNamesIgnoresNamesWithNumbers', (t) => {
   const rawHtml =
     '<div aria-label="At Thursday 5:34pm, Alice 2024" aria-roledescription="message"></div><div>Alice 2024 deleted a message</div>';
   const cleaned = aliasChatNames(rawHtml);
-  t.ok(cleaned.includes('Alice 2024'), 'Numeric names should not be aliased');
-  t.notOk(cleaned.includes('Alpha 2024'), 'Numeric names should not be replaced with Alpha');
+  t.ok(cleaned.includes('Alice 2024'), 'Numeric names is not aliased');
+  t.notOk(cleaned.includes('Alpha 2024'), 'Numeric names is not replaced with Alpha');
   t.end();
 });
 
@@ -725,7 +726,7 @@ tap.test('aliasChatNamesSkipsAlreadyTargetName', (t) => {
     '<div aria-label="At Thursday 5:35pm, Alpha" aria-roledescription="message"></div>' +
     '<div>Alpha sent another message</div>';
   const cleaned = aliasChatNames(rawHtml, nameMap);
-  // Should remain unchanged — "Alpha" is already the replacement name
+  // Remains unchanged — "Alpha" is already the replacement name
   t.ok(cleaned.includes('Alpha deleted a message'), 'Already-target name kept unchanged');
   t.notOk(cleaned.includes('Alpha Alpha'), 'Name not double-replaced');
 
@@ -753,7 +754,7 @@ tap.test('scanToExportIntegration', (t) => {
   `);
 
   const entries = buildEntriesFromDocument(dom.window.document, 'text.html', referenceDate);
-  t.equal(entries.length, 3, 'Should parse three message entries');
+  t.equal(entries.length, 3, 'Parses three message entries');
 
   const summaryEntries = entries.map((e) => ({
     sender: e.sender,
@@ -801,10 +802,10 @@ tap.test('frontendBuildDist', (t) => {
   t.equal(buildResult.status, 0, `build.js failed: ${buildResult.stderr || buildResult.stdout}`);
 
   const distPath = path.join(baseDir, 'dist', 'app.js');
-  t.ok(fs.existsSync(distPath), 'dist/app.js should exist after build');
+  t.ok(fs.existsSync(distPath), 'dist/app.js exists after build');
   const contents = fs.readFileSync(distPath, 'utf8');
-  t.ok(/\/\/ @version\s+/.test(contents), 'dist/app.js should contain a version field');
-  t.ok(contents.length > 200, 'dist/app.js should not be empty');
+  t.ok(/\/\/ @version\s+/.test(contents), 'dist/app.js contains a version field');
+  t.ok(contents.length > 200, 'dist/app.js is not empty');
   t.end();
 });
 
@@ -873,7 +874,7 @@ tap.test('timeOnlyDateResolvesToToday', (t) => {
   const result = normalizeDateToSimple('11:16 AM');
   t.ok(
     result && result.startsWith(expectedPrefix),
-    `time-only label should resolve to today (${expectedPrefix}), got ${result}`
+    `time-only label resolve to today (${expectedPrefix}), got ${result}`
   );
   t.end();
 });
@@ -889,7 +890,7 @@ tap.test('textMessageDoesNotBecomeVoiceMessage', (t) => {
     message: 'Hello how are you doing today',
     timerText: '',
   });
-  t.equal(meta.type, 'text', 'text message with no timer should not be classified as voice-message');
+  t.equal(meta.type, 'text', 'text message with no timer not be classified as voice-message');
   t.end();
 });
 

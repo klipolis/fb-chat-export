@@ -2,9 +2,17 @@ const fs = require('fs');
 const path = require('path');
 
 function loadHeaderTemplate(platform) {
-  const headerFile = path.resolve(__dirname, platform, 'header.txt');
-  if (!fs.existsSync(headerFile)) return '';
-  return fs.readFileSync(headerFile, 'utf8');
+  const configFile = path.resolve(__dirname, '..', '..', 'data-config', platform, 'header.txt');
+  if (fs.existsSync(configFile)) {
+    return fs.readFileSync(configFile, 'utf8');
+  }
+
+  const legacyFile = path.resolve(__dirname, platform, 'header.txt');
+  if (fs.existsSync(legacyFile)) {
+    return fs.readFileSync(legacyFile, 'utf8');
+  }
+
+  return '';
 }
 
 function renderHeader(platform, buildVersion) {

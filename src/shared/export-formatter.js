@@ -4,21 +4,21 @@ const { buildSummary, buildSummaryData } = require('./export-summary');
 
 function formatExportHeader({ method, messageTypes, exportOptions = {}, aliasMap = {} }) {
   const types = messageTypes.map((type) => `- ${type}`).join('\n');
-  const optionLines = Object.keys(exportOptions)
-    .sort()
-    .map((key) => `  ${key} : ${exportOptions[key]}`)
-    .join('\n');
+  const optionKeys = Object.keys(exportOptions).sort();
+  const activeOptions = optionKeys.filter((key) => exportOptions[key]);
+  const inactiveOptions = optionKeys.filter((key) => !exportOptions[key]);
   const aliasLines = Object.entries(aliasMap)
     .filter(([key]) => key && aliasMap[key])
     .map(([key, value]) => `  ${key} : ${value}`)
     .join('\n');
 
-  let header = `Method: ${method}\nMessage types:\n${types}\n`;
-  if (optionLines) {
-    header += `Options:\n${optionLines}\n`;
+  let header = `Method: ${method}\nMessage types:\n${types}\n\n`;
+  if (optionKeys.length) {
+    header += `Options used: ${activeOptions.length ? activeOptions.join(', ') : 'none'}\n`;
+    header += `Other ones: ${inactiveOptions.length ? inactiveOptions.join(', ') : 'none'}\n\n`;
   }
   if (aliasLines) {
-    header += `Aliases:\n${aliasLines}\n`;
+    header += `Aliases:\n${aliasLines}\n\n`;
   }
   return `${header}---\n\n`;
 }

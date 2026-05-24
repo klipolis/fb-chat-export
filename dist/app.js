@@ -962,20 +962,26 @@
       var { buildSummary: buildSummary2, buildSummaryData } = require_export_summary();
       function formatExportHeader2({ method, messageTypes, exportOptions = {}, aliasMap = {} }) {
         const types = messageTypes.map((type) => `- ${type}`).join("\n");
-        const optionLines = Object.keys(exportOptions).sort().map((key) => `  ${key} : ${exportOptions[key]}`).join("\n");
+        const optionKeys = Object.keys(exportOptions).sort();
+        const activeOptions = optionKeys.filter((key) => exportOptions[key]);
+        const inactiveOptions = optionKeys.filter((key) => !exportOptions[key]);
         const aliasLines = Object.entries(aliasMap).filter(([key]) => key && aliasMap[key]).map(([key, value]) => `  ${key} : ${value}`).join("\n");
         let header = `Method: ${method}
 Message types:
 ${types}
+
 `;
-        if (optionLines) {
-          header += `Options:
-${optionLines}
+        if (optionKeys.length) {
+          header += `Options used: ${activeOptions.length ? activeOptions.join(", ") : "none"}
+`;
+          header += `Other ones: ${inactiveOptions.length ? inactiveOptions.join(", ") : "none"}
+
 `;
         }
         if (aliasLines) {
           header += `Aliases:
 ${aliasLines}
+
 `;
         }
         return `${header}---
@@ -1366,6 +1372,11 @@ ${aliasLines}
       "YYYY-MM-DD",
       sessionStorage.getItem("fbExportTo") || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10)
     );
+    const { wrap: fileNameWrap, input: fileNameInput } = createLabelInput(
+      "File:",
+      "Optional custom name",
+      sessionStorage.getItem("fbExportFileName") || ""
+    );
     const actionBtn = createButton("Scan Messages", "#0084ff");
     const rightCol = document.createElement("div");
     rightCol.style.cssText = "display: flex; flex-direction: column; gap: 8px; min-width: 160px; padding-left: 10px;";
@@ -1390,6 +1401,7 @@ ${aliasLines}
     });
     leftCol.appendChild(fromWrap);
     leftCol.appendChild(toWrap);
+    leftCol.appendChild(fileNameWrap);
     leftCol.appendChild(actionBtn);
     rightCol.appendChild(includeCallsWrap);
     rightCol.appendChild(aliasWrap);
@@ -1483,6 +1495,25 @@ ${aliasLines}
     });
     rawLinkChk.disabled = !includeContentChk.checked;
     rawLinkWrap.style.opacity = includeContentChk.checked ? "1" : "0.6";
+    fileNameInput.addEventListener("input", () => {
+      fileNameInput.style.borderColor = "#ccc";
+    });
+    function escapeRegExp(value) {
+      return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+    function applyAliasToText(text, aliasMap, sender) {
+      let result = String(text || "");
+      for (const [from, to] of Object.entries(aliasMap || {})) {
+        if (!from || !to || from === "any") continue;
+        const pattern = new RegExp(`\\b${escapeRegExp(from)}\\b`, "gi");
+        result = result.replace(pattern, to);
+      }
+      if (sender && aliasMap?.any) {
+        const senderPattern = new RegExp(`\\b${escapeRegExp(sender)}\\b`, "gi");
+        result = result.replace(senderPattern, aliasMap.any);
+      }
+      return result;
+    }
     let downloadRevokeTimeout = null;
     let scrollTimeout = null;
     let downloadHandler = null;
@@ -1528,6 +1559,13 @@ ${aliasLines}
         noticeMsg.textContent = "Alias fields contain invalid names.";
         return;
       }
+      const customBaseName = fileNameInput.value.trim();
+      let customFileName = "";
+      if (customBaseName) {
+        const sanitized = sanitizeFileNamePart(customBaseName);
+        customFileName = `${sanitized}.txt`;
+        sessionStorage.setItem("fbExportFileName", customBaseName);
+      }
       fromInput.style.borderColor = toInput.style.borderColor = "#ccc";
       if (downloadRevokeTimeout !== null) {
         clearTimeout(downloadRevokeTimeout);
@@ -1571,9 +1609,9 @@ ${aliasLines}
           const displayDate = formatDate(resolvedRaw);
           const authorLabel = (() => {
             if (!aliasChk.checked) return sender;
-            const aliasMap = getAliasMap();
+            const aliasMap2 = getAliasMap();
             const normalizedSender = String(sender).trim();
-            return aliasMap[normalizedSender] || aliasMap[normalizedSender.toLowerCase()] || aliasMap[normalizedSender.toUpperCase()] || aliasMap.any || sender;
+            return aliasMap2[normalizedSender] || aliasMap2[normalizedSender.toLowerCase()] || aliasMap2[normalizedSender.toUpperCase()] || aliasMap2.any || sender;
           })();
           const callMinutes = (0, import_export_formatter.durationToMinutes)(duration);
           if (!includeCallsChk.checked && isCall) return;
@@ -1582,13 +1620,20 @@ ${aliasLines}
             return;
           }
           if (toDate && !isNaN(msgDate) && msgDate > toDate) return;
+          const aliasMap = aliasChk.checked ? getAliasMap() : {};
+          const aliasedText = aliasChk.checked ? applyAliasToText(text, aliasMap, sender) : text;
+          const aliasedContent = aliasChk.checked ? applyAliasToText(
+            includeContentChk.checked ? rawLinkChk.checked && (type === "link" || type === "video-link") ? (0, import_message_metadata.stripTrackingParams)(link || originalHref || aliasedText) || aliasedText : originalHref || aliasedText : aliasedText,
+            aliasMap,
+            sender
+          ) : includeContentChk.checked ? rawLinkChk.checked && (type === "link" || type === "video-link") ? (0, import_message_metadata.stripTrackingParams)(link || originalHref || text) || text : originalHref || text : text;
           const lineEntry = {
             fileType: type,
             semanticType: type,
             dateText: displayDate,
             sender: authorLabel,
             duration,
-            content: includeContentChk.checked ? rawLinkChk.checked && (type === "link" || type === "video-link") ? (0, import_message_metadata.stripTrackingParams)(link || originalHref || text) || text : originalHref || text : text,
+            content: aliasedContent,
             contentLength
           };
           const finalLine = (0, import_export_formatter.formatLine)(lineEntry, {
@@ -1728,7 +1773,7 @@ ${aliasLines}
             const elapsedMs = Date.now() - scanStartedAt;
             const elapsed = elapsedMs < 6e4 ? `${(elapsedMs / 1e3).toFixed(1)} seconds` : `${(elapsedMs / 6e4).toFixed(2)} minutes`;
             const displayPersonName = getDisplayPersonName();
-            const fileName = formatExportFileName(void 0, {
+            const fileName = customFileName || formatExportFileName(void 0, {
               fromDate: fromInput.value.trim() || "",
               toDate: toInput.value.trim() || ""
             });

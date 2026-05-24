@@ -21,17 +21,10 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `export-config.json` `personSummaryTitle` pattern is now dynamic (`^.{1,80} Summary$`) instead of listing hardcoded sender aliases.
 - `export-config.json` `messageTypes` updated to include `reaction-emoji`, `reaction`, and `video-link`; `duration` pattern updated to match the strict `HH:MM:SS` format.
 
+### Changed
 
-- `pnpm run release` automates the release process: renames `[Unreleased]` to the new version heading, inserts a fresh empty `[Unreleased]` above it, and bumps `package.json` version. Supports `patch`, `minor`, `major` override arguments; defaults to minor if any `Added`/`Changed` entries are present, otherwise patch.
-- Pre-commit hook now also blocks commits when the `[Unreleased]` section in `CHANGELOG.md` is empty, via `scripts/check-unreleased.js`.
-- `pnpm run check:unreleased` exposes the changelog guard as a standalone command.
-
-### Fixed
-
-- Duration values in exports and JSON previews now always use strict `HH:MM:SS` three-part format (e.g. `00:18:00`, `00:00:20`) with zero-padded hours, eliminating the previous `MM:SS` two-part form.
-- `validate-generated-txt.js` summary validator is now dynamic: it accepts any number of per-sender summary sections instead of being hardcoded to two.
-- `export-config.json` `personSummaryTitle` pattern is now dynamic (`^.{1,80} Summary$`) instead of listing hardcoded sender aliases.
-- `export-config.json` `messageTypes` updated to include `reaction-emoji`, `reaction`, and `video-link`; `duration` pattern updated to match the strict `HH:MM:SS` format.
+- `formatExportHeader` now writes `Options used:` and `Other ones:` lines and separates header sections with blank lines.
+- `data-config/alias-names.json` is now the canonical runtime alias source; duplicate userscript alias packaging metadata was removed.
 
 - Sticker and animated gif messages are no longer counted as images in the summary; they count toward the text total alongside reactions.
 - Reaction messages using an emoji image (`<img>` element) instead of an SVG icon are now correctly classified as `reaction` type.
@@ -105,7 +98,7 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `formatLine` option combinations, `buildSummary` edge cases, and `parseLocalDate` format variants covered by tests.
 - `test-ui.js` DOM sandbox no longer mutates the Node global `document`.
 - `isValidSender`, `findValidDatePrefix`, and extended `normalizeDateToSimple` cases covered by unit tests.
-- `aliasChatNames` accepts an optional name map; `data-input/alias-names.json` supplies default replacements (`You` → `Youghurt`, detected name → `Alpha`) used by the server build and tests.
+- `aliasChatNames` accepts an optional name map; `data-config/alias-names.json` supplies default replacements (`You` → `Youghurt`, detected name → `Alpha`) used by the server build and tests.
 - `aliasChatNames` skips replacing a name that is already the target value (guards against double-aliasing on re-runs).
 - Alias panel now shows two name fields: one for your own name and one for the other person; both replace in the export.
 - `build:ci` explicitly runs the test suite after the build step rather than relying on it being embedded in the `build` script.

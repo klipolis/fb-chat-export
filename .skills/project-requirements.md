@@ -41,11 +41,12 @@ This file now serves as a central index for split requirement documents.
 - Keep aliased self sender output as `Youghurt` in final exports.
 - Default build (`build:server` / `build`) reads raw HTML files but never modifies them. Use `build:raw` to write alias names back to raw files.
 - `build:raw-clean` strips Facebook-internal utility classes (tokens starting with `x`) and inline `style` attributes from raw HTML files without running full optimisation.
-- Support multiple explicit sender-to-pseudonym mappings in `alias-names.json`; use an `any` key to assign a fallback pseudonym to any auto-detected name not covered by explicit entries.
+- Share alias mappings and relative-date rules in `data-config/frontend_shared.json`; fall back to `data-config/alias-names.json` for legacy explicit sender mappings when present.
+- Keep `data-config/server.json` as a deterministic server-run override source for build reference dates when `BUILD_REFERENCE_DATE` is not supplied.
 - Detect sender names from raw labels using only up to two alphabetic words to avoid long conversation names being treated as senders.
 - Keep generated `dist/`, `data-output/optimized-html/`, and `data-output/json-format/` artifacts in source control.
 - Keep build-specific `dist/app.js` versioning separate from `package.json` using `BUILD_VERSION`.
-- Keep platform header text in `src/platforms/userscript/header.txt` and prepend it to frontend bundles outside of minification.
+- Keep platform header text in `data-config/userscript/header.txt` and prepend it to frontend bundles outside of minification.
 - Use minor version bumps for release-level changelog entries that contain feature or contract updates.
 - Keep `package.json` version aligned with the topmost changelog release heading.
 - Update changelog entries for every new helper or export schema change.
