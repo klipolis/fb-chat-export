@@ -1,16 +1,15 @@
 const fs = require('fs');
-const path = require('path');
 const { build } = require('esbuild');
 const { version: projectVersion } = require('../../package.json');
 const { getPlatformHeader, attachHeader } = require('../platforms/platformHeaders');
+const { resolveRepoPath, changelogPath } = require('../shared/app-config');
 
-const sourcePath = path.resolve(__dirname, 'src', 'index.js');
-const distDir = path.resolve(__dirname, '..', '..', 'dist');
-const outputPath = path.join(distDir, 'app.js');
-const minOutputPath = path.join(distDir, 'app.min.js');
+const sourcePath = resolveRepoPath('src', 'frontend', 'src', 'index.js');
+const distDir = resolveRepoPath('dist');
+const outputPath = resolveRepoPath('dist', 'app.js');
+const minOutputPath = resolveRepoPath('dist', 'app.min.js');
 const relOutputPath = './dist/app.js';
 const relMinOutputPath = './dist/app.min.js';
-const changelogPath = path.resolve(__dirname, '..', '..', 'CHANGELOG.md');
 const buildPlatform = process.env.BUILD_PLATFORM || 'userscript';
 
 if (!fs.existsSync(distDir)) {

@@ -1,8 +1,5 @@
 const fs = require('fs');
-const path = require('path');
-
-const root = path.resolve(__dirname, '..');
-const packageJsonPath = path.join(root, 'package.json');
+const { packagePath: packageJsonPath } = require('../src/shared/app-config');
 
 function fail(message) {
   console.error(`package.json lint failed: ${message}`);

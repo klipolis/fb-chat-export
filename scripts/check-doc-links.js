@@ -1,18 +1,16 @@
 const fs = require('fs');
-const path = require('path');
 const markdownLinkCheck = require('markdown-link-check');
+const { docsDir, changelogPath, repoRelative } = require('../src/shared/app-config');
 
-const baseDir = path.resolve(__dirname, '..');
-const docsDir = path.join(baseDir, 'docs');
 const files = [
-  path.join(baseDir, 'docs', 'README.md'),
-  path.join(baseDir, 'CHANGELOG.md'),
+  `${docsDir}/README.md`,
+  changelogPath,
 ];
 
 function collectMarkdown(dir) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   entries.forEach(entry => {
-    const fullPath = path.join(dir, entry.name);
+    const fullPath = `${dir}/${entry.name}`;
     if (entry.isDirectory()) {
       collectMarkdown(fullPath);
     } else if (entry.isFile() && fullPath.toLowerCase().endsWith('.md')) {
@@ -37,14 +35,14 @@ function checkFile(filePath) {
 
       const deadLinks = results.filter(result => result.status === 'dead');
       if (deadLinks.length > 0) {
-        console.error(`\nDead links found in ${path.relative(baseDir, filePath)}:`);
+        console.error(`\nDead links found in ${repoRelative(filePath)}:`);
         deadLinks.forEach(result => {
           console.error(`- ${result.link} (${result.status})`);
         });
         return resolve(false);
       }
 
-      console.log(`✔ ${path.relative(baseDir, filePath)}`);
+      console.log(`✔ ${repoRelative(filePath)}`);
       resolve(true);
     });
   });

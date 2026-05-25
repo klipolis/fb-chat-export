@@ -18,10 +18,9 @@
 'use strict';
 
 const fs = require('fs');
-const path = require('path');
+const { resolveRepoPath } = require('./shared/app-config');
 
-const baseDir = path.resolve(__dirname, '..');
-const rawDir = path.join(baseDir, 'data-input');
+const rawDir = resolveRepoPath('data-input');
 
 function cleanXClasses(html) {
   // Remove inline style attributes
@@ -53,7 +52,7 @@ function main() {
 
   let changed = 0;
   for (const file of files) {
-    const filePath = path.join(rawDir, file);
+    const filePath = resolveRepoPath('data-input', file);
     const original = fs.readFileSync(filePath, 'utf8');
     const cleaned = cleanXClasses(original);
     if (cleaned !== original) {

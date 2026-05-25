@@ -53,6 +53,21 @@ Example:
 - Every `.TODO/*` file should include a `Links` section pointing to the other TODO files and `.todo/config.json`.
 - Keep TODO entries concise and actionable.
 - Preserve task numbers and descriptions when moving items between files.
+- Write task bullets as direct present-action statements.
+- Avoid changelog-style phrasing such as `now ...`, `now also ...`, `now removed ...`, `now always ...`, `now supports ...`, or `now documents ...`.
+- Prefer statements like `export filenames changed to export-max.txt ...` or `show platform reference only in terms and userscript header metadata.`
+
+## Task wording
+
+Task bullets should describe the intended action or result, not explain what changed. Use the present tense and avoid retrospective language.
+
+Example:
+
+- T126. Describe the new shared config behavior for frontend and server build logic.
+
+Instead of:
+
+- T126. Now the shared config behavior is described for frontend and server build logic.
 
 ## Why this exists
 

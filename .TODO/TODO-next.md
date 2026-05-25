@@ -18,5 +18,5 @@ Get T-number (task number) from .todo/config file before adding new tasks.
 - T123. Extend integration tests to cover alias replacement inside exported text and stable filename behavior.
 - T124. Document the TXT export header format, option state, and alias map behavior for end users.
 - T125. Review developer documentation for `data-config/frontend_shared.json` and `data-config/server.json`.
- - T126. Run `pnpm run lint` and fix reported lint issues; add autofix where safe.
- - T127. Add `scripts/lint-fix.sh` (or npm script) to run ESLint `--fix` and Prettier for easy self-healing fixes.
+- T126. Run `pnpm run lint` and fix reported lint issues; add autofix where safe.
+- T127. Add `scripts/lint-fix.sh` or an npm script to run ESLint `--fix` and Prettier for easy self-healing fixes.

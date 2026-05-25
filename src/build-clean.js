@@ -1,11 +1,10 @@
 const fs = require('fs');
-const path = require('path');
+const { resolveRepoPath, repoRelative } = require('./shared/app-config');
 
-const baseDir = path.resolve(__dirname, '..');
 const dirs = [
-  path.join(baseDir, 'data-output/optimized-html'),
-  path.join(baseDir, 'data-output/json-format'),
-  path.join(baseDir, 'dist'),
+  resolveRepoPath('data-output', 'optimized-html'),
+  resolveRepoPath('data-output', 'json-format'),
+  resolveRepoPath('dist'),
 ];
 
 function removeDir(dir) {
@@ -25,7 +24,7 @@ function main() {
     ensureDir(dir);
   });
   console.log('Cleaned generated build artifacts:');
-  dirs.forEach((dir) => console.log(`- ${path.relative(baseDir, dir)}`));
+  dirs.forEach((dir) => console.log(`- ${repoRelative(dir)}`));
 }
 
 main();

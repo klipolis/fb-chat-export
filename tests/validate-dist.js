@@ -1,16 +1,15 @@
 const tap = require('tap');
 const fs = require('fs');
-const path = require('path');
 const { spawnSync } = require('child_process');
+const { resolveRepoPath } = require('../src/shared/app-config');
 
-const baseDir = path.join(__dirname, '..');
-const distPath = path.join(baseDir, 'dist', 'app.js');
-const minDistPath = path.join(baseDir, 'dist', 'app.min.js');
+const distPath = resolveRepoPath('dist', 'app.js');
+const minDistPath = resolveRepoPath('dist', 'app.min.js');
 
 tap.test('validate dist artifacts', (t) => {
   if (!process.env.SKIP_BUILD) {
     const result = spawnSync('node', ['src/frontend/build.js'], {
-      cwd: baseDir,
+      cwd: resolveRepoPath(),
       encoding: 'utf8',
       env: {
         ...process.env,
@@ -39,7 +38,7 @@ tap.test('validate dist artifacts', (t) => {
 });
 
 tap.test('userscript header file is included in dist builds', (t) => {
-  const headerTxtPath = path.join(baseDir, 'data-config', 'userscript', 'header.txt');
+  const headerTxtPath = resolveRepoPath('data-config', 'userscript', 'header.txt');
   t.ok(fs.existsSync(headerTxtPath), 'userscript header template missing');
 
   const headerText = fs.readFileSync(headerTxtPath, 'utf8').split(/\r?\n/).filter(Boolean);

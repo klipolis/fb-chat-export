@@ -3,17 +3,17 @@ const fs = require('fs');
 const path = require('path');
 const childProcess = require('child_process');
 const { compareSnapshots } = require('../snapshot-helper');
+const { resolveRepoPath } = require('../../src/shared/app-config');
 
-const rawDir = path.join(__dirname, '..', '..', 'data-input');
-const txtDir = path.join(__dirname, '..', '..', 'data-output/final-export');
+const rawDir = resolveRepoPath('data-input');
+const txtDir = resolveRepoPath('data-output', 'final-export');
 let serverBuildCache = null;
 
 function runServerBuildOnce() {
   if (!serverBuildCache) {
-    const baseDir = path.join(__dirname, '..', '..');
     const buildResult = childProcess.spawnSync('node', ['src/build-server.js'], {
       encoding: 'utf8',
-      cwd: baseDir,
+      cwd: resolveRepoPath(),
     });
     serverBuildCache = {
       ...buildResult,

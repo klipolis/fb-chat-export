@@ -5,6 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+Changelog entries should describe active changes in direct present-tense statements. Avoid retrospective phrasing such as "now ..." or passive retention language when writing bullets under `## [Unreleased]`.
 
 ## [Unreleased]
 
@@ -26,14 +27,14 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - `formatExportHeader` writes `Options used:` and `Other ones:` lines and separates header sections with blank lines.
-- `data-config/alias-names.json` is the canonical runtime alias source; duplicate userscript alias packaging metadata was removed.
-- `package.json` script ordering was cleaned and a new `lint:todos` command was added to validate `.TODO` files and `.todo/config.json`.
-- Documentation was reorganised into `docs/user-guide` and `docs/developer-guide`, with Mermaid flowcharts added to key docs and a new release management guide.
+- `data-config/alias-names.json` is the canonical runtime alias source; duplicate userscript alias packaging metadata is removed.
+- `package.json` script ordering is cleaned and a new `lint:todos` command validates `.TODO` files and `.todo/config.json`.
+- Reorganises documentation into `docs/user-guide` and `docs/developer-guide`, with Mermaid flowcharts added to key docs and a new release management guide.
 - TODO management docs explicitly allow additional manual files in `.todo/` to be preserved as-is.
 
 - Sticker and animated gif messages are not counted as images in the summary; they count toward the text total alongside reactions.
 - Reaction messages using an emoji image (`<img>` element) instead of an SVG icon are correctly classified as `reaction` type.
-- The JSON preview format has been reorganised: `html_locale`, `title`, and `type` are top-level fields; `data_raw` captures values as extracted from the HTML; `data_preview` contains processed display values; `locate` is removed.
+- Reorganises the JSON preview format: `html_locale`, `title`, and `type` are top-level fields; `data_raw` captures values as extracted from the HTML; `data_preview` contains processed display values; `locate` is removed.
 - Reaction messages always produce `null` content in both `data_raw` and `data_preview`.
 - `video-link` is a new message type for messages whose body is a video platform URL (YouTube, Vimeo). The URL is used as content; the type appears in the export line and JSON preview. The HTML optimiser preserves plain URL text inside `<a>` tags so the message wrapper is not incorrectly stripped as empty.
 - The voice-note message type is consistently named `voice-note` everywhere — in the rule, JSON preview, and content text — matching the raw sample filename.
@@ -53,7 +54,7 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Reactions (👍, ❤️, 😂, 😮, 😢, 👏) are recognised as a distinct `reaction` message type and excluded from the character-count summary.
-- Name aliasing now supports multiple explicit sender mappings (e.g. mapping both "You" and a contact name to separate pseudonyms) alongside an automatic fallback for any other detected name.
+- Name aliasing supports multiple explicit sender mappings (e.g. mapping both "You" and a contact name to separate pseudonyms) alongside an automatic fallback for any other detected name.
 - `build:raw` script writes aliased names back to raw HTML files on demand; the default build no longer modifies raw HTML.
 - `build:raw-clean` script strips platform-internal utility classes and inline styles from raw HTML files without running full optimisation.
 - Audio call messages where the sender name matches the anonymisation target are handled correctly without double-replacement.
@@ -70,22 +71,22 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- Messages with a time-only or day-of-week date (e.g. "Monday 4:41pm") now parse the correct sender and date when the aria-label includes a trailing conversation name.
+- Messages with a time-only or day-of-week date (e.g. "Monday 4:41pm") parse the correct sender and date when the aria-label includes a trailing conversation name.
 - Sender names containing more than two words are no longer mistaken for senders (e.g. long conversation names used as fallback labels).
-- All panel controls (calls, alias, summary, content, length) now work correctly on load.
+- All panel controls (calls, alias, summary, content, length) work correctly on load.
 - Invalid date input is focused automatically when an error is shown.
 - Date fields clear their error highlight as soon as the user starts typing.
 - Messages near midnight are no longer incorrectly filtered due to a timezone mismatch.
 - Download falls back gracefully when the browser restricts blob URL creation.
 - Screen readers no longer announce the decorative panel arrow.
-- Date-range input labels are now properly associated with their inputs via `for`/`id`.
+- Date-range input labels are properly associated with their inputs via `for`/`id`.
 - Download button stays disabled after use instead of re-enabling after 10 seconds.
 - Messages with identical text from different positions in the conversation are no longer incorrectly deduplicated.
 
 ### Changed
 
 - Exported message content is no longer included by default when calling `formatLine` without options — callers must opt in with `includeContent: true`.
-- Call duration is now read from the call timer element only, not surrounding message text.
+- Call duration is read from the call timer element only, not surrounding message text.
 
 ### Dev
 
@@ -105,12 +106,12 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `isValidSender`, `findValidDatePrefix`, and extended `normalizeDateToSimple` cases covered by unit tests.
 - `aliasChatNames` accepts an optional name map; `data-config/alias-names.json` supplies default replacements (`You` → `Youghurt`, detected name → `Alpha`) used by the server build and tests.
 - `aliasChatNames` skips replacing a name that is already the target value (guards against double-aliasing on re-runs).
-- Alias panel now shows two name fields: one for your own name and one for the other person; both replace in the export.
+- Alias panel shows two name fields: one for your own name and one for the other person; both replace in the export.
 - `build:ci` explicitly runs the test suite after the build step rather than relying on it being embedded in the `build` script.
 - Golden snapshot files validated for UTF-8 encoding, LF line endings, and no trailing whitespace as part of the test run.
-- `messageRules` now covers sticker, GIF, and poll message types so they are no longer classified as `text`; `getContentMeta` handles content text and length omission for each.
+- `messageRules` covers sticker, GIF, and poll message types so they are no longer classified as `text`; `getContentMeta` handles content text and length omission for each.
 - Download panel shows a "Save again" link after the first download so the file can be re-saved without re-scanning.
-- `docs/README.md` now documents the exported `.txt` file format including the header, summary block, and per-message line structure.
+- `docs/README.md` documents the exported `.txt` file format including the header, summary block, and per-message line structure.
 - Integration test added: mock DOM nodes processed through `buildEntriesFromDocument` → `buildSummary` → `formatExportHeader` → assembled export text, verifying the full scan-to-export wiring.
 
 ## v5.3.0 (2026-05-17)
@@ -126,8 +127,8 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Userscript header is now generated automatically at build time.
-- Bundle version now matches the release version automatically.
+- Userscript header generates automatically at build time.
+- Bundle version matches the release version automatically.
 - Snapshot-based export output validation added to catch regressions in TXT export content.
 
 ## v5.2.1 (2026-05-17)
@@ -142,16 +143,16 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Export summary now uses a `Total Summary` block followed by per-person summary lines.
+- Export summary uses a `Total Summary` block followed by per-person summary lines.
 - Per-person summary counts exclude deleted, unsent, and missed call messages.
 - Total summary counts are derived from the sum of per-person counts.
 - Aliased self name changed to `Youghurt`.
-- Call summary now includes audio calls, video calls, and voice notes; missed calls are excluded.
+- Call summary includes audio calls, video calls, and voice notes; missed calls are excluded.
 - Removed `Total:` prefix from summary count lines.
 
 ### Fixed
 
-- Duration fields now output correctly in exports.
+- Duration fields output correctly in exports.
 - Download button is disabled for 10 seconds after click to prevent double-download.
 - Completion notice simplified to name, date interval, and elapsed time.
 
@@ -164,8 +165,8 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- TXT exports now include link URL content in export-max mode.
-- Link content now uses the resolved URL instead of a generic label.
+- TXT exports include link URL content in export-max mode.
+- Link content uses the resolved URL instead of a generic label.
 - Added fallback Google Maps URL for pinned locations with no direct link.
 - Fixed sender name parsing for dash-form aria-labels so leading conversational tokens stay in message content.
 - Fixed duration parser to ignore wall-clock times like `1:23 PM`.
@@ -175,14 +176,14 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Renamed demo pipeline folders to `data-input/`, `data-output/optimized-html/`, and `data-output/json-format/`.
-- Frontend and server now share the same message classification and export logic.
+- Frontend and server share the same message classification and export logic.
 - Build-specific version stamping added to the frontend bundle.
-- Preview exports now include optional call duration.
-- Preview exports now include an `export_date` field.
+- Preview exports include optional call duration.
+- Preview exports include an `export_date` field.
 - Text export generation added from raw HTML snapshots.
 - Fixed sender name detection in anonymization to replace only a single confirmed name.
 - Fixed date extraction from link preview `At ...` labels.
-- Exported text lines now include the message type in brackets after the date.
+- Exported text lines include the message type in brackets after the date.
 
 ## v5.0.3 (2026-05-15)
 
@@ -190,7 +191,7 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Server build runs non-interactively by default with automatic anonymization.
 - Preview JSON no longer includes internal source metadata.
-- Date labels like "today", "yesterday", and weekday names now resolve to correct calendar dates.
+- Date labels like "today", "yesterday", and weekday names resolve to correct calendar dates.
 
 ## v5.0.2 (2026-05-15)
 
@@ -214,9 +215,9 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Main exporter now treats replies as text by default rather than a separate `reply` type.
+- Main exporter treats replies as text by default rather than a separate `reply` type.
 - Audio/video call and voice message length output uses minutes instead of character counts.
-- Link preview JSON now includes `data_preview.content_link` and omits `content_length` for link items.
+- Link preview JSON includes `data_preview.content_link` and omits `content_length` for link items.
 - Simplified the frontend panel CSS.
 
 ## v3.0.3 (2026-05-14)
@@ -319,18 +320,18 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Dynamic export filename: `fb-chats-{name-char3}-{count}-{from-to}.txt`
 - Chat name is derived from the current page title, with the first 3 alphanumeric characters used in the filename
 - Safer scanning by randomizing scroll delay between 500ms and 1000ms
-- Completion message now includes elapsed scan time in seconds or minutes
+- Completion message includes elapsed scan time in seconds or minutes
 
 ## v2.11.1 (2026-05-14)
 
 ### Changed
 
-- **Ignore calls setting** now covers `video`, `audio`, and `missed` calls consistently
+- **Ignore calls setting** covers `video`, `audio`, and `missed` calls consistently
 - **Summary format** updated to:
   - `Total: x messages`
   - `x Days between [from] - [to]`
   - `Person 1/2 (Name): x messages - 3 days, 10 calls (x mins), 3 images`
-- **Anonymization input** now accepts a custom replacement string for your own name instead of a hardcoded placeholder
+- **Anonymization input** accepts a custom replacement string for your own name instead of a hardcoded placeholder
 - **Settings sidebar** simplified by removing the separate section title
 
 ## v2.11.0 (2026-05-14)
@@ -341,12 +342,12 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- **Timestamp format** now exports as `[2026-05-08 15:17]`
+- **Timestamp format** exports as `[2026-05-08 15:17]`
 
 ### Added
 
 - **Summary header** when enabled: exports top summary block with export dates from-top, total message count, and per-person counts including days, call count/duration, and image count
-- **Chat output** now preserves audio/video call entries and image sent events explicitly in the downloaded history
+- **Chat output** preserves audio/video call entries and image sent events explicitly in the downloaded history
 
 ---
 
@@ -370,11 +371,11 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- **Relative date resolution** (`today`, `yesterday`, day names like `Friday`, `Wednesday`): now extracts the time component directly from the raw label (handles `9:27am`, `9:27 AM`, `at 9:27 AM` formats) and returns a proper ISO string.
-- **Display date**: `displayDate` now uses the same resolved ISO string as `msgDate`.
+- **Relative date resolution** (`today`, `yesterday`, day names like `Friday`, `Wednesday`): extracts the time component directly from the raw label (handles `9:27am`, `9:27 AM`, `at 9:27 AM` formats) and returns a proper ISO string.
+- **Display date**: `displayDate` uses the same resolved ISO string as `msgDate`.
 
 ### Changed
 
-- **From date default** now dynamically set to 3 days before today (was hardcoded to `2026-01-19`)
+- **From date default** is dynamically set to 3 days before today (was hardcoded to `2026-01-19`)
 
 ---

@@ -8,9 +8,7 @@
  */
 
 const fs = require('fs');
-const path = require('path');
-
-const changelogPath = path.join(__dirname, '..', 'CHANGELOG.md');
+const { changelogPath } = require('../src/shared/app-config');
 
 if (!fs.existsSync(changelogPath)) {
   console.error('check-unreleased: CHANGELOG.md not found');

@@ -13,21 +13,21 @@ const {
   formatSummarySection,
 } = require('./shared/export-text');
 const { chooseRule } = require('./shared/message-metadata');
+const { resolveRepoPath } = require('./shared/app-config');
 
-const baseDir = path.resolve(__dirname, '..');
-const rawDir = path.join(baseDir, 'data-input');
-const optimizedDir = path.join(baseDir, 'data-output/optimized-html');
-const previewDir = path.join(baseDir, 'data-output/json-format');
-const rawMetadataPath = path.join(previewDir, 'raw-input-metadata.json');
-const exportDir = path.join(baseDir, 'data-output/final-export');
+const rawDir = resolveRepoPath('data-input');
+const optimizedDir = resolveRepoPath('data-output', 'optimized-html');
+const previewDir = resolveRepoPath('data-output', 'json-format');
+const rawMetadataPath = resolveRepoPath('data-output', 'json-format', 'raw-input-metadata.json');
+const exportDir = resolveRepoPath('data-output', 'final-export');
 
 const relRaw = './data-input';
 const relOptimized = './data-output/optimized-html';
 const relPreview = './data-output/json-format';
 const relExport = './data-output/final-export';
 
-const sharedConfigPath = path.join(baseDir, 'data-config/frontend_shared.json');
-const serverConfigPath = path.join(baseDir, 'data-config/server.json');
+const sharedConfigPath = resolveRepoPath('data-config', 'frontend_shared.json');
+const serverConfigPath = resolveRepoPath('data-config', 'server.json');
 
 const sharedConfig = fs.existsSync(sharedConfigPath)
   ? JSON.parse(fs.readFileSync(sharedConfigPath, 'utf8'))

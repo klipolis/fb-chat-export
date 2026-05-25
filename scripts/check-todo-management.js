@@ -1,9 +1,5 @@
 const fs = require('fs');
-const path = require('path');
-
-const baseDir = path.resolve(__dirname, '..');
-const configPath = path.join(baseDir, '.todo', 'config.json');
-const todoDir = path.join(baseDir, '.TODO');
+const { todoConfigPath: configPath, resolveRepoPath, repoRelative } = require('../src/shared/app-config');
 
 function fail(message) {
   console.error(`ERROR: ${message}`);
@@ -14,7 +10,7 @@ function readJson(filePath) {
   try {
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
   } catch (error) {
-    fail(`Failed to read or parse ${path.relative(baseDir, filePath)}: ${error.message}`);
+    fail(`Failed to read or parse ${repoRelative(filePath)}: ${error.message}`);
     return null;
   }
 }
@@ -23,7 +19,7 @@ function readText(filePath) {
   try {
     return fs.readFileSync(filePath, 'utf8');
   } catch (error) {
-    fail(`Failed to read ${path.relative(baseDir, filePath)}: ${error.message}`);
+    fail(`Failed to read ${repoRelative(filePath)}: ${error.message}`);
     return null;
   }
 }
@@ -41,6 +37,26 @@ function parseTaskIds(fileText) {
 function assertLinksSection(fileText, expectedHeader) {
   const regex = new RegExp(`^##\\s+${expectedHeader.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'm');
   return regex.test(fileText);
+}
+
+function validateTaskLanguage(filePath, fileText) {
+  const invalidLines = [];
+  const lines = fileText.split(/\r?\n/);
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index].trim();
+    const match = line.match(/^[-*]\s+T\d+\.\s*(.+)$/i);
+    if (!match) continue;
+
+    const taskText = match[1].trim();
+    if (/^now\b/i.test(taskText)) {
+      invalidLines.push(index + 1);
+    }
+  }
+
+  if (invalidLines.length > 0) {
+    fail(`Task descriptions in ${repoRelative(filePath)} should not start with 'now'. Fix lines: ${invalidLines.join(', ')}.`);
+  }
 }
 
 (function main() {
@@ -79,18 +95,20 @@ function assertLinksSection(fileText, expectedHeader) {
   let maxTaskNumber = 0;
 
   for (const fileKey of expectedFiles) {
-    const filePath = path.join(baseDir, todoFiles[fileKey]);
+    const filePath = resolveRepoPath('.todo', todoFiles[fileKey]);
     const fileText = readText(filePath);
     if (fileText === null) continue;
 
+    validateTaskLanguage(filePath, fileText);
+
     if (!assertLinksSection(fileText, linksHeader)) {
-      fail(`${path.relative(baseDir, filePath)} must include a '${linksHeader}' section header.`);
+      fail(`${repoRelative(filePath)} must include a '${linksHeader}' section header.`);
     }
 
     const taskIds = parseTaskIds(fileText);
     for (const id of taskIds) {
       if (!pattern.test(id)) {
-        fail(`${path.relative(baseDir, filePath)} contains invalid task id '${id}'. Expected pattern ${pattern}.`);
+        fail(`${repoRelative(filePath)} contains invalid task id '${id}'. Expected pattern ${pattern}.`);
       }
       if (allTaskIds.has(id)) {
         fail(`Duplicate task id found across todo files: ${id}`);

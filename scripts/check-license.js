@@ -2,11 +2,10 @@
 
 // Checks that the SPDX license identifier in package.json matches the LICENSE file.
 const fs = require('fs');
-const path = require('path');
+const { packagePath, licensePath } = require('../src/shared/app-config');
 
-const root = path.resolve(__dirname, '..');
-const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-const licenseText = fs.readFileSync(path.join(root, 'LICENSE'), 'utf8');
+const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+const licenseText = fs.readFileSync(licensePath, 'utf8');
 
 const declared = (pkg.license || '').toUpperCase().trim();
 if (!declared) {

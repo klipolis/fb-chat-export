@@ -21,26 +21,26 @@ Future / requires-new-samples items are in [TODO-future.md](TODO-future.md).
 
 ## Summary
 
-- T47. N-participant summary — generated summary sections now include every participant without a two-person cap.
+- T47. Generate N-participant summary sections for every participant without a two-person cap.
 - T48. Non-duration types count as text — stickers, GIFs, reactions, and link messages contribute to the text total.
 - T49. Sticker and gif treated as reaction — image-like stickers and GIFs are excluded from the image summary count.
 
 ## Message type detection
 
-- T50. Text messages no longer misclassified as voice-note in the browser scan.
-- T51. `voice-note` type aligned with filename and export content.
-- T52. Frontend summary call duration fixed for timers in `HH:MM` format.
+- T50. Classify text messages correctly instead of voice-note in the browser scan.
+- T51. Align `voice-note` type with filename and export content.
+- T52. Fix frontend summary call duration extraction for timers in `HH:MM` format.
 - T53. Label-locked type classification — once a label rule matches, heuristic overrides are skipped.
-- T54. Missed-call rule broadened to match missed audio/video calls.
-- T55. Reaction emoji-image support — `reaction` now covers emoji image reactions and preserves null content.
-- T56. JSON preview schema reorganised with top-level fields and separate raw/preview sections.
-- T57. `video-link` type added for plain video platform URLs.
+- T54. Broaden missed-call rule to match missed audio/video calls.
+- T55. Reaction emoji-image support — `reaction` covers emoji image reactions and preserves null content.
+- T56. Reorganise JSON preview schema with top-level fields and separate raw/preview sections.
+- T57. Add `video-link` type for plain video platform URLs.
 
 ## Output formatting
 
-- T58. Duration format normalised to `MM:SS` / `HH:MM:SS` without `mins` suffix.
-- T59. Video-link compact URL form added for TXT exports.
-- T60. Full calendar date aria-label parsing now works without the `At` prefix.
+- T58. Normalise duration format to `MM:SS` / `HH:MM:SS` without a `mins` suffix.
+- T59. Add a compact video-link URL form for TXT exports.
+- T60. Parse full calendar date aria-labels without requiring the `At` prefix.
 
 ## Anonymisation
 
@@ -90,16 +90,16 @@ Future / requires-new-samples items are in [TODO-future.md](TODO-future.md).
 ## Build / CI
 
 - T85. `pnpm run test` includes lint and both unit suites.
-- T86. `validate-dist` no longer rebuilds the bundle as a side effect.
+- T86. Prevent `validate-dist` from rebuilding the bundle as a side effect.
 
 ## Testing
 
 - T87. `formatLine` option combinations are covered.
 - T88. `buildSummary` edge cases are covered.
 - T89. `parseLocalDate` / `resolveRelativeDate` tests are added.
-- T90. `test-ui.js` no longer mutates the global document.
-- T91. Download handler lifecycle no longer reassigns `onclick` unsafely.
-- T92. Duplicate message dedupe key is now stable.
+- T90. Prevent `test-ui.js` from mutating the global document.
+- T91. Keep download handler lifecycle from reassigning `onclick` unsafely.
+- T92. Stabilise the duplicate message dedupe key.
 - T93. `formatLine` explicit `includeContent` semantics are clarified.
 
 ## Shared parser

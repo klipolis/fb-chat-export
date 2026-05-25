@@ -1,12 +1,11 @@
 const tap = require('tap');
 const fs = require('fs');
-const path = require('path');
+const { resolveRepoPath, changelogPath } = require('../src/shared/app-config');
 
-const baseDir = path.join(__dirname, '..');
 const config = require('../src/shared/export-config.json');
 const generatedSchema = require('./generated-txt-schema.json');
-const changelog = fs.readFileSync(path.join(baseDir, 'CHANGELOG.md'), 'utf8');
-const distPath = path.join(baseDir, 'dist', 'app.js');
+const changelog = fs.readFileSync(changelogPath, 'utf8');
+const distPath = resolveRepoPath('dist', 'app.js');
 
 tap.test('validate release sync for changelog, schema, and dist artifacts', (t) => {
   t.strictSame(
@@ -25,7 +24,7 @@ tap.test('validate release sync for changelog, schema, and dist artifacts', (t) 
     'Runtime export config and generated TXT schema message types must match'
   );
   t.ok(fs.existsSync(distPath), 'dist/app.js must exist for release validation');
-  const minDistPath = path.join(baseDir, 'dist', 'app.min.js');
+  const minDistPath = resolveRepoPath('dist', 'app.min.js');
   t.ok(fs.existsSync(minDistPath), 'dist/app.min.js must exist for release validation');
 
   const distContents = fs.readFileSync(distPath, 'utf8');
