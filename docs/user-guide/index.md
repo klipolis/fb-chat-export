@@ -11,12 +11,12 @@ flowchart TD
 
 ## What this does
 
-This project lets you export a Facebook Messenger conversation to a `.txt` file in the browser. The browser export panel scans visible messages, applies alias replacements, and writes a stable export file.
+This project lets you export a Messenger conversation to a `.txt` file in the browser. The browser export panel scans visible messages, applies alias replacements, and writes a stable export file.
 
 ## Before you start
 
 - Chrome or Firefox with Tampermonkey installed.
-- A Messenger conversation open at `https://www.facebook.com/messages/*`.
+- A Messenger conversation open in the browser.
 - The built browser bundle file `dist/app.js` loaded into the page after running `pnpm run build:frontend`.
 
 ## Using the browser export panel

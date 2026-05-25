@@ -26,7 +26,6 @@ const relOptimized = './data-output/optimized-html';
 const relPreview = './data-output/json-format';
 const relExport = './data-output/final-export';
 
-const aliasNamesPath = path.join(baseDir, 'data-config/alias-names.json');
 const sharedConfigPath = path.join(baseDir, 'data-config/frontend_shared.json');
 const serverConfigPath = path.join(baseDir, 'data-config/server.json');
 
@@ -37,10 +36,7 @@ const serverConfig = fs.existsSync(serverConfigPath)
   ? JSON.parse(fs.readFileSync(serverConfigPath, 'utf8'))
   : {};
 
-const aliasNameMap = sharedConfig.aliasNames ||
-  (fs.existsSync(aliasNamesPath)
-    ? JSON.parse(fs.readFileSync(aliasNamesPath, 'utf8'))
-    : {});
+const aliasNameMap = sharedConfig.aliasNames || {};
 
 const writeRaw = process.env.BUILD_RAW === 'true';
 const referenceDate = process.env.BUILD_REFERENCE_DATE ||
@@ -95,21 +91,7 @@ function buildTextEntries(files, cleanedHtmlByFile, referenceDate) {
       return;
     }
 
-    const expectedType = (() => {
-      const rule = chooseRule(fileName, '');
-      if (!rule || !rule.type) return 'text';
-      return rule.type === 'you-text' ? 'text' : rule.type;
-    })();
-
-    const matchingType = docEntries.filter((entry) => entry.semanticType === expectedType);
-    let preferred = matchingType[0];
-    if (expectedType === 'link') {
-      preferred =
-        matchingType.find((entry) => /^https?:\/\//i.test(String(entry.content || ''))) ||
-        matchingType[0];
-    }
-
-    entries.push(preferred || docEntries[0]);
+    entries.push(...docEntries);
   });
 
   return entries.sort((a, b) => a.ts - b.ts);
@@ -184,19 +166,30 @@ function writeTextExports(files, cleanedHtmlByFile, referenceDate) {
   });
   const participants = summaryParticipants();
   const summaryTextForContentOn = formatSummarySection(sortedEntries, { useMessageLabel: true, fixedParticipants: participants });
-  const summaryTextForSummaryOnly = formatSummarySection(sortedEntries, { fixedParticipants: participants });
+  const summaryTextForSummaryOnlyCombined = formatSummarySection(sortedEntries, {
+    useMessageLabel: false,
+    fixedParticipants: participants,
+  });
+  const summaryTextForSummaryOnlyDetailed = formatSummarySection(sortedEntries, {
+    useMessageLabel: false,
+    fixedParticipants: participants,
+    detailed: true,
+  });
   const contentOn = buildExportText(contentOnLines, `${headerTextContentOn}${summaryTextForContentOn}`);
   const contentOff = buildExportText(contentOffLines, headerTextContentOff);
 
-  const summaryOnly = buildExportText([], `${headerTextSummaryOnly}${summaryTextForSummaryOnly}`);
+  const summaryCombined = buildExportText([], `${headerTextSummaryOnly}${summaryTextForSummaryOnlyCombined}`);
+  const summaryDetailed = buildExportText([], `${headerTextSummaryOnly}${summaryTextForSummaryOnlyDetailed}`);
 
   const onPath = path.join(exportDir, formatExportFileName('export-max'));
   const offPath = path.join(exportDir, formatExportFileName('export-minimal'));
-  const summaryPath = path.join(exportDir, 'fb-chats-export-summary-detailed.txt');
+  const summaryCombinedPath = path.join(exportDir, 'export-summary-combined.txt');
+  const summaryDetailedPath = path.join(exportDir, 'export-summary-detailed.txt');
   fs.writeFileSync(onPath, contentOn, 'utf8');
   fs.writeFileSync(offPath, contentOff, 'utf8');
-  fs.writeFileSync(summaryPath, summaryOnly, 'utf8');
-  return [onPath, offPath, summaryPath];
+  fs.writeFileSync(summaryCombinedPath, summaryCombined, 'utf8');
+  fs.writeFileSync(summaryDetailedPath, summaryDetailed, 'utf8');
+  return [onPath, offPath, summaryCombinedPath, summaryDetailedPath];
 }
 
 function main() {

@@ -172,6 +172,221 @@ function buildSummaryData(entries = [], options = {}) {
   };
 }
 
+function collectTypeCounts(entries = []) {
+  const counts = {};
+  entries.forEach((entry) => {
+    const type = String(entry.type || entry.fileType || '').toLowerCase();
+    counts[type] = (counts[type] || 0) + 1;
+  });
+  return counts;
+}
+
+function formatTypeCount(type, count) {
+  const label = String(type || '').replace(/-/g, ' ');
+  return `${ROUGH_PREFIX} ${count} ${label}`;
+}
+
+const DETAILED_TYPE_ORDER = [
+  'text',
+  'reaction',
+  'link',
+  'video-link',
+  'image',
+  'sticker',
+  'gif',
+  'poll',
+  'audio-call',
+  'video-call',
+  'voice-note',
+  'missed-call',
+  'deleted',
+  'unsent',
+];
+
+function renderTypeCounts(typeCounts) {
+  const orderedTypes = DETAILED_TYPE_ORDER.filter((type) => typeCounts[type] != null);
+  const extraTypes = Object.keys(typeCounts)
+    .filter((type) => !DETAILED_TYPE_ORDER.includes(type))
+    .sort();
+  return orderedTypes.concat(extraTypes).map((type) => formatTypeCount(type, typeCounts[type]));
+}
+
+function buildDetailedSummary(entries = [], options = {}) {
+  if (!entries.length) {
+    return buildSummary(entries, options);
+  }
+
+  const totals = new Map();
+  const allDays = new Set();
+
+  entries.forEach((entry) => {
+    const sender = entry.sender || 'Unknown';
+    const dayKey = formatDayKey(entry.date);
+    allDays.add(dayKey);
+
+    const type = String(entry.type || entry.fileType || '').toLowerCase();
+    const data = totals.get(sender) || {
+      count: 0,
+      days: new Set(),
+      calls: 0,
+      callSeconds: 0,
+      images: 0,
+      words: 0,
+      typeCounts: {},
+    };
+
+    const isTimedCall = ['audio-call', 'video-call', 'voice-note'].includes(type);
+    const isCall = isTimedCall || type === 'missed-call';
+    if (isTimedCall) {
+      data.calls += 1;
+      data.callSeconds += Number(entry.callSeconds || 0);
+    }
+    if (type === 'image') {
+      data.images += 1;
+    }
+    data.words += Number(entry.wordCount || 0);
+    data.typeCounts[type] = (data.typeCounts[type] || 0) + 1;
+
+    data.count += 1;
+    data.days.add(dayKey);
+    totals.set(sender, data);
+  });
+
+  let selectedParticipants;
+  if (Array.isArray(options.fixedParticipants) && options.fixedParticipants.length) {
+    selectedParticipants = [...options.fixedParticipants];
+  } else {
+    const participantNames = [];
+    entries.forEach((entry) => {
+      if (!participantNames.includes(entry.sender)) {
+        participantNames.push(entry.sender);
+      }
+    });
+    selectedParticipants = participantNames;
+  }
+
+  const participantSummaries = selectedParticipants.map((name) => {
+    const participantEntries = entries.filter((entry) => (entry.sender || 'Unknown') === name);
+    const participantDays = new Set();
+    const participantTypeCounts = {};
+    let participantWords = 0;
+    let participantCalls = 0;
+    let participantSeconds = 0;
+
+    participantEntries.forEach((entry) => {
+      const dayKey = formatDayKey(entry.date);
+      participantDays.add(dayKey);
+      const type = String(entry.type || entry.fileType || '').toLowerCase();
+      const isTimedCall = ['audio-call', 'video-call', 'voice-note'].includes(type);
+      if (isTimedCall) {
+        participantCalls += 1;
+        participantSeconds += Number(entry.callSeconds || 0);
+      }
+      participantWords += Number(entry.wordCount || 0);
+      participantTypeCounts[type] = (participantTypeCounts[type] || 0) + 1;
+    });
+
+    return {
+      name,
+      participantEntries,
+      participantDays,
+      participantTypeCounts,
+      participantWords,
+      participantCalls,
+      participantSeconds,
+      participantMessages: participantEntries.length,
+    };
+  });
+
+  const totalTypeCounts = collectTypeCounts(entries);
+  const totalCalls = participantSummaries.reduce((sum, item) => sum + item.participantCalls, 0);
+  const totalCallSeconds = participantSummaries.reduce(
+    (sum, item) => sum + item.participantSeconds,
+    0
+  );
+  const totalWords = participantSummaries.reduce((sum, item) => sum + item.participantWords, 0);
+
+  const summary = {
+    total: {
+      title: TOTAL_SUMMARY_TITLE,
+      messages: entries.length,
+      days: allDays.size,
+      rough: {
+        words: totalWords,
+        calls: totalCalls,
+        callSeconds: totalCallSeconds,
+      },
+      typeCounts: totalTypeCounts,
+    },
+    participants: participantSummaries.map((summary) => ({
+      title: `${summary.name}${PERSON_SUMMARY_SUFFIX}`,
+      name: summary.name,
+      messages: summary.participantMessages,
+      days: summary.participantDays.size,
+      rough: {
+        words: summary.participantWords,
+        calls: summary.participantCalls,
+        callSeconds: summary.participantSeconds,
+      },
+      typeCounts: summary.participantTypeCounts,
+    })),
+  };
+
+  const useMessageLabel = Boolean(options.useMessageLabel);
+  const totalMessageLabel = useMessageLabel
+    ? summary.total.messages === 1
+      ? 'message'
+      : 'messages'
+    : summary.total.messages === 1
+      ? 'post'
+      : 'posts';
+  const totalDayLabel = useMessageLabel ? (summary.total.days === 1 ? 'day' : 'days') : 'days';
+
+  const detailLines = [
+    summary.total.title,
+    `${summary.total.messages} ${totalMessageLabel} / ${summary.total.days} ${totalDayLabel}`,
+    `${ROUGH_PREFIX} ${summary.total.rough.words} words`,
+    ...renderTypeCounts(summary.total.typeCounts),
+  ];
+  if (summary.total.rough.calls || summary.total.typeCounts['audio-call'] || summary.total.typeCounts['video-call'] || summary.total.typeCounts['voice-note']) {
+    detailLines.push(
+      `${ROUGH_PREFIX} ${summary.total.rough.calls} calls ${formatDurationSeconds(summary.total.rough.callSeconds)}`
+    );
+  }
+  detailLines.push('');
+
+  summary.participants.forEach((participant) => {
+    const participantMessageLabel = useMessageLabel
+      ? participant.messages === 1
+        ? 'message'
+        : 'messages'
+      : participant.messages === 1
+        ? 'post'
+        : 'posts';
+    const participantDayLabel = useMessageLabel
+      ? participant.days === 1
+        ? 'day'
+        : 'days'
+      : 'days';
+
+    detailLines.push(participant.title);
+    detailLines.push(
+      `${participant.messages} ${participantMessageLabel} / ${participant.days} ${participantDayLabel}`
+    );
+    detailLines.push(`${ROUGH_PREFIX} ${participant.rough.words} words`);
+    detailLines.push(...renderTypeCounts(participant.typeCounts));
+    if (participant.rough.calls) {
+      detailLines.push(
+        `${ROUGH_PREFIX} ${participant.rough.calls} calls ${formatDurationSeconds(participant.rough.callSeconds)}`
+      );
+    }
+    detailLines.push('');
+  });
+
+  detailLines.push('---');
+  return detailLines.join('\n') + '\n';
+}
+
 function buildSummary(entries = [], options = {}) {
   if (!entries.length) return '';
 
@@ -229,5 +444,6 @@ function buildSummary(entries = [], options = {}) {
 
 module.exports = {
   buildSummary,
+  buildDetailedSummary,
   buildSummaryData,
 };

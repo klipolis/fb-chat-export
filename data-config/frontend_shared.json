@@ -4,6 +4,9 @@
     "Rob": "Barnabas",
     "any": "XYZ"
   },
+  "reactionOptions": {
+    "asciiSmileyPattern": "^[:;=8Xx][-~]?[)DdpP(/\\\\]$"
+  },
   "relativeDateRules": [
     {
       "name": "relativeDay",

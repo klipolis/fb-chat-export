@@ -1,6 +1,6 @@
 const { normalizeDuration } = require('./message-metadata');
 const { normalizeDateToIso } = require('./aria-label-parser');
-const { buildSummary, buildSummaryData } = require('./export-summary');
+const { buildSummary, buildDetailedSummary, buildSummaryData } = require('./export-summary');
 
 function formatExportHeader({ method, messageTypes, exportOptions = {}, aliasMap = {} }) {
   const types = messageTypes.map((type) => `- ${type}`).join('\n');
@@ -71,15 +71,16 @@ function formatLine(entry, options = {}) {
 
 function formatSummarySection(entries = [], options = {}) {
   const summaryEntries = entries.map((entry) => {
-    const fileType = String(entry.fileType || '').toLowerCase();
+    const semanticType = String(entry.semanticType || entry.fileType || '').toLowerCase();
     const isCall = [
       'audio-call',
       'video-call',
       'voice-note',
+      'missed-call',
       'missed-audio-call',
       'missed-video-call',
-    ].includes(fileType);
-    const isTimedCall = ['audio-call', 'video-call', 'voice-note'].includes(fileType);
+    ].includes(semanticType);
+    const isTimedCall = ['audio-call', 'video-call', 'voice-note'].includes(semanticType);
     const contentText = String(entry.content || '').trim();
     const textWords = contentText
       ? contentText.split(/\s+/).filter(Boolean).length
@@ -87,13 +88,20 @@ function formatSummarySection(entries = [], options = {}) {
     return {
       sender: entry.sender,
       date: Number.isFinite(entry.ts) ? new Date(entry.ts) : new Date(NaN),
-      type: fileType,
+      type: semanticType,
       isCall,
-      isImage: fileType === 'image',
+      isImage: semanticType === 'image',
       callSeconds: isTimedCall ? durationToSeconds(entry.duration) : 0,
-      wordCount: isCall || fileType === 'image' ? 0 : textWords,
+      wordCount: isCall || semanticType === 'image' ? 0 : textWords,
     };
   });
+
+  if (options.detailed) {
+    return buildDetailedSummary(summaryEntries, {
+      fixedParticipants: options.fixedParticipants || null,
+      useMessageLabel: Boolean(options.useMessageLabel),
+    });
+  }
 
   return buildSummary(summaryEntries, {
     fixedParticipants: options.fixedParticipants || null,

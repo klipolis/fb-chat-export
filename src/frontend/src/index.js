@@ -23,7 +23,7 @@ import {
   const panel = document.createElement('details');
   panel.style.cssText =
     'position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 99999; background: #fff; border: 1px solid #ddd; border-radius: 0 0 10px 10px; font-family: sans-serif; font-size: 13px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); min-width: 420px; max-width: calc(100% - 40px);';
-  panel.open = localStorage.getItem('fbExportPanelOpen') !== 'false';
+  panel.open = localStorage.getItem('chatExportPanelOpen') !== 'false';
 
   const panelSummary = document.createElement('summary');
   panelSummary.style.cssText =
@@ -40,7 +40,7 @@ import {
   panel.addEventListener('toggle', () => {
     panelArrow.textContent = panel.open ? '▲' : '▼';
     panelSummary.setAttribute('aria-expanded', String(panel.open));
-    localStorage.setItem('fbExportPanelOpen', String(panel.open));
+    localStorage.setItem('chatExportPanelOpen', String(panel.open));
     if (!panel.open && actionBtn.dataset.scanning === 'true') {
       stopRequested = true;
       if (scrollTimeout !== null) {
@@ -88,7 +88,7 @@ import {
   const { wrap: fromWrap, input: fromInput } = createLabelInput(
     'From:',
     'YYYY-MM-DD',
-    sessionStorage.getItem('fbExportFrom') || (() => {
+    sessionStorage.getItem('exportFrom') || (() => {
       const d = new Date();
       d.setDate(d.getDate() - 3);
       return d.toISOString().slice(0, 10);
@@ -97,13 +97,13 @@ import {
   const { wrap: toWrap, input: toInput } = createLabelInput(
     'To:',
     'YYYY-MM-DD',
-    sessionStorage.getItem('fbExportTo') || new Date().toISOString().slice(0, 10)
+    sessionStorage.getItem('exportTo') || new Date().toISOString().slice(0, 10)
   );
 
   const { wrap: fileNameWrap, input: fileNameInput } = createLabelInput(
     'File:',
     'Optional custom name',
-    sessionStorage.getItem('fbExportFileName') || ''
+    sessionStorage.getItem('exportFileName') || ''
   );
 
   const actionBtn = createButton('Scan Messages', '#0084ff');
@@ -326,7 +326,7 @@ import {
     if (customBaseName) {
       const sanitized = sanitizeFileNamePart(customBaseName);
       customFileName = `${sanitized}.txt`;
-      sessionStorage.setItem('fbExportFileName', customBaseName);
+      sessionStorage.setItem('exportFileName', customBaseName);
     }
 
     fromInput.style.borderColor = toInput.style.borderColor = '#ccc';
@@ -336,8 +336,8 @@ import {
       downloadRevokeTimeout = null;
     }
     stopRequested = false;
-    sessionStorage.setItem('fbExportFrom', fromInput.value.trim());
-    sessionStorage.setItem('fbExportTo', toInput.value.trim());
+    sessionStorage.setItem('exportFrom', fromInput.value.trim());
+    sessionStorage.setItem('exportTo', toInput.value.trim());
     setScanState('scanning');
     downloadBtn.style.display = 'none';
     saveAgainLink.style.display = 'none';

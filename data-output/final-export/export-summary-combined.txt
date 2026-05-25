@@ -2,6 +2,7 @@ Method: server
 Message types:
 - audio-call
 - deleted
+- image-2
 - image
 - link-embed-no-text
 - link-text
@@ -15,18 +16,19 @@ Message types:
 - video-call
 - video-link
 - voice-note
-Options:
-  includeContent : false
-  includeLength : false
-  includeSummary : true
+
+Options used: includeSummary
+Other ones: includeContent, includeLength
+
 Aliases:
   You : Youghurt
   Rob : Barnabas
   any : XYZ
+
 ---
 
 Total Summary
-15 posts / 7 days
+16 posts / 8 days
 ~ 8 text / 207 words
 ~ 1 images
 ~ 3 calls 00:49:20

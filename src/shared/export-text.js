@@ -24,7 +24,7 @@ function formatExportFileName(mode = 'export-max', { fromDate, toDate } = {}) {
   const from = fromDate ? String(fromDate).slice(0, 10) : '';
   const to = toDate ? String(toDate).slice(0, 10) : '';
   const range = from || to ? `${from || 'start'}–${to || 'end'}` : '';
-  const base = range ? `fb-export-${range}` : mode === 'export-minimal' ? 'fb-chats-export-minimal' : 'fb-chats-export-max';
+  const base = range ? `export-${range}` : mode === 'export-minimal' ? 'export-minimal' : 'export-max';
   const suffix = range ? (mode === 'export-minimal' ? '-minimal' : '-max') : '';
   return `${base}${suffix}.txt`;
 }

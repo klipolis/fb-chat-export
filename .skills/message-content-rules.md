@@ -1,6 +1,6 @@
 # Message Content Rules
 
-This file documents the developer-facing rules that map raw Messenger HTML into end-user exports. It is intentionally separate from setup and product requirements because it describes implementation behavior, not user-facing features.
+This file documents the developer-facing rules that map raw chat HTML into end-user exports. It is intentionally separate from setup and product requirements because it describes implementation behavior, not user-facing features.
 
 ## Scope
 - Raw HTML in `data-input/` is the source of truth.
@@ -31,7 +31,7 @@ This file documents the developer-facing rules that map raw Messenger HTML into 
 - text should preserve readable end-user content.
 - Link messages should emit canonical URL content when available; fall back to `link` only when no URL can be resolved.
 - Pinned-location link previews without direct `href` should emit a canonical maps search URL derived from the location text.
-- Redirected Facebook/Messenger links should be decoded to original target URLs using known redirect query parameters when available.
+- Redirected platform links should be decoded to original target URLs using known redirect query parameters when available.
 - Link previews must keep `content_link` in JSON and must not invent a content length.
 - Image, deleted/unsent, and missed-call items should avoid unnecessary content text when the format does not require it.
 - Reply messages can be classified as text in exports even when the raw HTML contains reply structure.

@@ -11,49 +11,51 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - `pnpm run release` automates the release process: renames `[Unreleased]` to the new version heading, inserts a fresh empty `[Unreleased]` above it, and bumps `package.json` version. Supports `patch`, `minor`, `major` override arguments; defaults to minor if any `Added`/`Changed` entries are present, otherwise patch.
-- Pre-commit hook now also blocks commits when the `[Unreleased]` section in `CHANGELOG.md` is empty, via `scripts/check-unreleased.js`.
+- Pre-commit hook also blocks commits when the `[Unreleased]` section in `CHANGELOG.md` is empty, via `scripts/check-unreleased.js`.
 - `pnpm run check:unreleased` exposes the changelog guard as a standalone command.
+- Export filenames drop the `fb-chats-` and `fb-export-` prefixes, producing `export-max.txt`, `export-minimal.txt`, `export-summary-combined.txt`, and `export-summary-detailed.txt`.
+- Documentation references to the platform are removed except where required for terms and userscript header metadata.
 
 ### Fixed
 
-- Duration values in exports and JSON previews now always use strict `HH:MM:SS` three-part format (e.g. `00:18:00`, `00:00:20`) with zero-padded hours, eliminating the previous `MM:SS` two-part form.
-- `validate-generated-txt.js` summary validator is now dynamic: it accepts any number of per-sender summary sections instead of being hardcoded to two.
-- `export-config.json` `personSummaryTitle` pattern is now dynamic (`^.{1,80} Summary$`) instead of listing hardcoded sender aliases.
+- Duration values in exports and JSON previews always use strict `HH:MM:SS` three-part format (e.g. `00:18:00`, `00:00:20`) with zero-padded hours, eliminating the previous `MM:SS` two-part form.
+- `validate-generated-txt.js` summary validator is dynamic: it accepts any number of per-sender summary sections instead of being hardcoded to two.
+- `export-config.json` `personSummaryTitle` pattern is dynamic (`^.{1,80} Summary$`) instead of listing hardcoded sender aliases.
 - `export-config.json` `messageTypes` updated to include `reaction-emoji`, `reaction`, and `video-link`; `duration` pattern updated to match the strict `HH:MM:SS` format.
 
 ### Changed
 
-- `formatExportHeader` now writes `Options used:` and `Other ones:` lines and separates header sections with blank lines.
-- `data-config/alias-names.json` is now the canonical runtime alias source; duplicate userscript alias packaging metadata was removed.
+- `formatExportHeader` writes `Options used:` and `Other ones:` lines and separates header sections with blank lines.
+- `data-config/alias-names.json` is the canonical runtime alias source; duplicate userscript alias packaging metadata was removed.
 - `package.json` script ordering was cleaned and a new `lint:todos` command was added to validate `.TODO` files and `.todo/config.json`.
 - Documentation was reorganised into `docs/user-guide` and `docs/developer-guide`, with Mermaid flowcharts added to key docs and a new release management guide.
-- TODO management docs now explicitly allow additional manual files in `.todo/` to be preserved as-is.
+- TODO management docs explicitly allow additional manual files in `.todo/` to be preserved as-is.
 
-- Sticker and animated gif messages are no longer counted as images in the summary; they count toward the text total alongside reactions.
-- Reaction messages using an emoji image (`<img>` element) instead of an SVG icon are now correctly classified as `reaction` type.
-- The JSON preview format has been reorganised: `html_locale`, `title`, and `type` are now top-level fields; `data_raw` captures values as extracted from the HTML; `data_preview` contains processed display values; `locate` has been removed.
+- Sticker and animated gif messages are not counted as images in the summary; they count toward the text total alongside reactions.
+- Reaction messages using an emoji image (`<img>` element) instead of an SVG icon are correctly classified as `reaction` type.
+- The JSON preview format has been reorganised: `html_locale`, `title`, and `type` are top-level fields; `data_raw` captures values as extracted from the HTML; `data_preview` contains processed display values; `locate` is removed.
 - Reaction messages always produce `null` content in both `data_raw` and `data_preview`.
-- `video-link` is a new message type for messages whose body is a video platform URL (YouTube, Vimeo). The URL is used as content; the type appears in the export line and JSON preview. The HTML optimiser now preserves plain URL text inside `<a>` tags so the message wrapper is not incorrectly stripped as empty.
-- The voice-note message type is now consistently named `voice-note` everywhere — in the rule, JSON preview, and content text — matching the raw sample filename.
+- `video-link` is a new message type for messages whose body is a video platform URL (YouTube, Vimeo). The URL is used as content; the type appears in the export line and JSON preview. The HTML optimiser preserves plain URL text inside `<a>` tags so the message wrapper is not incorrectly stripped as empty.
+- The voice-note message type is consistently named `voice-note` everywhere — in the rule, JSON preview, and content text — matching the raw sample filename.
 
 ### Fixed
 
 - Text messages are no longer misclassified as voice-message in the browser scan when no audio timer element is present.
-- Message type classification now stops at the first matching rule; once a type is identified from the aria-label, heuristic overrides are skipped.
-- Downloaded export filename now includes the selected date range (e.g. `fb-export-2026-05-01–2026-05-19-max.txt`).
-- Call duration totals in the browser summary are now counted correctly; previously, timers in `HH:MM` format without the word "min" were counted as 0 minutes.
-- Messages whose aria-label uses a full calendar date (e.g. "May 7, 2026, 7:09 AM, You: text") without the "At" prefix are now correctly parsed; date, sender, and content are each placed in the right field.
-- Duration values in exports and JSON previews now use `HH:MM:SS` / `MM:SS` clock format (e.g. `18:00`, `00:20`) without a trailing "mins" label.
+- Message type classification stops at the first matching rule; once a type is identified from the aria-label, heuristic overrides are skipped.
+- Downloaded export filename includes the selected date range (e.g. `fb-export-2026-05-01–2026-05-19-max.txt`).
+- Call duration totals in the browser summary are counted correctly; previously, timers in `HH:MM` format without the word "min" were counted as 0 minutes.
+- Messages whose aria-label uses a full calendar date (e.g. "May 7, 2026, 7:09 AM, You: text") without the "At" prefix are correctly parsed; date, sender, and content are each placed in the right field.
+- Duration values in exports and JSON previews use `HH:MM:SS` / `MM:SS` clock format (e.g. `18:00`, `00:20`) without a trailing "mins" label.
 - Video-link URLs in TXT exports are shortened to a compact form: scheme and dots are stripped, the domain dots replaced with underscores, and the path is truncated to 10 characters with an ellipsis (e.g. `youtube_com/shorts/IK...`). The raw URL in JSON `data_raw` keeps the full address without query string.
 
 ## v5.4.0 (2026-05-18)
 
 ### Added
 
-- Facebook reactions (👍, ❤️, 😂, 😮, 😢, 👏) are recognised as a distinct `reaction` message type and excluded from the character-count summary.
+- Reactions (👍, ❤️, 😂, 😮, 😢, 👏) are recognised as a distinct `reaction` message type and excluded from the character-count summary.
 - Name aliasing now supports multiple explicit sender mappings (e.g. mapping both "You" and a contact name to separate pseudonyms) alongside an automatic fallback for any other detected name.
 - `build:raw` script writes aliased names back to raw HTML files on demand; the default build no longer modifies raw HTML.
-- `build:raw-clean` script strips Facebook-internal utility classes and inline styles from raw HTML files without running full optimisation.
+- `build:raw-clean` script strips platform-internal utility classes and inline styles from raw HTML files without running full optimisation.
 - Audio call messages where the sender name matches the anonymisation target are handled correctly without double-replacement.
 - Date inputs accept `YYYY/MM/DD`, `DD.MM.YYYY`, and `DD/MM/YYYY` in addition to `YYYY-MM-DD`.
 - Panel open/closed state is remembered across page loads.

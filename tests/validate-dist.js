@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const baseDir = path.resolve(__dirname, '..');
+const baseDir = path.join(__dirname, '..');
 const distPath = path.join(baseDir, 'dist', 'app.js');
 const minDistPath = path.join(baseDir, 'dist', 'app.min.js');
 

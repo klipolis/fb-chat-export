@@ -1,8 +1,9 @@
 {
-  "file_count": 15,
+  "file_count": 16,
   "files": [
     "audio-call.json",
     "deleted.json",
+    "image-2.json",
     "image.json",
     "link-embed-no-text.json",
     "link-text.json",

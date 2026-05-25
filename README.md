@@ -1,6 +1,6 @@
-# fb-chat-exporter
+# chat-exporter
 
-A Messenger chat export project that generates `.txt`, JSON preview, HTML snapshots, and a browser-side frontend bundle.
+A chat export project that generates `.txt`, JSON preview, HTML snapshots, and a browser-side frontend bundle.
 
 ## Overview
 

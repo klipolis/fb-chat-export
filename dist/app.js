@@ -160,6 +160,42 @@
     }
   });
 
+  // data-config/frontend_shared.json
+  var require_frontend_shared = __commonJS({
+    "data-config/frontend_shared.json"(exports, module) {
+      module.exports = {
+        aliasNames: {
+          You: "Youghurt",
+          Rob: "Barnabas",
+          any: "XYZ"
+        },
+        reactionOptions: {
+          asciiSmileyPattern: "^[:;=8Xx][-~]?[)DdpP(/\\\\]$"
+        },
+        relativeDateRules: [
+          {
+            name: "relativeDay",
+            pattern: "^(today|yesterday)(?:\\s+at\\s+)?(\\d{1,2}):(\\d{2})\\s*(am|pm)?$",
+            window: "24h",
+            description: "time-only relative labels are resolved relative to the current day or yesterday"
+          },
+          {
+            name: "weekday",
+            pattern: "^(sunday|monday|tuesday|wednesday|thursday|friday|saturday)(?:\\s+(\\d{1,2}):(\\d{2})\\s*(am|pm)?)?$",
+            window: "7d",
+            description: "weekday labels resolve to the most recent matching day within the last 7 days"
+          },
+          {
+            name: "timeOnly",
+            pattern: "^(?:at\\s*)?(\\d{1,2}):(\\d{2})\\s*(am|pm)?$",
+            window: "24h",
+            description: "time-only labels are resolved to the current day if within the last 24 hours"
+          }
+        ]
+      };
+    }
+  });
+
   // src/shared/aria-label-parser.js
   var require_aria_label_parser = __commonJS({
     "src/shared/aria-label-parser.js"(exports, module) {
@@ -180,12 +216,83 @@
         if (!isValidSender(sender)) return null;
         return { sender, message };
       }
+      var sharedRelativeDateRules = [];
+      try {
+        sharedRelativeDateRules = require_frontend_shared().relativeDateRules || [];
+      } catch (error) {
+        sharedRelativeDateRules = [];
+      }
       function findValidDatePrefix(text, referenceDate) {
         const parts = text.split(",").map((part) => part.trim()).filter(Boolean);
         let candidate = "";
         for (let i = 0; i < Math.min(parts.length, 3); i += 1) {
           candidate = candidate ? `${candidate}, ${parts[i]}` : parts[i];
           if (normalizeDateToIso3(candidate, referenceDate)) return candidate;
+        }
+        return null;
+      }
+      function parseRelativeRuleMatch(match, ruleName, now) {
+        if (!match) return null;
+        if (ruleName === "relativeDay") {
+          const [, when, hourPart, minute, meridiem] = match;
+          const date = new Date(now);
+          if (when.toLowerCase() === "yesterday") date.setDate(date.getDate() - 1);
+          let hour = Number(hourPart);
+          if (meridiem) {
+            if (meridiem.toLowerCase() === "pm" && hour < 12) hour += 12;
+            if (meridiem.toLowerCase() === "am" && hour === 12) hour = 0;
+          }
+          date.setHours(hour, Number(minute), 0, 0);
+          return date;
+        }
+        if (ruleName === "weekday") {
+          const [, dayName, hourPart = "0", minute = "00", meridiem] = match;
+          const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+          const targetDow = days.indexOf(dayName.toLowerCase());
+          if (targetDow < 0) return null;
+          const diff = (now.getDay() - targetDow + 7) % 7;
+          const date = new Date(now);
+          date.setDate(date.getDate() - diff);
+          let hour = Number(hourPart);
+          if (meridiem) {
+            if (meridiem.toLowerCase() === "pm" && hour < 12) hour += 12;
+            if (meridiem.toLowerCase() === "am" && hour === 12) hour = 0;
+          }
+          date.setHours(hour, Number(minute), 0, 0);
+          return date;
+        }
+        if (ruleName === "timeOnly") {
+          const [, hourPart, minute, meridiem] = match;
+          const date = new Date(now);
+          let hour = Number(hourPart);
+          if (meridiem) {
+            if (meridiem.toLowerCase() === "pm" && hour < 12) hour += 12;
+            if (meridiem.toLowerCase() === "am" && hour === 12) hour = 0;
+          }
+          date.setHours(hour, Number(minute), 0, 0);
+          return date;
+        }
+        return null;
+      }
+      function normalizeSharedRelativeDate(text, referenceDate) {
+        if (!Array.isArray(sharedRelativeDateRules) || sharedRelativeDateRules.length === 0) {
+          return null;
+        }
+        const now = parseReferenceDate(referenceDate);
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        for (const rule of sharedRelativeDateRules) {
+          if (!rule || !rule.pattern) continue;
+          const regex = new RegExp(rule.pattern, "i");
+          const match = text.match(regex);
+          if (!match) continue;
+          const date = parseRelativeRuleMatch(match, rule.name, today);
+          if (!date) continue;
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          const hours = String(date.getHours()).padStart(2, "0");
+          const minutes = String(date.getMinutes()).padStart(2, "0");
+          return `${year}.${month}.${day} ${hours}:${minutes}`;
         }
         return null;
       }
@@ -344,6 +451,8 @@
           const minutes = String(date.getMinutes()).padStart(2, "0");
           return `${year}.${month}.${day} ${hours}:${minutes}`;
         }
+        const sharedNormalized = normalizeSharedRelativeDate(text, referenceDate);
+        if (sharedNormalized) return sharedNormalized;
         const now = parseReferenceDate(referenceDate);
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const relativeMatch = text.match(/^(today|yesterday)(?:\s+at\s+)?(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
@@ -445,6 +554,19 @@
     "src/shared/message-metadata.js"(exports, module) {
       var { messageRules } = require_rules();
       var { parseAriaLabel: parseAriaLabel2, normalizeDateToSimple, normalizeLabel } = require_aria_label_parser();
+      var sharedFrontendConfig = {};
+      try {
+        sharedFrontendConfig = require_frontend_shared() || {};
+      } catch {
+        sharedFrontendConfig = {};
+      }
+      var asciiReactionPattern = new RegExp(
+        sharedFrontendConfig.reactionOptions?.asciiSmileyPattern || "^[:;=8Xx][-~]?[)DdpP(/\\\\]]$",
+        "u"
+      );
+      function isAsciiReactionText(text) {
+        return asciiReactionPattern.test(String(text || "").trim());
+      }
       function normalizeDuration2(text) {
         if (!text) return null;
         const normalized = String(text).trim();
@@ -505,14 +627,14 @@
           return url;
         }
       }
-      function normalizeFacebookRedirect(url) {
+      function normalizeRedirectUrl(url) {
         try {
           const parsed = new URL(url);
           const host = parsed.hostname.toLowerCase();
           const path = parsed.pathname.toLowerCase();
-          const isFacebookRedirectHost = /(^|\.)facebook\.com$|(^|\.)messenger\.com$/.test(host);
+          const isRedirectHost = /(^|\.)facebook\.com$|(^|\.)messenger\.com$/.test(host);
           const isRedirectPath = path.includes("/l.php") || path.includes("/flx/warn/");
-          if (!isFacebookRedirectHost || !isRedirectPath) return url;
+          if (!isRedirectHost || !isRedirectPath) return url;
           const candidate = parsed.searchParams.get("u") || parsed.searchParams.get("url") || parsed.searchParams.get("q");
           if (!candidate) return url;
           const decoded = decodeURIComponent(candidate);
@@ -536,7 +658,7 @@
         const wwwMatch = String(text).match(/\b(www\.[^\s"'<]+)/i);
         const rawUrl = urlMatch ? urlMatch[0] : wwwMatch ? `https://${wwwMatch[1]}` : null;
         if (!rawUrl) return null;
-        return normalizeFacebookRedirect(rawUrl);
+        return normalizeRedirectUrl(rawUrl);
       }
       function extractPinnedLocationLink(text) {
         const normalized = normalizeLabel(text);
@@ -590,7 +712,7 @@
         );
         let type = normalizeContentType(rule.type || "text");
         const rawLink = rawMeta.link || extractLink(normalizedText) || extractLink(normalizedLabel) || null;
-        const link = rawLink ? normalizeFacebookRedirect(rawLink) : null;
+        const link = rawLink ? normalizeRedirectUrl(rawLink) : null;
         const pinnedLocationLink = extractPinnedLocationLink(normalizedText) || extractPinnedLocationLink(normalizedLabel);
         const resolvedLink = link || pinnedLocationLink || null;
         const isLinkTextLikeLive = !loweredFileName && Boolean(normalizedText) && !/^\b(?:pinned\s+location|open\s+attachment|view\s+attachment|attachment|open\s+link|view\s+link)\b/i.test(
@@ -634,6 +756,9 @@
           } else if (imageMatch) {
             type = "image";
           }
+          if (type === "text" && isAsciiReactionText(normalizedText)) {
+            type = "reaction";
+          }
         }
         const linkOnlyText = type === "link" && Boolean(resolvedLink) && isLinkOnlyText(normalizedText, resolvedLink);
         let contentText = normalizedText;
@@ -658,7 +783,10 @@
         } else if (type === "gif") {
           contentText = "gif";
         } else if (type === "reaction") {
-          contentText = null;
+          const reactionOnlyTextMatch = /^[:;=8Xx][-~]?[)DdpP(/\\\]]$/u;
+          const normalizedReaction = normalizedText.trim();
+          const isAsciiReaction = reactionOnlyTextMatch.test(normalizedReaction);
+          contentText = isAsciiReaction ? normalizedReaction : null;
         } else if (type === "video-link") {
           contentText = formatUrlCompact(resolvedLink || message) || "video link";
         } else if (type === "image") {
@@ -668,7 +796,7 @@
           contentText = hasCallPhrase ? normalizedText : type.replace(/-/g, " ");
         }
         const timedTypes = /* @__PURE__ */ new Set(["voice-note", "video-call", "audio-call"]);
-        const noLengthTypes = /* @__PURE__ */ new Set(["image", "missed-call", "unsent", "sticker", "gif", "reaction", "video-link", ...timedTypes]);
+        const noLengthTypes = /* @__PURE__ */ new Set(["image", "missed-call", "unsent", "sticker", "gif", "video-link", ...timedTypes]);
         const duration = timedTypes.has(type) ? rawDuration : null;
         const linkHasTextContent = type === "link" && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
         const shouldOmitLength = noLengthTypes.has(type) || type === "link" && !linkHasTextContent;
@@ -739,12 +867,12 @@
         },
         exports: [
           {
-            fileName: "fb-chats-export-max.txt",
+            fileName: "export-max.txt",
             includeContent: true,
             includeSummary: true
           },
           {
-            fileName: "fb-chats-export-minimal.txt",
+            fileName: "export-minimal.txt",
             includeContent: false,
             includeSummary: false
           }
@@ -914,6 +1042,182 @@
           }))
         };
       }
+      function collectTypeCounts(entries = []) {
+        const counts = {};
+        entries.forEach((entry) => {
+          const type = String(entry.type || entry.fileType || "").toLowerCase();
+          counts[type] = (counts[type] || 0) + 1;
+        });
+        return counts;
+      }
+      function formatTypeCount(type, count) {
+        const label = String(type || "").replace(/-/g, " ");
+        return `${ROUGH_PREFIX} ${count} ${label}`;
+      }
+      var DETAILED_TYPE_ORDER = [
+        "text",
+        "reaction",
+        "link",
+        "video-link",
+        "image",
+        "sticker",
+        "gif",
+        "poll",
+        "audio-call",
+        "video-call",
+        "voice-note",
+        "missed-call",
+        "deleted",
+        "unsent"
+      ];
+      function renderTypeCounts(typeCounts) {
+        const orderedTypes = DETAILED_TYPE_ORDER.filter((type) => typeCounts[type] != null);
+        const extraTypes = Object.keys(typeCounts).filter((type) => !DETAILED_TYPE_ORDER.includes(type)).sort();
+        return orderedTypes.concat(extraTypes).map((type) => formatTypeCount(type, typeCounts[type]));
+      }
+      function buildDetailedSummary(entries = [], options = {}) {
+        if (!entries.length) {
+          return buildSummary2(entries, options);
+        }
+        const totals = /* @__PURE__ */ new Map();
+        const allDays = /* @__PURE__ */ new Set();
+        entries.forEach((entry) => {
+          const sender = entry.sender || "Unknown";
+          const dayKey = formatDayKey(entry.date);
+          allDays.add(dayKey);
+          const type = String(entry.type || entry.fileType || "").toLowerCase();
+          const data = totals.get(sender) || {
+            count: 0,
+            days: /* @__PURE__ */ new Set(),
+            calls: 0,
+            callSeconds: 0,
+            images: 0,
+            words: 0,
+            typeCounts: {}
+          };
+          const isTimedCall = ["audio-call", "video-call", "voice-note"].includes(type);
+          const isCall = isTimedCall || type === "missed-call";
+          if (isTimedCall) {
+            data.calls += 1;
+            data.callSeconds += Number(entry.callSeconds || 0);
+          }
+          if (type === "image") {
+            data.images += 1;
+          }
+          data.words += Number(entry.wordCount || 0);
+          data.typeCounts[type] = (data.typeCounts[type] || 0) + 1;
+          data.count += 1;
+          data.days.add(dayKey);
+          totals.set(sender, data);
+        });
+        let selectedParticipants;
+        if (Array.isArray(options.fixedParticipants) && options.fixedParticipants.length) {
+          selectedParticipants = [...options.fixedParticipants];
+        } else {
+          const participantNames = [];
+          entries.forEach((entry) => {
+            if (!participantNames.includes(entry.sender)) {
+              participantNames.push(entry.sender);
+            }
+          });
+          selectedParticipants = participantNames;
+        }
+        const participantSummaries = selectedParticipants.map((name) => {
+          const participantEntries = entries.filter((entry) => (entry.sender || "Unknown") === name);
+          const participantDays = /* @__PURE__ */ new Set();
+          const participantTypeCounts = {};
+          let participantWords = 0;
+          let participantCalls = 0;
+          let participantSeconds = 0;
+          participantEntries.forEach((entry) => {
+            const dayKey = formatDayKey(entry.date);
+            participantDays.add(dayKey);
+            const type = String(entry.type || entry.fileType || "").toLowerCase();
+            const isTimedCall = ["audio-call", "video-call", "voice-note"].includes(type);
+            if (isTimedCall) {
+              participantCalls += 1;
+              participantSeconds += Number(entry.callSeconds || 0);
+            }
+            participantWords += Number(entry.wordCount || 0);
+            participantTypeCounts[type] = (participantTypeCounts[type] || 0) + 1;
+          });
+          return {
+            name,
+            participantEntries,
+            participantDays,
+            participantTypeCounts,
+            participantWords,
+            participantCalls,
+            participantSeconds,
+            participantMessages: participantEntries.length
+          };
+        });
+        const totalTypeCounts = collectTypeCounts(entries);
+        const totalCalls = participantSummaries.reduce((sum, item) => sum + item.participantCalls, 0);
+        const totalCallSeconds = participantSummaries.reduce(
+          (sum, item) => sum + item.participantSeconds,
+          0
+        );
+        const totalWords = participantSummaries.reduce((sum, item) => sum + item.participantWords, 0);
+        const summary = {
+          total: {
+            title: TOTAL_SUMMARY_TITLE,
+            messages: entries.length,
+            days: allDays.size,
+            rough: {
+              words: totalWords,
+              calls: totalCalls,
+              callSeconds: totalCallSeconds
+            },
+            typeCounts: totalTypeCounts
+          },
+          participants: participantSummaries.map((summary2) => ({
+            title: `${summary2.name}${PERSON_SUMMARY_SUFFIX}`,
+            name: summary2.name,
+            messages: summary2.participantMessages,
+            days: summary2.participantDays.size,
+            rough: {
+              words: summary2.participantWords,
+              calls: summary2.participantCalls,
+              callSeconds: summary2.participantSeconds
+            },
+            typeCounts: summary2.participantTypeCounts
+          }))
+        };
+        const useMessageLabel = Boolean(options.useMessageLabel);
+        const totalMessageLabel = useMessageLabel ? summary.total.messages === 1 ? "message" : "messages" : summary.total.messages === 1 ? "post" : "posts";
+        const totalDayLabel = useMessageLabel ? summary.total.days === 1 ? "day" : "days" : "days";
+        const detailLines = [
+          summary.total.title,
+          `${summary.total.messages} ${totalMessageLabel} / ${summary.total.days} ${totalDayLabel}`,
+          `${ROUGH_PREFIX} ${summary.total.rough.words} words`,
+          ...renderTypeCounts(summary.total.typeCounts)
+        ];
+        if (summary.total.rough.calls || summary.total.typeCounts["audio-call"] || summary.total.typeCounts["video-call"] || summary.total.typeCounts["voice-note"]) {
+          detailLines.push(
+            `${ROUGH_PREFIX} ${summary.total.rough.calls} calls ${formatDurationSeconds(summary.total.rough.callSeconds)}`
+          );
+        }
+        detailLines.push("");
+        summary.participants.forEach((participant) => {
+          const participantMessageLabel = useMessageLabel ? participant.messages === 1 ? "message" : "messages" : participant.messages === 1 ? "post" : "posts";
+          const participantDayLabel = useMessageLabel ? participant.days === 1 ? "day" : "days" : "days";
+          detailLines.push(participant.title);
+          detailLines.push(
+            `${participant.messages} ${participantMessageLabel} / ${participant.days} ${participantDayLabel}`
+          );
+          detailLines.push(`${ROUGH_PREFIX} ${participant.rough.words} words`);
+          detailLines.push(...renderTypeCounts(participant.typeCounts));
+          if (participant.rough.calls) {
+            detailLines.push(
+              `${ROUGH_PREFIX} ${participant.rough.calls} calls ${formatDurationSeconds(participant.rough.callSeconds)}`
+            );
+          }
+          detailLines.push("");
+        });
+        detailLines.push("---");
+        return detailLines.join("\n") + "\n";
+      }
       function buildSummary2(entries = [], options = {}) {
         if (!entries.length) return "";
         const summary = buildSummaryData(entries, options);
@@ -949,6 +1253,7 @@
       }
       module.exports = {
         buildSummary: buildSummary2,
+        buildDetailedSummary,
         buildSummaryData
       };
     }
@@ -959,7 +1264,7 @@
     "src/shared/export-formatter.js"(exports, module) {
       var { normalizeDuration: normalizeDuration2 } = require_message_metadata();
       var { normalizeDateToIso: normalizeDateToIso3 } = require_aria_label_parser();
-      var { buildSummary: buildSummary2, buildSummaryData } = require_export_summary();
+      var { buildSummary: buildSummary2, buildDetailedSummary, buildSummaryData } = require_export_summary();
       function formatExportHeader2({ method, messageTypes, exportOptions = {}, aliasMap = {} }) {
         const types = messageTypes.map((type) => `- ${type}`).join("\n");
         const optionKeys = Object.keys(exportOptions).sort();
@@ -1021,7 +1326,7 @@ ${aliasLines}
         }
         if (includeLength && entry.contentLength) parts.push(entry.contentLength);
         const base = `[${dateText}] ${sender}: ${parts.join(" ")}`;
-        const contentTypes = /* @__PURE__ */ new Set(["text", "link", "video-link"]);
+        const contentTypes = /* @__PURE__ */ new Set(["text", "link", "video-link", "reaction"]);
         const shouldShowTextContent = includeContent && contentTypes.has(entry.semanticType) && entry.content;
         if (shouldShowTextContent) {
           return `${base} / ${entry.content}
@@ -1032,27 +1337,34 @@ ${aliasLines}
       }
       function formatSummarySection(entries = [], options = {}) {
         const summaryEntries = entries.map((entry) => {
-          const fileType = String(entry.fileType || "").toLowerCase();
+          const semanticType = String(entry.semanticType || entry.fileType || "").toLowerCase();
           const isCall = [
             "audio-call",
             "video-call",
             "voice-note",
+            "missed-call",
             "missed-audio-call",
             "missed-video-call"
-          ].includes(fileType);
-          const isTimedCall = ["audio-call", "video-call", "voice-note"].includes(fileType);
+          ].includes(semanticType);
+          const isTimedCall = ["audio-call", "video-call", "voice-note"].includes(semanticType);
           const contentText = String(entry.content || "").trim();
           const textWords = contentText ? contentText.split(/\s+/).filter(Boolean).length : 0;
           return {
             sender: entry.sender,
             date: Number.isFinite(entry.ts) ? new Date(entry.ts) : /* @__PURE__ */ new Date(NaN),
-            type: fileType,
+            type: semanticType,
             isCall,
-            isImage: fileType === "image",
+            isImage: semanticType === "image",
             callSeconds: isTimedCall ? durationToSeconds(entry.duration) : 0,
-            wordCount: isCall || fileType === "image" ? 0 : textWords
+            wordCount: isCall || semanticType === "image" ? 0 : textWords
           };
         });
+        if (options.detailed) {
+          return buildDetailedSummary(summaryEntries, {
+            fixedParticipants: options.fixedParticipants || null,
+            useMessageLabel: Boolean(options.useMessageLabel)
+          });
+        }
         return buildSummary2(summaryEntries, {
           fixedParticipants: options.fixedParticipants || null,
           useMessageLabel: Boolean(options.useMessageLabel)
@@ -1310,7 +1622,7 @@ ${aliasLines}
     "use strict";
     const panel = document.createElement("details");
     panel.style.cssText = "position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 99999; background: #fff; border: 1px solid #ddd; border-radius: 0 0 10px 10px; font-family: sans-serif; font-size: 13px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); min-width: 420px; max-width: calc(100% - 40px);";
-    panel.open = localStorage.getItem("fbExportPanelOpen") !== "false";
+    panel.open = localStorage.getItem("chatExportPanelOpen") !== "false";
     const panelSummary = document.createElement("summary");
     panelSummary.style.cssText = "cursor: pointer; padding: 6px 10px; font-size: 12px; color: #555; background: #fafafa; display: flex; align-items: center; gap: 6px; user-select: none;";
     const panelArrow = document.createElement("span");
@@ -1324,7 +1636,7 @@ ${aliasLines}
     panel.addEventListener("toggle", () => {
       panelArrow.textContent = panel.open ? "\u25B2" : "\u25BC";
       panelSummary.setAttribute("aria-expanded", String(panel.open));
-      localStorage.setItem("fbExportPanelOpen", String(panel.open));
+      localStorage.setItem("chatExportPanelOpen", String(panel.open));
       if (!panel.open && actionBtn.dataset.scanning === "true") {
         stopRequested = true;
         if (scrollTimeout !== null) {
@@ -1361,7 +1673,7 @@ ${aliasLines}
     const { wrap: fromWrap, input: fromInput } = createLabelInput(
       "From:",
       "YYYY-MM-DD",
-      sessionStorage.getItem("fbExportFrom") || (() => {
+      sessionStorage.getItem("exportFrom") || (() => {
         const d = /* @__PURE__ */ new Date();
         d.setDate(d.getDate() - 3);
         return d.toISOString().slice(0, 10);
@@ -1370,12 +1682,12 @@ ${aliasLines}
     const { wrap: toWrap, input: toInput } = createLabelInput(
       "To:",
       "YYYY-MM-DD",
-      sessionStorage.getItem("fbExportTo") || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10)
+      sessionStorage.getItem("exportTo") || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10)
     );
     const { wrap: fileNameWrap, input: fileNameInput } = createLabelInput(
       "File:",
       "Optional custom name",
-      sessionStorage.getItem("fbExportFileName") || ""
+      sessionStorage.getItem("exportFileName") || ""
     );
     const actionBtn = createButton("Scan Messages", "#0084ff");
     const rightCol = document.createElement("div");
@@ -1564,7 +1876,7 @@ ${aliasLines}
       if (customBaseName) {
         const sanitized = sanitizeFileNamePart(customBaseName);
         customFileName = `${sanitized}.txt`;
-        sessionStorage.setItem("fbExportFileName", customBaseName);
+        sessionStorage.setItem("exportFileName", customBaseName);
       }
       fromInput.style.borderColor = toInput.style.borderColor = "#ccc";
       if (downloadRevokeTimeout !== null) {
@@ -1572,8 +1884,8 @@ ${aliasLines}
         downloadRevokeTimeout = null;
       }
       stopRequested = false;
-      sessionStorage.setItem("fbExportFrom", fromInput.value.trim());
-      sessionStorage.setItem("fbExportTo", toInput.value.trim());
+      sessionStorage.setItem("exportFrom", fromInput.value.trim());
+      sessionStorage.setItem("exportTo", toInput.value.trim());
       setScanState("scanning");
       downloadBtn.style.display = "none";
       saveAgainLink.style.display = "none";
@@ -1627,8 +1939,9 @@ ${aliasLines}
             aliasMap,
             sender
           ) : includeContentChk.checked ? rawLinkChk.checked && (type === "link" || type === "video-link") ? (0, import_message_metadata.stripTrackingParams)(link || originalHref || text) || text : originalHref || text : text;
+          const displayType = type === "reaction" && text ? "text" : type;
           const lineEntry = {
-            fileType: type,
+            fileType: displayType,
             semanticType: type,
             dateText: displayDate,
             sender: authorLabel,

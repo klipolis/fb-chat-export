@@ -22,7 +22,7 @@ flowchart TD
 ### User prerequisites
 
 - Chrome or Firefox with Tampermonkey installed.
-- A Messenger conversation open at `https://www.facebook.com/messages/*`.
+- A Messenger conversation open in the browser.
 - The generated bundle file `dist/app.js` can be loaded into the browser after running `pnpm run build:frontend`.
 
 ### Developer prerequisites
@@ -56,6 +56,7 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - `data-output/optimized-html/`: generated optimized HTML snapshots.
 - `data-output/json-format/`: generated JSON preview output.
 - `data-output/json-format/raw-input-metadata.json`: build metadata for raw input file stability.
+- `data-output/final-export/`: generated export files such as `export-max.txt` and `export-minimal.txt`.
 - `dist/`: generated one-file bundle output.
 - `docs/`: documentation and project notes.
 - `docs/folder-structure.md`: file and folder reference guide.
@@ -150,7 +151,7 @@ Bob Summary
 - Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, build data preview JSON, and generate a text export in `data-output/final-export/`.
 - Run `pnpm run build:frontend` to emit the built bundle into `dist/app.js`.
 - Use `BUILD_PLATFORM=userscript pnpm run build:frontend` to emit a userscript-compatible bundle header. The userscript header template is stored in `data-config/userscript/header.txt`.
-- The browser export now writes a stable download file name such as `fb-chats-export-<shortname>.txt`.
+- The browser export now writes a stable download file name such as `export-<shortname>.txt`.
 - Run `pnpm run validate:dist` to verify the generated bundle header and versioned dist artifact.
 - Run `pnpm run lint` to verify JavaScript style and catch syntax issues early.
 - Run `pnpm run audit` to check dependency security status.

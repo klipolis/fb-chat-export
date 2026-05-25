@@ -2,9 +2,9 @@ const tap = require('tap');
 const fs = require('fs');
 const path = require('path');
 
-const baseDir = path.resolve(__dirname, '..');
-const config = require(path.join(baseDir, 'src', 'shared', 'export-config.json'));
-const generatedSchema = require(path.join(__dirname, 'generated-txt-schema.json'));
+const baseDir = path.join(__dirname, '..');
+const config = require('../src/shared/export-config.json');
+const generatedSchema = require('./generated-txt-schema.json');
 const changelog = fs.readFileSync(path.join(baseDir, 'CHANGELOG.md'), 'utf8');
 const distPath = path.join(baseDir, 'dist', 'app.js');
 

@@ -5,14 +5,14 @@ const { parseAriaLabel, normalizeDateToSimple } = require('./aria-label-parser')
 const { getContentMeta, normalizeDuration } = require('./message-metadata');
 
 const helperDir = path.resolve(__dirname);
-const baseDir = path.resolve(helperDir, '..', '..');
-const rawDir = path.join(baseDir, 'data-input');
-const optimizedDir = path.join(baseDir, 'data-output/optimized-html');
-const nodesDir = path.join(baseDir, 'data-output/json-format');
+const rootDir = path.resolve(helperDir, '..', '..');
+const rawDir = path.join(rootDir, 'data-input');
+const optimizedDir = path.join(rootDir, 'data-output', 'optimized-html');
+const nodesDir = path.join(rootDir, 'data-output', 'json-format');
 const metadataDir = path.join(helperDir, 'metadata-generated');
 
 function relativePath(p) {
-  const rel = path.relative(baseDir, p).replace(/\\/g, '/');
+  const rel = path.relative(rootDir, p).replace(/\\/g, '/');
   return rel.startsWith('.') ? rel : `./${rel}`;
 }
 

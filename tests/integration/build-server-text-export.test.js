@@ -31,10 +31,10 @@ tap.test('goldenTxtSnapshots', (t) => {
   const build = runServerBuildOnce();
   t.equal(build.status, 0, `build-server failed: ${build.stderr || build.stdout}`);
 
-  const actualOnPath = path.join(txtDir, 'fb-chats-export-max.txt');
-  const actualOffPath = path.join(txtDir, 'fb-chats-export-minimal.txt');
-  const goldenOnPath = path.join(__dirname, '..', 'golden', 'fb-chats-export-max.txt');
-  const goldenOffPath = path.join(__dirname, '..', 'golden', 'fb-chats-export-minimal.txt');
+  const actualOnPath = path.join(txtDir, 'export-max.txt');
+  const actualOffPath = path.join(txtDir, 'export-minimal.txt');
+  const goldenOnPath = path.join(__dirname, '..', 'golden', 'export-max.txt');
+  const goldenOffPath = path.join(__dirname, '..', 'golden', 'export-minimal.txt');
 
   t.ok(fs.existsSync(actualOnPath), 'export-max TXT export missing for golden snapshot test');
   t.ok(fs.existsSync(actualOffPath), 'export-minimal TXT export missing for golden snapshot test');
@@ -60,20 +60,24 @@ tap.test('buildServerTextExport', (t) => {
   t.strictSame(
     sortedTxtFiles,
     [
-      'fb-chats-export-max.txt',
-      'fb-chats-export-minimal.txt',
-      'fb-chats-export-summary-detailed.txt',
+      'export-max.txt',
+      'export-minimal.txt',
+      'export-summary-combined.txt',
+      'export-summary-detailed.txt',
     ],
-    'Expected three stable TXT export filenames'
+    'Expected four stable TXT export filenames'
   );
 
-  const summaryTxtPath = path.join(txtDir, 'fb-chats-export-summary-detailed.txt');
-  t.ok(fs.existsSync(summaryTxtPath), 'Expected fb-chats-export-summary.txt to be generated');
-  t.notOk(fs.existsSync(path.join(txtDir, 'fb-chats-export-summary.json')), 'Summary JSON export should not be generated');
+  const summaryCombinedPath = path.join(txtDir, 'export-summary-combined.txt');
+  const summaryDetailedPath = path.join(txtDir, 'export-summary-detailed.txt');
+  t.ok(fs.existsSync(summaryCombinedPath), 'Expected export-summary-combined.txt to be generated');
+  t.ok(fs.existsSync(summaryDetailedPath), 'Expected export-summary-detailed.txt to be generated');
+  t.notOk(fs.existsSync(path.join(txtDir, 'export-summary.json')), 'Summary JSON export should not be generated');
 
-  const contentMax = fs.readFileSync(path.join(txtDir, 'fb-chats-export-max.txt'), 'utf8');
-  const contentMinimal = fs.readFileSync(path.join(txtDir, 'fb-chats-export-minimal.txt'), 'utf8');
-  const summaryTxt = fs.readFileSync(summaryTxtPath, 'utf8');
+  const contentMax = fs.readFileSync(path.join(txtDir, 'export-max.txt'), 'utf8');
+  const contentMinimal = fs.readFileSync(path.join(txtDir, 'export-minimal.txt'), 'utf8');
+  const summaryTxt = fs.readFileSync(summaryCombinedPath, 'utf8');
+  const summaryDetailedTxt = fs.readFileSync(summaryDetailedPath, 'utf8');
 
   t.ok(/\n\d+\s+posts\s*\/\s*\d+\s+days\n/.test(summaryTxt), 'Summary TXT should use posts for total summary');
   t.ok(/\nXYZ Summary\n\d+\s+post(?:s)?\s*\/\s*\d+\s+days\n/.test(summaryTxt), 'Summary TXT should use post/posts for XYZ Summary');
@@ -86,6 +90,7 @@ tap.test('buildServerTextExport', (t) => {
       .map((line) => line.slice(1, 11))
   ).size;
   t.ok(summaryTxt.includes(` / ${uniqueDays} days`), 'Summary TXT total days must reflect unique days across all messages');
+  t.ok(summaryDetailedTxt.includes(` / ${uniqueDays} days`), 'Detailed summary TXT total days must reflect unique days across all messages');
 
   t.ok(contentMax.includes('Method: server'), 'export-max export should include the server method header');
   t.ok(contentMinimal.includes('Method: server'), 'export-minimal export should include the server method header');
@@ -142,6 +147,9 @@ tap.test('buildServerTextExport', (t) => {
   t.ok(summaryTxt.includes('Total Summary'), 'Summary TXT should include Total Summary title');
   t.ok(summaryTxt.includes('---'), 'Summary TXT should include closing separator');
   t.ok(summaryTxt.includes(` / ${allMessageDayCount} `), 'Summary TXT should include total day count');
+  t.ok(summaryDetailedTxt.includes('Total Summary'), 'Detailed summary TXT should include Total Summary title');
+  t.ok(summaryDetailedTxt.includes('---'), 'Detailed summary TXT should include closing separator');
+  t.ok(summaryDetailedTxt.includes(` / ${allMessageDayCount} `), 'Detailed summary TXT should include total day count');
 
   const basePattern = /^\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}\]\s[^:]+:\s[^/]+(?:\s\/\s.*)?$/;
   t.ok(bodyLinesOn.every((line) => basePattern.test(line)), 'Each export-max line should match expected format');
@@ -194,8 +202,8 @@ tap.test('buildServerTextExport', (t) => {
 tap.test('textExportDurationNormalization', (t) => {
   const build = runServerBuildOnce();
   t.equal(build.status, 0, `build-server failed: ${build.stderr || build.stdout}`);
-  const contentOnPath = path.join(txtDir, 'fb-chats-export-max.txt');
-  const contentOffPath = path.join(txtDir, 'fb-chats-export-minimal.txt');
+  const contentOnPath = path.join(txtDir, 'export-max.txt');
+  const contentOffPath = path.join(txtDir, 'export-minimal.txt');
 
   t.ok(fs.existsSync(contentOnPath), 'export-max TXT export should exist');
   t.ok(fs.existsSync(contentOffPath), 'export-minimal TXT export should exist');

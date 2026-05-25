@@ -2,7 +2,7 @@
 
 - The helper pipeline should preserve raw HTML in `data-input` while writing cleaned snapshots to `data-output/optimized-html`.
 - Default server build reads raw HTML without modifying it; raw write-back is opt-in via `BUILD_RAW=true` (`build:raw` script).
-- `build:raw-clean` strips Facebook utility class tokens (starting with `x`) and inline styles from raw HTML for readability without full optimisation.
+- `build:raw-clean` strips platform utility class tokens (starting with `x`) and inline styles from raw HTML for readability without full optimisation.
 - Anonymization of raw HTML should be limited to sender/receiver names in message metadata and profile `alt` attributes, not message body content.
 - `create-nodes.js` should generate JSON previews directly in `data-output/json-format` and avoid nested `nodes` arrays.
 - Build server should also generate a text export from `data-input` in `data-output/final-export/`, mirroring the user-facing export line format.
@@ -10,7 +10,7 @@
 - Export metadata should use `export_date` and `data_preview.optimised_date` as simple 24-hour strings, and date metadata should include both original/raw and optimized forms.
 - Parse chat label dates consistently across browser and server exports: plain timestamps are today, weekday labels map to a recent day, and `today`/`yesterday` are normalized.
 - Link previews should include `content_link` and omit `content_length`.
-- For Facebook/Messenger forward URLs, resolve redirect parameters (`u`, `url`, `q`) to original links where possible.
+- For platform redirect URLs, resolve redirect query parameters (`u`, `url`, `q`) to original links where possible.
 - export-max TXT exports should include actual link URLs for link message types when available.
 - Sender parsing for dash-form labels should avoid merging conversational message prefixes into sender names.
 - Add a dedicated generated JSON schema validation test in `tests/` and a schema document in `tests/generated-json-schema.json`.

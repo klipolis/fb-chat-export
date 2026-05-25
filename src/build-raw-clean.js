@@ -1,11 +1,11 @@
 /**
  * build-raw-clean
  *
- * Strips Facebook-internal styling tokens from raw HTML files in
+ * Strips platform-internal styling tokens from raw HTML files in
  * data-input/ without running full optimisation.
  *
  * What is removed:
- *  - class tokens that start with "x" (Facebook's generated utility classes)
+ *  - class tokens that start with "x" (generated utility classes)
  *  - class attributes left empty after token removal
  *  - inline style attributes
  *

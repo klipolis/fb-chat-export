@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const txtDir = path.join(__dirname, '..', 'data-output/final-export');
-const runtimeConfig = require(path.join(__dirname, '..', 'src', 'shared', 'export-config.json'));
+const runtimeConfig = require('../src/shared/export-config.json');
 
 function loadSchema(t) {
   const schema = runtimeConfig;

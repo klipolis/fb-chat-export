@@ -1,4 +1,4 @@
-# Contributing to fb-chat-exporter
+# Contributing to the export tool
 
 Thank you for contributing! This repository uses `pnpm` and standard Node.js tooling.
 
@@ -75,9 +75,9 @@ Section headers per release: `### Added`, `### Changed`, `### Fixed`, `### Remov
 
 ## Usage and privacy
 
-This project is intended for documenting personal Facebook Messenger interactions and generating personal summaries.
+This project is intended for documenting personal Messenger interactions and generating personal summaries.
 Do not use this tool to publish or distribute private chat conversations without consent.
-Always respect Facebook's Terms of Service: https://www.facebook.com/legal/terms
+Always respect the applicable Terms of Service: https://www.facebook.com/legal/terms
 
 ## Repository layout
 

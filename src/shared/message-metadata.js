@@ -1,6 +1,22 @@
 const { messageRules } = require('./rules');
 const { parseAriaLabel, normalizeDateToSimple, normalizeLabel } = require('./aria-label-parser');
 
+let sharedFrontendConfig = {};
+try {
+  sharedFrontendConfig = require('../../data-config/frontend_shared.json') || {};
+} catch {
+  sharedFrontendConfig = {};
+}
+
+const asciiReactionPattern = new RegExp(
+  sharedFrontendConfig.reactionOptions?.asciiSmileyPattern || '^[:;=8Xx][-~]?[)DdpP(/\\\\\]]$',
+  'u'
+);
+
+function isAsciiReactionText(text) {
+  return asciiReactionPattern.test(String(text || '').trim());
+}
+
 function normalizeDuration(text) {
   if (!text) return null;
   const normalized = String(text).trim();
@@ -75,14 +91,14 @@ function stripTrackingParams(url) {
   }
 }
 
-function normalizeFacebookRedirect(url) {
+function normalizeRedirectUrl(url) {
   try {
     const parsed = new URL(url);
     const host = parsed.hostname.toLowerCase();
     const path = parsed.pathname.toLowerCase();
-    const isFacebookRedirectHost = /(^|\.)facebook\.com$|(^|\.)messenger\.com$/.test(host);
+    const isRedirectHost = /(^|\.)facebook\.com$|(^|\.)messenger\.com$/.test(host);
     const isRedirectPath = path.includes('/l.php') || path.includes('/flx/warn/');
-    if (!isFacebookRedirectHost || !isRedirectPath) return url;
+    if (!isRedirectHost || !isRedirectPath) return url;
 
     const candidate =
       parsed.searchParams.get('u') ||
@@ -112,7 +128,7 @@ function extractLink(text) {
   const wwwMatch = String(text).match(/\b(www\.[^\s"'<]+)/i);
   const rawUrl = urlMatch ? urlMatch[0] : wwwMatch ? `https://${wwwMatch[1]}` : null;
   if (!rawUrl) return null;
-  return normalizeFacebookRedirect(rawUrl);
+  return normalizeRedirectUrl(rawUrl);
 }
 
 function extractPinnedLocationLink(text) {
@@ -182,7 +198,7 @@ function getContentMeta({
   let type = normalizeContentType(rule.type || 'text');
   const rawLink =
     rawMeta.link || extractLink(normalizedText) || extractLink(normalizedLabel) || null;
-  const link = rawLink ? normalizeFacebookRedirect(rawLink) : null;
+  const link = rawLink ? normalizeRedirectUrl(rawLink) : null;
   const pinnedLocationLink =
     extractPinnedLocationLink(normalizedText) || extractPinnedLocationLink(normalizedLabel);
   const resolvedLink = link || pinnedLocationLink || null;
@@ -253,6 +269,9 @@ function getContentMeta({
     } else if (imageMatch) {
       type = 'image';
     }
+    if (type === 'text' && isAsciiReactionText(normalizedText)) {
+      type = 'reaction';
+    }
   }
 
   const linkOnlyText = type === 'link' && Boolean(resolvedLink) && isLinkOnlyText(normalizedText, resolvedLink);
@@ -293,7 +312,7 @@ function getContentMeta({
   }
 
   const timedTypes = new Set(['voice-note', 'video-call', 'audio-call']);
-  const noLengthTypes = new Set(['image', 'missed-call', 'unsent', 'sticker', 'gif', 'reaction', 'video-link', ...timedTypes]);
+  const noLengthTypes = new Set(['image', 'missed-call', 'unsent', 'sticker', 'gif', 'video-link', ...timedTypes]);
 
   const duration = timedTypes.has(type) ? rawDuration : null;
   const linkHasTextContent =

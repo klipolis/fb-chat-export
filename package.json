@@ -1,5 +1,5 @@
 {
-  "name": "fb-chat-exporter",
+  "name": "chat-exporter",
   "version": "5.4.0",
   "private": true,
   "license": "MIT",
@@ -21,6 +21,7 @@
     "format": "prettier --write \"src/**/*.js\" \"tests/**/*.js\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"CONTRIBUTING.md\" \"SECURITY.md\" \"CODE_OF_CONDUCT.md\"",
     "format:check": "prettier --check \"src/**/*.js\" \"tests/**/*.js\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"CONTRIBUTING.md\" \"SECURITY.md\" \"CODE_OF_CONDUCT.md\"",
     "lint": "pnpm run lint:package && pnpm run lint:todos && eslint --quiet \"src/**/*.js\" \"tests/**/*.js\"",
+    "lint:fix": "eslint --fix \"src/**/*.js\" \"tests/**/*.js\" || true && prettier --write \"src/**/*.js\" \"tests/**/*.js\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\"",
     "lint:changelog": "node scripts/lint-changelog.js",
     "lint:commits": "commitlint --from HEAD~10 --to HEAD --verbose",
     "lint:docs": "markdownlint --config .markdownlint.json \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"*.md\"",

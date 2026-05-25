@@ -23,7 +23,7 @@ The build-server path reads raw files from `data-input/`, optimizes them into HT
 ### User prerequisites
 
 - Chrome or Firefox with Tampermonkey installed.
-- A Messenger conversation open at `https://www.facebook.com/messages/*`.
+- A Messenger conversation open in the browser.
 - The generated bundle file `dist/app.js` loaded into the browser after running `pnpm run build:frontend`.
 
 ### Developer prerequisites
@@ -58,7 +58,9 @@ The generated `.txt` export has three main sections:
 2. Optional summary block
 3. One-line message entries
 
-The server build also writes a detailed summary-only export to `fb-chats-export-summary-detailed.txt`, which emits uncombined message totals and participant counts.
+The server build also writes two summary-only exports:
+- `export-summary-combined.txt` for the existing combined totals.
+- `export-summary-detailed.txt` for non-combined per-type totals and participant counts.
 
 ### Header block
 

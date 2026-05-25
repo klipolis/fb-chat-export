@@ -38,12 +38,12 @@
   },
   "exports": [
     {
-      "fileName": "fb-chats-export-max.txt",
+      "fileName": "export-max.txt",
       "includeContent": true,
       "includeSummary": true
     },
     {
-      "fileName": "fb-chats-export-minimal.txt",
+      "fileName": "export-minimal.txt",
       "includeContent": false,
       "includeSummary": false
     }

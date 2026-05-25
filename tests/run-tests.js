@@ -5,33 +5,33 @@ const { JSDOM } = require('jsdom');
 const { compareSnapshots } = require('./snapshot-helper');
 
 const { normalizeDateToSimple, normalizeDateToIso, parseAriaLabel, isValidSender, findValidDatePrefix } = require(
-  path.join(__dirname, '..', 'src', 'shared', 'aria-label-parser')
+  '../src/shared/aria-label-parser'
 );
 const childProcess = require('child_process');
 const { getContentMeta, normalizeDuration, chooseRule } = require(
-  path.join(__dirname, '..', 'src', 'shared', 'message-metadata')
+  '../src/shared/message-metadata'
 );
 const { formatExportHeader, formatLine, buildExportText } = require(
-  path.join(__dirname, '..', 'src', 'shared', 'export-formatter')
+  '../src/shared/export-formatter'
 );
 const { formatExportFileName } = require(
-  path.join(__dirname, '..', 'src', 'shared', 'export-text')
+  '../src/shared/export-text'
 );
 const { buildSummary } = require(
-  path.join(__dirname, '..', 'src', 'shared', 'export-summary')
+  '../src/shared/export-summary'
 );
 const { buildEntriesFromDocument } = require(
-  path.join(__dirname, '..', 'src', 'shared', 'export-text')
+  '../src/shared/export-text'
 );
 const { createOptimizedHtml } = require(
-  path.join(__dirname, '..', 'src', 'shared', 'optimize-html')
+  '../src/shared/optimize-html'
 );
 const { buildAllMessageMetaMap, parseMessageNodes } = require(
-  path.join(__dirname, '..', 'src', 'shared', 'create-nodes')
+  '../src/shared/create-nodes'
 );
-const { aliasChatNames } = require(path.join(__dirname, '..', 'src', 'shared', 'utils'));
+const { aliasChatNames } = require('../src/shared/utils');
 
-const rawDir = path.join(__dirname, '..', 'data-input');
+const rawDir = path.join(__dirname, '../data-input');
 const referenceDate = '2026.05.15 00:00';
 
 function formatDate(date) {
@@ -985,22 +985,22 @@ tap.test('formatExportHeaderAllTypes', (t) => {
 tap.test('formatExportFileNameDateRange', (t) => {
   t.equal(
     formatExportFileName('export-max', { fromDate: '2026-05-01', toDate: '2026-05-19' }),
-    'fb-export-2026-05-01\u20132026-05-19-max.txt',
+    'export-2026-05-01\u20132026-05-19-max.txt',
     'export-max with date range'
   );
   t.equal(
     formatExportFileName('export-minimal', { fromDate: '2026-05-01', toDate: '2026-05-19' }),
-    'fb-export-2026-05-01\u20132026-05-19-minimal.txt',
+    'export-2026-05-01\u20132026-05-19-minimal.txt',
     'export-minimal with date range'
   );
   t.equal(
     formatExportFileName('export-max'),
-    'fb-chats-export-max.txt',
+    'export-max.txt',
     'no date range falls back to fixed name'
   );
   t.equal(
     formatExportFileName('export-minimal'),
-    'fb-chats-export-minimal.txt',
+    'export-minimal.txt',
     'export-minimal no date range falls back to fixed name'
   );
   t.end();
