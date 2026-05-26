@@ -554,16 +554,13 @@
     "src/shared/message-metadata.js"(exports, module) {
       var { messageRules } = require_rules();
       var { parseAriaLabel: parseAriaLabel2, normalizeDateToSimple, normalizeLabel } = require_aria_label_parser();
-      var sharedFrontendConfig = {};
+      var sharedFrontendConfig;
       try {
         sharedFrontendConfig = require_frontend_shared() || {};
       } catch {
         sharedFrontendConfig = {};
       }
-      var asciiReactionPattern = new RegExp(
-        sharedFrontendConfig.reactionOptions?.asciiSmileyPattern || "^[:;=8Xx][-~]?[)DdpP(/\\\\]]$",
-        "u"
-      );
+      var asciiReactionPattern = sharedFrontendConfig.reactionOptions?.asciiSmileyPattern ? new RegExp(sharedFrontendConfig.reactionOptions.asciiSmileyPattern, "u") : /^[:;=8Xx][-~]?[)DdpP(/\\\]]$/u;
       function isAsciiReactionText(text) {
         return asciiReactionPattern.test(String(text || "").trim());
       }
@@ -800,7 +797,7 @@
         const duration = timedTypes.has(type) ? rawDuration : null;
         const linkHasTextContent = type === "link" && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
         const shouldOmitLength = noLengthTypes.has(type) || type === "link" && !linkHasTextContent;
-        const contentLength = shouldOmitLength ? void 0 : `${contentText.length} chars`;
+        const contentLength = shouldOmitLength || contentText == null ? void 0 : `${contentText.length} chars`;
         return {
           type,
           text: contentText,
@@ -1402,13 +1399,13 @@ ${aliasLines}
   });
 
   // src/frontend/src/index.js
-  var import_message_metadata = __toESM(require_message_metadata());
-  var import_aria_label_parser2 = __toESM(require_aria_label_parser());
-  var import_export_summary = __toESM(require_export_summary());
-  var import_export_formatter = __toESM(require_export_formatter());
+  var import_message_metadata = __toESM(require_message_metadata(), 1);
+  var import_aria_label_parser2 = __toESM(require_aria_label_parser(), 1);
+  var import_export_summary = __toESM(require_export_summary(), 1);
+  var import_export_formatter = __toESM(require_export_formatter(), 1);
 
-  // src/shared/frontend-utils.js
-  var import_aria_label_parser = __toESM(require_aria_label_parser());
+  // src/shared/frontend-utils.mjs
+  var import_aria_label_parser = __toESM(require_aria_label_parser(), 1);
   function parseLocalDate(str) {
     if (!str) return NaN;
     const s = str.trim();

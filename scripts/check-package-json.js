@@ -1,6 +1,9 @@
 const fs = require('fs');
 const { packagePath: packageJsonPath } = require('../src/shared/app-config');
 
+const FIX_FLAGS = ['--self-heal', '--fix'];
+const isFix = process.argv.some((arg) => FIX_FLAGS.includes(arg));
+
 function fail(message) {
   console.error(`package.json lint failed: ${message}`);
   process.exit(1);
@@ -10,12 +13,9 @@ function readPackageJson() {
   try {
     return JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
   } catch (error) {
-    fail(`Unable to parse package.json: ${error.message}`);
+    fail(`Unable to read or parse package.json at ${packageJsonPath}: ${error.message}`);
   }
 }
-
-const FIX_FLAG = '--self-heal';
-const FIX_SHORT_FLAG = '--fix';
 
 function reorderPackageKeys(packageData) {
   const expectedOrder = [
@@ -110,7 +110,6 @@ function writePackageJson(packageData) {
 }
 
 (function main() {
-  const isFix = process.argv.includes(FIX_FLAG) || process.argv.includes(FIX_SHORT_FLAG);
   let packageData = readPackageJson();
 
   packageData = validateSortedKeys(packageData, isFix);

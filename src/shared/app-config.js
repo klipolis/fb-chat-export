@@ -1,6 +1,8 @@
 const path = require('path');
 
-const rootDir = path.resolve(__dirname, '..', '..');
+const rootDir = process.env.CHAT_EXPORTER_ROOT
+  ? path.resolve(process.env.CHAT_EXPORTER_ROOT)
+  : path.resolve(__dirname, '..', '..');
 const docsDir = path.join(rootDir, 'docs');
 const changelogPath = path.join(rootDir, 'CHANGELOG.md');
 const packagePath = path.join(rootDir, 'package.json');

@@ -317,7 +317,7 @@ function getContentMeta({
   const linkHasTextContent =
     type === 'link' && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
   const shouldOmitLength = noLengthTypes.has(type) || (type === 'link' && !linkHasTextContent);
-  const contentLength = shouldOmitLength ? undefined : `${contentText.length} chars`;
+  const contentLength = shouldOmitLength || contentText == null ? undefined : `${contentText.length} chars`;
 
   return {
     type,
