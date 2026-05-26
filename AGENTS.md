@@ -5,7 +5,7 @@ This repository includes AI-assisted development guidance and planning notes.
 ## Agent Usage
 
 - The repository uses AI helpers for refactor suggestions, build updates, and documentation cleanup.
-- The current workflow prefers a single frontend build entry (`src/frontend/build.js`) and avoids extra wrapper layers.
+- The current workflow prefers a single frontend build entry (`src/frontend/build.cjs`) and avoids extra wrapper layers.
 - `pnpm` is standardized through Corepack in CI and local workflows.
 
 ## Notes

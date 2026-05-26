@@ -37,6 +37,7 @@ const serverConfig = fs.existsSync(serverConfigPath)
   : {};
 
 const aliasNameMap = sharedConfig.aliasNames || {};
+const baseDir = resolveRepoPath('.');
 
 const writeRaw = process.env.BUILD_RAW === 'true';
 const referenceDate = process.env.BUILD_REFERENCE_DATE ||

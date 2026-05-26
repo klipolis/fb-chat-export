@@ -11,7 +11,7 @@ let serverBuildCache = null;
 
 function runServerBuildOnce() {
   if (!serverBuildCache) {
-    const buildResult = childProcess.spawnSync('node', ['src/build-server.js'], {
+    const buildResult = childProcess.spawnSync('node', ['src/build-server.cjs'], {
       encoding: 'utf8',
       cwd: resolveRepoPath(),
     });

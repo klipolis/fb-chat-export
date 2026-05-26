@@ -8,7 +8,7 @@ const minDistPath = resolveRepoPath('dist', 'app.min.js');
 
 tap.test('validate dist artifacts', (t) => {
   if (!process.env.SKIP_BUILD) {
-    const result = spawnSync('node', ['src/frontend/build.js'], {
+    const result = spawnSync('node', ['src/frontend/build.cjs'], {
       cwd: resolveRepoPath(),
       encoding: 'utf8',
       env: {

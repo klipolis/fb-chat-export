@@ -41,6 +41,10 @@ See [Release Management](release-management.md) for the release process, tagging
 
 ## Project docs
 
-- [User Guide](../user-guide/index.md)
-- [Todo Management](../todo-management.md)
+- [Project Overview](project-overview.md)
+- [Folder Structure](folder-structure.md)
+- [Tech Overview](tech.md)
+- [JSON Schema](json-schema.md)
+- [Todo Management](todo-management.md)
 - [Release Management](release-management.md)
+- [User Guide](../user-guide/README.md)

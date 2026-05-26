@@ -1,11 +1,11 @@
 {
   "currentTaskPrefix": "T",
-  "nextTaskNumber": 126,
+  "nextTaskNumber": 128,
   "todoFiles": {
-    "next": ".TODO/TODO-next.md",
-    "done": ".TODO/TODO-done.md",
-    "ignore": ".TODO/TODO-ignore.md",
-    "future": ".TODO/TODO-future.md"
+    "next": "TODO-next.md",
+    "done": "TODO-done.md",
+    "ignore": "TODO-ignore.md",
+    "future": "TODO-future.md"
   },
   "linksHeader": "Links",
   "taskIdPattern": "^T\\d{2,}$",

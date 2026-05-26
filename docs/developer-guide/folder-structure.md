@@ -46,8 +46,8 @@ flowchart TD
 
 ## Documentation files
 
-- `docs/site.md` — architecture overview and quick start.
-- `docs/folder-structure.md` — this file.
-- `docs/tech.md` — build, developer, and export format reference.
-- `docs/JSON-Schema.md` — JSON preview export contract.
-- `docs/terms-and-conditions.md` — usage, privacy, and policy guidance.
+- `../site.md` — architecture overview and quick start.
+- `folder-structure.md` — this file.
+- `tech.md` — build, developer, and export format reference.
+- `json-schema.md` — JSON preview export contract.
+- `../user-guide/terms-and-conditions.md` — usage, privacy, and policy guidance.

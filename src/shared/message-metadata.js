@@ -1,17 +1,16 @@
 const { messageRules } = require('./rules');
 const { parseAriaLabel, normalizeDateToSimple, normalizeLabel } = require('./aria-label-parser');
 
-let sharedFrontendConfig = {};
+let sharedFrontendConfig;
 try {
   sharedFrontendConfig = require('../../data-config/frontend_shared.json') || {};
 } catch {
   sharedFrontendConfig = {};
 }
 
-const asciiReactionPattern = new RegExp(
-  sharedFrontendConfig.reactionOptions?.asciiSmileyPattern || '^[:;=8Xx][-~]?[)DdpP(/\\\\\]]$',
-  'u'
-);
+const asciiReactionPattern = sharedFrontendConfig.reactionOptions?.asciiSmileyPattern
+  ? new RegExp(sharedFrontendConfig.reactionOptions.asciiSmileyPattern, 'u')
+  : /^[:;=8Xx][-~]?[)DdpP(/\\\]]$/u;
 
 function isAsciiReactionText(text) {
   return asciiReactionPattern.test(String(text || '').trim());

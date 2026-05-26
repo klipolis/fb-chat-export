@@ -14,85 +14,118 @@ function readPackageJson() {
   }
 }
 
-function validateKeyOrder(packageData) {
-  const expectedKeys = [
+const FIX_FLAG = '--self-heal';
+const FIX_SHORT_FLAG = '--fix';
+
+function reorderPackageKeys(packageData) {
+  const expectedOrder = [
     'name',
+    'type',
     'version',
-    'private',
     'license',
-    'packageManager',
-    'scripts',
     'engines',
+    'packageManager',
     'pnpm',
+    'private',
+    'scripts',
     'devDependencies',
+    'dependencies',
   ];
+
   const actualKeys = Object.keys(packageData);
-  expectedKeys.forEach((key, index) => {
-    if (actualKeys[index] !== key) {
-      fail(`Expected package.json key at position ${index + 1} to be '${key}', found '${actualKeys[index] || 'missing'}'.`);
-    }
-  });
-  if (actualKeys.length !== expectedKeys.length) {
-    const extras = actualKeys.slice(expectedKeys.length);
-    fail(`Unexpected additional package.json keys: ${extras.join(', ')}`);
-  }
+  const extraKeys = actualKeys.filter((key) => !expectedOrder.includes(key)).sort((a, b) =>
+    a.localeCompare(b, 'en', { numeric: true }),
+  );
+  const orderedKeys = [
+    ...expectedOrder.filter((key) => key in packageData),
+    ...extraKeys,
+  ];
+
+  return orderedKeys.reduce((ordered, key) => {
+    ordered[key] = packageData[key];
+    return ordered;
+  }, {});
 }
 
-function validateScriptsOrder(scripts) {
+function reorderScripts(scripts) {
+  return Object.keys(scripts)
+    .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
+    .reduce((ordered, key) => {
+      ordered[key] = scripts[key];
+      return ordered;
+    }, {});
+}
+
+function validateSortedKeys(packageData, fix = false) {
+  const actualKeys = Object.keys(packageData);
   const expectedOrder = [
-    'build',
-    'build:ci',
-    'build:ci:frontend',
-    'build:ci:server',
-    'build:clean',
-    'build:frontend',
-    'build:preview',
-    'build:raw',
-    'build:raw-clean',
-    'build:server',
-    'check:license',
-    'check:unreleased',
-    'create:nodes',
-    'format',
-    'format:check',
-    'lint',
-    'lint:changelog',
-    'lint:commits',
-    'lint:docs',
-    'lint:package',
-    'lint:todos',
-    'link:docs',
-    'release',
-    'release:check',
-    'release:tag',
-    'test',
-    'test:integration',
-    'test:unit',
-    'validate:dist',
-    'validate:generated-json',
-    'validate:generated-txt',
-    'validate:golden',
-    'validate:release',
-    'audit',
-    'prepare',
+    'name',
+    'type',
+    'version',
+    'license',
+    'engines',
+    'packageManager',
+    'pnpm',
+    'private',
+    'scripts',
+    'devDependencies',
+    'dependencies',
   ];
-  const actualScriptKeys = Object.keys(scripts);
-  if (actualScriptKeys.length !== expectedOrder.length) {
-    fail(`Expected ${expectedOrder.length} scripts, but found ${actualScriptKeys.length}.`);
-  }
-  expectedOrder.forEach((key, index) => {
-    if (actualScriptKeys[index] !== key) {
-      fail(`Expected script ${index + 1} to be '${key}', found '${actualScriptKeys[index] || 'missing'}'.`);
+
+  const extraKeys = actualKeys.filter((key) => !expectedOrder.includes(key));
+  const expectedKeys = [
+    ...expectedOrder.filter((key) => key in packageData),
+    ...extraKeys.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })),
+  ];
+
+  if (!actualKeys.every((key, index) => key === expectedKeys[index])) {
+    if (fix) {
+      return reorderPackageKeys(packageData);
     }
-  });
+
+    fail(
+      'package.json root keys must appear in this order: name, type, version, license, engines, packageManager, pnpm, private, scripts, devDependencies, dependencies.',
+    );
+  }
+
+  return packageData;
+}
+
+function validateSortedScripts(scripts, fix = false) {
+  const actualScriptKeys = Object.keys(scripts);
+  const sortedScriptKeys = [...actualScriptKeys].sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+  if (!actualScriptKeys.every((key, index) => key === sortedScriptKeys[index])) {
+    if (fix) {
+      return reorderScripts(scripts);
+    }
+
+    fail('package.json scripts must be sorted alphabetically.');
+  }
+
+  return scripts;
+}
+
+function writePackageJson(packageData) {
+  fs.writeFileSync(packageJsonPath, `${JSON.stringify(packageData, null, 2)}\n`, 'utf8');
 }
 
 (function main() {
-  const packageData = readPackageJson();
-  validateKeyOrder(packageData);
+  const isFix = process.argv.includes(FIX_FLAG) || process.argv.includes(FIX_SHORT_FLAG);
+  let packageData = readPackageJson();
+
+  packageData = validateSortedKeys(packageData, isFix);
+
   if (!packageData.scripts || typeof packageData.scripts !== 'object') {
     fail('package.json must contain a scripts object.');
   }
-  validateScriptsOrder(packageData.scripts);
-  console.log('✔ package.json is valid and ordered.');
+
+  packageData.scripts = validateSortedScripts(packageData.scripts, isFix);
+
+  if (isFix) {
+    writePackageJson(packageData);
+    console.log('✔ package.json self-healed: root keys and scripts reordered.');
+    return;
+  }
+
+  console.log('✔ package.json keys and scripts are sorted alphabetically.');
 })();

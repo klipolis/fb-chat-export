@@ -13,7 +13,7 @@ Changelog entries should describe active changes in direct present-tense stateme
 
 - `pnpm run release` automates the release process: renames `[Unreleased]` to the new version heading, inserts a fresh empty `[Unreleased]` above it, and bumps `package.json` version. Supports `patch`, `minor`, `major` override arguments; defaults to minor if any `Added`/`Changed` entries are present, otherwise patch.
 - Pre-commit hook also blocks commits when the `[Unreleased]` section in `CHANGELOG.md` is empty, via `scripts/check-unreleased.js`.
-- `pnpm run check:unreleased` exposes the changelog guard as a standalone command.
+- `pnpm run lint:unreleased` exposes the changelog guard as a standalone command.
 - Export filenames drop the `fb-chats-` and `fb-export-` prefixes, producing `export-max.txt`, `export-minimal.txt`, `export-summary-combined.txt`, and `export-summary-detailed.txt`.
 - Documentation references to the platform are removed except where required for terms and userscript header metadata.
 

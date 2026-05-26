@@ -98,3 +98,7 @@ Each message is written as a single line:
 - `length chars` is omitted for images, calls, and voice messages.
 - Content text appears only when `Include content` is enabled.
 - Calls include duration when available.
+
+## Terms and conditions
+
+See [Terms and Conditions](terms-and-conditions.md) for acceptable use, privacy guidance, and data handling recommendations.

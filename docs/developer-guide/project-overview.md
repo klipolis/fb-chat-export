@@ -59,14 +59,14 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - `data-output/final-export/`: generated export files such as `export-max.txt` and `export-minimal.txt`.
 - `dist/`: generated one-file bundle output.
 - `docs/`: documentation and project notes.
-- `docs/developer-guide/folder-structure.md`: file and folder reference guide.
-- `docs/developer-guide/tech.md`: technology and dependency overview.
-- `docs/site.md`: documentation landing page with quick start and architecture overview.
-- `docs/user-guide/terms-and-conditions.md`
+- `folder-structure.md`: file and folder reference guide.
+- `tech.md`: technology and dependency overview.
+- `../site.md`: documentation landing page with quick start and architecture overview.
+- `../user-guide/terms-and-conditions.md`
 - `CHANGELOG.md`: release history and version notes.
 - `tests/`: automated tests, fixtures, and validation scripts.
 - `tests/generated-json-schema.json`: formal contract for generated preview JSON exports.
-- `docs/developer-guide/json-schema.md`: human-readable summary of the generated preview JSON contract.
+- `json-schema.md`: human-readable summary of the generated preview JSON contract.
 - `src/shared/metadata-generated/metadata.json`: metadata for generated JSON export files.
 - `.TODO/`: archived TODO notes and task tracking.
 - `.skills/`: planning, requirements, and development material.

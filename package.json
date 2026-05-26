@@ -1,33 +1,48 @@
 {
   "name": "chat-exporter",
+  "type": "module",
   "version": "5.4.0",
-  "private": true,
   "license": "MIT",
+  "engines": {
+    "node": ">=26.0.0",
+    "pnpm": ">=11.1.2"
+  },
   "packageManager": "pnpm@11.1.2",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "private": true,
   "scripts": {
+    "audit": "pnpm audit --audit-level=moderate",
     "build": "pnpm run build:server && pnpm run build:frontend",
-    "build:ci": "cross-env CI=true pnpm run lint && pnpm run lint:changelog && pnpm run check:license && pnpm run audit && cross-env CI=true pnpm run build && pnpm run test",
+    "build:ci": "cross-env CI=true pnpm run lint && pnpm run lint:license && pnpm run audit && cross-env CI=true pnpm run build && pnpm run test",
     "build:ci:frontend": "cross-env CI=true pnpm run build:frontend",
     "build:ci:server": "cross-env CI=true pnpm run build:server",
-    "build:clean": "node src/build-clean.js",
+    "build:clean": "node src/build-clean.cjs",
     "build:frontend": "node src/build.js",
     "build:preview": "node src/server/build-preview.js",
-    "build:raw": "cross-env BUILD_RAW=true node src/build-server.js",
-    "build:raw-clean": "node src/build-raw-clean.js",
-    "build:server": "node src/build-server.js",
-    "check:license": "node scripts/check-license.js",
-    "check:unreleased": "node scripts/check-unreleased.js",
+    "build:raw": "cross-env BUILD_RAW=true node src/build-server.cjs",
+    "build:raw-clean": "node src/build-raw-clean.cjs",
+    "build:server": "node src/build-server.cjs",
     "create:nodes": "node src/shared/create-nodes.js",
-    "format": "prettier --write \"src/**/*.js\" \"tests/**/*.js\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"CONTRIBUTING.md\" \"SECURITY.md\" \"CODE_OF_CONDUCT.md\"",
-    "format:check": "prettier --check \"src/**/*.js\" \"tests/**/*.js\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"CONTRIBUTING.md\" \"SECURITY.md\" \"CODE_OF_CONDUCT.md\"",
-    "lint": "pnpm run lint:package && pnpm run lint:todos && eslint --quiet \"src/**/*.js\" \"tests/**/*.js\"",
-    "lint:fix": "eslint --fix \"src/**/*.js\" \"tests/**/*.js\" || true && prettier --write \"src/**/*.js\" \"tests/**/*.js\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\"",
+    "format": "prettier --write \"src/**/*.{js,cjs,mjs}\" \"tests/**/*.{js,cjs,mjs}\" \"scripts/**/*.{js,cjs}\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"CONTRIBUTING.md\" \"SECURITY.md\" \"CODE_OF_CONDUCT.md\"",
+    "format:check": "prettier --check \"src/**/*.{js,cjs,mjs}\" \"tests/**/*.{js,cjs,mjs}\" \"scripts/**/*.{js,cjs}\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"CONTRIBUTING.md\" \"SECURITY.md\" \"CODE_OF_CONDUCT.md\"",
+    "link:docs": "node scripts/check-doc-links.js",
+    "lint": "pnpm run lint:package && pnpm run lint:todos && pnpm run lint:changelog && pnpm run lint:unreleased && eslint --quiet \"src/**/*.{js,cjs,mjs}\" \"tests/**/*.{js,cjs,mjs}\" \"scripts/**/*.{js,cjs}\"",
     "lint:changelog": "node scripts/lint-changelog.js",
     "lint:commits": "commitlint --from HEAD~10 --to HEAD --verbose",
     "lint:docs": "markdownlint --config .markdownlint.json \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"*.md\"",
-    "lint:package": "node scripts/check-package-json.js",
-    "lint:todos": "node scripts/check-todo-management.js",
-    "link:docs": "node scripts/check-doc-links.js",
+    "lint:fix": "eslint --fix \"src/**/*.{js,cjs,mjs}\" \"tests/**/*.{js,cjs,mjs}\" \"scripts/**/*.{js,cjs}\" || true && prettier --write \"src/**/*.{js,cjs,mjs}\" \"tests/**/*.{js,cjs,mjs}\" \"scripts/**/*.{js,cjs}\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\"",
+    "lint:license": "node scripts/check-license.js",
+    "lint:package": "node scripts/check-package-json.js --self-heal",
+    "lint:package:fix": "node scripts/check-package-json.js --self-heal",
+    "lint:todos": "node scripts/check-todo-management.js --self-heal",
+    "lint:todos:fix": "node scripts/check-todo-management.js --self-heal",
+    "lint:unreleased": "node scripts/check-unreleased.js --self-heal",
+    "lint:unreleased:fix": "node scripts/check-unreleased.js --self-heal",
+    "prepare": "husky",
     "release": "node scripts/do-release.js",
     "release:check": "pnpm run validate:release",
     "release:tag": "pnpm run release:check && node -e \"require('child_process').execSync('git tag v'+require('./package.json').version,{stdio:'inherit'})\"",
@@ -38,18 +53,7 @@
     "validate:generated-json": "node tests/validate-generated-json.js",
     "validate:generated-txt": "node tests/validate-generated-txt.js",
     "validate:golden": "node tests/validate-golden.js",
-    "validate:release": "node tests/validate-release.js",
-    "audit": "pnpm audit --audit-level=moderate",
-    "prepare": "husky"
-  },
-  "engines": {
-    "node": ">=26.0.0",
-    "pnpm": ">=11.1.2"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
+    "validate:release": "node tests/validate-release.js"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^21.0.1",

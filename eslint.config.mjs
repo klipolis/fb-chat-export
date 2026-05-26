@@ -14,8 +14,8 @@ export default [
   },
   // CommonJS files: build scripts, tests, server source, shared modules
   {
-    files: ['src/**/*.js', 'tests/**/*.js', 'scripts/**/*.js'],
-    ignores: ['src/frontend/src/**/*.js', 'src/shared/frontend-utils.js'],
+    files: ['src/**/*.{js,cjs}', 'tests/**/*.{js,cjs}', 'scripts/**/*.{js,cjs}'],
+    ignores: ['src/frontend/src/**/*.js', 'src/shared/frontend-utils.mjs'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'commonjs',
@@ -32,7 +32,7 @@ export default [
   },
   // ESM frontend source (bundled by esbuild, uses import/export)
   {
-    files: ['src/frontend/src/**/*.js', 'src/shared/frontend-utils.js'],
+    files: ['src/build.js', 'src/frontend/src/**/*.js', 'src/shared/frontend-utils.mjs'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',

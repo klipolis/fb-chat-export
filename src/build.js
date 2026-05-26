@@ -1,1 +1,1 @@
-import './frontend/build.js';
+import './frontend/build.cjs';

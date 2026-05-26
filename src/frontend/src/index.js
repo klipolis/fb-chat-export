@@ -8,7 +8,7 @@ import {
   getDisplayPersonName,
   sanitizeFileNamePart,
   formatExportFileName,
-} from '../../shared/frontend-utils.js';
+} from '../../shared/frontend-utils.mjs';
 import {
   createButton,
   createCheckboxToggle,
@@ -167,10 +167,10 @@ import {
   termsNote.style.cssText = 'padding: 6px 10px 10px; font-size: 11px; color: #777;';
   const termsLabel = document.createTextNode('Terms: ');
   const termsLink = document.createElement('a');
-  termsLink.href = 'https://github.com/klipolis/fb-chat-export/blob/main/docs/terms-and-conditions.md';
+  termsLink.href = 'https://github.com/klipolis/fb-chat-export/blob/main/docs/user-guide/terms-and-conditions.md';
   termsLink.target = '_blank';
   termsLink.rel = 'noreferrer noopener';
-  termsLink.textContent = 'docs/terms-and-conditions.md';
+  termsLink.textContent = 'docs/user-guide/terms-and-conditions.md';
   termsNote.appendChild(termsLabel);
   termsNote.appendChild(termsLink);
   panel.appendChild(termsNote);

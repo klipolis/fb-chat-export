@@ -795,7 +795,7 @@ tap.test('scanToExportIntegration', (t) => {
 
 tap.test('frontendBuildDist', (t) => {
   const baseDir = path.join(__dirname, '..');
-  const buildResult = childProcess.spawnSync('node', ['src/frontend/build.js'], {
+  const buildResult = childProcess.spawnSync('node', ['src/frontend/build.cjs'], {
     cwd: baseDir,
     encoding: 'utf8',
   });
@@ -1011,10 +1011,10 @@ tap.test('formatExportFileNameDateRange', (t) => {
 // ---------------------------------------------------------------------------
 
 tap.test('parseLocalDate', (t) => {
-  // frontend-utils.js is ESM — run assertions in a subprocess to avoid
+  // frontend-utils.mjs is ESM — run assertions in a subprocess to avoid
   // require(esm) cycle issues with tap's ts-node loader.
   const script = `
-import { parseLocalDate } from './src/shared/frontend-utils.js';
+import { parseLocalDate } from './src/shared/frontend-utils.mjs';
 const results = [];
 const check = (label, actual, expected) => results.push({ label, ok: actual === expected, actual, expected });
 const d1 = parseLocalDate('2026-05-18');

@@ -14,10 +14,10 @@ A chat export project that generates `.txt`, JSON preview, HTML snapshots, and a
 
 ## Docs
 
-- [User Guide](docs/user-guide/index.md)
-- [Developer Guide](docs/developer-guide/index.md)
+- [User Guide](docs/user-guide/README.md)
+- [Developer Guide](docs/developer-guide/README.md)
 - [Release Management](docs/developer-guide/release-management.md)
-- [TODO Management](docs/todo-management.md)
+- [TODO Management](docs/developer-guide/todo-management.md)
 
 ## Quick start
 
