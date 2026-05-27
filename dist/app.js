@@ -731,7 +731,7 @@
           normalizedLabel
         );
         const imageKeyword = /\b(?:image sent|photo sent|picture sent|sent image|sent photo|sent picture)\b/i;
-        const imageMatch = hasImage && (imageKeyword.test(normalizedText) || imageKeyword.test(normalizedLabel)) || imageKeyword.test(normalizedText) || imageKeyword.test(normalizedLabel);
+        const imageMatch = hasImage && (imageKeyword.test(normalizedText) || imageKeyword.test(normalizedLabel) || !normalizedText) || imageKeyword.test(normalizedText) || imageKeyword.test(normalizedLabel);
         if (!fileTypeLocked && !labelTypeLocked) {
           if (unsent) {
             type = "unsent";

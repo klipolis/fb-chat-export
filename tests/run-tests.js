@@ -188,6 +188,16 @@ tap.test('getContentMeta', (t) => {
   t.equal(videoMeta.contentLength, undefined);
   t.equal(videoMeta.duration, '00:31:00');
 
+  const imageOnlyMeta = getContentMeta({
+    fileName: 'image-only.html',
+    ariaLabel: 'At today at 8:59, You',
+    message: '',
+    hasImage: true,
+  });
+  t.equal(imageOnlyMeta.type, 'image', 'image-only messages are classified as image');
+  t.equal(imageOnlyMeta.text, 'image sent');
+  t.equal(imageOnlyMeta.contentLength, undefined);
+
   t.end();
 });
 

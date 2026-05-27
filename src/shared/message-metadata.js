@@ -239,11 +239,12 @@ function getContentMeta({
   // Remove plain 'link' as a trigger for explicitLink
   // Remove plain 'link' as a trigger for explicitLink
   // (Do not match /\blink\b/ alone)
-  // Only classify as image if hasImage is true AND the text/label contains image keywords, or if the text/label contains image keywords alone
+  // Classify as image if an image is present or if the label/text explicitly describes an image.
   const imageKeyword =
     /\b(?:image sent|photo sent|picture sent|sent image|sent photo|sent picture)\b/i;
   const imageMatch =
-    (hasImage && (imageKeyword.test(normalizedText) || imageKeyword.test(normalizedLabel))) ||
+    (hasImage &&
+      (imageKeyword.test(normalizedText) || imageKeyword.test(normalizedLabel) || !normalizedText)) ||
     imageKeyword.test(normalizedText) ||
     imageKeyword.test(normalizedLabel);
 
