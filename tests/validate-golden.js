@@ -14,7 +14,7 @@ tap.test('validate golden snapshot files', (t) => {
 
     const text = raw.toString('utf8');
     const reEncoded = Buffer.from(text, 'utf8');
-    t.ok(raw.equals(reEncoded), `Golden file ${file} is not valid UTF-8`);
+    t.ok(raw.equals(reEncoded), `Golden file ${file} is valid UTF-8`);
 
     t.ok(!raw.includes(Buffer.from('\r\n')), `Golden file ${file} contains CRLF line endings (expected LF only)`);
 

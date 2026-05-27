@@ -3,6 +3,7 @@ Message types:
 - audio-call
 - deleted
 - image-2
+- image-3
 - image
 - link-embed-no-text
 - link-text
@@ -30,7 +31,7 @@ Aliases:
 [2026-04-12 13:23] Youghurt: audio-call 00:18:00
 [2026-04-14 18:34] XYZ: text-image-replied 29 chars
 [2026-04-16 10:55] XYZ: text-replied 210 chars
-[2026-05-16 04:36] Ötves: image-2 0 chars
+[2026-05-16 04:36] Ötves: image-2
 [2026-05-19 22:25] Youghurt: reaction-emoji
 [2026-05-20 19:51] XYZ: image
 [2026-05-20 19:51] XYZ: link-text 890 chars
@@ -43,3 +44,4 @@ Aliases:
 [2026-05-22 11:16] Youghurt: reaction
 [2026-05-22 11:57] Youghurt: video-link
 [2026-05-22 13:51] XYZ: link-embed-no-text
+[2026-05-22 20:59] Youghurt: image-3

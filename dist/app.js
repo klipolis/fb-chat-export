@@ -834,6 +834,8 @@
         messageTypes: [
           "audio-call",
           "deleted",
+          "image-2",
+          "image-3",
           "image",
           "link-embed-no-text",
           "link-text",

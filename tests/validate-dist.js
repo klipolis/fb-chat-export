@@ -46,8 +46,11 @@ tap.test('userscript header file is included in dist builds', (t) => {
   const minContents = fs.readFileSync(minDistPath, 'utf8');
 
   headerText.forEach((line) => {
-    t.ok(distContents.includes(line), `dist/app.js includes header line: ${line}`);
-    t.ok(minContents.includes(line), `dist/app.min.js includes header line: ${line}`);
+    const expectedLine = line === '// @version      %VERSION%'
+      ? `// @version      ${require('../package.json').version}`
+      : line;
+    t.ok(distContents.includes(expectedLine), `dist/app.js includes header line: ${line}`);
+    t.ok(minContents.includes(expectedLine), `dist/app.min.js includes header line: ${line}`);
   });
 
   t.ok(distContents.startsWith('// ==UserScript=='), 'dist/app.js starts with userscript header block');
