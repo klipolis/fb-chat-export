@@ -2,8 +2,6 @@ Method: server
 Message types:
 - audio-call
 - deleted
-- image-2
-- image-3
 - image
 - link-embed-no-text
 - link-text
@@ -18,8 +16,8 @@ Message types:
 - video-link
 - voice-note
 
-Options used: includeLength
-Other ones: includeContent, includeSummary
+Options: includeLength
+Unused: includeContent, includeSummary
 
 Aliases:
   You : Youghurt

@@ -1,5 +1,5 @@
 {
-  "file_count": 17,
+  "file_count": 18,
   "files": [
     "audio-call.json",
     "deleted.json",
@@ -17,6 +17,7 @@
     "text.json",
     "video-call.json",
     "video-link.json",
+    "voice-note-2.json",
     "voice-note.json"
   ]
 }

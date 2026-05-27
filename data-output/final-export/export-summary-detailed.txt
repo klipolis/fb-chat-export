@@ -2,8 +2,6 @@ Method: server
 Message types:
 - audio-call
 - deleted
-- image-2
-- image-3
 - image
 - link-embed-no-text
 - link-text
@@ -18,8 +16,8 @@ Message types:
 - video-link
 - voice-note
 
-Options used: includeSummary
-Other ones: includeContent, includeLength
+Options: includeSummary
+Unused: includeContent, includeLength
 
 Aliases:
   You : Youghurt
@@ -29,8 +27,8 @@ Aliases:
 ---
 
 Total Summary
-17 posts / 8 days
-~ 209 words
+18 posts / 8 days
+~ 4 words
 ~ 3 text
 ~ 2 reaction
 ~ 2 link
@@ -38,16 +36,15 @@ Total Summary
 ~ 3 image
 ~ 1 audio call
 ~ 1 video call
-~ 1 voice note
+~ 2 voice note
 ~ 2 missed call
 ~ 1 unsent
 ~ 3 calls 00:49:20
 
 XYZ Summary
-10 posts / 5 days
-~ 208 words
-~ 3 text
-~ 2 link
+6 posts / 3 days
+~ 3 words
+~ 1 link
 ~ 1 image
 ~ 1 video call
 ~ 2 missed call

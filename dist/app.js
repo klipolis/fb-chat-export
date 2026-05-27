@@ -834,8 +834,6 @@
         messageTypes: [
           "audio-call",
           "deleted",
-          "image-2",
-          "image-3",
           "image",
           "link-embed-no-text",
           "link-text",
@@ -1281,9 +1279,9 @@ ${types}
 
 `;
         if (optionKeys.length) {
-          header += `Options used: ${activeOptions.length ? activeOptions.join(", ") : "none"}
+          header += `Options: ${activeOptions.length ? activeOptions.join(", ") : "none"}
 `;
-          header += `Other ones: ${inactiveOptions.length ? inactiveOptions.join(", ") : "none"}
+          header += `Unused: ${inactiveOptions.length ? inactiveOptions.join(", ") : "none"}
 
 `;
         }

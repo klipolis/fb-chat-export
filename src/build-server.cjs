@@ -14,6 +14,7 @@ const {
 } = require('./shared/export-text');
 const { chooseRule } = require('./shared/message-metadata');
 const { resolveRepoPath } = require('./shared/app-config');
+const schemaConfig = require('./shared/export-config.json');
 
 const rawDir = resolveRepoPath('data-input');
 const optimizedDir = resolveRepoPath('data-output', 'optimized-html');
@@ -103,7 +104,7 @@ function buildTextExport(files, options = {}, referenceDate) {
   const lines = sorted.map((entry) => formatLine(entry, options));
   const headerText = formatExportHeader({
     method: 'server',
-    messageTypes: files.map((fileName) => path.parse(fileName).name),
+    messageTypes: getBaseSemanticTypes(files),
     exportOptions: {
       includeContent: true,
       includeLength: true,
@@ -125,6 +126,17 @@ function summaryParticipants() {
   return [any, ...explicit];
 }
 
+function getBaseSemanticTypes(fileNames) {
+  const schemaTypes = schemaConfig.messageTypes;
+  const baseTypes = new Set();
+  fileNames.forEach((fileName) => {
+    const base = path.parse(fileName).name;
+    const semanticType = base.replace(/-\d+$/, '');
+    baseTypes.add(semanticType);
+  });
+  return schemaTypes.filter((type) => baseTypes.has(type));
+}
+
 function writeTextExports(files, cleanedHtmlByFile, referenceDate) {
   ensureDir(exportDir);
   const sortedEntries = buildTextEntries(files, cleanedHtmlByFile, referenceDate);
@@ -137,7 +149,7 @@ function writeTextExports(files, cleanedHtmlByFile, referenceDate) {
 
   const headerTextContentOn = formatExportHeader({
     method: 'server',
-    messageTypes: files.map((fileName) => path.parse(fileName).name),
+    messageTypes: getBaseSemanticTypes(files),
     exportOptions: {
       includeContent: true,
       includeLength: true,
@@ -147,7 +159,7 @@ function writeTextExports(files, cleanedHtmlByFile, referenceDate) {
   });
   const headerTextContentOff = formatExportHeader({
     method: 'server',
-    messageTypes: files.map((fileName) => path.parse(fileName).name),
+    messageTypes: getBaseSemanticTypes(files),
     exportOptions: {
       includeContent: false,
       includeLength: true,
@@ -157,7 +169,7 @@ function writeTextExports(files, cleanedHtmlByFile, referenceDate) {
   });
   const headerTextSummaryOnly = formatExportHeader({
     method: 'server',
-    messageTypes: files.map((fileName) => path.parse(fileName).name),
+    messageTypes: getBaseSemanticTypes(files),
     exportOptions: {
       includeContent: false,
       includeLength: false,

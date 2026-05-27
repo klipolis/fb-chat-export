@@ -70,8 +70,8 @@ Message types:
 - image
 - text
 
-Options used: content, rawLink
-Other ones: calls, length, summary
+Options: content, rawLink
+Unused: calls, length, summary
 
 Aliases:
   You : Youghurt

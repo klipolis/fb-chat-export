@@ -55,7 +55,7 @@ function validateHeader(t, lines, schema, fileName) {
 
   if (/^Options\b/.test(lines[index] || '')) {
     index += 1;
-    if (/^Other ones:/.test(lines[index] || '')) {
+    if (/^Unused:/.test(lines[index] || '')) {
       index += 1;
     }
     while (index < lines.length && lines[index].startsWith('  ')) {

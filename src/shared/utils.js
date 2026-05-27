@@ -28,13 +28,13 @@ function escapeRegExp(value) {
 
 const normalizeName = (name) => name.trim().replace(/\s+/g, ' ');
 const isValidName = (name) =>
-  /^[A-Za-z][A-Za-z .' -]{0,80}$/i.test(name) &&
+  /^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ.' -]{0,80}$/i.test(name) &&
   !/\d/.test(name) &&
   name.split(/\s+/).length <= 2;
 
 function extractAriaLabelCandidates(html) {
   const candidates = [];
-  const nameWord = "[A-Za-z][A-Za-z.'-]*";
+  const nameWord = "[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ.'-]*";
   const candidateName = `${nameWord}(?:\\s+${nameWord})?`;
   const byRegex = new RegExp(`\\bby\\s+(${candidateName})(?=\\s*[:]|$)`, 'gi');
   const atRegex = new RegExp(`\\bAt\\s+.+?,\\s*(${candidateName})(?=\\s*[:]|$)`, 'gi');
@@ -125,7 +125,7 @@ function aliasChatNames(html, nameMap = {}, preDetectedName) {
   }
 
   if (selectedName) {
-    const senderRegex = new RegExp(`\\b${escapeRegExp(selectedName)}\\b`, 'gi');
+    const senderRegex = new RegExp(`(?:^|\\s)${escapeRegExp(selectedName)}(?:$|\\s)`, 'gi');
     const aliasText = (text) => text.replace(senderRegex, replacementName);
 
     result = result.replace(/aria-label="([^"]*)"/g, (match, label) => {
@@ -149,7 +149,7 @@ function aliasChatNames(html, nameMap = {}, preDetectedName) {
   for (const [from, to] of Object.entries(nameMap)) {
     if (from === 'any') continue;
     if (from.toLowerCase() === to.toLowerCase()) continue;
-    const fromRegex = new RegExp(`\\b${escapeRegExp(from)}\\b`, 'g');
+    const fromRegex = new RegExp(`(?:^|\\s)${escapeRegExp(from)}(?:$|\\s)`, 'g');
 
     result = result.replace(/aria-label="([^"]*)"/g, (match, label) => {
       const updated = label.replace(fromRegex, to);

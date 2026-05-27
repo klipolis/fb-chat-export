@@ -26,7 +26,8 @@ Changelog entries should describe active changes in direct present-tense stateme
 
 ### Changed
 
-- `formatExportHeader` writes `Options used:` and `Other ones:` lines and separates header sections with blank lines.
+- format header section.
+- fix image total count
 - `data-config/alias-names.json` is the canonical runtime alias source; duplicate userscript alias packaging metadata is removed.
 - `package.json` script ordering is cleaned and a new `lint:todos` command validates `.TODO` files and `.todo/config.json`.
 - Reorganises documentation into `docs/user-guide` and `docs/developer-guide`, with Mermaid flowcharts added to key docs and a new release management guide.

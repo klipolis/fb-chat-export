@@ -235,9 +235,9 @@ tap.test('browserExportFormatting', (t) => {
   t.ok(header.includes('Method: browser'), 'header includes method browser');
   t.ok(header.includes('- text'), 'header lists text message type');
   t.ok(header.includes('- image'), 'header lists image message type');
-  t.ok(header.includes('Options used:'), 'header includes Options used line');
-  t.ok(header.includes('Other ones:'), 'header includes Other ones line');
-  t.ok(header.includes('Options used: content, rawLink'), 'header includes active options');
+  t.ok(header.includes('Options:'), 'header includes Options line');
+  t.ok(header.includes('Unused:'), 'header includes Unused line');
+  t.ok(header.includes('Options: content, rawLink'), 'header includes active options');
   t.ok(header.includes('Aliases:'), 'header includes Aliases block');
   t.ok(header.includes('  You : Youghurt'), 'header includes alias entries');
 

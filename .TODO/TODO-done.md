@@ -48,7 +48,7 @@ Future / requires-new-samples items are in [TODO-future.md](TODO-future.md).
 
 ## Export format
 
-- T62. TXT header formatting updated with `Options used:`, `Other ones:`, and blank-line separation.
+- T62. TXT header formatting updated with `Options:`, `Unused:`, and blank-line separation.
 - T63. Alias config centralised as runtime alias source.
 - T64. Platform userscript header template moved to `data-config/userscript/header.txt`.
 - T65. Export filename includes the selected date range.

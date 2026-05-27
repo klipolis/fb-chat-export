@@ -14,8 +14,8 @@ function formatExportHeader({ method, messageTypes, exportOptions = {}, aliasMap
 
   let header = `Method: ${method}\nMessage types:\n${types}\n\n`;
   if (optionKeys.length) {
-    header += `Options used: ${activeOptions.length ? activeOptions.join(', ') : 'none'}\n`;
-    header += `Other ones: ${inactiveOptions.length ? inactiveOptions.join(', ') : 'none'}\n\n`;
+    header += `Options: ${activeOptions.length ? activeOptions.join(', ') : 'none'}\n`;
+    header += `Unused: ${inactiveOptions.length ? inactiveOptions.join(', ') : 'none'}\n\n`;
   }
   if (aliasLines) {
     header += `Aliases:\n${aliasLines}\n\n`;
