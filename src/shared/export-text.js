@@ -40,7 +40,8 @@ function extractMessageEntry(el, fileName, referenceDate) {
   const normalizedLabel = normalizeLabel(ariaLabel).toLowerCase();
   const timerEl = el.querySelector('[role="timer"]');
   const linkEl = el.querySelector('a[href]');
-  const hasImage = Boolean(el.querySelector('img'));
+  const imageCount = el.querySelectorAll('img').length;
+  const hasImage = imageCount > 0;
   const hasPlayButton = Boolean(el.querySelector('[aria-label="Play"]'));
   // Only treat as link if there is a real URL or <a href>, not just the word 'link'
   const hasLink =
@@ -59,6 +60,7 @@ function extractMessageEntry(el, fileName, referenceDate) {
       link: linkEl ? linkEl.getAttribute('href') || undefined : undefined,
     },
     hasImage,
+    imageCount,
     hasPlayButton,
     hasLink,
     timerText,
@@ -94,6 +96,7 @@ function extractMessageEntry(el, fileName, referenceDate) {
     content: body,
     duration: contentMeta.duration,
     contentLength: contentMeta.contentLength,
+    imageCount: contentMeta.imageCount,
   };
 }
 

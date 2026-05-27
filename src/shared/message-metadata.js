@@ -172,6 +172,7 @@ function getContentMeta({
   message = '',
   rawMeta = {},
   hasImage = false,
+  imageCount = 0,
   hasPlayButton = false,
   hasLink = false,
   timerText = '',
@@ -237,12 +238,12 @@ function getContentMeta({
       normalizedLabel
     );
   // Remove plain 'link' as a trigger for explicitLink
-  // Remove plain 'link' as a trigger for explicitLink
   // (Do not match /\blink\b/ alone)
-  // Classify as image if an image is present or if the label/text explicitly describes an image.
+  // Classify as image if there is an image count or if the label/text explicitly describes an image.
   const imageKeyword =
     /\b(?:image sent|photo sent|picture sent|sent image|sent photo|sent picture)\b/i;
   const imageMatch =
+    imageCount > 0 ||
     (hasImage &&
       (imageKeyword.test(normalizedText) || imageKeyword.test(normalizedLabel) || !normalizedText)) ||
     imageKeyword.test(normalizedText) ||
@@ -328,6 +329,7 @@ function getContentMeta({
     voiceDurationSource: rawMeta.duration ? 'timer' : timerText ? 'label' : undefined,
     isCall: type === 'video-call' || type === 'missed-call' || type === 'audio-call',
     isImage: type === 'image',
+    imageCount: imageCount || (type === 'image' ? 1 : 0),
     duration,
   };
 }

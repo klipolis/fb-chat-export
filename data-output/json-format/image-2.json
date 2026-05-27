@@ -1,7 +1,7 @@
 {
   "html_locale": null,
-  "title": "text",
-  "type": "text",
+  "title": "image",
+  "type": "image",
   "data_raw": {
     "date": "Saturday 4:36am",
     "content": null,
@@ -10,8 +10,8 @@
   },
   "data_preview": {
     "date": "2026.05.23 04:36",
-    "content": "",
+    "content": "image sent",
     "duration": null,
-    "length": "0 chars"
+    "length": null
   }
 }

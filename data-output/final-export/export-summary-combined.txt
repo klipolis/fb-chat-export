@@ -3,6 +3,7 @@ Message types:
 - audio-call
 - deleted
 - image-2
+- image-3
 - image
 - link-embed-no-text
 - link-text
@@ -28,9 +29,9 @@ Aliases:
 ---
 
 Total Summary
-16 posts / 8 days
+17 posts / 8 days
 ~ 8 text / 207 words
-~ 1 images
+~ 2 images
 ~ 3 calls 00:49:20
 
 XYZ Summary
@@ -40,9 +41,9 @@ XYZ Summary
 ~ 1 calls 00:31:00
 
 Youghurt Summary
-4 posts / 3 days
+5 posts / 3 days
 ~ 3 text / 1 words
-~ 0 images
+~ 1 images
 ~ 1 calls 00:18:00
 
 Barnabas Summary

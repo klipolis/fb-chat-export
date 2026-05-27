@@ -73,7 +73,9 @@ function buildSummaryData(entries = [], options = {}) {
       data.calls += 1;
       data.callSeconds += Number(entry.callSeconds || 0);
     }
-    if (entry.isImage) {
+    if (entry.imageCount) {
+      data.images += Number(entry.imageCount || 0);
+    } else if (entry.isImage) {
       data.images += 1;
     }
     totals.set(sender, data);
@@ -108,7 +110,8 @@ function buildSummaryData(entries = [], options = {}) {
       participantDays.add(dayKey);
     });
     includedEntries.forEach((entry) => {
-      if (entry.isImage) participantImages += 1;
+      if (entry.imageCount) participantImages += Number(entry.imageCount || 0);
+      else if (entry.isImage) participantImages += 1;
       if (isCountedCall(entry) && !isMissedCall(entry)) {
         participantCalls += 1;
         participantSeconds += Number(entry.callSeconds || 0);

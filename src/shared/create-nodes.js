@@ -281,7 +281,7 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
     const senderAlt = parsedLabel.sender ? parsedLabel.sender.trim() : '';
     const imageTags = Array.from(rawSegment.matchAll(/<img\b[^>]*>/gi));
     // Only count as image if there is an <img> that is NOT a sender avatar (alt is not a person name and not empty)
-    const hasImage = imageTags.some((tag) => {
+    const imageCount = imageTags.filter((tag) => {
       const altMatch = tag[0].match(/alt="([^"]*)"/i);
       const altText = altMatch ? altMatch[1].trim() : '';
       // If alt is missing or empty, treat as possible image (could be sticker, etc)
@@ -289,7 +289,8 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
       // If alt is a person name, treat as avatar, not message image
       const isPersonName = /^[A-Z][a-z]+(?: [A-Z][a-z]+)*$/.test(altText);
       return !isPersonName;
-    });
+    }).length;
+    const hasImage = imageCount > 0;
     const hasLink = Boolean(rawMeta.link || /<a\s[^>]*href=/i.test(rawSegment));
     const hasPlayButton = /aria-label="Play"/i.test(rawSegment);
     let message = parsedLabel.message || '';
@@ -314,6 +315,7 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
       message,
       rawMeta,
       hasImage,
+      imageCount,
       hasLink,
       hasPlayButton,
       timerText: rawMeta.duration || '',

@@ -198,6 +198,26 @@ tap.test('getContentMeta', (t) => {
   t.equal(imageOnlyMeta.text, 'image sent');
   t.equal(imageOnlyMeta.contentLength, undefined);
 
+  const image2Meta = getContentMeta({
+    fileName: 'image-2.html',
+    ariaLabel: 'At today at 9:00, You',
+    message: '',
+    hasImage: true,
+    imageCount: 2,
+  });
+  t.equal(image2Meta.type, 'image', 'image-2 files are classified as image');
+  t.equal(image2Meta.imageCount, 2, 'image-2 imageCount is preserved');
+
+  const image3Meta = getContentMeta({
+    fileName: 'image-3.html',
+    ariaLabel: 'At today at 9:00, You',
+    message: '',
+    hasImage: true,
+    imageCount: 4,
+  });
+  t.equal(image3Meta.type, 'image', 'image-3 files are classified as image');
+  t.equal(image3Meta.imageCount, 4, 'image-3 imageCount is preserved');
+
   t.end();
 });
 
@@ -867,6 +887,14 @@ tap.test('buildSummaryEdgeCases', (t) => {
     { useMessageLabel: true }
   );
   t.ok(singleMsg.includes('Alice'), 'single-participant summary includes sender name');
+
+  const multiImageSummary = buildSummary(
+    [
+      { sender: 'Alice', date: new Date('2026-01-01'), type: 'image', isCall: false, isImage: true, imageCount: 4, ts: Date.now() },
+    ],
+    { useMessageLabel: true }
+  );
+  t.ok(multiImageSummary.includes('~ 4 images'), 'summary counts multiple images from one entry');
   t.end();
 });
 
