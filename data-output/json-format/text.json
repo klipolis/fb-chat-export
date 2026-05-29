@@ -4,14 +4,16 @@
   "type": "text",
   "data_raw": {
     "date": "12:26 AM",
-    "content": "you have that photo and a link?",
+    "name": "XYZ",
+    "content": "Do Youghurt have that photo and a link?",
     "duration": null,
-    "length": null
+    "length": "8 words"
   },
   "data_preview": {
-    "date": "2026.05.27 00:26",
-    "content": "you have that photo and a link?",
+    "date": "2026.05.29 09:37",
+    "name": "XYZ",
+    "content": null,
     "duration": null,
-    "length": "31 chars"
+    "length": null
   }
 }

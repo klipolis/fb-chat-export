@@ -3,15 +3,17 @@
   "title": "text",
   "type": "text",
   "data_raw": {
-    "date": "April 14, 2026, 6:34 PM",
-    "content": "Well i didn't know about this",
+    "date": null,
+    "name": null,
+    "content": "Go to replied message",
     "duration": null,
-    "length": null
+    "length": "4 words"
   },
   "data_preview": {
-    "date": "2026.04.14 18:34",
-    "content": "Well i didn't know about this",
+    "date": "2026.05.29 09:37",
+    "name": "Unknown",
+    "content": null,
     "duration": null,
-    "length": "29 chars"
+    "length": null
   }
 }

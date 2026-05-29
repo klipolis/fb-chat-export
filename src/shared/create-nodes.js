@@ -321,55 +321,63 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
       timerText: rawMeta.duration || '',
     });
 
-    const rawDuration = normalizeDuration(rawMeta.duration) || null;
-    const rawContent = contentMeta.type === 'reaction'
-      ? null
-      : contentMeta.link
-        ? stripTrackingParams(rawMeta.link || contentMeta.link) || null
-        : (message || null);
+const rawDuration = normalizeDuration(rawMeta.duration) || null;
+      const rawContent = contentMeta.type === 'reaction'
+        ? null
+        : contentMeta.link
+          ? stripTrackingParams(rawMeta.link || contentMeta.link) || null
+          : (message || null);
+     const rawSender = parsedLabel.sender || null;
 
-    nodes.push({
-      html_locale: null,
-      title: contentMeta.type,
-      type: contentMeta.type,
-      timestamp,
-      data_raw: {
-        date: originalDate,
-        content: rawContent,
-        duration: rawDuration,
-        length: null,
-      },
-      data_preview: {
-        date: simpleDate || originalDate,
-        content: contentMeta.text,
-        duration: contentMeta.duration || null,
-        length: contentMeta.contentLength || null,
-      },
-    });
+     const normalizeExportSender = (sender) => {
+       if (sender === 'You' || sender === 'Yoghurt') return 'Youghurt';
+       return sender || 'Unknown';
+     };
 
-    messageTagRe.lastIndex = end;
-  }
+     const previewSender = normalizeExportSender(rawSender);
+
+      nodes.push({
+        html_locale: null,
+        title: contentMeta.type,
+        type: contentMeta.type,
+        timestamp,
+        data_raw: {
+          date: originalDate,
+          name: rawSender,
+          content: rawContent,
+          duration: rawDuration,
+          length: contentMeta.words != null ? `${contentMeta.words} words` : null,
+        },
+data_preview: {
+          date: exportDate,
+          name: previewSender,
+          content: null,
+          duration: null,
+          length: null,
+        },
+      });
+ }
 
   return nodes;
 }
 
 function createNodeJson(fileName, metaMap, exportDate) {
-  const html = fs.readFileSync(path.join(optimizedDir, fileName), 'utf8');
-  const htmlLocale = extractHtmlLocale(html);
-  const nodes = parseMessageNodes(html, fileName, exportDate, metaMap);
-  const uniqueNodes = [...new Map(nodes.map((node) => [node.data_preview.content, node])).values()];
-  const node = uniqueNodes.length ? uniqueNodes[0] : null;
-  const output = {
-    html_locale: htmlLocale,
-    title: node ? node.type : path.parse(fileName).name,
-    type: node ? node.type : 'unknown',
-    data_raw: node
-      ? node.data_raw
-      : { date: null, content: null, duration: null, length: null },
-    data_preview: node
-      ? node.data_preview
-      : { date: exportDate, content: null, duration: null, length: null },
-  };
+   const html = fs.readFileSync(path.join(optimizedDir, fileName), 'utf8');
+   const htmlLocale = extractHtmlLocale(html);
+   const nodes = parseMessageNodes(html, fileName, exportDate, metaMap);
+   const uniqueNodes = [...new Map(nodes.map((node) => [node.data_preview.content, node])).values()];
+   const node = uniqueNodes.length ? uniqueNodes[0] : null;
+   const output = {
+     html_locale: htmlLocale,
+     title: node ? node.type : path.parse(fileName).name,
+     type: node ? node.type : 'unknown',
+     data_raw: node
+       ? node.data_raw
+       : { date: null, name: null, content: null, duration: null, length: null },
+     data_preview: node
+       ? node.data_preview
+       : { date: exportDate, name: null, content: null, duration: null, length: null },
+   };
 
   const targetPath = path.join(nodesDir, `${path.parse(fileName).name}.json`);
   writeJsonIfChanged(targetPath, output);

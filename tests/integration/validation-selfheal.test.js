@@ -63,11 +63,11 @@ tap.test('validation scripts are failsafe and self-healing', (t) => {
     version: '1.0.0',
     name: 'chat-exporter',
     private: true,
-    packageManager: 'pnpm@11.1.2',
+    packageManager: 'pnpm@11.4.0',
     type: 'module',
     license: 'MIT',
     pnpm: { onlyBuiltDependencies: ['esbuild'] },
-    engines: { node: '>=26.0.0', pnpm: '>=11.1.2' },
+    engines: { node: '>=26.0.0', pnpm: '>=11.4.0' },
     scripts: {
       lint: 'pnpm run lint:package',
       build: 'pnpm run build',

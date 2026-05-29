@@ -4,14 +4,16 @@
   "type": "voice-note",
   "data_raw": {
     "date": "12:00 PM",
+    "name": "Csaba",
     "content": "0:21",
     "duration": "00:00:21",
     "length": null
   },
   "data_preview": {
-    "date": "2026.05.27 12:00",
-    "content": "voice note",
-    "duration": "00:00:21",
+    "date": "2026.05.29 09:37",
+    "name": "Csaba",
+    "content": null,
+    "duration": null,
     "length": null
   }
 }

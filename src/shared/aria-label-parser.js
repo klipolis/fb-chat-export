@@ -5,14 +5,14 @@ function normalizeLabel(text) {
 }
 
 function isValidSender(value) {
-  if (!/^[A-Za-z][A-Za-z .'-]{0,80}$/i.test(value)) return false;
+  if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,80}$/i.test(value)) return false;
   if (/\d/.test(value)) return false;
   return value.trim().split(/\s+/).length <= 2;
 }
 
 function splitSenderAndMessage(value) {
   const text = normalizeLabel(value);
-  const firstWordMatch = text.match(/^([A-Za-z][A-Za-z .'-]{0,80}?)(?:\s+([\s\S]*))?$/);
+  const firstWordMatch = text.match(/^([A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,80}?)(?:\s+([\s\S]*))?$/);
   if (!firstWordMatch) return null;
   const sender = normalizeLabel(firstWordMatch[1]);
   const message = normalizeLabel(firstWordMatch[2] || '');
@@ -112,7 +112,7 @@ function parseAriaLabel(ariaLabel) {
   const label = normalizeLabel(ariaLabel).replace(/\s*,\s*/g, ', ');
   let match;
 
-  match = label.match(/^At\s+(.+?),\s*([A-Za-z]+(?:\s+[A-Za-z]+){0,2})\s+[-–—]\s*([\s\S]*)$/i);
+  match = label.match(/^At\s+(.+?),\s*([A-Za-zÀ-ÖØ-öø-ÿ]+(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ]+){0,2})\s+[-–—]\s*([\s\S]*)$/i);
   if (match) {
     let sender = match[2].trim();
     let message = match[3].trim();
@@ -143,7 +143,7 @@ function parseAriaLabel(ariaLabel) {
       // (the real sender is inline; the last part is trailing context, e.g. conversation name).
       const hasInlineSenderColon = tailParts
         .slice(1, -1)
-        .some((p) => /^[A-Za-z][A-Za-z .'-]{0,40}:\s/.test(p));
+        .some((p) => /^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,40}:\\s/.test(p));
       if (!hasInlineSenderColon && isValidSender(maybeSender)) {
         return {
           date: maybeDate.trim(),
@@ -157,7 +157,7 @@ function parseAriaLabel(ariaLabel) {
       const maybeDate = tailParts[0];
       const rest = tailParts.slice(1).join(', ');
       // Handle inline "Sender: message" colon format that splitSenderAndMessage cannot parse.
-      const inlineMatch = rest.match(/^([A-Za-z][A-Za-z .'-]{0,40}):\s*([\s\S]*)$/);
+      const inlineMatch = rest.match(/^([A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,40}):\s*([\s\S]*)$/);
       if (inlineMatch && isValidSender(inlineMatch[1])) {
         return {
           date: maybeDate.trim(),

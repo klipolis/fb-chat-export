@@ -4,13 +4,15 @@
   "type": "video-link",
   "data_raw": {
     "date": "11:57 AM",
+    "name": "Youghurt",
     "content": "https://youtube.com/shorts/IKS2vNOcZ7A?si=ly12c89dzPEHyhll",
     "duration": null,
     "length": null
   },
   "data_preview": {
-    "date": "2026.05.27 11:57",
-    "content": "youtube_com/shorts/IK...",
+    "date": "2026.05.29 09:37",
+    "name": "Youghurt",
+    "content": null,
     "duration": null,
     "length": null
   }

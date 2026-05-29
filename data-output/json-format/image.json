@@ -4,13 +4,15 @@
   "type": "image",
   "data_raw": {
     "date": "Wednesday 7:51pm",
+    "name": "XYZ",
     "content": null,
     "duration": null,
     "length": null
   },
   "data_preview": {
-    "date": "2026.05.27 19:51",
-    "content": "image sent",
+    "date": "2026.05.29 09:37",
+    "name": "XYZ",
+    "content": null,
     "duration": null,
     "length": null
   }

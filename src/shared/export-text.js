@@ -87,18 +87,19 @@ function extractMessageEntry(el, fileName, referenceDate) {
         : contentMeta.text;
   const fileType = path.parse(fileName).name;
 
-  return {
-    ts: Number.isFinite(timestamp) && !Number.isNaN(timestamp) ? timestamp : 0,
-    fileType,
-    semanticType: contentMeta.type,
-    dateText: formatDate(rawDate, referenceDate),
-    sender: normalizeExportSender(sender),
-    content: body,
-    duration: contentMeta.duration,
-    contentLength: contentMeta.contentLength,
-    imageCount: contentMeta.imageCount,
-  };
-}
+return {
+     ts: Number.isFinite(timestamp) && !Number.isNaN(timestamp) ? timestamp : 0,
+     fileType,
+     semanticType: contentMeta.type,
+     dateText: formatDate(rawDate, referenceDate),
+     sender: normalizeExportSender(sender),
+     content: body,
+     duration: contentMeta.duration,
+     contentLength: contentMeta.contentLength,
+     imageCount: contentMeta.imageCount,
+     words: contentMeta.words,
+   };
+ }
 
 function buildEntriesFromDocument(document, fileName, referenceDate) {
   const entries = [];

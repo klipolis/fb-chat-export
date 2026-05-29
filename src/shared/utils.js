@@ -124,24 +124,50 @@ function aliasChatNames(html, nameMap = {}, preDetectedName) {
     selectedName = pickBestName(candidates, html, excludeNames);
   }
 
-  if (selectedName) {
-    const senderRegex = new RegExp(`(?:^|\\s)${escapeRegExp(selectedName)}(?:$|\\s)`, 'gi');
-    const aliasText = (text) => text.replace(senderRegex, replacementName);
+  // Replace name only when it appears as a whole word (not as substring of another name)
+  // using a pattern that works with Unicode letters
+  const isWholeWord = (text, name, pos) => {
+    const before = pos === 0 || /[\s,:;]/.test(text[pos - 1]);
+    const after = pos + name.length >= text.length || /[\s,:;]/.test(text[pos + name.length]);
+    return before && after;
+  };
 
+  const replaceWholeWord = (text, name, replacement) => {
+    const nameLen = name.length;
+    let result = '';
+    let i = 0;
+    while (i < text.length) {
+      const idx = text.toLowerCase().indexOf(name.toLowerCase(), i);
+      if (idx === -1) {
+        result += text.slice(i);
+        break;
+      }
+      if (isWholeWord(text, name, idx)) {
+        result += text.slice(i, idx) + replacement;
+        i = idx + nameLen;
+      } else {
+        result += text.slice(i, idx + nameLen);
+        i = idx + nameLen;
+      }
+    }
+    return result;
+  };
+
+  if (selectedName) {
     result = result.replace(/aria-label="([^"]*)"/g, (match, label) => {
-      const updated = aliasText(label);
+      const updated = replaceWholeWord(label, selectedName, replacementName);
       return updated === label ? match : `aria-label="${updated}"`;
     });
 
     result = result.replace(
       /(<img\b[^>]*\balt=")([^"]*)("[^>]*>)/gi,
       (match, prefix, altText, suffix) => {
-        const updatedAlt = aliasText(altText);
+        const updatedAlt = replaceWholeWord(altText, selectedName, replacementName);
         return updatedAlt === altText ? match : `${prefix}${updatedAlt}${suffix}`;
       }
     );
 
-    result = result.replace(senderRegex, replacementName);
+    result = replaceWholeWord(result, selectedName, replacementName);
   }
 
   // Apply explicit name entries from the map (e.g. "You" -> "Youghurt").
@@ -149,22 +175,21 @@ function aliasChatNames(html, nameMap = {}, preDetectedName) {
   for (const [from, to] of Object.entries(nameMap)) {
     if (from === 'any') continue;
     if (from.toLowerCase() === to.toLowerCase()) continue;
-    const fromRegex = new RegExp(`(?:^|\\s)${escapeRegExp(from)}(?:$|\\s)`, 'g');
 
     result = result.replace(/aria-label="([^"]*)"/g, (match, label) => {
-      const updated = label.replace(fromRegex, to);
+      const updated = replaceWholeWord(label, from, to);
       return updated === label ? match : `aria-label="${updated}"`;
     });
 
     result = result.replace(
       /(<img\b[^>]*\balt=")([^"]*)("[^>]*>)/gi,
       (match, prefix, altText, suffix) => {
-        const updated = altText.replace(fromRegex, to);
+        const updated = replaceWholeWord(altText, from, to);
         return updated === altText ? match : `${prefix}${updated}${suffix}`;
       }
     );
 
-    result = result.replace(fromRegex, to);
+    result = replaceWholeWord(result, from, to);
   }
 
   return result;

@@ -85,7 +85,7 @@ Future / requires-new-samples items are in [TODO-future.md](TODO-future.md).
 
 - T82. `normalizeDuration` returns `null` for unrecognised strings like wall-clock times.
 - T83. `sanitizeFileNamePart` truncates to 40 characters.
-- T84. `engines.pnpm` is constrained to `>=11.1.2`.
+- T84. `engines.pnpm` is constrained to `>=11.4.0`.
 
 ## Build / CI
 

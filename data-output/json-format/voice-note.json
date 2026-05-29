@@ -4,14 +4,16 @@
   "type": "voice-note",
   "data_raw": {
     "date": "Wednesday 7:52pm",
+    "name": "Barnabas",
     "content": "0:20",
     "duration": "00:00:20",
     "length": null
   },
   "data_preview": {
-    "date": "2026.05.27 19:52",
-    "content": "voice note",
-    "duration": "00:00:20",
+    "date": "2026.05.29 09:37",
+    "name": "Barnabas",
+    "content": null,
+    "duration": null,
     "length": null
   }
 }

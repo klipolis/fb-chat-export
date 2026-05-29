@@ -203,13 +203,13 @@
         return String(text || "").replace(/\s+/g, " ").trim();
       }
       function isValidSender(value) {
-        if (!/^[A-Za-z][A-Za-z .'-]{0,80}$/i.test(value)) return false;
+        if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,80}$/i.test(value)) return false;
         if (/\d/.test(value)) return false;
         return value.trim().split(/\s+/).length <= 2;
       }
       function splitSenderAndMessage(value) {
         const text = normalizeLabel(value);
-        const firstWordMatch = text.match(/^([A-Za-z][A-Za-z .'-]{0,80}?)(?:\s+([\s\S]*))?$/);
+        const firstWordMatch = text.match(/^([A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,80}?)(?:\s+([\s\S]*))?$/);
         if (!firstWordMatch) return null;
         const sender = normalizeLabel(firstWordMatch[1]);
         const message = normalizeLabel(firstWordMatch[2] || "");
@@ -299,7 +299,7 @@
       function parseAriaLabel2(ariaLabel) {
         const label = normalizeLabel(ariaLabel).replace(/\s*,\s*/g, ", ");
         let match;
-        match = label.match(/^At\s+(.+?),\s*([A-Za-z]+(?:\s+[A-Za-z]+){0,2})\s+[-–—]\s*([\s\S]*)$/i);
+        match = label.match(/^At\s+(.+?),\s*([A-Za-zÀ-ÖØ-öø-ÿ]+(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ]+){0,2})\s+[-–—]\s*([\s\S]*)$/i);
         if (match) {
           let sender = match[2].trim();
           let message = match[3].trim();
@@ -320,7 +320,7 @@
           if (tailParts.length >= 3) {
             const maybeSender = tailParts[tailParts.length - 1];
             const maybeDate = tailParts.slice(0, -1).join(", ");
-            const hasInlineSenderColon = tailParts.slice(1, -1).some((p) => /^[A-Za-z][A-Za-z .'-]{0,40}:\s/.test(p));
+            const hasInlineSenderColon = tailParts.slice(1, -1).some((p) => /^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,40}:\\s/.test(p));
             if (!hasInlineSenderColon && isValidSender(maybeSender)) {
               return {
                 date: maybeDate.trim(),
@@ -332,7 +332,7 @@
           if (tailParts.length >= 2) {
             const maybeDate = tailParts[0];
             const rest = tailParts.slice(1).join(", ");
-            const inlineMatch = rest.match(/^([A-Za-z][A-Za-z .'-]{0,40}):\s*([\s\S]*)$/);
+            const inlineMatch = rest.match(/^([A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,40}):\s*([\s\S]*)$/);
             if (inlineMatch && isValidSender(inlineMatch[1])) {
               return {
                 date: maybeDate.trim(),
@@ -798,10 +798,12 @@
         const duration = timedTypes.has(type) ? rawDuration : null;
         const linkHasTextContent = type === "link" && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
         const shouldOmitLength = noLengthTypes.has(type) || type === "link" && !linkHasTextContent;
-        const contentLength = shouldOmitLength || contentText == null ? void 0 : `${contentText.length} chars`;
+        const wordCount = shouldOmitLength || contentText == null ? void 0 : (contentText.match(/\S+/g) || []).length;
+        const contentLength = shouldOmitLength || contentText == null ? void 0 : `${wordCount} words`;
         return {
           type,
           text: contentText,
+          words: wordCount,
           contentLength,
           link: resolvedLink || void 0,
           voiceDurationSource: rawMeta.duration ? "timer" : timerText ? "label" : void 0,
@@ -1337,30 +1339,24 @@ ${aliasLines}
         return `${base}
 `;
       }
+      function buildEntryFromEntry(entry) {
+        const semanticType = String(entry.semanticType || entry.fileType || "").toLowerCase();
+        const isTimedCall = ["audio-call", "video-call", "voice-note"].includes(semanticType);
+        const contentText = String(entry.content || "").trim();
+        const textWords = contentText ? contentText.split(/\s+/).filter(Boolean).length : 0;
+        const callSeconds = isTimedCall ? durationToSeconds(entry.duration) : 0;
+        return {
+          sender: entry.sender,
+          date: Number.isFinite(entry.ts) ? new Date(entry.ts) : /* @__PURE__ */ new Date(NaN),
+          type: semanticType,
+          isCall: ["audio-call", "video-call", "voice-note", "missed-call", "missed-audio-call", "missed-video-call"].includes(semanticType),
+          isImage: semanticType === "image",
+          callSeconds,
+          wordCount: isTimedCall || semanticType === "image" ? 0 : entry.words || textWords
+        };
+      }
       function formatSummarySection(entries = [], options = {}) {
-        const summaryEntries = entries.map((entry) => {
-          const semanticType = String(entry.semanticType || entry.fileType || "").toLowerCase();
-          const isCall = [
-            "audio-call",
-            "video-call",
-            "voice-note",
-            "missed-call",
-            "missed-audio-call",
-            "missed-video-call"
-          ].includes(semanticType);
-          const isTimedCall = ["audio-call", "video-call", "voice-note"].includes(semanticType);
-          const contentText = String(entry.content || "").trim();
-          const textWords = contentText ? contentText.split(/\s+/).filter(Boolean).length : 0;
-          return {
-            sender: entry.sender,
-            date: Number.isFinite(entry.ts) ? new Date(entry.ts) : /* @__PURE__ */ new Date(NaN),
-            type: semanticType,
-            isCall,
-            isImage: semanticType === "image",
-            callSeconds: isTimedCall ? durationToSeconds(entry.duration) : 0,
-            wordCount: isCall || semanticType === "image" ? 0 : textWords
-          };
-        });
+        const summaryEntries = entries.map(buildEntryFromEntry);
         if (options.detailed) {
           return buildDetailedSummary(summaryEntries, {
             fixedParticipants: options.fixedParticipants || null,

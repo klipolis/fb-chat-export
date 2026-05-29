@@ -315,23 +315,25 @@ function getContentMeta({
   const timedTypes = new Set(['voice-note', 'video-call', 'audio-call']);
   const noLengthTypes = new Set(['image', 'missed-call', 'unsent', 'sticker', 'gif', 'video-link', ...timedTypes]);
 
-  const duration = timedTypes.has(type) ? rawDuration : null;
-  const linkHasTextContent =
-    type === 'link' && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
-  const shouldOmitLength = noLengthTypes.has(type) || (type === 'link' && !linkHasTextContent);
-  const contentLength = shouldOmitLength || contentText == null ? undefined : `${contentText.length} chars`;
+const duration = timedTypes.has(type) ? rawDuration : null;
+   const linkHasTextContent =
+     type === 'link' && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
+   const shouldOmitLength = noLengthTypes.has(type) || (type === 'link' && !linkHasTextContent);
+   const wordCount = shouldOmitLength || contentText == null ? undefined : (contentText.match(/\S+/g) || []).length;
+   const contentLength = shouldOmitLength || contentText == null ? undefined : `${wordCount} words`;
 
-  return {
-    type,
-    text: contentText,
-    contentLength,
-    link: resolvedLink || undefined,
-    voiceDurationSource: rawMeta.duration ? 'timer' : timerText ? 'label' : undefined,
-    isCall: type === 'video-call' || type === 'missed-call' || type === 'audio-call',
-    isImage: type === 'image',
-    imageCount: imageCount || (type === 'image' ? 1 : 0),
-    duration,
-  };
+   return {
+     type,
+     text: contentText,
+     words: wordCount,
+     contentLength,
+     link: resolvedLink || undefined,
+     voiceDurationSource: rawMeta.duration ? 'timer' : timerText ? 'label' : undefined,
+     isCall: type === 'video-call' || type === 'missed-call' || type === 'audio-call',
+     isImage: type === 'image',
+     imageCount: imageCount || (type === 'image' ? 1 : 0),
+     duration,
+   };
 }
 
 module.exports = {

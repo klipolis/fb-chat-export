@@ -18,7 +18,7 @@ flowchart TD
 ## Developer prerequisites
 
 - Node.js 26 or newer.
-- `pnpm` 11.1.2 or newer, or use Corepack with `corepack enable`.
+- `pnpm` latest, or use Corepack with `corepack enable`.
 - A terminal opened in the `support/` folder.
 
 ## Key build commands
