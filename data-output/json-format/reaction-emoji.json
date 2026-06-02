@@ -1,18 +1,18 @@
 {
   "html_locale": null,
-  "title": "reaction",
-  "type": "reaction",
+  "title": "image",
+  "type": "image",
   "data_raw": {
     "date": "Tuesday 10:25pm",
     "name": "Youghurt",
-    "content": null,
+    "content": "🥳",
     "duration": null,
     "length": null
   },
   "data_preview": {
-    "date": "2026.05.29 09:37",
+    "date": "2026.06.02 21:05",
     "name": "Youghurt",
-    "content": null,
+    "content": "image sent",
     "duration": null,
     "length": null
   }

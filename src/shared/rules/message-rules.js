@@ -1,95 +1,126 @@
-module.exports = [
+const FILE_SUFFIX = '(?:-[^.]+)?\\.html$';
+
+// Optional "you-" prefix for ANY filename
+const OPTIONAL_PREFIX = '(?:you-)?';
+
+const rules = [
   {
     type: 'unsent',
-    matchFile: /^deleted(?:-\d+)?\.html$/i,
-    matchLabel: /deleted/i,
+    prefixes: [
+      'deleted'
+    ],
+    matchLabel: /(?:deleted|unsent)/i,
   },
+
   {
     type: 'missed-call',
-    matchFile: /^missed-audio-call(?:-\d+)?\.html$/i,
-    matchLabel: /missed[\s-]*(?:audio\s+|video\s+)?call/i,
+    prefixes: [
+      'missed-audio-call',
+      'missed-video-call',
+      'missed-call-audio',
+      'missed-call-video'
+    ],
+    matchLabel: /missed[\s-]*(?:audio|video)?\s*call/i,
   },
-  {
-    type: 'missed-call',
-    matchFile: /^missed-video-call(?:-\d+)?\.html$/i,
-    matchLabel: /missed[\s-]*(?:audio\s+|video\s+)?call/i,
-  },
+
   {
     type: 'audio-call',
-    matchFile: /^audio-call(?:-\d+)?\.html$/i,
-    matchLabel: /audio call/i,
+    prefixes: [
+      'audio-call'
+    ],
+    matchLabel: /\baudio call\b/i,
   },
+
   {
     type: 'image',
-    matchFile: /^image(?:-\d+)?\.html$/i,
-    matchLabel: /image/i,
+    prefixes: [
+      'image'
+    ],
+    matchLabel: /\bimage\b|\bphoto\b|\bpicture\b/i,
   },
-  {
-    type: 'video-link',
-    matchFile: /^video-link(?:-\d+)?\.html$/i,
-    matchLabel: /\byoutube\.com\/|youtu\.be\/|vimeo\.com\//i,
-  },
-  {
-    type: 'link',
-    matchFile: /^link-embed-no-text(?:-\d+)?\.html$/i,
-    matchLabel:
-      /open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location/i,
-  },
+
+  //
+  // LINK (merged with video-link)
+  //
   {
     type: 'link',
-    matchFile: /^link-text(?:-\d+)?\.html$/i,
+    prefixes: [
+      'link-embed-no-text',
+      'link-text',
+      'link-video',
+      'video-link'
+    ],
     matchLabel:
-      /open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location/i,
+      /(?:open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location|\b(?:youtube|youtu\.be|vimeo|dailymotion|tiktok|fb\.watch|facebook\.com\/.*(?:video|watch|reel)|video|watch|reel|shorts)\b)/i,
   },
-  {
-    type: 'text',
-    matchFile: /^text-image-replied(?:-\d+)?\.html$/i,
-    matchLabel: /reply/i,
-  },
-  {
-    type: 'text',
-    matchFile: /^text-replied(?:-\d+)?\.html$/i,
-    matchLabel: /reply/i,
-  },
+
   {
     type: 'video-call',
-    matchFile: /^video-call(?:-\d+)?\.html$/i,
-    matchLabel: /video[- ]call/i,
+    prefixes: [
+      'video-call',
+      'call-video'
+    ],
+    matchLabel: /\bvideo call\b/i,
   },
+
   {
     type: 'voice-note',
-    matchFile: /^voice-note(?:-\d+)?\.html$/i,
-    matchLabel: /voice(?:[- ]message|[- ]note)|audio(?:[- ]message|[- ]note)/i,
+    prefixes: [
+      'voice-note'
+    ],
+    matchLabel:
+      /\bvoice(?:[- ]message|[- ]note)?\b|\baudio(?:[- ]message|[- ]note)?\b/i,
   },
+
   {
     type: 'sticker',
-    matchFile: /^sticker(?:-\d+)?\.html$/i,
-    matchLabel: /sticker/i,
+    prefixes: [
+      'sticker'
+    ],
+    matchLabel: /\bsticker\b/i,
   },
-  {
-    type: 'gif',
-    matchFile: /^(?:animated-)?gif(?:-\d+)?\.html$/i,
-    matchLabel: /\bgif\b/i,
-  },
-  {
-    type: 'poll',
-    matchFile: /^poll(?:-\d+)?\.html$/i,
-    matchLabel: /\bpoll\b/i,
-  },
+
+  //
+  // GIFs merged into reaction
+  //
   {
     type: 'reaction',
-    matchFile: /^reaction(?:-\d+|-emoji)?\.html$/i,
-    matchLabel: /👍|❤|😂|😮|😢|👏|😠|: \p{Extended_Pictographic}\uFE0F?\s*$|like button|thumbs up/u,
+    prefixes: [
+      'gif',
+      'animated-gif',
+      'reaction',
+      'reaction-emoji'
+    ],
+    matchLabel:
+      /\bgif\b|👍|❤|😂|😮|😢|👏|😠|: \p{Extended_Pictographic}\uFE0F?\s*$|like button|thumbs up/iu,
   },
+
   {
-    type: 'you-text',
-    matchFile: /you - text message(?:-\d+)?/i,
-    matchLabel: /you:/i,
+    type: 'poll',
+    prefixes: [
+      'poll'
+    ],
+    matchLabel: /\bpoll\b/i,
   },
+
   {
     type: 'text',
-    matchFile: /^text(?:-\d+)?\.html$/i,
+    prefixes: [
+      'text',
+      'text-replied',
+      'text-image-replied'
+    ],
     matchLabel:
-      /^(?!.*\b(?:link|reply|unsent|video call|voice message|voice note|missed call)\b).*/i,
+      /\byou:|\breply\b|\breplied\b|^(?!.*\b(?:link|unsent|video call|voice message|voice note|missed call)\b).*/i,
   },
 ];
+
+const addMatchFile = (rule) => ({
+  ...rule,
+  matchFile: new RegExp(
+    `^${OPTIONAL_PREFIX}(?:${rule.prefixes.join('|')})${FILE_SUFFIX}`,
+    'i'
+  ),
+});
+
+module.exports = rules.map(addMatchFile);

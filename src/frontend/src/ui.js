@@ -108,7 +108,7 @@ export function createCheckboxToggleWithInput(labelText, selfValue, otherValue) 
   return { wrap, input, textInput, textInput2 };
 }
 
-export function createAliasRows() {
+export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' }) {
   const wrap = document.createElement('div');
   wrap.style.cssText = 'display: flex; flex-direction: column; gap: 6px;';
 
@@ -208,8 +208,7 @@ export function createAliasRows() {
 
   const addRow = (orig, alias, fixed) => createRow(orig, alias, fixed);
 
-  addRow('You', 'Youghurt', true);
-  addRow('any', 'Alpha', true);
+  Object.entries(initialRows).forEach(([orig, alias]) => addRow(orig, alias, true));
 
   addButton.addEventListener('click', () => {
     addRow('', '', false);

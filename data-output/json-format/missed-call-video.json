@@ -3,16 +3,16 @@
   "title": "missed-call",
   "type": "missed-call",
   "data_raw": {
-    "date": "Thursday 5:34pm",
+    "date": "11:15 AM",
     "name": "XYZ",
-    "content": "Missed audio call",
+    "content": "missed call",
     "duration": null,
     "length": null
   },
   "data_preview": {
-    "date": "2026.05.29 09:37",
+    "date": "2026.06.02 21:05",
     "name": "XYZ",
-    "content": null,
+    "content": "missed call",
     "duration": null,
     "length": null
   }

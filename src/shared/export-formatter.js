@@ -47,49 +47,53 @@ function formatDate(raw, referenceDate) {
 }
 
 function formatLine(entry, options = {}) {
-   const includeContent = options.includeContent === true;
-   const includeLength = options.includeLength !== false;
-   const dateText = entry.dateText || 'unknown';
-   const sender = entry.sender || 'Unknown';
-   const parts = [entry.fileType];
+  const includeContent = options.includeContent === true;
+  const includeLength = options.includeLength !== false;
+  const dateText = entry.dateText || 'unknown';
+  const sender = entry.sender || 'Unknown';
+  const displayType = /^image(?:-\d+)?$/i.test(entry.fileType || '')
+    ? 'image'
+    : entry.fileType;
+  const parts = [displayType];
 
-   if (entry.duration) {
-     const ensureNormalized = normalizeDuration(entry.duration) || entry.duration;
-     parts.push(ensureNormalized);
-   }
-   if (includeLength && entry.contentLength) parts.push(entry.contentLength);
+  if (entry.duration) {
+    const ensureNormalized = normalizeDuration(entry.duration) || entry.duration;
+    parts.push(ensureNormalized);
+  }
+  if (includeLength && entry.contentLength) parts.push(entry.contentLength);
 
-   const base = `[${dateText}] ${sender}: ${parts.join(' ')}`;
-   const contentTypes = new Set(['text', 'link', 'video-link', 'reaction']);
-   const shouldShowTextContent =
-     includeContent && contentTypes.has(entry.semanticType) && entry.content;
-   if (shouldShowTextContent) {
-     return `${base} / ${entry.content}\n`;
-   }
-   return `${base}\n`;
+  const base = `[${dateText}] ${sender}: ${parts.join(' ')}`;
+  const contentTypes = new Set(['text', 'link', 'video-link', 'reaction']);
+  const shouldShowTextContent =
+    includeContent && contentTypes.has(entry.semanticType) && entry.content;
+  if (shouldShowTextContent) {
+    return `${base} / ${entry.content}\n`;
+  }
+  return `${base}\n`;
 }
 
 function buildEntryFromEntry(entry) {
-   const semanticType = String(entry.semanticType || entry.fileType || '').toLowerCase();
-   const isTimedCall = ['audio-call', 'video-call', 'voice-note'].includes(semanticType);
-   const contentText = String(entry.content || '').trim();
-   const textWords = contentText
-     ? contentText.split(/\s+/).filter(Boolean).length
-     : 0;
-   const callSeconds = isTimedCall ? durationToSeconds(entry.duration) : 0;
-   return {
-     sender: entry.sender,
-     date: Number.isFinite(entry.ts) ? new Date(entry.ts) : new Date(NaN),
-     type: semanticType,
-     isCall: ['audio-call', 'video-call', 'voice-note', 'missed-call', 'missed-audio-call', 'missed-video-call'].includes(semanticType),
-     isImage: semanticType === 'image',
-     callSeconds,
-     wordCount: isTimedCall || semanticType === 'image' ? 0 : (entry.words || textWords),
-   };
+  const semanticType = String(entry.semanticType || entry.fileType || '').toLowerCase();
+  const isTimedCall = ['audio-call', 'video-call', 'voice-note'].includes(semanticType);
+  const contentText = String(entry.content || '').trim();
+  const textWords = contentText
+    ? contentText.split(/\s+/).filter(Boolean).length
+    : 0;
+  const callSeconds = isTimedCall ? durationToSeconds(entry.duration) : 0;
+  return {
+    sender: entry.sender,
+    date: Number.isFinite(entry.ts) ? new Date(entry.ts) : new Date(NaN),
+    type: semanticType,
+    isCall: ['audio-call', 'video-call', 'voice-note', 'missed-call', 'missed-audio-call', 'missed-video-call'].includes(semanticType),
+    isImage: semanticType === 'image',
+    callSeconds,
+    wordCount: isTimedCall || semanticType === 'image' ? 0 : (entry.words || textWords),
+    imageCount: Number(entry.imageCount || 0),
+  };
 }
 
 function formatSummarySection(entries = [], options = {}) {
-   const summaryEntries = entries.map(buildEntryFromEntry);
+  const summaryEntries = entries.map(buildEntryFromEntry);
 
   if (options.detailed) {
     return buildDetailedSummary(summaryEntries, {

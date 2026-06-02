@@ -36,130 +36,6 @@
     mod
   ));
 
-  // src/shared/rules/selectors.js
-  var require_selectors = __commonJS({
-    "src/shared/rules/selectors.js"(exports, module) {
-      module.exports = {
-        message: '[aria-roledescription="message"]',
-        messageLabel: "[aria-label]",
-        messageText: ".html-div",
-        boldText: ".html-b",
-        italicText: ".html-i",
-        image: ".html-img"
-      };
-    }
-  });
-
-  // src/shared/rules/message-rules.js
-  var require_message_rules = __commonJS({
-    "src/shared/rules/message-rules.js"(exports, module) {
-      module.exports = [
-        {
-          type: "unsent",
-          matchFile: /^deleted(?:-\d+)?\.html$/i,
-          matchLabel: /deleted/i
-        },
-        {
-          type: "missed-call",
-          matchFile: /^missed-audio-call(?:-\d+)?\.html$/i,
-          matchLabel: /missed[\s-]*(?:audio\s+|video\s+)?call/i
-        },
-        {
-          type: "missed-call",
-          matchFile: /^missed-video-call(?:-\d+)?\.html$/i,
-          matchLabel: /missed[\s-]*(?:audio\s+|video\s+)?call/i
-        },
-        {
-          type: "audio-call",
-          matchFile: /^audio-call(?:-\d+)?\.html$/i,
-          matchLabel: /audio call/i
-        },
-        {
-          type: "image",
-          matchFile: /^image(?:-\d+)?\.html$/i,
-          matchLabel: /image/i
-        },
-        {
-          type: "video-link",
-          matchFile: /^video-link(?:-\d+)?\.html$/i,
-          matchLabel: /\byoutube\.com\/|youtu\.be\/|vimeo\.com\//i
-        },
-        {
-          type: "link",
-          matchFile: /^link-embed-no-text(?:-\d+)?\.html$/i,
-          matchLabel: /open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location/i
-        },
-        {
-          type: "link",
-          matchFile: /^link-text(?:-\d+)?\.html$/i,
-          matchLabel: /open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location/i
-        },
-        {
-          type: "text",
-          matchFile: /^text-image-replied(?:-\d+)?\.html$/i,
-          matchLabel: /reply/i
-        },
-        {
-          type: "text",
-          matchFile: /^text-replied(?:-\d+)?\.html$/i,
-          matchLabel: /reply/i
-        },
-        {
-          type: "video-call",
-          matchFile: /^video-call(?:-\d+)?\.html$/i,
-          matchLabel: /video[- ]call/i
-        },
-        {
-          type: "voice-note",
-          matchFile: /^voice-note(?:-\d+)?\.html$/i,
-          matchLabel: /voice(?:[- ]message|[- ]note)|audio(?:[- ]message|[- ]note)/i
-        },
-        {
-          type: "sticker",
-          matchFile: /^sticker(?:-\d+)?\.html$/i,
-          matchLabel: /sticker/i
-        },
-        {
-          type: "gif",
-          matchFile: /^(?:animated-)?gif(?:-\d+)?\.html$/i,
-          matchLabel: /\bgif\b/i
-        },
-        {
-          type: "poll",
-          matchFile: /^poll(?:-\d+)?\.html$/i,
-          matchLabel: /\bpoll\b/i
-        },
-        {
-          type: "reaction",
-          matchFile: /^reaction(?:-\d+|-emoji)?\.html$/i,
-          matchLabel: /👍|❤|😂|😮|😢|👏|😠|: \p{Extended_Pictographic}\uFE0F?\s*$|like button|thumbs up/u
-        },
-        {
-          type: "you-text",
-          matchFile: /you - text message(?:-\d+)?/i,
-          matchLabel: /you:/i
-        },
-        {
-          type: "text",
-          matchFile: /^text(?:-\d+)?\.html$/i,
-          matchLabel: /^(?!.*\b(?:link|reply|unsent|video call|voice message|voice note|missed call)\b).*/i
-        }
-      ];
-    }
-  });
-
-  // src/shared/rules/index.js
-  var require_rules = __commonJS({
-    "src/shared/rules/index.js"(exports, module) {
-      var selectors = require_selectors();
-      var messageRules = require_message_rules();
-      module.exports = {
-        selectors,
-        messageRules
-      };
-    }
-  });
-
   // data-config/frontend_shared.json
   var require_frontend_shared = __commonJS({
     "data-config/frontend_shared.json"(exports, module) {
@@ -196,20 +72,178 @@
     }
   });
 
+  // src/shared/rules/selectors.js
+  var require_selectors = __commonJS({
+    "src/shared/rules/selectors.js"(exports, module) {
+      module.exports = {
+        message: '[aria-roledescription="message"]',
+        messageLabel: "[aria-label]",
+        messageText: ".html-div",
+        boldText: ".html-b",
+        italicText: ".html-i",
+        image: ".html-img"
+      };
+    }
+  });
+
+  // src/shared/rules/message-rules.js
+  var require_message_rules = __commonJS({
+    "src/shared/rules/message-rules.js"(exports, module) {
+      var FILE_SUFFIX = "(?:-[^.]+)?\\.html$";
+      var OPTIONAL_PREFIX = "(?:you-)?";
+      var rules = [
+        {
+          type: "unsent",
+          prefixes: [
+            "deleted"
+          ],
+          matchLabel: /(?:deleted|unsent)/i
+        },
+        {
+          type: "missed-call",
+          prefixes: [
+            "missed-audio-call",
+            "missed-video-call",
+            "missed-call-audio",
+            "missed-call-video"
+          ],
+          matchLabel: /missed[\s-]*(?:audio|video)?\s*call/i
+        },
+        {
+          type: "audio-call",
+          prefixes: [
+            "audio-call"
+          ],
+          matchLabel: /\baudio call\b/i
+        },
+        {
+          type: "image",
+          prefixes: [
+            "image"
+          ],
+          matchLabel: /\bimage\b|\bphoto\b|\bpicture\b/i
+        },
+        //
+        // LINK (merged with video-link)
+        //
+        {
+          type: "link",
+          prefixes: [
+            "link-embed-no-text",
+            "link-text",
+            "link-video",
+            "video-link"
+          ],
+          matchLabel: /(?:open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location|\b(?:youtube|youtu\.be|vimeo|dailymotion|tiktok|fb\.watch|facebook\.com\/.*(?:video|watch|reel)|video|watch|reel|shorts)\b)/i
+        },
+        {
+          type: "video-call",
+          prefixes: [
+            "video-call",
+            "call-video"
+          ],
+          matchLabel: /\bvideo call\b/i
+        },
+        {
+          type: "voice-note",
+          prefixes: [
+            "voice-note"
+          ],
+          matchLabel: /\bvoice(?:[- ]message|[- ]note)?\b|\baudio(?:[- ]message|[- ]note)?\b/i
+        },
+        {
+          type: "sticker",
+          prefixes: [
+            "sticker"
+          ],
+          matchLabel: /\bsticker\b/i
+        },
+        //
+        // GIFs merged into reaction
+        //
+        {
+          type: "reaction",
+          prefixes: [
+            "gif",
+            "animated-gif",
+            "reaction",
+            "reaction-emoji"
+          ],
+          matchLabel: /\bgif\b|👍|❤|😂|😮|😢|👏|😠|: \p{Extended_Pictographic}\uFE0F?\s*$|like button|thumbs up/iu
+        },
+        {
+          type: "poll",
+          prefixes: [
+            "poll"
+          ],
+          matchLabel: /\bpoll\b/i
+        },
+        {
+          type: "text",
+          prefixes: [
+            "text",
+            "text-replied",
+            "text-image-replied"
+          ],
+          matchLabel: /\byou:|\breply\b|\breplied\b|^(?!.*\b(?:link|unsent|video call|voice message|voice note|missed call)\b).*/i
+        }
+      ];
+      var addMatchFile = (rule) => ({
+        ...rule,
+        matchFile: new RegExp(
+          `^${OPTIONAL_PREFIX}(?:${rule.prefixes.join("|")})${FILE_SUFFIX}`,
+          "i"
+        )
+      });
+      module.exports = rules.map(addMatchFile);
+    }
+  });
+
+  // src/shared/rules/index.js
+  var require_rules = __commonJS({
+    "src/shared/rules/index.js"(exports, module) {
+      var selectors = require_selectors();
+      var messageRules = require_message_rules();
+      module.exports = {
+        selectors,
+        messageRules
+      };
+    }
+  });
+
+  // src/shared/sender-constants.js
+  var require_sender_constants = __commonJS({
+    "src/shared/sender-constants.js"(exports, module) {
+      var SENDER_PATTERN_SOURCE = "\\p{L}[\\p{L} .'-]{0,48}";
+      var SENDER_RE = new RegExp(`^${SENDER_PATTERN_SOURCE}$`, "u");
+      var SENDER_MAX_WORDS = 3;
+      function isValidSender(value) {
+        if (!SENDER_RE.test(value)) return false;
+        if (/\d/.test(value)) return false;
+        return value.trim().split(/\s+/).length <= SENDER_MAX_WORDS;
+      }
+      module.exports = {
+        SENDER_PATTERN_SOURCE,
+        SENDER_RE,
+        SENDER_MAX_WORDS,
+        isValidSender
+      };
+    }
+  });
+
   // src/shared/aria-label-parser.js
   var require_aria_label_parser = __commonJS({
     "src/shared/aria-label-parser.js"(exports, module) {
+      var { isValidSender, SENDER_PATTERN_SOURCE } = require_sender_constants();
       function normalizeLabel(text) {
         return String(text || "").replace(/\s+/g, " ").trim();
       }
-      function isValidSender(value) {
-        if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,80}$/i.test(value)) return false;
-        if (/\d/.test(value)) return false;
-        return value.trim().split(/\s+/).length <= 2;
-      }
+      var SENDER_LAZY_RE = new RegExp(`^(${SENDER_PATTERN_SOURCE}?)(?:\\s+([\\s\\S]*))?$`, "u");
+      var SENDER_COLON_INLINE_RE = new RegExp(`^${SENDER_PATTERN_SOURCE}:\\s`, "u");
+      var SENDER_COLON_CAPTURE_RE = new RegExp(`^(${SENDER_PATTERN_SOURCE}):\\s*([\\s\\S]*)$`, "u");
       function splitSenderAndMessage(value) {
         const text = normalizeLabel(value);
-        const firstWordMatch = text.match(/^([A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,80}?)(?:\s+([\s\S]*))?$/);
+        const firstWordMatch = text.match(SENDER_LAZY_RE);
         if (!firstWordMatch) return null;
         const sender = normalizeLabel(firstWordMatch[1]);
         const message = normalizeLabel(firstWordMatch[2] || "");
@@ -219,7 +253,7 @@
       var sharedRelativeDateRules = [];
       try {
         sharedRelativeDateRules = require_frontend_shared().relativeDateRules || [];
-      } catch (error) {
+      } catch {
         sharedRelativeDateRules = [];
       }
       function findValidDatePrefix(text, referenceDate) {
@@ -299,7 +333,7 @@
       function parseAriaLabel2(ariaLabel) {
         const label = normalizeLabel(ariaLabel).replace(/\s*,\s*/g, ", ");
         let match;
-        match = label.match(/^At\s+(.+?),\s*([A-Za-zÀ-ÖØ-öø-ÿ]+(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ]+){0,2})\s+[-–—]\s*([\s\S]*)$/i);
+        match = label.match(/^At\s+(.+?),\s*([\p{L}]+(?:\s+[\p{L}]+){0,2})\s+[-–—]\s*([\s\S]*)$/iu);
         if (match) {
           let sender = match[2].trim();
           let message = match[3].trim();
@@ -320,7 +354,7 @@
           if (tailParts.length >= 3) {
             const maybeSender = tailParts[tailParts.length - 1];
             const maybeDate = tailParts.slice(0, -1).join(", ");
-            const hasInlineSenderColon = tailParts.slice(1, -1).some((p) => /^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,40}:\\s/.test(p));
+            const hasInlineSenderColon = tailParts.slice(1, -1).some((p) => SENDER_COLON_INLINE_RE.test(p));
             if (!hasInlineSenderColon && isValidSender(maybeSender)) {
               return {
                 date: maybeDate.trim(),
@@ -332,7 +366,7 @@
           if (tailParts.length >= 2) {
             const maybeDate = tailParts[0];
             const rest = tailParts.slice(1).join(", ");
-            const inlineMatch = rest.match(/^([A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,40}):\s*([\s\S]*)$/);
+            const inlineMatch = rest.match(SENDER_COLON_CAPTURE_RE);
             if (inlineMatch && isValidSender(inlineMatch[1])) {
               return {
                 date: maybeDate.trim(),
@@ -799,7 +833,8 @@
         const linkHasTextContent = type === "link" && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
         const shouldOmitLength = noLengthTypes.has(type) || type === "link" && !linkHasTextContent;
         const wordCount = shouldOmitLength || contentText == null ? void 0 : (contentText.match(/\S+/g) || []).length;
-        const contentLength = shouldOmitLength || contentText == null ? void 0 : `${wordCount} words`;
+        const charCount = shouldOmitLength || contentText == null ? void 0 : String(contentText).length;
+        const contentLength = shouldOmitLength || contentText == null ? void 0 : type === "text" ? `${wordCount} words` : `${charCount} chars`;
         return {
           type,
           text: contentText,
@@ -1323,7 +1358,8 @@ ${aliasLines}
         const includeLength = options.includeLength !== false;
         const dateText = entry.dateText || "unknown";
         const sender = entry.sender || "Unknown";
-        const parts = [entry.fileType];
+        const displayType = /^image(?:-\d+)?$/i.test(entry.fileType || "") ? "image" : entry.fileType;
+        const parts = [displayType];
         if (entry.duration) {
           const ensureNormalized = normalizeDuration2(entry.duration) || entry.duration;
           parts.push(ensureNormalized);
@@ -1352,7 +1388,8 @@ ${aliasLines}
           isCall: ["audio-call", "video-call", "voice-note", "missed-call", "missed-audio-call", "missed-video-call"].includes(semanticType),
           isImage: semanticType === "image",
           callSeconds,
-          wordCount: isTimedCall || semanticType === "image" ? 0 : entry.words || textWords
+          wordCount: isTimedCall || semanticType === "image" ? 0 : entry.words || textWords,
+          imageCount: Number(entry.imageCount || 0)
         };
       }
       function formatSummarySection(entries = [], options = {}) {
@@ -1399,7 +1436,42 @@ ${aliasLines}
     }
   });
 
+  // src/shared/alias-utils.js
+  var require_alias_utils = __commonJS({
+    "src/shared/alias-utils.js"(exports, module) {
+      function escapeRegExp(value) {
+        return String(value || "").replace(/[.*+?^${}()|[\\]\\]/g, "\\$&");
+      }
+      function replaceWholeWord(text, name, replacement) {
+        const escaped = escapeRegExp(name);
+        const pattern = new RegExp(`(^|[^\\p{L}])${escaped}(?=[^\\p{L}]|$)`, "giu");
+        return String(text || "").replace(pattern, (match, prefix) => {
+          const originalWord = match.slice(prefix.length);
+          if (name.toLowerCase() === "you" && originalWord === "you") {
+            return match;
+          }
+          return `${prefix}${replacement}`;
+        });
+      }
+      function applyAliasToText2(text, aliasMap = {}, sender) {
+        let result = String(text || "");
+        for (const [from, to] of Object.entries(aliasMap || {})) {
+          if (!from || !to || from === "any") continue;
+          result = replaceWholeWord(result, from, to);
+        }
+        if (sender && aliasMap?.any) {
+          result = replaceWholeWord(result, sender, aliasMap.any);
+        }
+        return result;
+      }
+      module.exports = {
+        applyAliasToText: applyAliasToText2
+      };
+    }
+  });
+
   // src/frontend/src/index.js
+  var import_frontend_shared = __toESM(require_frontend_shared(), 1);
   var import_message_metadata = __toESM(require_message_metadata(), 1);
   var import_aria_label_parser2 = __toESM(require_aria_label_parser(), 1);
   var import_export_summary = __toESM(require_export_summary(), 1);
@@ -1477,7 +1549,7 @@ ${aliasLines}
     wrap.appendChild(text);
     return { wrap, input };
   }
-  function createAliasRows() {
+  function createAliasRows(initialRows = { You: "Youghurt", any: "Alpha" }) {
     const wrap = document.createElement("div");
     wrap.style.cssText = "display: flex; flex-direction: column; gap: 6px;";
     const header = document.createElement("div");
@@ -1556,8 +1628,7 @@ ${aliasLines}
       return row;
     };
     const addRow = (orig, alias, fixed) => createRow(orig, alias, fixed);
-    addRow("You", "Youghurt", true);
-    addRow("any", "Alpha", true);
+    Object.entries(initialRows).forEach(([orig, alias]) => addRow(orig, alias, true));
     addButton.addEventListener("click", () => {
       addRow("", "", false);
     });
@@ -1616,6 +1687,7 @@ ${aliasLines}
   }
 
   // src/frontend/src/index.js
+  var import_alias_utils = __toESM(require_alias_utils(), 1);
   (function() {
     "use strict";
     const panel = document.createElement("details");
@@ -1691,7 +1763,8 @@ ${aliasLines}
     const rightCol = document.createElement("div");
     rightCol.style.cssText = "display: flex; flex-direction: column; gap: 8px; min-width: 160px; padding-left: 10px;";
     const { wrap: includeCallsWrap, input: includeCallsChk } = createCheckboxToggle("Calls");
-    const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows } = createAliasRows();
+    const aliasDefaults = import_frontend_shared.default.aliasNames || { You: "Youghurt", any: "Alpha" };
+    const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows } = createAliasRows(aliasDefaults);
     const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle("Summary");
     const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle("Content");
     const { wrap: rawLinkWrap, input: rawLinkChk } = createCheckboxToggle("Raw link");
@@ -1808,22 +1881,6 @@ ${aliasLines}
     fileNameInput.addEventListener("input", () => {
       fileNameInput.style.borderColor = "#ccc";
     });
-    function escapeRegExp(value) {
-      return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    }
-    function applyAliasToText(text, aliasMap, sender) {
-      let result = String(text || "");
-      for (const [from, to] of Object.entries(aliasMap || {})) {
-        if (!from || !to || from === "any") continue;
-        const pattern = new RegExp(`\\b${escapeRegExp(from)}\\b`, "gi");
-        result = result.replace(pattern, to);
-      }
-      if (sender && aliasMap?.any) {
-        const senderPattern = new RegExp(`\\b${escapeRegExp(sender)}\\b`, "gi");
-        result = result.replace(senderPattern, aliasMap.any);
-      }
-      return result;
-    }
     let downloadRevokeTimeout = null;
     let scrollTimeout = null;
     let downloadHandler = null;
@@ -1931,8 +1988,8 @@ ${aliasLines}
           }
           if (toDate && !isNaN(msgDate) && msgDate > toDate) return;
           const aliasMap = aliasChk.checked ? getAliasMap() : {};
-          const aliasedText = aliasChk.checked ? applyAliasToText(text, aliasMap, sender) : text;
-          const aliasedContent = aliasChk.checked ? applyAliasToText(
+          const aliasedText = aliasChk.checked ? (0, import_alias_utils.applyAliasToText)(text, aliasMap, sender) : text;
+          const aliasedContent = aliasChk.checked ? (0, import_alias_utils.applyAliasToText)(
             includeContentChk.checked ? rawLinkChk.checked && (type === "link" || type === "video-link") ? (0, import_message_metadata.stripTrackingParams)(link || originalHref || aliasedText) || aliasedText : originalHref || aliasedText : aliasedText,
             aliasMap,
             sender

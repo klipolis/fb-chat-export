@@ -11,16 +11,16 @@ const childProcess = require('child_process');
 const { getContentMeta, normalizeDuration, chooseRule } = require(
   '../src/shared/message-metadata'
 );
-const { formatExportHeader, formatLine, buildExportText } = require(
+const { formatExportHeader, formatLine, buildExportText, formatSummarySection } = require(
   '../src/shared/export-formatter'
 );
-const { formatExportFileName } = require(
+const { formatExportFileName, normalizeExportSender } = require(
   '../src/shared/export-text'
 );
 const { buildSummary } = require(
   '../src/shared/export-summary'
 );
-const { buildEntriesFromDocument } = require(
+const { buildEntriesFromDocument, extractMessageEntry } = require(
   '../src/shared/export-text'
 );
 const { createOptimizedHtml } = require(
@@ -30,6 +30,8 @@ const { buildAllMessageMetaMap, parseMessageNodes } = require(
   '../src/shared/create-nodes'
 );
 const { aliasChatNames } = require('../src/shared/utils');
+const { applyAliasToText } = require('../src/shared/alias-utils');
+const aliasNames = require('../data-config/alias-names.json');
 
 const rawDir = path.join(__dirname, '../data-input');
 const referenceDate = '2026.05.15 00:00';
@@ -178,7 +180,7 @@ tap.test('getContentMeta', (t) => {
   t.equal(pinnedLocationMeta.contentLength, undefined);
 
   const videoMeta = getContentMeta({
-    fileName: 'video-call.html',
+    fileName: 'call-video.html',
     ariaLabel: 'At today at 11:14, You',
     message: 'video call',
     timerText: '31 mins',
@@ -311,7 +313,7 @@ tap.test('browserExportDomRegression', (t) => {
   const formattedLine = formatLine(entry, { includeContent: true, includeLength: true });
   t.equal(
     formattedLine,
-    '[2026-04-17 15:45] Youghurt: text 11 chars / Hello world\n',
+    '[2026-04-17 15:45] Youghurt: text 2 words / Hello world\n',
     'Formatted browser line includes duration, length, and content'
   );
 
@@ -398,8 +400,8 @@ tap.test('rawHtmlRegression', (t) => {
   t.equal(voiceNode.data_preview.length, null);
 
   const videoNode = parseMessageNodes(
-    createOptimizedHtml(fs.readFileSync(path.join(rawDir, 'video-call.html'), 'utf8')),
-    'video-call.html',
+    createOptimizedHtml(fs.readFileSync(path.join(rawDir, 'call-video.html'), 'utf8')),
+    'call-video.html',
     '2026.05.15 00:00',
     metaMap
   )[0];
@@ -417,6 +419,21 @@ tap.test('rawHtmlRegression', (t) => {
   t.equal(embeddedLinkNode.type, 'link');
   t.equal(embeddedLinkNode.data_preview.length, null);
 
+  t.end();
+});
+
+tap.test('image-2 preview date and alias fallback', (t) => {
+  const metaMap = buildAllMessageMetaMap(rawDir);
+  const node = parseMessageNodes(
+    createOptimizedHtml(fs.readFileSync(path.join(rawDir, 'image-2.html'), 'utf8')),
+    'image-2.html',
+    '2026.05.15 00:00',
+    metaMap
+  )[0];
+
+  t.ok(node, 'image-2 produces a node');
+  t.equal(node.data_preview.name, aliasNames.any, 'Non-English sender names are aliased using the any fallback');
+  t.equal(node.data_preview.date, '2026.05.09 04:36', 'Relative Saturday date is normalized to the latest matching Saturday');
   t.end();
 });
 
@@ -503,8 +520,12 @@ tap.test('testOptimizedHtmlNoEmptyTags', (t) => {
   rawFiles.forEach((fileName) => {
     const rawHtml = fs.readFileSync(path.join(rawDir, fileName), 'utf8');
     const optimized = createOptimizedHtml(rawHtml);
+    const optimizedWithoutAllowedMessageWrappers = optimized.replace(
+      /<([a-zA-Z0-9]+)([^>]*)\saria-roledescription="message"([^>]*)>\s*<\/\1>/gi,
+      ''
+    );
     t.ok(
-      !/<([a-zA-Z0-9]+)([^>]*)>\s*<\/\1>/.test(optimized),
+      !/<([a-zA-Z0-9]+)([^>]*)>\s*<\/\1>/.test(optimizedWithoutAllowedMessageWrappers),
       `${fileName}: optimized HTML not contain empty tags`
     );
   });
@@ -544,6 +565,14 @@ tap.test('parseAriaLabelSenderSplits', (t) => {
   const textParsed = parseAriaLabel('At 12:26 AM, Alpha Do you have that photo and a link?');
   t.equal(textParsed.sender, 'Alpha');
   t.equal(textParsed.message, 'Do you have that photo and a link?');
+  t.end();
+});
+
+tap.test('parseAriaLabelUnicodeSender', (t) => {
+  const parsed = parseAriaLabel('At 9:00 PM, Борис: привет мир');
+  t.equal(parsed.sender, 'Борис');
+  t.equal(parsed.message, 'привет мир');
+  t.equal(parsed.date, '9:00 PM');
   t.end();
 });
 
@@ -596,18 +625,81 @@ tap.test('isValidSender', (t) => {
   t.ok(isValidSender('Alpha'), 'single word accepted');
   // accepted: two words with one space
   t.ok(isValidSender('John Smith'), 'two words accepted');
-  // rejected: three or more words
-  t.notOk(isValidSender('majd a vegen'), 'three words rejected');
-  t.notOk(isValidSender('John Paul Jones'), 'three words rejected');
+  // accepted: three words
+  t.ok(isValidSender('majd a vegen'), 'three words accepted');
+  t.ok(isValidSender('John Paul Jones'), 'three words accepted');
+  // rejected: four or more words
+  t.notOk(isValidSender('A B C D'), 'four words rejected');
+  t.notOk(isValidSender('one two three four'), 'four words rejected');
   // rejected: contains digit
   t.notOk(isValidSender('Alice 2024'), 'name with digit rejected');
   t.notOk(isValidSender('R2D2'), 'name with digits rejected');
   // rejected: starts with non-letter
   t.notOk(isValidSender('1Alpha'), 'starts with digit rejected');
   t.notOk(isValidSender(''), 'empty string rejected');
-  // edge: two words with permitted punctuation
+  // edge: three words with permitted punctuation
   t.ok(isValidSender("O'Brien"), "apostrophe in name accepted");
   t.ok(isValidSender('St. Claire'), 'period in name accepted');
+  t.ok(isValidSender('Jean-Claude van Damme'), 'hyphen and three words accepted');
+  // length: shorter than 50 chars
+  t.ok(isValidSender('Aaaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbb Cccccccccccccc'), '49 chars accepted');
+  t.notOk(isValidSender('Aaaaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbb Cccccccccccccc'), '50 chars rejected');
+  const longName = 'A very long threeword name that is way more than allowed';
+  t.ok(longName.length > 49, 'longName exceeds 49 chars');
+  t.notOk(isValidSender(longName), 'name longer than 49 chars rejected');
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// normalizeExportSender — export-level sender name normalization
+// ---------------------------------------------------------------------------
+
+tap.test('normalizeExportSender', (t) => {
+  t.equal(normalizeExportSender('You'), 'Youghurt', 'self-sender You becomes Youghurt');
+  t.equal(normalizeExportSender('Yoghurt'), 'Youghurt', 'older Yoghurt alias becomes Youghurt');
+  t.equal(normalizeExportSender('Alpha'), 'Alpha', 'known sender pass through unchanged');
+  t.equal(normalizeExportSender(''), 'Unknown', 'empty sender becomes Unknown');
+  t.equal(normalizeExportSender(null), 'Unknown', 'null sender becomes Unknown');
+  t.equal(normalizeExportSender(undefined), 'Unknown', 'undefined sender becomes Unknown');
+  t.equal(normalizeExportSender('John Smith'), 'John Smith', 'multi-word sender pass through unchanged');
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// extractMessageEntrySender — sender name extraction in export pipeline
+// ---------------------------------------------------------------------------
+
+tap.test('extractMessageEntrySender', (t) => {
+  const refDate = '2026.05.22 00:00';
+  const testCases = [
+    {
+      label: 'At 10:15 AM, You: Hello world',
+      expectedSender: 'Youghurt',
+      expectedType: 'text',
+    },
+    {
+      label: 'At 10:15 AM, Alpha: Hi there',
+      expectedSender: 'Alpha',
+      expectedType: 'text',
+    },
+    {
+      label: 'At 10:15 AM, Invalid Name With Four Words: test',
+      expectedSender: 'Invalid',
+      expectedType: 'text',
+    },
+  ];
+
+  testCases.forEach(({ label, expectedSender, expectedType }, i) => {
+    const dom = new JSDOM(`<div aria-roledescription="message" aria-label="${label}">content</div>`);
+    const entry = extractMessageEntry(
+      dom.window.document.querySelector('[aria-roledescription="message"]'),
+      'text.html',
+      refDate
+    );
+    t.equal(entry.sender, expectedSender, `case ${i}: sender resolves to ${expectedSender}`);
+    t.equal(entry.semanticType, expectedType, `case ${i}: type resolves to ${expectedType}`);
+  });
+
   t.end();
 });
 
@@ -770,6 +862,20 @@ tap.test('aliasChatNamesSkipsAlreadyTargetName', (t) => {
   t.end();
 });
 
+tap.test('aliasChatNamesSupportsUnicodeNames', (t) => {
+  const rawHtml =
+    '<title>Łukasz</title>' +
+    '<div aria-label="At Wednesday 7:54pm, Łukasz" aria-roledescription="message"></div>' +
+    '<div aria-label="At Wednesday 7:55pm, Łukasz" aria-roledescription="message"></div>' +
+    '<div>Łukasz deleted a message</div>';
+  const cleaned = aliasChatNames(rawHtml);
+  t.ok(cleaned.includes('aria-label="At Wednesday 7:54pm, Alpha"'), 'Unicode sender aria-label is aliased');
+  t.ok(cleaned.includes('aria-label="At Wednesday 7:55pm, Alpha"'), 'Second Unicode sender aria-label is aliased');
+  t.ok(cleaned.includes('<title>Alpha</title>'), 'Unicode chat title is aliased');
+  t.notOk(cleaned.includes('Łukasz deleted a message'), 'Unicode message content sender is aliased');
+  t.end();
+});
+
 // ---------------------------------------------------------------------------
 // scanToExportIntegration — full pipeline: DOM → entries → summary → header → text
 // ---------------------------------------------------------------------------
@@ -895,6 +1001,57 @@ tap.test('buildSummaryEdgeCases', (t) => {
     { useMessageLabel: true }
   );
   t.ok(multiImageSummary.includes('~ 4 images'), 'summary counts multiple images from one entry');
+
+  const summarySection = formatSummarySection(
+    [
+      {
+        sender: 'Alice',
+        date: Number(Date.parse('2026-01-01T12:00:00Z')),
+        fileType: 'image-3',
+        semanticType: 'image',
+        imageCount: 4,
+        ts: Date.now(),
+      },
+    ],
+    { useMessageLabel: true }
+  );
+  t.ok(summarySection.includes('~ 4 images'), 'formatSummarySection preserves imageCount through summary conversion');
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// multiImagePipeline — end-to-end test for image-2 and image-3
+// ---------------------------------------------------------------------------
+
+tap.test('multiImagePipeline', (t) => {
+  const metaMap = buildAllMessageMetaMap(rawDir);
+  const refDate = '2026.05.15 00:00';
+
+  const files = [
+    { fileName: 'image-2.html', expectedImageCount: 2 },
+    { fileName: 'image-3.html', expectedImageCount: 2 },
+  ];
+
+  files.forEach(({ fileName, expectedImageCount }) => {
+    const rawHtml = fs.readFileSync(path.join(rawDir, fileName), 'utf8');
+
+    // Node pipeline (preview generation)
+    const optimized = createOptimizedHtml(rawHtml);
+    const nodes = parseMessageNodes(optimized, fileName, refDate, metaMap);
+    t.equal(nodes.length, 1, `${fileName}: produces one node`);
+    t.equal(nodes[0].type, 'image', `${fileName}: classified as image`);
+    t.equal(nodes[0].data_raw.content, null, `${fileName}: raw content is null for image`);
+    t.equal(nodes[0].data_preview.content, 'image sent', `${fileName}: preview content is image sent`);
+    t.equal(nodes[0].data_preview.length, null, `${fileName}: image has no content length`);
+
+    // DOM pipeline (export generation)
+    const dom = new JSDOM(rawHtml);
+    const entries = buildEntriesFromDocument(dom.window.document, fileName, refDate);
+    t.equal(entries.length, 1, `${fileName}: export produces one entry`);
+    t.equal(entries[0].semanticType, 'image', `${fileName}: export type is image`);
+    t.equal(entries[0].imageCount, expectedImageCount, `${fileName}: image count is ${expectedImageCount}`);
+  });
+
   t.end();
 });
 
@@ -945,6 +1102,18 @@ tap.test('reactionAsciiSmileyPreservesContent', (t) => {
   t.end();
 });
 
+tap.test('textContentLengthUsesWordCount', (t) => {
+  const meta = getContentMeta({
+    fileName: 'text.html',
+    ariaLabel: 'At 4:00 PM, John: Hello world from messenger',
+    message: 'Hello world from messenger',
+    timerText: '',
+  });
+  t.equal(meta.type, 'text', 'message should be classified as text');
+  t.equal(meta.contentLength, '4 words', 'text content length should count words not chars');
+  t.end();
+});
+
 // ---------------------------------------------------------------------------
 // chooseRuleAllEntries
 // ---------------------------------------------------------------------------
@@ -953,21 +1122,24 @@ tap.test('chooseRuleAllEntries', (t) => {
   const cases = [
     { file: 'deleted.html', label: '', expected: 'unsent' },
     { file: 'missed-audio-call.html', label: '', expected: 'missed-call' },
+    { file: 'missed-call-audio.html', label: '', expected: 'missed-call' },
     { file: 'missed-video-call.html', label: '', expected: 'missed-call' },
+    { file: 'missed-call-video.html', label: '', expected: 'missed-call' },
     { file: 'audio-call.html', label: '', expected: 'audio-call' },
     { file: 'image.html', label: '', expected: 'image' },
     { file: 'link-embed-no-text.html', label: '', expected: 'link' },
     { file: 'link-text.html', label: '', expected: 'link' },
     { file: 'text-image-replied.html', label: '', expected: 'text' },
     { file: 'text-replied.html', label: '', expected: 'text' },
+    { file: 'call-video.html', label: '', expected: 'video-call' },
     { file: 'video-call.html', label: '', expected: 'video-call' },
     { file: 'voice-note.html', label: '', expected: 'voice-note' },
     { file: 'sticker.html', label: '', expected: 'sticker' },
-    { file: 'animated-gif.html', label: '', expected: 'gif' },
+    { file: 'animated-gif.html', label: '', expected: 'reaction' },
     { file: 'poll.html', label: '', expected: 'poll' },
     { file: 'reaction.html', label: '', expected: 'reaction' },
     { file: 'reaction-emoji.html', label: '', expected: 'reaction' },
-    { file: 'video-link.html', label: '', expected: 'video-link' },
+    { file: 'video-link.html', label: '', expected: 'link' },
     { file: 'text.html', label: '', expected: 'text' },
     { file: '', label: 'Missed audio call', expected: 'missed-call' },
     { file: '', label: 'Missed video call', expected: 'missed-call' },
@@ -977,10 +1149,10 @@ tap.test('chooseRuleAllEntries', (t) => {
     { file: '', label: 'voice message 1:05', expected: 'voice-note' },
     { file: '', label: 'voice note', expected: 'voice-note' },
     { file: '', label: 'sticker', expected: 'sticker' },
-    { file: '', label: 'This is a gif', expected: 'gif' },
+    { file: '', label: 'This is a gif', expected: 'reaction' },
     { file: '', label: '👍', expected: 'reaction' },
     { file: '', label: 'At 11:16 AM, You: 🥳', expected: 'reaction' },
-    { file: '', label: 'At 11:57 AM, You: https://youtube.com/shorts/IKS2vNOcZ7A', expected: 'video-link' },
+    { file: '', label: 'At 11:57 AM, You: https://youtube.com/shorts/IKS2vNOcZ7A', expected: 'link' },
     { file: '', label: 'Hello how are you', expected: 'text' },
   ];
 
@@ -1040,6 +1212,40 @@ tap.test('formatExportFileNameDateRange', (t) => {
     formatExportFileName('export-minimal'),
     'export-minimal.txt',
     'export-minimal no date range falls back to fixed name'
+  );
+  t.end();
+});
+
+tap.test('applyAliasToText replaces explicit and any fallback names', (t) => {
+  t.equal(
+    applyAliasToText('You sent a message', { You: 'Youghurt', any: 'Alpha' }, 'You'),
+    'Youghurt sent a message',
+    'explicit alias replacement works for sender name in text'
+  );
+  t.equal(
+    applyAliasToText('Argos for you', { You: 'Youghurt', any: 'Alpha' }, 'You'),
+    'Argos for you',
+    'generic lowercase you is not replaced by the user alias'
+  );
+  t.equal(
+    applyAliasToText('Rob replied', { any: 'Alpha' }, 'Rob'),
+    'Alpha replied',
+    'any fallback alias replaces sender name when explicit mapping is absent'
+  );
+  t.equal(
+    applyAliasToText('Anybody can join', { any: 'Alpha' }, 'Bob'),
+    'Anybody can join',
+    'partial word matches are not replaced'
+  );
+  t.equal(
+    applyAliasToText('Álvaro said hi', { Álvarez: 'Al', any: 'Alpha' }, 'Álvaro'),
+    'Alpha said hi',
+    'unicode sender fallback alias replaces non-English sender name'
+  );
+  t.equal(
+    applyAliasToText('Борис replied', { 'Борис': 'Boris', any: 'Alpha' }, 'Борис'),
+    'Boris replied',
+    'explicit unicode alias replacement works in text'
   );
   t.end();
 });

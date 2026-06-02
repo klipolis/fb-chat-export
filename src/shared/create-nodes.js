@@ -3,6 +3,7 @@ const path = require('path');
 const { selectors, messageRules } = require('./rules');
 const { parseAriaLabel, normalizeDateToSimple } = require('./aria-label-parser');
 const { getContentMeta, normalizeDuration } = require('./message-metadata');
+const aliasNames = require('../../data-config/alias-names.json');
 
 const helperDir = path.resolve(__dirname);
 const rootDir = path.resolve(helperDir, '..', '..');
@@ -162,20 +163,35 @@ function buildMessageMetaMap(rawHtml) {
   return map;
 }
 
-function buildAllMessageMetaMap(rawDir) {
+function buildAllMessageMetaMap(rawDir, htmlFilesByFile) {
   const metaMap = new Map();
-  if (!fs.existsSync(rawDir)) return metaMap;
+  const files = htmlFilesByFile
+    ? Array.from(htmlFilesByFile.keys()).filter((name) => name.endsWith('.html'))
+    : null;
 
-  const rawFiles = fs.readdirSync(rawDir).filter((name) => name.endsWith('.html'));
-  rawFiles.forEach((fileName) => {
-    const rawHtml = fs.readFileSync(path.join(rawDir, fileName), 'utf8');
-    const fileMeta = buildMessageMetaMap(rawHtml);
-    fileMeta.forEach((meta, ariaLabel) => {
-      if (!metaMap.has(ariaLabel)) {
-        metaMap.set(ariaLabel, meta);
-      }
+  if (!files) {
+    if (!fs.existsSync(rawDir)) return metaMap;
+    const rawFiles = fs.readdirSync(rawDir).filter((name) => name.endsWith('.html'));
+    rawFiles.forEach((fileName) => {
+      const html = fs.readFileSync(path.join(rawDir, fileName), 'utf8');
+      const fileMeta = buildMessageMetaMap(html);
+      fileMeta.forEach((meta, ariaLabel) => {
+        if (!metaMap.has(ariaLabel)) {
+          metaMap.set(ariaLabel, meta);
+        }
+      });
     });
-  });
+  } else {
+    files.forEach((fileName) => {
+      const html = htmlFilesByFile.get(fileName);
+      const fileMeta = buildMessageMetaMap(html);
+      fileMeta.forEach((meta, ariaLabel) => {
+        if (!metaMap.has(ariaLabel)) {
+          metaMap.set(ariaLabel, meta);
+        }
+      });
+    });
+  }
 
   return metaMap;
 }
@@ -266,6 +282,9 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
     }
     const rawMeta = Object.assign({}, metaMap.get(normalizedLabel) || {});
     const parsedLabel = parseAriaLabel(ariaLabel);
+    if (!parsedLabel.date && !parsedLabel.sender) {
+      continue;
+    }
     const start = match.index + match[0].length;
     const end = findMatchingClosingTag(html, match[1], start);
     if (end === -1) continue;
@@ -295,10 +314,12 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
     const hasPlayButton = /aria-label="Play"/i.test(rawSegment);
     let message = parsedLabel.message || '';
     if (!message && segmentText) {
-      if (/\bvideo[- ]call\b/i.test(segmentText)) {
-        message = 'video call';
-      } else if (/\bmissed[- ]call\b/i.test(segmentText)) {
+      if (/\bmissed[- ](?:video|audio)?\s*call\b/i.test(segmentText)) {
         message = 'missed call';
+      } else if (/\bvideo[- ]call\b/i.test(segmentText)) {
+        message = 'video call';
+      } else if (/\baudio[- ]call\b/i.test(segmentText)) {
+        message = 'audio call';
       } else if (/\bvoice(?: message| note)\b/i.test(segmentText)) {
         message = 'voice message';
       } else {
@@ -321,63 +342,74 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
       timerText: rawMeta.duration || '',
     });
 
-const rawDuration = normalizeDuration(rawMeta.duration) || null;
-      const rawContent = contentMeta.type === 'reaction'
-        ? null
-        : contentMeta.link
-          ? stripTrackingParams(rawMeta.link || contentMeta.link) || null
-          : (message || null);
-     const rawSender = parsedLabel.sender || null;
+    const rawDuration = normalizeDuration(rawMeta.duration) || null;
+    const rawContent = contentMeta.type === 'reaction'
+      ? null
+      : contentMeta.link
+        ? stripTrackingParams(rawMeta.link || contentMeta.link) || null
+        : message || null;
+    const rawSender = parsedLabel.sender || null;
+    const previewDate = simpleDate || originalDate || exportDate;
 
-     const normalizeExportSender = (sender) => {
-       if (sender === 'You' || sender === 'Yoghurt') return 'Youghurt';
-       return sender || 'Unknown';
-     };
+    const normalizeExportSender = (sender, aliasMap = {}) => {
+      const normalized = String(sender || '').trim();
+      if (normalized) {
+        if (Object.prototype.hasOwnProperty.call(aliasMap, normalized)) return aliasMap[normalized];
+        if (Object.prototype.hasOwnProperty.call(aliasMap, normalized.toLowerCase())) return aliasMap[normalized.toLowerCase()];
+        if (Object.prototype.hasOwnProperty.call(aliasMap, normalized.toUpperCase())) return aliasMap[normalized.toUpperCase()];
+        if (normalized === 'You' || normalized === 'Yoghurt') return 'Youghurt';
+        if (aliasMap.any) return aliasMap.any;
+      }
+      return normalized || 'Unknown';
+    };
 
-     const previewSender = normalizeExportSender(rawSender);
+    const previewSender = normalizeExportSender(rawSender, aliasNames);
+    const previewContent = contentMeta.type === 'reaction' ? null : contentMeta.text || null;
+    const previewDuration = contentMeta.duration || null;
+    const previewLength = contentMeta.contentLength || null;
 
-      nodes.push({
-        html_locale: null,
-        title: contentMeta.type,
-        type: contentMeta.type,
-        timestamp,
-        data_raw: {
-          date: originalDate,
-          name: rawSender,
-          content: rawContent,
-          duration: rawDuration,
-          length: contentMeta.words != null ? `${contentMeta.words} words` : null,
-        },
-data_preview: {
-          date: exportDate,
-          name: previewSender,
-          content: null,
-          duration: null,
-          length: null,
-        },
-      });
- }
+    nodes.push({
+      html_locale: null,
+      title: contentMeta.type,
+      type: contentMeta.type,
+      timestamp,
+      data_raw: {
+        date: originalDate,
+        name: rawSender,
+        content: rawContent,
+        duration: rawDuration,
+        length: null,
+      },
+      data_preview: {
+        date: previewDate,
+        name: previewSender,
+        content: previewContent,
+        duration: previewDuration,
+        length: previewLength,
+      },
+    });
+  }
 
   return nodes;
 }
 
 function createNodeJson(fileName, metaMap, exportDate) {
-   const html = fs.readFileSync(path.join(optimizedDir, fileName), 'utf8');
-   const htmlLocale = extractHtmlLocale(html);
-   const nodes = parseMessageNodes(html, fileName, exportDate, metaMap);
-   const uniqueNodes = [...new Map(nodes.map((node) => [node.data_preview.content, node])).values()];
-   const node = uniqueNodes.length ? uniqueNodes[0] : null;
-   const output = {
-     html_locale: htmlLocale,
-     title: node ? node.type : path.parse(fileName).name,
-     type: node ? node.type : 'unknown',
-     data_raw: node
-       ? node.data_raw
-       : { date: null, name: null, content: null, duration: null, length: null },
-     data_preview: node
-       ? node.data_preview
-       : { date: exportDate, name: null, content: null, duration: null, length: null },
-   };
+  const html = fs.readFileSync(path.join(optimizedDir, fileName), 'utf8');
+  const htmlLocale = extractHtmlLocale(html);
+  const nodes = parseMessageNodes(html, fileName, exportDate, metaMap);
+  const uniqueNodes = [...new Map(nodes.map((node) => [node.data_preview.content, node])).values()];
+  const node = uniqueNodes.length ? uniqueNodes[0] : null;
+  const output = {
+    html_locale: htmlLocale,
+    title: node ? node.type : path.parse(fileName).name,
+    type: node ? node.type : 'unknown',
+    data_raw: node
+      ? node.data_raw
+      : { date: null, name: null, content: null, duration: null, length: null },
+    data_preview: node
+      ? node.data_preview
+      : { date: exportDate, name: null, content: null, duration: null, length: null },
+  };
 
   const targetPath = path.join(nodesDir, `${path.parse(fileName).name}.json`);
   writeJsonIfChanged(targetPath, output);
@@ -393,7 +425,7 @@ function writeExportMetadata(createdFiles) {
   writeJsonIfChanged(path.join(metadataDir, 'metadata.json'), meta);
 }
 
-function main() {
+function main(htmlFilesByFile) {
   ensureDir(nodesDir);
   ensureDir(metadataDir);
 
@@ -413,7 +445,7 @@ function main() {
   }
 
   const exportDate = formatLocalDateTime();
-  const metaMap = buildAllMessageMetaMap(rawDir);
+  const metaMap = buildAllMessageMetaMap(rawDir, htmlFilesByFile);
   const created = htmlFiles.map((fileName) => createNodeJson(fileName, metaMap, exportDate));
   writeExportMetadata(created);
   console.log(`Generated ${created.length} JSON files in ${relNodesDir}`);
@@ -424,7 +456,7 @@ if (require.main === module) {
 }
 
 module.exports = {
-  runCreateNodes: () => main(),
+  runCreateNodes: (htmlFilesByFile) => main(htmlFilesByFile),
   parseMessageNodes,
   buildAllMessageMetaMap,
 };

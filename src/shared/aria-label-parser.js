@@ -1,18 +1,18 @@
+const { isValidSender, SENDER_PATTERN_SOURCE } = require('./sender-constants');
+
 function normalizeLabel(text) {
   return String(text || '')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-function isValidSender(value) {
-  if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,80}$/i.test(value)) return false;
-  if (/\d/.test(value)) return false;
-  return value.trim().split(/\s+/).length <= 2;
-}
+const SENDER_LAZY_RE = new RegExp(`^(${SENDER_PATTERN_SOURCE}?)(?:\\s+([\\s\\S]*))?$`, 'u');
+const SENDER_COLON_INLINE_RE = new RegExp(`^${SENDER_PATTERN_SOURCE}:\\s`, 'u');
+const SENDER_COLON_CAPTURE_RE = new RegExp(`^(${SENDER_PATTERN_SOURCE}):\\s*([\\s\\S]*)$`, 'u');
 
 function splitSenderAndMessage(value) {
   const text = normalizeLabel(value);
-  const firstWordMatch = text.match(/^([A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,80}?)(?:\s+([\s\S]*))?$/);
+  const firstWordMatch = text.match(SENDER_LAZY_RE);
   if (!firstWordMatch) return null;
   const sender = normalizeLabel(firstWordMatch[1]);
   const message = normalizeLabel(firstWordMatch[2] || '');
@@ -23,7 +23,7 @@ function splitSenderAndMessage(value) {
 let sharedRelativeDateRules = [];
 try {
   sharedRelativeDateRules = require('../../data-config/frontend_shared.json').relativeDateRules || [];
-} catch (error) {
+} catch {
   sharedRelativeDateRules = [];
 }
 
@@ -112,7 +112,7 @@ function parseAriaLabel(ariaLabel) {
   const label = normalizeLabel(ariaLabel).replace(/\s*,\s*/g, ', ');
   let match;
 
-  match = label.match(/^At\s+(.+?),\s*([A-Za-zÀ-ÖØ-öø-ÿ]+(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ]+){0,2})\s+[-–—]\s*([\s\S]*)$/i);
+  match = label.match(/^At\s+(.+?),\s*([\p{L}]+(?:\s+[\p{L}]+){0,2})\s+[-–—]\s*([\s\S]*)$/iu);
   if (match) {
     let sender = match[2].trim();
     let message = match[3].trim();
@@ -143,7 +143,7 @@ function parseAriaLabel(ariaLabel) {
       // (the real sender is inline; the last part is trailing context, e.g. conversation name).
       const hasInlineSenderColon = tailParts
         .slice(1, -1)
-        .some((p) => /^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,40}:\\s/.test(p));
+        .some((p) => SENDER_COLON_INLINE_RE.test(p));
       if (!hasInlineSenderColon && isValidSender(maybeSender)) {
         return {
           date: maybeDate.trim(),
@@ -157,7 +157,7 @@ function parseAriaLabel(ariaLabel) {
       const maybeDate = tailParts[0];
       const rest = tailParts.slice(1).join(', ');
       // Handle inline "Sender: message" colon format that splitSenderAndMessage cannot parse.
-      const inlineMatch = rest.match(/^([A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ .'-]{0,40}):\s*([\s\S]*)$/);
+      const inlineMatch = rest.match(SENDER_COLON_CAPTURE_RE);
       if (inlineMatch && isValidSender(inlineMatch[1])) {
         return {
           date: maybeDate.trim(),

@@ -40,7 +40,12 @@ function extractMessageEntry(el, fileName, referenceDate) {
   const normalizedLabel = normalizeLabel(ariaLabel).toLowerCase();
   const timerEl = el.querySelector('[role="timer"]');
   const linkEl = el.querySelector('a[href]');
-  const imageCount = el.querySelectorAll('img').length;
+  const imageEls = Array.from(el.querySelectorAll('img'));
+  const imageCount = imageEls.reduce((count, img) => {
+    const altText = normalizeLabel(img.getAttribute('alt') || '');
+    const isPersonName = /^[A-Z][a-z]+(?: [A-Z][a-z]+)*$/.test(altText);
+    return count + (altText && isPersonName ? 0 : 1);
+  }, 0);
   const hasImage = imageCount > 0;
   const hasPlayButton = Boolean(el.querySelector('[aria-label="Play"]'));
   // Only treat as link if there is a real URL or <a href>, not just the word 'link'
@@ -87,19 +92,19 @@ function extractMessageEntry(el, fileName, referenceDate) {
         : contentMeta.text;
   const fileType = path.parse(fileName).name;
 
-return {
-     ts: Number.isFinite(timestamp) && !Number.isNaN(timestamp) ? timestamp : 0,
-     fileType,
-     semanticType: contentMeta.type,
-     dateText: formatDate(rawDate, referenceDate),
-     sender: normalizeExportSender(sender),
-     content: body,
-     duration: contentMeta.duration,
-     contentLength: contentMeta.contentLength,
-     imageCount: contentMeta.imageCount,
-     words: contentMeta.words,
-   };
- }
+  return {
+    ts: Number.isFinite(timestamp) && !Number.isNaN(timestamp) ? timestamp : 0,
+    fileType,
+    semanticType: contentMeta.type,
+    dateText: formatDate(rawDate, referenceDate),
+    sender: normalizeExportSender(sender),
+    content: body,
+    duration: contentMeta.duration,
+    contentLength: contentMeta.contentLength,
+    imageCount: contentMeta.imageCount,
+    words: contentMeta.words,
+  };
+}
 
 function buildEntriesFromDocument(document, fileName, referenceDate) {
   const entries = [];
@@ -125,6 +130,7 @@ module.exports = {
   formatDate,
   formatExportFileName,
   formatExportHeader,
+  normalizeExportSender,
   extractMessageEntry,
   buildEntriesFromDocument,
   buildExportText,

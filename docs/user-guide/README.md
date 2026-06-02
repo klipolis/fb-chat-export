@@ -32,6 +32,8 @@ This project lets you export a Messenger conversation to a `.txt` file in the br
    - `Include content`
    - `Raw link`
    - `Length`
+   - `Alias` applies runtime alias replacements and records the alias map in the file header. Explicit sender mappings and the `any` fallback alias are both captured.
+   - `File:` preserves the custom file name in session storage and uses it for the generated download.
 6. Click `Scan Messages`.
 7. After scanning completes, download the resulting `.txt` file.
 
@@ -57,7 +59,8 @@ Aliases:
 
 ### Summary block
 
-When `Summary` is enabled, the file includes totals and per-person stats:
+When `Summary` is enabled, the file includes totals and per-person stats.  
+The image count (`~ N images`) aggregates the per-message `imageCount` values — each message may contain multiple images, and profile avatars are excluded automatically.
 
 ```text
 Total Summary
@@ -98,6 +101,16 @@ Each message is written as a single line:
 - `length chars` is omitted for images, calls, and voice messages.
 - Content text appears only when `Include content` is enabled.
 - Calls include duration when available.
+
+### Sender name validation
+
+Sender names are validated during export to catch malformed or non-name labels:
+
+- Maximum **3 words** — names with 4 or more parts are discarded.
+- **Under 50 characters** — names 50 characters or longer are discarded.
+- **No digits** — names containing `0-9` are discarded.
+- **Letters only** (including accented Latin) — dots, apostrophes, and hyphens are allowed.
+- If a sender name fails validation, the export falls back to the raw label text instead.
 
 ## Terms and conditions
 

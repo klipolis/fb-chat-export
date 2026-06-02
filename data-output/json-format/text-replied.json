@@ -3,17 +3,17 @@
   "title": "text",
   "type": "text",
   "data_raw": {
-    "date": null,
-    "name": null,
-    "content": "Go to replied message",
-    "duration": null,
-    "length": "4 words"
-  },
-  "data_preview": {
-    "date": "2026.05.29 09:37",
-    "name": "Unknown",
-    "content": null,
+    "date": "April 16, 2026, 10:55 AM",
+    "name": "XYZ",
+    "content": "I now realised what happened. It must have been related to reviewers I added at a later stage from when we wen through that, and maybe I was duplicating and editing a reviewer who had the cancellation option on",
     "duration": null,
     "length": null
+  },
+  "data_preview": {
+    "date": "2026.06.02 21:05",
+    "name": "XYZ",
+    "content": "I now realised what happened. It must have been related to reviewers I added at a later stage from when we wen through that, and maybe I was duplicating and editing a reviewer who had the cancellation option on",
+    "duration": null,
+    "length": "39 words"
   }
 }

@@ -20,6 +20,8 @@ Changelog entries should describe active changes in direct present-tense stateme
 ### Fixed
 
 - Duration values in exports and JSON previews always use strict `HH:MM:SS` three-part format (e.g. `00:18:00`, `00:00:20`) with zero-padded hours, eliminating the previous `MM:SS` two-part form.
+- `data_preview.date` now uses the normalized parsed date from relative weekday labels, so messages like `Saturday 4:36am` export with the correct preview timestamp.
+- Alias replacements now preserve lowercase `you` in message content while still applying explicit sender aliases and the `any` fallback alias to preview names, including Unicode sender names.
 - `validate-generated-txt.js` summary validator is dynamic: it accepts any number of per-sender summary sections instead of being hardcoded to two.
 - `export-config.json` `personSummaryTitle` pattern is dynamic (`^.{1,80} Summary$`) instead of listing hardcoded sender aliases.
 - `export-config.json` `messageTypes` updated to include `reaction-emoji`, `reaction`, and `video-link`; `duration` pattern updated to match the strict `HH:MM:SS` format.

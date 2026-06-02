@@ -1,7 +1,5 @@
 # TODO — Future tasks
 
-Items that are worth doing but require new sample files, significant new scope, or external dependencies not yet available.
-Active next tasks are tracked in [TODO-next.md](TODO-next.md).
 
 ## Links
 
@@ -11,8 +9,12 @@ Active next tasks are tracked in [TODO-next.md](TODO-next.md).
 - [.todo/config.json](../.todo/config.json)
 
 ---
+- T109. **video-link: additional platforms** — Extend link detection to cover TikTok, Instagram Reels, and similar video-sharing URLs.
 
-- T108. **Sticker and GIF raw samples** — Add `sticker.html` and `gif.html` raw input files so the build-server rules and golden snapshots can be verified for sticker/gif classification.
-- T109. **video-link: additional platforms** — Extend `matchLabel` to cover TikTok, Instagram Reels, and similar video-hosting URLs for browser export classification.
-- T110. **voice-note: content text language** — When richer FB UI transcript data is available, replace the current fallback `"voice note"` content with the actual note text.
-- T111. **Reaction emoji content extraction** — Verify whether `<img alt="[emoji]">` alt text can be preserved in optimized HTML and used in `data_preview` when richer reaction content is desired.
+- T111. **Reaction emoji content extraction** — emoji alt text from image reactions should be preserved and included in preview data.
+
+# Skipped
+
+- T108. **Sticker and GIF raw samples** — Add raw message files for stickers and GIFs so the classification rules and output can be tested end to end.
+
+- T110. **voice-note: content text language** — When Facebook supplies richer transcript data in chat exports, replace the current fallback `"voice note"` placeholder with the actual spoken text.

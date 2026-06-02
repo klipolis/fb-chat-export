@@ -1,5 +1,7 @@
 const fs = require('fs');
 
+const { isValidSender } = require('./sender-constants');
+
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -27,27 +29,23 @@ function escapeRegExp(value) {
 }
 
 const normalizeName = (name) => name.trim().replace(/\s+/g, ' ');
-const isValidName = (name) =>
-  /^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ.' -]{0,80}$/i.test(name) &&
-  !/\d/.test(name) &&
-  name.split(/\s+/).length <= 2;
 
 function extractAriaLabelCandidates(html) {
   const candidates = [];
-  const nameWord = "[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ.'-]*";
-  const candidateName = `${nameWord}(?:\\s+${nameWord})?`;
-  const byRegex = new RegExp(`\\bby\\s+(${candidateName})(?=\\s*[:]|$)`, 'gi');
-  const atRegex = new RegExp(`\\bAt\\s+.+?,\\s*(${candidateName})(?=\\s*[:]|$)`, 'gi');
+  const nameWord = "[\\p{L}][\\p{L}.'-]*";
+  const candidateName = `${nameWord}(?:\\s+${nameWord}){0,2}`;
+  const byRegex = new RegExp(`\\bby\\s+(${candidateName})(?=\\s*[:]|$)`, 'giu');
+  const atRegex = new RegExp(`\\bAt\\s+.+?,\\s*(${candidateName})(?=\\s*[:]|\\s+[-–—]|$)`, 'giu');
 
   html.replace(/aria-label="([^"]*)"/g, (_, label) => {
     let match;
     while ((match = byRegex.exec(label))) {
       const name = normalizeName(match[1]);
-      if (!/^you$/i.test(name) && isValidName(name)) candidates.push(name);
+      if (!/^you$/i.test(name) && isValidSender(name)) candidates.push(name);
     }
     while ((match = atRegex.exec(label))) {
       const name = normalizeName(match[1]);
-      if (!/^you$/i.test(name) && isValidName(name)) candidates.push(name);
+      if (!/^you$/i.test(name) && isValidSender(name)) candidates.push(name);
     }
     return '';
   });
@@ -63,7 +61,7 @@ function pickBestName(candidates, htmlForCounts, excludeNames) {
     nameStats.set(name, stats);
   }
   for (const [name, stats] of nameStats.entries()) {
-    stats.totalCount = (htmlForCounts.match(new RegExp(`\\b${escapeRegExp(name)}\\b`, 'gi')) || []).length;
+    stats.totalCount = (htmlForCounts.match(new RegExp(`(?<![\\p{L}])${escapeRegExp(name)}(?![\\p{L}])`, 'giu')) || []).length;
     nameStats.set(name, stats);
   }
   return (
@@ -125,32 +123,11 @@ function aliasChatNames(html, nameMap = {}, preDetectedName) {
   }
 
   // Replace name only when it appears as a whole word (not as substring of another name)
-  // using a pattern that works with Unicode letters
-  const isWholeWord = (text, name, pos) => {
-    const before = pos === 0 || /[\s,:;]/.test(text[pos - 1]);
-    const after = pos + name.length >= text.length || /[\s,:;]/.test(text[pos + name.length]);
-    return before && after;
-  };
-
+  // using a pattern that works with Unicode letters.
   const replaceWholeWord = (text, name, replacement) => {
-    const nameLen = name.length;
-    let result = '';
-    let i = 0;
-    while (i < text.length) {
-      const idx = text.toLowerCase().indexOf(name.toLowerCase(), i);
-      if (idx === -1) {
-        result += text.slice(i);
-        break;
-      }
-      if (isWholeWord(text, name, idx)) {
-        result += text.slice(i, idx) + replacement;
-        i = idx + nameLen;
-      } else {
-        result += text.slice(i, idx + nameLen);
-        i = idx + nameLen;
-      }
-    }
-    return result;
+    const escaped = escapeRegExp(name);
+    const regex = new RegExp(`(^|[^\\p{L}])${escaped}(?=[^\\p{L}]|$)`, 'giu');
+    return text.replace(regex, (match, prefix) => `${prefix}${replacement}`);
   };
 
   if (selectedName) {

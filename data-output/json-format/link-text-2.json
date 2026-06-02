@@ -1,9 +1,9 @@
 {
   "html_locale": null,
-  "title": "image",
-  "type": "image",
+  "title": "link",
+  "type": "link",
   "data_raw": {
-    "date": "8:59 PM",
+    "date": "10:15 AM",
     "name": "Youghurt",
     "content": null,
     "duration": null,
@@ -12,7 +12,7 @@
   "data_preview": {
     "date": "2026.06.02 21:05",
     "name": "Youghurt",
-    "content": "image sent",
+    "content": "link",
     "duration": null,
     "length": null
   }

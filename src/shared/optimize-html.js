@@ -25,7 +25,9 @@ function normalizeTagStrings(html) {
 function removeLinkContent(html) {
   return html.replace(/<a[^>]*>([\s\S]*?)<\/a>/gi, (_match, content) => {
     const trimmed = content.trim();
-    return /^https?:\/\/\S+$/i.test(trimmed) ? trimmed : '<a></a>';
+    if (/^https?:\/\/\S+$/i.test(trimmed)) return trimmed;
+    const text = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    return text || '<a></a>';
   });
 }
 
@@ -134,7 +136,12 @@ function removeEmptyChildren(html) {
   let prev;
   do {
     prev = html;
-    html = html.replace(/<([a-zA-Z0-9]+)([^>]*)>\s*<\/\1>/g, '');
+    html = html.replace(/<([a-zA-Z0-9]+)([^>]*)>\s*<\/\1>/g, (match, tag, attrs) => {
+      if (/aria-roledescription=\s*"?message"?/i.test(attrs)) {
+        return match;
+      }
+      return '';
+    });
   } while (html !== prev);
   return html;
 }

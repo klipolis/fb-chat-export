@@ -45,6 +45,7 @@ See [Release Management](release-management.md) for the release process, tagging
 - [Folder Structure](folder-structure.md)
 - [Tech Overview](tech.md)
 - [JSON Schema](json-schema.md)
+- [Message Types and Data Rules](message-types.md)
 - [Todo Management](todo-management.md)
 - [Release Management](release-management.md)
 - [User Guide](../user-guide/README.md)

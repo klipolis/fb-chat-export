@@ -265,7 +265,7 @@ function main() {
     console.log('Raw input files are unchanged since the last build.');
   }
 
-  runCreateNodes();
+  runCreateNodes(cleanedHtmlByFile);
   const exportPaths = writeTextExports(files, cleanedHtmlByFile, referenceDate);
   console.log(`Done: HTML + JSON in ./data-output/optimized-html and ./data-output/json-format`);
   exportPaths.forEach((exportPath) => {

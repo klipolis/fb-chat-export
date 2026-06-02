@@ -1,8 +1,5 @@
 # TODO — Won't implement (by design)
 
-Items considered and deliberately not implemented.
-These are intentional design decisions, not omissions.
-
 ## Links
 
 - [TODO-next.md](TODO-next.md)
@@ -12,10 +9,10 @@ These are intentional design decisions, not omissions.
 
 ---
 
-- T112. **Additional reaction sample files** — The `reaction` rule's `matchLabel` already covers all common Facebook emoji reactions; separate raw HTML files for every emoji variant would expand snapshots without exercising new code paths.
-- T113. **Like / reaction counts in summary** — The `reaction` type is excluded from `~ N text;`. A separate reaction counter is intentionally omitted to avoid complexity.
-- T114. **Emoji content length** — Unicode emoji length reporting is an edge case; `reaction` remains in `noLengthTypes` and no char count is shown.
-- T115. **Subresource Integrity (SRI) for the userscript** — There are no external `@require` dependencies, so SRI pinning is not applicable.
-- T116. **`@updateURL` / `@downloadURL` header fields** — Auto-update links are intentionally omitted to avoid silent extension/script updates with DOM access.
-- T117. **Deno migration** — This project remains Node-first because of pnpm, Husky, and esbuild dependencies.
-- T118. **video-link duration from embed title** — YouTube embed titles are not reliable enough for duration extraction, so this is not planned.
+- T112. **Additional reaction sample files** — The reaction detector already covers all common Facebook emoji reactions; adding a separate test file for every variant would grow the snapshot set without testing new logic.
+- T113. **Like / reaction counts in summary** — Reactions are excluded from the text count by design. A separate reaction counter is not planned.
+- T114. **Emoji content length** — Unicode emoji length reporting is an edge case. Reactions hide character counts and that is intentional.
+- T115. **Subresource Integrity (SRI) for the userscript** — No external scripts are loaded via `@require`, so SRI has nothing to pin.
+- T116. **Auto-update fields in the userscript header** — Automatic extension updates are intentionally skipped to avoid silent DOM-accessing script changes.
+- T117. **Deno migration** — The project stays Node-first because of its pnpm, Husky, and esbuild toolchain.
+- T118. **video-link duration from embed title** — YouTube embed titles are too unreliable for duration extraction, so this is not planned.

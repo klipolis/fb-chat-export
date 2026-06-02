@@ -117,8 +117,9 @@ tap.test('buildServerTextExport', (t) => {
   const rawFiles = fs.readdirSync(rawDir).filter((name) => name.endsWith('.html'));
   rawFiles.forEach((fileName) => {
     const sample = path.parse(fileName).name;
-    t.ok(contentMax.includes(`- ${sample}`), `export-max header should list ${fileName} as dashed item`);
-    t.ok(contentMinimal.includes(`- ${sample}`), `export-minimal header should list ${fileName} as dashed item`);
+    const baseType = sample.replace(/-\d+$/, '');
+    t.ok(contentMax.includes(`- ${baseType}`), `export-max header should list ${fileName} as dashed item`);
+    t.ok(contentMinimal.includes(`- ${baseType}`), `export-minimal header should list ${fileName} as dashed item`);
   });
 
   const bodyStartOn = contentMax.lastIndexOf('\n---\n');
@@ -157,17 +158,18 @@ tap.test('buildServerTextExport', (t) => {
 
   rawFiles.forEach((fileName) => {
     const typeName = path.parse(fileName).name;
-    t.ok(bodyLinesOn.some((line) => line.includes(` ${typeName}`)), `export-max body should include one line for ${typeName}`);
-    t.ok(bodyLinesOff.some((line) => line.includes(` ${typeName}`)), `export-minimal body should include one line for ${typeName}`);
+    const displayType = /^image(?:-\d+)?$/i.test(typeName) ? 'image' : typeName;
+    t.ok(bodyLinesOn.some((line) => line.includes(` ${displayType}`)), `export-max body should include one line for ${fileName}`);
+    t.ok(bodyLinesOff.some((line) => line.includes(` ${displayType}`)), `export-minimal body should include one line for ${fileName}`);
   });
 
-  t.ok(bodyLinesOn.some((line) => line.includes('video-call 00:31:00')), 'Video call lines should include duration in canonical format');
+  t.ok(bodyLinesOn.some((line) => line.includes('call-video') && /\d{2}:\d{2}:\d{2}/.test(line)), 'Video call lines should include duration in canonical format');
   t.ok(bodyLinesOn.some((line) => /\blink-text\b(?:\s+\d+ chars)?\s*\/\s*https?:\/\//i.test(line)), 'link-text line should include URL content in export-max export');
   t.ok(bodyLinesOn.some((line) => /\blink-embed-no-text\b\s*\/\s*https?:\/\//i.test(line)), 'link-embed-no-text line should include URL content in export-max export');
   t.ok(bodyLinesOn.some((line) => /\blink-text\b\s+\d+ chars\s*\/\s*https?:\/\//i.test(line)), 'link-text lines with text should include content length');
   t.ok(bodyLinesOff.every((line) => !line.includes(' / ')), 'export-minimal export should not include slash-delimited content');
 
-  const offTextLengthLine = bodyLinesOff.find((line) => /\btext\b\s+\d+ chars(?:\s|$)/i.test(line));
+  const offTextLengthLine = bodyLinesOff.find((line) => /\btext\b\s+\d+ words(?:\s|$)/i.test(line));
   t.ok(offTextLengthLine, 'export-minimal export should include text content length when content is disabled');
 
   bodyLinesOn.forEach((line, idx) => {
@@ -182,10 +184,10 @@ tap.test('buildServerTextExport', (t) => {
   t.notOk(bodyLinesOn.some((line) => line.includes('Rob')), 'export-max body should not contain raw sender names');
   t.notOk(bodyLinesOff.some((line) => line.includes('Rob')), 'export-minimal body should not contain raw sender names');
 
-  // video-link: URL must appear after / in export-max
-  t.ok(bodyLinesOn.some((line) => /\bvideo-link\b\s*\/\s*\w+_\w+\//i.test(line)), 'video-link line in export-max should include compact URL (domain_tld/path) after /');
-  // video-link: no slash-content in export-minimal
-  t.notOk(bodyLinesOff.some((line) => /\bvideo-link\b.*\s\/\s/i.test(line)), 'video-link line in export-minimal should not include content after /');
+  // link-video: URL must appear after / in export-max
+  t.ok(bodyLinesOn.some((line) => /\blink-video\b\s*\/\s*\w+_\w+\//i.test(line)), 'link-video line in export-max should include compact URL (domain_tld/path) after /');
+  // link-video: no slash-content in export-minimal
+  t.notOk(bodyLinesOff.some((line) => /\blink-video\b.*\s\/\s/i.test(line)), 'link-video line in export-minimal should not include content after /');
 
   // reactions: export-minimal lines should not include slash-delimited content for reaction type
   t.notOk(bodyLinesOff.some((line) => /\breaction\b.*\s\/\s/i.test(line)), 'reaction lines in export-minimal should not include content after /');

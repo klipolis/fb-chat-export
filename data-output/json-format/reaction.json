@@ -1,19 +1,19 @@
 {
   "html_locale": null,
-  "title": "reaction",
-  "type": "reaction",
+  "title": "text",
+  "type": "text",
   "data_raw": {
     "date": "11:16 AM",
     "name": "Youghurt",
-    "content": null,
+    "content": "👍",
     "duration": null,
     "length": null
   },
   "data_preview": {
-    "date": "2026.05.29 09:37",
+    "date": "2026.06.02 21:05",
     "name": "Youghurt",
-    "content": null,
+    "content": "👍",
     "duration": null,
-    "length": null
+    "length": "1 words"
   }
 }

@@ -5,15 +5,15 @@
   "data_raw": {
     "date": "April 12, 2026, 1:23 PM",
     "name": "Youghurt",
-    "content": "Audio call 18 mins",
+    "content": "audio call",
     "duration": "00:18:00",
     "length": null
   },
   "data_preview": {
-    "date": "2026.05.29 09:37",
+    "date": "2026.06.02 21:05",
     "name": "Youghurt",
-    "content": null,
-    "duration": null,
+    "content": "audio call",
+    "duration": "00:18:00",
     "length": null
   }
 }

@@ -1,4 +1,5 @@
-﻿import { getContentMeta, normalizeDuration, stripTrackingParams } from '../../shared/message-metadata.js';
+﻿import sharedConfig from '../../../data-config/frontend_shared.json';
+import { getContentMeta, normalizeDuration, stripTrackingParams } from '../../shared/message-metadata.js';
 import { parseAriaLabel, normalizeDateToIso } from '../../shared/aria-label-parser.js';
 import { buildSummary } from '../../shared/export-summary.js';
 import { formatExportHeader, formatLine, durationToMinutes } from '../../shared/export-formatter.js';
@@ -16,6 +17,7 @@ import {
   createLabelInput,
   createLinkAction,
 } from './ui.js';
+import { applyAliasToText } from '../../shared/alias-utils.js';
 
 (function () {
   'use strict';
@@ -113,7 +115,8 @@ import {
     'display: flex; flex-direction: column; gap: 8px; min-width: 160px; padding-left: 10px;';
 
   const { wrap: includeCallsWrap, input: includeCallsChk } = createCheckboxToggle('Calls');
-  const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows } = createAliasRows();
+  const aliasDefaults = sharedConfig.aliasNames || { You: 'Youghurt', any: 'Alpha' };
+  const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows } = createAliasRows(aliasDefaults);
   const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle('Summary');
   const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle('Content');
   const { wrap: rawLinkWrap, input: rawLinkChk } = createCheckboxToggle('Raw link');
@@ -253,24 +256,6 @@ import {
     fileNameInput.style.borderColor = '#ccc';
   });
 
-  function escapeRegExp(value) {
-    return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
-
-  function applyAliasToText(text, aliasMap, sender) {
-    let result = String(text || '');
-    for (const [from, to] of Object.entries(aliasMap || {})) {
-      if (!from || !to || from === 'any') continue;
-      const pattern = new RegExp(`\\b${escapeRegExp(from)}\\b`, 'gi');
-      result = result.replace(pattern, to);
-    }
-    if (sender && aliasMap?.any) {
-      const senderPattern = new RegExp(`\\b${escapeRegExp(sender)}\\b`, 'gi');
-      result = result.replace(senderPattern, aliasMap.any);
-    }
-    return result;
-  }
-
   let downloadRevokeTimeout = null;
   let scrollTimeout = null;
   let downloadHandler = null;
@@ -400,19 +385,19 @@ import {
         const aliasedText = aliasChk.checked ? applyAliasToText(text, aliasMap, sender) : text;
         const aliasedContent = aliasChk.checked
           ? applyAliasToText(
-              includeContentChk.checked
-                ? rawLinkChk.checked && (type === 'link' || type === 'video-link')
-                  ? stripTrackingParams(link || originalHref || aliasedText) || aliasedText
-                  : originalHref || aliasedText
-                : aliasedText,
-              aliasMap,
-              sender
-            )
+            includeContentChk.checked
+              ? rawLinkChk.checked && (type === 'link' || type === 'video-link')
+                ? stripTrackingParams(link || originalHref || aliasedText) || aliasedText
+                : originalHref || aliasedText
+              : aliasedText,
+            aliasMap,
+            sender
+          )
           : includeContentChk.checked
-          ? rawLinkChk.checked && (type === 'link' || type === 'video-link')
-            ? stripTrackingParams(link || originalHref || text) || text
-            : originalHref || text
-          : text;
+            ? rawLinkChk.checked && (type === 'link' || type === 'video-link')
+              ? stripTrackingParams(link || originalHref || text) || text
+              : originalHref || text
+            : text;
 
         const displayType = type === 'reaction' && text ? 'text' : type;
         const lineEntry = {
@@ -494,128 +479,128 @@ import {
 
     function scanStep() {
       try {
-      collectVisible();
-      const elapsedSec = Math.round((Date.now() - scanStartedAt) / 1000);
-      const scrollPct = scroller.scrollHeight > 0
-        ? Math.round((1 - scroller.scrollTop / scroller.scrollHeight) * 100)
-        : 0;
-      noticeMsg.textContent = `Scanning... ${collected.size} collected (${elapsedSec}s, ~${scrollPct}% back).`;
+        collectVisible();
+        const elapsedSec = Math.round((Date.now() - scanStartedAt) / 1000);
+        const scrollPct = scroller.scrollHeight > 0
+          ? Math.round((1 - scroller.scrollTop / scroller.scrollHeight) * 100)
+          : 0;
+        noticeMsg.textContent = `Scanning... ${collected.size} collected (${elapsedSec}s, ~${scrollPct}% back).`;
 
-      if (
-        stopRequested ||
-        reachedFromDate ||
-        (scroller.scrollTop <= 0 && stableCount >= 3)
-      ) {
-        actionBtn.dataset.scanning = 'false';
+        if (
+          stopRequested ||
+          reachedFromDate ||
+          (scroller.scrollTop <= 0 && stableCount >= 3)
+        ) {
+          actionBtn.dataset.scanning = 'false';
 
-        const sortedEntries = Array.from(collected.values()).sort((a, b) => a.ts - b.ts);
-        const messages = sortedEntries.map((e) => e.line);
+          const sortedEntries = Array.from(collected.values()).sort((a, b) => a.ts - b.ts);
+          const messages = sortedEntries.map((e) => e.line);
 
-        if (messages.length === 0) {
-          noticeMsg.textContent = 'No messages found.';
-          downloadBtn.style.display = 'none';
-          saveAgainLink.style.display = 'none';
-          setScanState('idle');
+          if (messages.length === 0) {
+            noticeMsg.textContent = 'No messages found.';
+            downloadBtn.style.display = 'none';
+            saveAgainLink.style.display = 'none';
+            setScanState('idle');
+            return;
+          }
+
+          const summaryText = summaryChk.checked
+            ? buildSummary(sortedEntries, { useMessageLabel: true })
+            : '';
+          const messageTypes = Array.from(
+            new Set(sortedEntries.map((entry) => entry.type).filter(Boolean))
+          ).sort();
+          const headerText = formatExportHeader({
+            method: 'browser',
+            messageTypes,
+            exportOptions: {
+              calls: includeCallsChk.checked,
+              alias: aliasChk.checked,
+              summary: summaryChk.checked,
+              content: includeContentChk.checked,
+              rawLink: rawLinkChk.checked,
+              length: lengthChk.checked,
+            },
+            aliasMap: getAliasMap(),
+          });
+
+          const blob = new Blob([headerText + summaryText + messages.join('')], {
+            type: 'text/plain',
+          });
+          const fromLabel = fromInput.value.trim() || 'start';
+          const toLabel = toInput.value.trim() || 'end';
+          const elapsedMs = Date.now() - scanStartedAt;
+          const elapsed =
+            elapsedMs < 60000
+              ? `${(elapsedMs / 1000).toFixed(1)} seconds`
+              : `${(elapsedMs / 60000).toFixed(2)} minutes`;
+          const displayPersonName = getDisplayPersonName();
+          const fileName = customFileName || formatExportFileName(undefined, {
+            fromDate: fromInput.value.trim() || '',
+            toDate: toInput.value.trim() || '',
+          });
+          const doneLabel = stopRequested ? 'Stopped' : 'Done';
+
+          function setupDownload(downloadUrl) {
+            noticeMsg.textContent = `${doneLabel}: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
+            function triggerDownload(url) {
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = fileName;
+              a.click();
+            }
+            downloadBtn.style.display = '';
+            downloadBtn.removeAttribute('aria-disabled');
+            downloadBtn.style.opacity = '';
+            downloadBtn.style.cursor = '';
+            downloadBtn.textContent = 'Save';
+            saveAgainLink.style.display = 'none';
+            saveAgainLink.onclick = null;
+            if (downloadHandler) downloadBtn.removeEventListener('click', downloadHandler);
+            downloadHandler = () => {
+              if (downloadBtn.getAttribute('aria-disabled') === 'true') return;
+              downloadBtn.setAttribute('aria-disabled', 'true');
+              downloadBtn.style.opacity = '0.5';
+              downloadBtn.style.cursor = 'not-allowed';
+              downloadBtn.textContent = 'Downloaded';
+              saveAgainLink.style.display = '';
+              saveAgainLink.onclick = (e) => { e.preventDefault(); triggerDownload(downloadUrl); };
+              triggerDownload(downloadUrl);
+              if (downloadUrl.startsWith('blob:')) {
+                if (downloadRevokeTimeout) clearTimeout(downloadRevokeTimeout);
+                downloadRevokeTimeout = setTimeout(() => {
+                  URL.revokeObjectURL(downloadUrl);
+                  downloadRevokeTimeout = null;
+                }, 60000);
+              }
+            };
+            downloadBtn.addEventListener('click', downloadHandler);
+            setScanState('idle');
+          }
+
+          try {
+            setupDownload(URL.createObjectURL(blob));
+          } catch (_) {
+            const reader = new FileReader();
+            reader.onload = (e) => setupDownload(e.target.result);
+            reader.onerror = () => {
+              noticeMsg.textContent = 'Could not prepare download.';
+              setScanState('idle');
+            };
+            reader.readAsDataURL(blob);
+          }
           return;
         }
 
-        const summaryText = summaryChk.checked
-          ? buildSummary(sortedEntries, { useMessageLabel: true })
-          : '';
-        const messageTypes = Array.from(
-          new Set(sortedEntries.map((entry) => entry.type).filter(Boolean))
-        ).sort();
-        const headerText = formatExportHeader({
-          method: 'browser',
-          messageTypes,
-          exportOptions: {
-            calls: includeCallsChk.checked,
-            alias: aliasChk.checked,
-            summary: summaryChk.checked,
-            content: includeContentChk.checked,
-            rawLink: rawLinkChk.checked,
-            length: lengthChk.checked,
-          },
-          aliasMap: getAliasMap(),
-        });
-
-        const blob = new Blob([headerText + summaryText + messages.join('')], {
-          type: 'text/plain',
-        });
-        const fromLabel = fromInput.value.trim() || 'start';
-        const toLabel = toInput.value.trim() || 'end';
-        const elapsedMs = Date.now() - scanStartedAt;
-        const elapsed =
-          elapsedMs < 60000
-            ? `${(elapsedMs / 1000).toFixed(1)} seconds`
-            : `${(elapsedMs / 60000).toFixed(2)} minutes`;
-        const displayPersonName = getDisplayPersonName();
-        const fileName = customFileName || formatExportFileName(undefined, {
-          fromDate: fromInput.value.trim() || '',
-          toDate: toInput.value.trim() || '',
-        });
-        const doneLabel = stopRequested ? 'Stopped' : 'Done';
-
-        function setupDownload(downloadUrl) {
-          noticeMsg.textContent = `${doneLabel}: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
-          function triggerDownload(url) {
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            a.click();
-          }
-          downloadBtn.style.display = '';
-          downloadBtn.removeAttribute('aria-disabled');
-          downloadBtn.style.opacity = '';
-          downloadBtn.style.cursor = '';
-          downloadBtn.textContent = 'Save';
-          saveAgainLink.style.display = 'none';
-          saveAgainLink.onclick = null;
-          if (downloadHandler) downloadBtn.removeEventListener('click', downloadHandler);
-          downloadHandler = () => {
-            if (downloadBtn.getAttribute('aria-disabled') === 'true') return;
-            downloadBtn.setAttribute('aria-disabled', 'true');
-            downloadBtn.style.opacity = '0.5';
-            downloadBtn.style.cursor = 'not-allowed';
-            downloadBtn.textContent = 'Downloaded';
-            saveAgainLink.style.display = '';
-            saveAgainLink.onclick = (e) => { e.preventDefault(); triggerDownload(downloadUrl); };
-            triggerDownload(downloadUrl);
-            if (downloadUrl.startsWith('blob:')) {
-              if (downloadRevokeTimeout) clearTimeout(downloadRevokeTimeout);
-              downloadRevokeTimeout = setTimeout(() => {
-                URL.revokeObjectURL(downloadUrl);
-                downloadRevokeTimeout = null;
-              }, 60000);
-            }
-          };
-          downloadBtn.addEventListener('click', downloadHandler);
-          setScanState('idle');
+        const nextTop = Math.max(0, scroller.scrollTop - Math.max(800, scroller.clientHeight - 100));
+        if (Math.abs(nextTop - scroller.scrollTop) < 5) {
+          stableCount += 1;
+        } else {
+          stableCount = 0;
+          scroller.scrollTop = nextTop;
         }
-
-        try {
-          setupDownload(URL.createObjectURL(blob));
-        } catch (_) {
-          const reader = new FileReader();
-          reader.onload = (e) => setupDownload(e.target.result);
-          reader.onerror = () => {
-            noticeMsg.textContent = 'Could not prepare download.';
-            setScanState('idle');
-          };
-          reader.readAsDataURL(blob);
-        }
-        return;
-      }
-
-      const nextTop = Math.max(0, scroller.scrollTop - Math.max(800, scroller.clientHeight - 100));
-      if (Math.abs(nextTop - scroller.scrollTop) < 5) {
-        stableCount += 1;
-      } else {
-        stableCount = 0;
-        scroller.scrollTop = nextTop;
-      }
-      const delay = 500 + Math.random() * 500;
-      scrollTimeout = setTimeout(scanStep, delay);
+        const delay = 500 + Math.random() * 500;
+        scrollTimeout = setTimeout(scanStep, delay);
       } catch (err) {
         noticeMsg.textContent = 'An unexpected error occurred. Please try again.';
         setScanState('idle');

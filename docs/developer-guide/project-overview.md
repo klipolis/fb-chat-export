@@ -51,6 +51,8 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
   - `src/frontend/build.cjs`: frontend build wrapper that delegates to `src/frontend/builds.js`.
 - `src/platforms/`: platform header and build helper files used by the frontend bundle build.
 - `src/server/`: build scripts such as `build-preview.js`.
+- `data-config/frontend_shared.json`: shared runtime alias mapping and relative date rules used by the browser export and server build.
+- `data-config/server.json`: server-only build settings such as `overwriteToday` for deterministic text export timestamps.
 - `src/shared/`: shared helper scripts and node rules.
 - `data-input/`: static raw HTML snapshots.
 - `data-output/optimized-html/`: generated optimized HTML snapshots.
