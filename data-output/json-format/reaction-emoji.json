@@ -1,7 +1,7 @@
 {
   "html_locale": null,
-  "title": "image",
-  "type": "image",
+  "title": "reaction",
+  "type": "reaction",
   "data_raw": {
     "date": "Tuesday 10:25pm",
     "name": "Youghurt",
@@ -10,10 +10,10 @@
     "length": null
   },
   "data_preview": {
-    "date": "2026.06.02 21:05",
-    "name": "Youghurt",
-    "content": "image sent",
+    "date": "2026.06.02 22:25",
+    "name": "XYZ",
+    "content": "🥳",
     "duration": null,
-    "length": null
+    "length": "2 chars"
   }
 }

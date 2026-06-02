@@ -154,6 +154,14 @@
 - T139. Set up markdownlint for the docs folder and check the new message types guide passes.
 - T140. Add cross-references between the message types guide and the JSON schema docs so related rules are easy to find.
 
+## Link detection
+
+- T109. Extend video-link detection to cover Instagram, Twitter/X, Twitch, and similar video-sharing URLs.
+
+## Content extraction
+
+- T111. Preserve emoji reaction content in preview data — emoji characters from reaction messages are now stored in data_preview.content instead of being discarded.
+
 ## Display and alias fixes
 
 - T141. Extended sender name detection in labels to handle dash separators (—), so names followed by a dash instead of a colon are still found for aliasing.

@@ -349,11 +349,15 @@ function validatePreviewNode(t, node, fileName) {
   t.ok('duration' in preview, `${fileName}: data_preview.duration is required`);
   t.ok('length' in preview, `${fileName}: data_preview.length is required`);
 
-  // reactions: content must be null in both sections
+  // reactions: content is null or emoji/smiley string
   if (node.type === 'reaction') {
-    t.equal(raw.content, null, `${fileName}: reaction data_raw.content must be null`);
-    t.equal(preview.content, null, `${fileName}: reaction data_preview.content must be null`);
-    t.equal(preview.length, null, `${fileName}: reaction data_preview.length must be null`);
+    t.ok(raw.content === null || typeof raw.content === 'string', `${fileName}: reaction data_raw.content must be null or string`);
+    t.equal(preview.content, raw.content, `${fileName}: reaction data_preview.content must equal raw.content`);
+    if (preview.content) {
+      t.equal(typeof preview.length, 'string', `${fileName}: reaction with content must have string length`);
+    } else {
+      t.equal(preview.length, null, `${fileName}: reaction without content must have null length`);
+    }
   }
 
   // timed types: duration is string, length must be null
@@ -1153,6 +1157,10 @@ tap.test('chooseRuleAllEntries', (t) => {
     { file: '', label: '👍', expected: 'reaction' },
     { file: '', label: 'At 11:16 AM, You: 🥳', expected: 'reaction' },
     { file: '', label: 'At 11:57 AM, You: https://youtube.com/shorts/IKS2vNOcZ7A', expected: 'link' },
+    { file: '', label: 'At 12:00 PM, You: https://instagram.com/p/xyz', expected: 'link' },
+    { file: '', label: 'At 12:01 PM, You: https://twitter.com/user/status/123', expected: 'link' },
+    { file: '', label: 'At 12:02 PM, You: https://x.com/user/status/123', expected: 'link' },
+    { file: '', label: 'At 12:03 PM, You: https://twitch.tv/clip/abc', expected: 'link' },
     { file: '', label: 'Hello how are you', expected: 'text' },
   ];
 

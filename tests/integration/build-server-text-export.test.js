@@ -191,8 +191,8 @@ tap.test('buildServerTextExport', (t) => {
 
   // reactions: export-minimal lines should not include slash-delimited content for reaction type
   t.notOk(bodyLinesOff.some((line) => /\breaction\b.*\s\/\s/i.test(line)), 'reaction lines in export-minimal should not include content after /');
-  // reactions: export-max lines should also not include slash-content (reactions have null content)
-  t.notOk(bodyLinesOn.some((line) => /\breaction\b.*\s\/\s/i.test(line)), 'reaction lines in export-max should not include slash-delimited content (null content)');
+  // reactions: export-max lines should include emoji content after /
+  t.ok(bodyLinesOn.some((line) => /\breaction\b.*\s\/\s/i.test(line)), 'reaction lines in export-max should include emoji content after /');
 
   t.end();
 });

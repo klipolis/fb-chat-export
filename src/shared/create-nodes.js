@@ -343,11 +343,9 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
     });
 
     const rawDuration = normalizeDuration(rawMeta.duration) || null;
-    const rawContent = contentMeta.type === 'reaction'
-      ? null
-      : contentMeta.link
-        ? stripTrackingParams(rawMeta.link || contentMeta.link) || null
-        : message || null;
+    const rawContent = contentMeta.link
+      ? stripTrackingParams(rawMeta.link || contentMeta.link) || null
+      : message || null;
     const rawSender = parsedLabel.sender || null;
     const previewDate = simpleDate || originalDate || exportDate;
 
@@ -364,7 +362,7 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
     };
 
     const previewSender = normalizeExportSender(rawSender, aliasNames);
-    const previewContent = contentMeta.type === 'reaction' ? null : contentMeta.text || null;
+    const previewContent = contentMeta.text || null;
     const previewDuration = contentMeta.duration || null;
     const previewLength = contentMeta.contentLength || null;
 

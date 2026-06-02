@@ -39,9 +39,13 @@ function validatePreviewJson(t, data, fileName) {
   t.ok('length' in preview, `${fileName}: data_preview.length is required`);
 
   if (data.type === 'reaction') {
-    t.equal(raw.content, null, `${fileName}: reaction data_raw.content must be null`);
-    t.equal(preview.content, null, `${fileName}: reaction data_preview.content must be null`);
-    t.equal(preview.length, null, `${fileName}: reaction data_preview.length must be null`);
+    t.ok(raw.content === null || typeof raw.content === 'string', `${fileName}: reaction data_raw.content must be null or string`);
+    t.equal(preview.content, raw.content, `${fileName}: reaction data_preview.content must equal raw.content`);
+    if (preview.content) {
+      t.equal(typeof preview.length, 'string', `${fileName}: reaction with content must have string length`);
+    } else {
+      t.equal(preview.length, null, `${fileName}: reaction without content must have null length`);
+    }
   }
 
   if (timedTypes.has(data.type)) {

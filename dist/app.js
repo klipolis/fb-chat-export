@@ -134,7 +134,7 @@
             "link-video",
             "video-link"
           ],
-          matchLabel: /(?:open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location|\b(?:youtube|youtu\.be|vimeo|dailymotion|tiktok|fb\.watch|facebook\.com\/.*(?:video|watch|reel)|video|watch|reel|shorts)\b)/i
+          matchLabel: /(?:open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location|\b(?:youtube|youtu\.be|vimeo|dailymotion|tiktok|instagram|twitter|x\.com|twitch|fb\.watch|facebook\.com\/.*(?:video|watch|reel)|video|watch|reel|shorts)\b)/i
         },
         {
           type: "video-call",
@@ -818,7 +818,8 @@
           const reactionOnlyTextMatch = /^[:;=8Xx][-~]?[)DdpP(/\\\]]$/u;
           const normalizedReaction = normalizedText.trim();
           const isAsciiReaction = reactionOnlyTextMatch.test(normalizedReaction);
-          contentText = isAsciiReaction ? normalizedReaction : null;
+          const isEmojiReaction = /\p{Extended_Pictographic}/u.test(normalizedReaction);
+          contentText = isAsciiReaction || isEmojiReaction ? normalizedReaction : null;
         } else if (type === "video-link") {
           contentText = formatUrlCompact(resolvedLink || message) || "video link";
         } else if (type === "image") {

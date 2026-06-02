@@ -296,15 +296,12 @@ function getContentMeta({
     contentText = 'voice note';
   } else if (type === 'sticker') {
     contentText = 'sticker';
-  } else if (type === 'gif') {
-    contentText = 'gif';
   } else if (type === 'reaction') {
     const reactionOnlyTextMatch = /^[:;=8Xx][-~]?[)DdpP(/\\\]]$/u;
     const normalizedReaction = normalizedText.trim();
     const isAsciiReaction = reactionOnlyTextMatch.test(normalizedReaction);
-    contentText = isAsciiReaction ? normalizedReaction : null;
-  } else if (type === 'video-link') {
-    contentText = formatUrlCompact(resolvedLink || message) || 'video link';
+    const isEmojiReaction = /\p{Extended_Pictographic}/u.test(normalizedReaction);
+    contentText = (isAsciiReaction || isEmojiReaction) ? normalizedReaction : null;
   } else if (type === 'image') {
     contentText = 'image sent';
   } else if (type === 'video-call' || type === 'audio-call' || type === 'missed-call') {

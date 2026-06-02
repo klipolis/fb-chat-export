@@ -24,10 +24,11 @@ Aliases:
 
 Total Summary
 19 posts / 8 days
-~ 214 words
+~ 216 words
 ~ 3 text
+~ 2 reaction
 ~ 4 link
-~ 5 image
+~ 3 image
 ~ 1 audio call
 ~ 1 video call
 ~ 2 voice note
@@ -48,9 +49,10 @@ XYZ Summary
 
 Youghurt Summary
 6 posts / 3 days
-~ 2 words
+~ 4 words
+~ 2 reaction
 ~ 2 link
-~ 3 image
+~ 1 image
 ~ 1 audio call
 ~ 1 calls 00:18:00
 
