@@ -9,8 +9,4 @@
 - [.todo/config.json](../.todo/config.json)
 
 ---
-# Skipped
 
-- T108. **Sticker and GIF raw samples** — Add raw message files for stickers and GIFs so the classification rules and output can be tested end to end.
-
-- T110. **voice-note: content text language** — When Facebook supplies richer transcript data in chat exports, replace the current fallback `"voice note"` placeholder with the actual spoken text.

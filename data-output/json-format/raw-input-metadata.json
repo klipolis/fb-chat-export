@@ -1,6 +1,11 @@
 {
   "files": [
     {
+      "fileName": "animated-gif.html",
+      "mtimeMs": 1780481828981.6797,
+      "size": 1603
+    },
+    {
       "fileName": "audio-call.html",
       "mtimeMs": 1779901568547.8477,
       "size": 5696
@@ -61,6 +66,11 @@
       "size": 4320
     },
     {
+      "fileName": "poll.html",
+      "mtimeMs": 1780481832141.3079,
+      "size": 1608
+    },
+    {
       "fileName": "reaction-emoji.html",
       "mtimeMs": 1779901568687.14,
       "size": 2250
@@ -69,6 +79,11 @@
       "fileName": "reaction.html",
       "mtimeMs": 1779901568696.2876,
       "size": 6038
+    },
+    {
+      "fileName": "sticker.html",
+      "mtimeMs": 1780481825922.378,
+      "size": 1669
     },
     {
       "fileName": "text-image-replied.html",

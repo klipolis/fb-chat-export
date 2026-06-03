@@ -5,11 +5,14 @@ Message types:
 - image
 - link-embed-no-text
 - link-text
+- missed-audio-call
+- missed-video-call
 - reaction-emoji
 - reaction
 - text-image-replied
 - text-replied
 - text
+- video-call
 - voice-note
 
 Options: includeLength
@@ -26,18 +29,21 @@ Aliases:
 [2026-04-14 18:34] XYZ: text-image-replied 6 words
 [2026-04-16 10:55] XYZ: text-replied 39 words
 [2026-05-16 04:36] Ötves: image
-[2026-05-19 22:25] Youghurt: reaction-emoji 2 chars
+[2026-05-19 22:25] Youghurt: reaction-emoji 1 words
 [2026-05-20 19:51] XYZ: image
-[2026-05-20 19:51] XYZ: link-text 895 chars
+[2026-05-20 19:51] XYZ: link-text 152 words
 [2026-05-20 19:52] Barnabas: voice-note 00:00:20
 [2026-05-20 19:54] XYZ: deleted
 [2026-05-21 17:34] XYZ: missed-call-audio
 [2026-05-22 00:26] XYZ: text 8 words
 [2026-05-22 10:15] Youghurt: link-text-2
+[2026-05-22 10:45] Beta: sticker
 [2026-05-22 11:14] XYZ: call-video 00:31:00
 [2026-05-22 11:15] XYZ: missed-call-video
-[2026-05-22 11:16] Youghurt: reaction 2 chars
+[2026-05-22 11:16] Youghurt: reaction 1 words
 [2026-05-22 11:57] Youghurt: link-video
 [2026-05-22 12:00] Csaba: voice-note-2 00:00:21
 [2026-05-22 13:51] XYZ: link-embed-no-text
+[2026-05-22 14:18] XYZ: animated-gif
+[2026-05-22 16:02] Gamma: poll 5 words
 [2026-05-22 20:59] Youghurt: image

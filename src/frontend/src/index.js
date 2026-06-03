@@ -386,7 +386,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
         const aliasedContent = aliasChk.checked
           ? applyAliasToText(
             includeContentChk.checked
-              ? rawLinkChk.checked && (type === 'link' || type === 'video-link')
+              ? rawLinkChk.checked && type === 'link'
                 ? stripTrackingParams(link || originalHref || aliasedText) || aliasedText
                 : originalHref || aliasedText
               : aliasedText,
@@ -394,7 +394,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
             sender
           )
           : includeContentChk.checked
-            ? rawLinkChk.checked && (type === 'link' || type === 'video-link')
+            ? rawLinkChk.checked && type === 'link'
               ? stripTrackingParams(link || originalHref || text) || text
               : originalHref || text
             : text;

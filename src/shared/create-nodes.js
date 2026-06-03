@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { selectors, messageRules } = require('./rules');
+const { selectors, messageRules, chooseRule } = require('./rules');
 const { parseAriaLabel, normalizeDateToSimple } = require('./aria-label-parser');
 const { getContentMeta, normalizeDuration } = require('./message-metadata');
 const aliasNames = require('../../data-config/alias-names.json');
@@ -194,21 +194,6 @@ function buildAllMessageMetaMap(rawDir, htmlFilesByFile) {
   }
 
   return metaMap;
-}
-
-function chooseRule(fileName, ariaLabel) {
-  const loweredFile = fileName.toLowerCase();
-  const loweredLabel = ariaLabel.toLowerCase();
-
-  const fileRule = messageRules.find((rule) => rule.matchFile && rule.matchFile.test(loweredFile));
-  if (fileRule) return fileRule;
-
-  const labelRule = messageRules.find(
-    (rule) => rule.matchLabel && rule.matchLabel.test(loweredLabel)
-  );
-  if (labelRule) return labelRule;
-
-  return messageRules.find((rule) => rule.type === 'text') || messageRules[0];
 }
 
 function extractDate(ariaLabel) {

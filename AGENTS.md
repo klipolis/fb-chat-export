@@ -13,13 +13,14 @@ This repository includes AI-assisted development guidance and planning notes.
 - If you need to extend regression coverage, use the existing `tests/` harness and `tap` as the formal runner.
 - Golden snapshots are stored under `tests/golden` and compared using `tests/snapshot-helper.js`.
 - Build metadata and version support are driven from the changelog release heading to keep package and build versions aligned.
+- Every AI interaction should be captured as a trace in the AI interaction docs so the request, result, and learning are preserved for future contributors.
 
 ## Changelog rules (AI agents must follow these)
 
 When writing or editing `CHANGELOG.md`:
 
 - Every entry must describe an **active change** — something added, fixed, changed, or removed in that release. Never write entries that only describe what was retained, preserved, or left unchanged.
-- Use plain, user-facing language. Active voice: "Exports now include attachments" not "Attachment export support has been added".
+- Use plain, user-facing language. Active voice: "Exports include attachments" not "Attachment export support has been added".
 - Describe what the user observes or benefits from. Do not mention internal identifiers, environment variable names, or file paths.
 - Documentation-only edits, README updates, and planning notes do not belong in the changelog.
 - CI, test tooling, and refactor changes with no user-visible effect belong under `### Dev` only.

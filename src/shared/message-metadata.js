@@ -1,4 +1,4 @@
-const { messageRules } = require('./rules');
+const { messageRules, chooseRule } = require('./rules');
 const { parseAriaLabel, normalizeDateToSimple, normalizeLabel } = require('./aria-label-parser');
 
 let sharedFrontendConfig;
@@ -144,21 +144,6 @@ function isLinkOnlyText(text, link) {
   const normalizedText = normalizeLabel(text).replace(/[.,;:!?]+$/g, '').trim();
   const normalizedLink = normalizeLabel(link).replace(/[.,;:!?]+$/g, '').trim();
   return normalizedText === normalizedLink;
-}
-
-function chooseRule(fileName, ariaLabel) {
-  const loweredFile = String(fileName || '').toLowerCase();
-  const loweredLabel = String(ariaLabel || '').toLowerCase();
-
-  const fileRule = messageRules.find((rule) => rule.matchFile && rule.matchFile.test(loweredFile));
-  if (fileRule) return fileRule;
-
-  const labelRule = messageRules.find(
-    (rule) => rule.matchLabel && rule.matchLabel.test(loweredLabel)
-  );
-  if (labelRule) return labelRule;
-
-  return messageRules.find((rule) => rule.type === 'text') || messageRules[0];
 }
 
 function normalizeContentType(type) {
@@ -310,15 +295,14 @@ function getContentMeta({
   }
 
   const timedTypes = new Set(['voice-note', 'video-call', 'audio-call']);
-  const noLengthTypes = new Set(['image', 'missed-call', 'unsent', 'sticker', 'gif', 'video-link', ...timedTypes]);
+  const noLengthTypes = new Set(['image', 'missed-call', 'unsent', 'sticker', ...timedTypes]);
 
   const duration = timedTypes.has(type) ? rawDuration : null;
   const linkHasTextContent =
     type === 'link' && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
   const shouldOmitLength = noLengthTypes.has(type) || (type === 'link' && !linkHasTextContent);
   const wordCount = shouldOmitLength || contentText == null ? undefined : (contentText.match(/\S+/g) || []).length;
-  const charCount = shouldOmitLength || contentText == null ? undefined : String(contentText).length;
-  const contentLength = shouldOmitLength || contentText == null ? undefined : type === 'text' ? `${wordCount} words` : `${charCount} chars`;
+  const contentLength = shouldOmitLength || contentText == null ? undefined : `${wordCount} words`;
 
   return {
     type,

@@ -123,4 +123,21 @@ const addMatchFile = (rule) => ({
   ),
 });
 
-module.exports = rules.map(addMatchFile);
+const messageRules = rules.map(addMatchFile);
+
+function chooseRule(fileName, ariaLabel) {
+  const loweredFile = String(fileName || '').toLowerCase();
+  const loweredLabel = String(ariaLabel || '').toLowerCase();
+
+  const fileRule = messageRules.find((rule) => rule.matchFile && rule.matchFile.test(loweredFile));
+  if (fileRule) return fileRule;
+
+  const labelRule = messageRules.find(
+    (rule) => rule.matchLabel && rule.matchLabel.test(loweredLabel)
+  );
+  if (labelRule) return labelRule;
+
+  return messageRules.find((rule) => rule.type === 'text') || messageRules[0];
+}
+
+module.exports = { messageRules, chooseRule };

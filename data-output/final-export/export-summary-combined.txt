@@ -5,11 +5,14 @@ Message types:
 - image
 - link-embed-no-text
 - link-text
+- missed-audio-call
+- missed-video-call
 - reaction-emoji
 - reaction
 - text-image-replied
 - text-replied
 - text
+- video-call
 - voice-note
 
 Options: includeSummary
@@ -23,20 +26,20 @@ Aliases:
 ---
 
 Total Summary
-19 posts / 8 days
-~ 0 text / 210 words
-~ 12 images
-~ 3 calls 00:49:20
+22 posts / 8 days
+~ 12 text / 221 words
+~ 20 images
+~ 4 calls 00:49:41
 
 XYZ Summary
-10 posts / 5 days
-~ 0 text / 206 words
-~ 7 images
+11 posts / 5 days
+~ 6 text / 206 words
+~ 9 images
 ~ 1 calls 00:31:00
 
 Youghurt Summary
 6 posts / 3 days
-~ 0 text / 4 words
+~ 4 text / 4 words
 ~ 5 images
 ~ 1 calls 00:18:00
 

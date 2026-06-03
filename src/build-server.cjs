@@ -129,10 +129,22 @@ function summaryParticipants() {
 function getBaseSemanticTypes(fileNames) {
   const schemaTypes = schemaConfig.messageTypes;
   const baseTypes = new Set();
+
+  // Map filename stems whose chooseRule type differs from the schema name
+  const schemaAlias = {
+    'call-video': 'video-call',
+    'missed-call-audio': 'missed-audio-call',
+    'missed-call-video': 'missed-video-call',
+  };
+
   fileNames.forEach((fileName) => {
     const base = path.parse(fileName).name;
-    const semanticType = base.replace(/-\d+$/, '');
-    baseTypes.add(semanticType);
+    if (schemaAlias[base]) {
+      baseTypes.add(schemaAlias[base]);
+    } else {
+      const semanticType = base.replace(/-\d+$/, '');
+      baseTypes.add(semanticType);
+    }
   });
   return schemaTypes.filter((type) => baseTypes.has(type));
 }

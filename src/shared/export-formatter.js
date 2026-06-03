@@ -63,7 +63,7 @@ function formatLine(entry, options = {}) {
   if (includeLength && entry.contentLength) parts.push(entry.contentLength);
 
   const base = `[${dateText}] ${sender}: ${parts.join(' ')}`;
-  const contentTypes = new Set(['text', 'link', 'video-link', 'reaction']);
+  const contentTypes = new Set(['text', 'link', 'reaction']);
   const shouldShowTextContent =
     includeContent && contentTypes.has(entry.semanticType) && entry.content;
   if (shouldShowTextContent) {

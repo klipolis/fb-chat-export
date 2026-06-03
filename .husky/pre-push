@@ -1,1 +1,2 @@
+pnpm run lint:unreleased
 pnpm run lint

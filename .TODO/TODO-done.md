@@ -89,6 +89,7 @@
 
 - T85. Full test suite includes lint and both unit suites.
 - T86. Dist validation no longer triggers a rebuild as a side effect.
+- T157. Created lint script for TODO file format and cross-reference validation.
 
 ## Testing
 
@@ -153,6 +154,9 @@
 - T138. Document multi-image count display (`~ N images`) and sender name validation rules in the user guide.
 - T139. Set up markdownlint for the docs folder and check the new message types guide passes.
 - T140. Add cross-references between the message types guide and the JSON schema docs so related rules are easy to find.
+- T154. Review CHANGELOG entries under `## [Unreleased]` for style consistency — direct active voice, no internal identifiers or file paths, no duplicate entries.
+- T155. Merge orphan `### Fixed` sections in CHANGELOG so all fixes live under a single `### Fixed` heading.
+- T158. Review AGENTS.md and doc guidance to ensure changelog and commit rules are consistently referenced across all AI-facing guides.
 
 ## Link detection
 
@@ -167,3 +171,17 @@
 - T141. Extended sender name detection in labels to handle dash separators (—), so names followed by a dash instead of a colon are still found for aliasing.
 - T142. Added `Ötves` as an explicit alias entry in both config files so it always maps to the fallback name regardless of auto-detection thresholds.
 - T143. Make tests expect `image` as the label for all image messages, not the raw `image-2` or `image-3` variants.
+
+## Cleanup
+
+- T145, T148–T151. Stripped unreachable message-type references that `chooseRule` never produces.
+
+## Test coverage
+
+- T146. Export tests now verify emoji reaction content in the output.
+- T152. Updated test expectations to match the word-length content format.
+- T156. Add raw sample files for sticker, GIF, and poll types to data-input for end-to-end coverage.
+
+## Refactoring
+
+- T147. Consolidated message-type resolution into a single shared helper used by all code paths.

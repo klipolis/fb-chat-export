@@ -9,14 +9,6 @@
 
 ---
 
-## Cleanup
+## Content extraction
 
-- T145. Remove dead code branches: `type === 'gif'` and `type === 'video-link'` in `message-metadata.js:299-300,306-307` are unreachable because `chooseRule` maps both to `'link'`/`'reaction'` types.
-
-## Test coverage
-
-- T146. Add export-level test for emoji reaction content — verify `🥳` and `👍` appear in the generated TXT output, not just the JSON preview.
-
-## Refactoring
-
-- T147. Deduplicate `chooseRule` — the same function lives in both `message-metadata.js` and `create-nodes.js`; extract to a shared module.
+- T110. Replace hardcoded `"voice note"` fallback content text with actual transcript text when Facebook supplies richer transcript data in chat exports. Check current export format for transcript availability; if present, wire it through metadata extraction and update golden snapshots.

@@ -5,11 +5,14 @@ Message types:
 - image
 - link-embed-no-text
 - link-text
+- missed-audio-call
+- missed-video-call
 - reaction-emoji
 - reaction
 - text-image-replied
 - text-replied
 - text
+- video-call
 - voice-note
 
 Options: includeSummary
@@ -23,12 +26,14 @@ Aliases:
 ---
 
 Total Summary
-19 posts / 8 days
+22 posts / 8 days
 ~ 216 words
 ~ 3 text
-~ 2 reaction
+~ 3 reaction
 ~ 4 link
 ~ 3 image
+~ 1 sticker
+~ 1 poll
 ~ 1 audio call
 ~ 1 video call
 ~ 2 voice note
@@ -37,9 +42,10 @@ Total Summary
 ~ 3 calls 00:49:20
 
 XYZ Summary
-10 posts / 5 days
+11 posts / 5 days
 ~ 212 words
 ~ 3 text
+~ 1 reaction
 ~ 2 link
 ~ 1 image
 ~ 1 video call

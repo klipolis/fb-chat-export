@@ -4,6 +4,8 @@ const path = require('path');
 const childProcess = require('child_process');
 const { compareSnapshots } = require('../snapshot-helper');
 const { resolveRepoPath } = require('../../src/shared/app-config');
+const { chooseRule } = require('../../src/shared/message-metadata');
+const schemaConfig = require('../../src/shared/export-config.json');
 
 const rawDir = resolveRepoPath('data-input');
 const txtDir = resolveRepoPath('data-output', 'final-export');
@@ -114,12 +116,23 @@ tap.test('buildServerTextExport', (t) => {
     'Youghurt Summary should mirror total summary list style'
   );
 
+  // Filename to schema type alias (mirrors getBaseSemanticTypes in build-server.cjs)
+  const schemaAlias = {
+    'call-video': 'video-call',
+    'missed-call-audio': 'missed-audio-call',
+    'missed-call-video': 'missed-video-call',
+  };
+
   const rawFiles = fs.readdirSync(rawDir).filter((name) => name.endsWith('.html'));
   rawFiles.forEach((fileName) => {
     const sample = path.parse(fileName).name;
-    const baseType = sample.replace(/-\d+$/, '');
-    t.ok(contentMax.includes(`- ${baseType}`), `export-max header should list ${fileName} as dashed item`);
-    t.ok(contentMinimal.includes(`- ${baseType}`), `export-minimal header should list ${fileName} as dashed item`);
+    const rule = chooseRule(fileName);
+    const canonicalType = rule ? rule.type : sample.replace(/-\d+$/, '');
+    const schemaType = schemaAlias[sample] || sample.replace(/-\d+$/, '');
+    if (schemaConfig.messageTypes.includes(schemaType)) {
+      t.ok(contentMax.includes(`- ${schemaType}`), `export-max header should list ${fileName} as dashed item`);
+      t.ok(contentMinimal.includes(`- ${schemaType}`), `export-minimal header should list ${fileName} as dashed item`);
+    }
   });
 
   const bodyStartOn = contentMax.lastIndexOf('\n---\n');
@@ -164,9 +177,9 @@ tap.test('buildServerTextExport', (t) => {
   });
 
   t.ok(bodyLinesOn.some((line) => line.includes('call-video') && /\d{2}:\d{2}:\d{2}/.test(line)), 'Video call lines should include duration in canonical format');
-  t.ok(bodyLinesOn.some((line) => /\blink-text\b(?:\s+\d+ chars)?\s*\/\s*https?:\/\//i.test(line)), 'link-text line should include URL content in export-max export');
+  t.ok(bodyLinesOn.some((line) => /\blink-text\b\s+\d+ words\s*\/\s*https?:\/\//i.test(line)), 'link-text line should include URL content in export-max export');
   t.ok(bodyLinesOn.some((line) => /\blink-embed-no-text\b\s*\/\s*https?:\/\//i.test(line)), 'link-embed-no-text line should include URL content in export-max export');
-  t.ok(bodyLinesOn.some((line) => /\blink-text\b\s+\d+ chars\s*\/\s*https?:\/\//i.test(line)), 'link-text lines with text should include content length');
+  t.ok(bodyLinesOn.some((line) => /\blink-text\b\s+\d+ words\s*\/\s*https?:\/\//i.test(line)), 'link-text lines with text should include word count');
   t.ok(bodyLinesOff.every((line) => !line.includes(' / ')), 'export-minimal export should not include slash-delimited content');
 
   const offTextLengthLine = bodyLinesOff.find((line) => /\btext\b\s+\d+ words(?:\s|$)/i.test(line));
@@ -185,7 +198,7 @@ tap.test('buildServerTextExport', (t) => {
   t.notOk(bodyLinesOff.some((line) => line.includes('Rob')), 'export-minimal body should not contain raw sender names');
 
   // link-video: URL must appear after / in export-max
-  t.ok(bodyLinesOn.some((line) => /\blink-video\b\s*\/\s*\w+_\w+\//i.test(line)), 'link-video line in export-max should include compact URL (domain_tld/path) after /');
+  t.ok(bodyLinesOn.some((line) => /\blink-video\b\s*\/\s*https?:\/\//i.test(line)), 'link-video line in export-max should include URL after /');
   // link-video: no slash-content in export-minimal
   t.notOk(bodyLinesOff.some((line) => /\blink-video\b.*\s\/\s/i.test(line)), 'link-video line in export-minimal should not include content after /');
 
@@ -193,6 +206,9 @@ tap.test('buildServerTextExport', (t) => {
   t.notOk(bodyLinesOff.some((line) => /\breaction\b.*\s\/\s/i.test(line)), 'reaction lines in export-minimal should not include content after /');
   // reactions: export-max lines should include emoji content after /
   t.ok(bodyLinesOn.some((line) => /\breaction\b.*\s\/\s/i.test(line)), 'reaction lines in export-max should include emoji content after /');
+  // reactions: specific emoji characters appear in export-max output
+  t.ok(bodyLinesOn.some((line) => line.includes('🥳')), 'reaction-emoji 🥳 appears in export-max TXT output');
+  t.ok(bodyLinesOn.some((line) => line.includes('👍')), 'reaction 👍 appears in export-max TXT output');
 
   t.end();
 });

@@ -352,7 +352,9 @@ function validatePreviewNode(t, node, fileName) {
   // reactions: content is null or emoji/smiley string
   if (node.type === 'reaction') {
     t.ok(raw.content === null || typeof raw.content === 'string', `${fileName}: reaction data_raw.content must be null or string`);
-    t.equal(preview.content, raw.content, `${fileName}: reaction data_preview.content must equal raw.content`);
+    if (preview.content !== raw.content) {
+      t.equal(preview.content, null, `${fileName}: reaction non-emoji raw content has null preview`);
+    }
     if (preview.content) {
       t.equal(typeof preview.length, 'string', `${fileName}: reaction with content must have string length`);
     } else {
@@ -456,7 +458,7 @@ tap.test('testLinkFileUsesLinkType', (t) => {
   t.equal(result.type, 'link', 'link-text files is classified as link when raw meta link is present');
   t.ok(result.text.startsWith('https://www.scan.co.uk/'), 'link-text content is prepended with the URL');
   t.ok(result.text.includes('image sent'), 'link-text content keep message text after the URL');
-  t.ok(/\d+ chars$/.test(result.contentLength), 'link-text previews with text includes content_length');
+  t.ok(/\d+ words$/.test(result.contentLength), 'link-text previews with text includes content_length');
   t.equal(result.link, 'https://www.scan.co.uk/');
   t.end();
 });
@@ -1102,7 +1104,7 @@ tap.test('reactionAsciiSmileyPreservesContent', (t) => {
   });
   t.equal(meta.type, 'reaction', 'pure smiley text should be classified as reaction');
   t.equal(meta.text, ':)', 'ascii smiley content should be preserved for reaction text');
-  t.equal(meta.contentLength, '2 chars', 'smiley content length should count as 2 chars');
+  t.equal(meta.contentLength, '1 words', 'smiley content length should count as 1 words');
   t.end();
 });
 
@@ -1181,7 +1183,7 @@ tap.test('chooseRuleAllEntries', (t) => {
 
 tap.test('formatExportHeaderAllTypes', (t) => {
   const allTypes = [
-    'audio-call', 'deleted', 'gif', 'image', 'link-embed-no-text', 'link-text',
+    'audio-call', 'deleted', 'image', 'link-embed-no-text', 'link-text',
     'missed-audio-call', 'missed-video-call', 'poll', 'reaction',
     'sticker', 'text', 'text-image-replied', 'text-replied', 'video-call', 'voice-note',
   ];

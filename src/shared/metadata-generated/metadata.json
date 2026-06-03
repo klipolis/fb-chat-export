@@ -1,6 +1,7 @@
 {
-  "file_count": 19,
+  "file_count": 22,
   "files": [
+    "animated-gif.json",
     "audio-call.json",
     "call-video.json",
     "deleted.json",
@@ -13,8 +14,10 @@
     "link-video.json",
     "missed-call-audio.json",
     "missed-call-video.json",
+    "poll.json",
     "reaction-emoji.json",
     "reaction.json",
+    "sticker.json",
     "text-image-replied.json",
     "text-replied.json",
     "text.json",

@@ -12,45 +12,48 @@ Changelog entries should describe active changes in direct present-tense stateme
 ### Added
 
 - `pnpm run release` automates the release process: renames `[Unreleased]` to the new version heading, inserts a fresh empty `[Unreleased]` above it, and bumps `package.json` version. Supports `patch`, `minor`, `major` override arguments; defaults to minor if any `Added`/`Changed` entries are present, otherwise patch.
-- Pre-commit hook also blocks commits when the `[Unreleased]` section in `CHANGELOG.md` is empty, via `scripts/check-unreleased.js`.
-- `pnpm run lint:unreleased` exposes the changelog guard as a standalone command.
-- Export filenames drop the `fb-chats-` and `fb-export-` prefixes, producing `export-max.txt`, `export-minimal.txt`, `export-summary-combined.txt`, and `export-summary-detailed.txt`.
-- Documentation references to the platform are removed except where required for terms and userscript header metadata.
+- Blocks pushes when the changelog has an empty release section, requiring changes to be recorded before publishing.
+- Provides a standalone changelog guard to verify the release notes are not empty before publishing.
+- Export filenames omit old tool prefixes for a simpler naming scheme.
+- Documentation omits platform-specific terminology except when terms or userscript metadata require it.
+- AI interaction guidance helps users and assistants collaborate effectively.
 
 ### Fixed
 
-- Duration values in exports and JSON previews always use strict `HH:MM:SS` three-part format (e.g. `00:18:00`, `00:00:20`) with zero-padded hours, eliminating the previous `MM:SS` two-part form.
-- `data_preview.date` now uses the normalized parsed date from relative weekday labels, so messages like `Saturday 4:36am` export with the correct preview timestamp.
-- Alias replacements now preserve lowercase `you` in message content while still applying explicit sender aliases and the `any` fallback alias to preview names, including Unicode sender names.
-- `validate-generated-txt.js` summary validator is dynamic: it accepts any number of per-sender summary sections instead of being hardcoded to two.
-- `export-config.json` `personSummaryTitle` pattern is dynamic (`^.{1,80} Summary$`) instead of listing hardcoded sender aliases.
-- `export-config.json` `messageTypes` updated to include `reaction-emoji`, `reaction`, and `video-link`; `duration` pattern updated to match the strict `HH:MM:SS` format.
+- Export and preview durations always display in strict `HH:MM:SS` three-part format (e.g. `00:18:00`) with zero-padded hours instead of the previous two-part `MM:SS` style.
+- Preview dates from relative weekday labels (e.g. `Saturday 4:36am`) resolve to the correct calendar date.
+- Alias replacement preserves generic lowercase wording while still anonymizing sender names.
+- The summary validator accepts any number of participant sections instead of a fixed count.
+- Summary title patterns are dynamic instead of relying on hardcoded sender names.
+- Message type rules include reaction and video-link variants; duration matching uses strict `HH:MM:SS`.
+- Summary text count no longer inflates entries that carry multiple images.
+- Total summary covers every participant, not just primary senders.
+- Body content length uses word count for all message types.
+- Link-video export uses the full URL instead of the compact shorthand format.
+- Text messages are no longer misclassified as voice messages in the browser scan.
 
 ### Changed
 
-- format header section.
-- fix image total count
-- `data-config/alias-names.json` is the canonical runtime alias source; duplicate userscript alias packaging metadata is removed.
-- `package.json` script ordering is cleaned and a new `lint:todos` command validates `.TODO` files and `.todo/config.json`.
-- Reorganises documentation into `docs/user-guide` and `docs/developer-guide`, with Mermaid flowcharts added to key docs and a new release management guide.
-- TODO management docs explicitly allow additional manual files in `.todo/` to be preserved as-is.
-
+- Updated alias configuration so a single source defines runtime replacements and duplicate metadata is no longer needed.
+- Cleaned build and lint script ordering and added a new todos validation command.
+- Reorganized documentation into separate user and developer guides, with flowcharts added to key pages.
+- TODO guidance allows extra manual note files without requiring changes.
 - Sticker and animated gif messages are not counted as images in the summary; they count toward the text total alongside reactions.
-- Reaction messages using an emoji image (`<img>` element) instead of an SVG icon are correctly classified as `reaction` type.
-- Reorganises the JSON preview format: `html_locale`, `title`, and `type` are top-level fields; `data_raw` captures values as extracted from the HTML; `data_preview` contains processed display values; `locate` is removed.
-- Reaction messages always produce `null` content in both `data_raw` and `data_preview`.
-- `video-link` is a new message type for messages whose body is a video platform URL (YouTube, Vimeo). The URL is used as content; the type appears in the export line and JSON preview. The HTML optimiser preserves plain URL text inside `<a>` tags so the message wrapper is not incorrectly stripped as empty.
-- The voice-note message type is consistently named `voice-note` everywhere — in the rule, JSON preview, and content text — matching the raw sample filename.
+- Reaction messages using an emoji image instead of an SVG icon are correctly classified as `reaction` type.
+- Reorganises the JSON preview schema with top-level fields and separate raw and preview sections.
+- Reaction messages always produce null content in both raw and preview data.
+- `video-link` is a new message type for video platform URLs, using the URL as content.
+- The voice-note message type is consistently named `voice-note` across all rule, preview, and export paths.
 
-### Fixed
+### Dev
 
-- Text messages are no longer misclassified as voice-message in the browser scan when no audio timer element is present.
-- Message type classification stops at the first matching rule; once a type is identified from the aria-label, heuristic overrides are skipped.
-- Downloaded export filename includes the selected date range (e.g. `fb-export-2026-05-01–2026-05-19-max.txt`).
-- Call duration totals in the browser summary are counted correctly; previously, timers in `HH:MM` format without the word "min" were counted as 0 minutes.
-- Messages whose aria-label uses a full calendar date (e.g. "May 7, 2026, 7:09 AM, You: text") without the "At" prefix are correctly parsed; date, sender, and content are each placed in the right field.
-- Duration values in exports and JSON previews use `HH:MM:SS` / `MM:SS` clock format (e.g. `18:00`, `00:20`) without a trailing "mins" label.
-- Video-link URLs in TXT exports are shortened to a compact form: scheme and dots are stripped, the domain dots replaced with underscores, and the path is truncated to 10 characters with an ellipsis (e.g. `youtube_com/shorts/IK...`). The raw URL in JSON `data_raw` keeps the full address without query string.
+- Message-type resolution is shared between server and browser code paths.
+- Removed unreachable message-type branches that could never be triggered.
+- Export tests verify emoji reaction content in the output.
+- Raw sample files for sticker, GIF, and poll message types test classification rules and export output end to end.
+- Updated test expectations to match the word-length content format.
+- A dedicated lint script validates TODO file format and cross-reference consistency.
+- AI agent changelog examples follow the repository style guide without retrospective wording.
 
 ## v5.4.0 (2026-05-18)
 

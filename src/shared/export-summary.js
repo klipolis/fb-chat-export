@@ -54,6 +54,12 @@ function buildSummaryData(entries = [], options = {}) {
 
   const totals = new Map();
   const allDays = new Set();
+  let totalCalls = 0;
+  let totalCallSeconds = 0;
+  let totalImages = 0;
+  let totalImageEntries = 0;
+  let totalWords = 0;
+  let totalTextEntries = 0;
 
   entries.forEach((entry) => {
     const sender = entry.sender || 'Unknown';
@@ -72,12 +78,21 @@ function buildSummaryData(entries = [], options = {}) {
     if (isCountedCall(entry)) {
       data.calls += 1;
       data.callSeconds += Number(entry.callSeconds || 0);
+      totalCalls += 1;
+      totalCallSeconds += Number(entry.callSeconds || 0);
     }
     if (entry.imageCount) {
       data.images += Number(entry.imageCount || 0);
+      totalImages += Number(entry.imageCount || 0);
     } else if (entry.isImage) {
       data.images += 1;
+      totalImages += 1;
     }
+    if (entry.isImage) totalImageEntries += 1;
+    if (!isCountedCall(entry) && !entry.isImage && !isIgnoredForIndividualCount(entry)) {
+      totalTextEntries += 1;
+    }
+    totalWords += Number(entry.wordCount || 0);
     totals.set(sender, data);
   });
 
@@ -102,6 +117,7 @@ function buildSummaryData(entries = [], options = {}) {
 
     const participantDays = new Set();
     let participantImages = 0;
+    let participantImageEntries = 0;
     let participantCalls = 0;
     let participantSeconds = 0;
     let participantWords = 0;
@@ -112,6 +128,7 @@ function buildSummaryData(entries = [], options = {}) {
     includedEntries.forEach((entry) => {
       if (entry.imageCount) participantImages += Number(entry.imageCount || 0);
       else if (entry.isImage) participantImages += 1;
+      if (entry.isImage) participantImageEntries += 1;
       if (isCountedCall(entry) && !isMissedCall(entry)) {
         participantCalls += 1;
         participantSeconds += Number(entry.callSeconds || 0);
@@ -121,7 +138,7 @@ function buildSummaryData(entries = [], options = {}) {
 
     const participantText = Math.max(
       0,
-      includedEntries.length - participantCalls - participantImages
+      includedEntries.length - participantCalls - participantImageEntries
     );
     return {
       name,
@@ -137,22 +154,14 @@ function buildSummaryData(entries = [], options = {}) {
   });
 
   const totalText = participantSummaries.reduce((sum, item) => sum + item.participantText, 0);
-  const totalImages = participantSummaries.reduce((sum, item) => sum + item.participantImages, 0);
-  const totalCalls = participantSummaries.reduce((sum, item) => sum + item.participantCalls, 0);
-  const totalCallSeconds = participantSummaries.reduce(
-    (sum, item) => sum + item.participantSeconds,
-    0
-  );
-  const totalWords = participantSummaries.reduce((sum, item) => sum + item.participantWords, 0);
 
   return {
     total: {
       title: TOTAL_SUMMARY_TITLE,
       messages: entries.length,
-      // Total-day count must always use all messages, not filtered subsets.
       days: allDays.size,
       rough: {
-        text: totalText,
+        text: totalTextEntries,
         words: totalWords,
         images: totalImages,
         calls: totalCalls,
@@ -193,10 +202,8 @@ const DETAILED_TYPE_ORDER = [
   'text',
   'reaction',
   'link',
-  'video-link',
   'image',
   'sticker',
-  'gif',
   'poll',
   'audio-call',
   'video-call',

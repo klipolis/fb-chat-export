@@ -195,7 +195,19 @@
           "i"
         )
       });
-      module.exports = rules.map(addMatchFile);
+      var messageRules = rules.map(addMatchFile);
+      function chooseRule(fileName, ariaLabel) {
+        const loweredFile = String(fileName || "").toLowerCase();
+        const loweredLabel = String(ariaLabel || "").toLowerCase();
+        const fileRule = messageRules.find((rule) => rule.matchFile && rule.matchFile.test(loweredFile));
+        if (fileRule) return fileRule;
+        const labelRule = messageRules.find(
+          (rule) => rule.matchLabel && rule.matchLabel.test(loweredLabel)
+        );
+        if (labelRule) return labelRule;
+        return messageRules.find((rule) => rule.type === "text") || messageRules[0];
+      }
+      module.exports = { messageRules, chooseRule };
     }
   });
 
@@ -203,10 +215,11 @@
   var require_rules = __commonJS({
     "src/shared/rules/index.js"(exports, module) {
       var selectors = require_selectors();
-      var messageRules = require_message_rules();
+      var { messageRules, chooseRule } = require_message_rules();
       module.exports = {
         selectors,
-        messageRules
+        messageRules,
+        chooseRule
       };
     }
   });
@@ -586,7 +599,7 @@
   // src/shared/message-metadata.js
   var require_message_metadata = __commonJS({
     "src/shared/message-metadata.js"(exports, module) {
-      var { messageRules } = require_rules();
+      var { messageRules, chooseRule } = require_rules();
       var { parseAriaLabel: parseAriaLabel2, normalizeDateToSimple, normalizeLabel } = require_aria_label_parser();
       var sharedFrontendConfig;
       try {
@@ -705,17 +718,6 @@
         const normalizedLink = normalizeLabel(link).replace(/[.,;:!?]+$/g, "").trim();
         return normalizedText === normalizedLink;
       }
-      function chooseRule(fileName, ariaLabel) {
-        const loweredFile = String(fileName || "").toLowerCase();
-        const loweredLabel = String(ariaLabel || "").toLowerCase();
-        const fileRule = messageRules.find((rule) => rule.matchFile && rule.matchFile.test(loweredFile));
-        if (fileRule) return fileRule;
-        const labelRule = messageRules.find(
-          (rule) => rule.matchLabel && rule.matchLabel.test(loweredLabel)
-        );
-        if (labelRule) return labelRule;
-        return messageRules.find((rule) => rule.type === "text") || messageRules[0];
-      }
       function normalizeContentType(type) {
         if (type === "you-text") return "text";
         return type;
@@ -812,16 +814,12 @@
           contentText = "voice note";
         } else if (type === "sticker") {
           contentText = "sticker";
-        } else if (type === "gif") {
-          contentText = "gif";
         } else if (type === "reaction") {
           const reactionOnlyTextMatch = /^[:;=8Xx][-~]?[)DdpP(/\\\]]$/u;
           const normalizedReaction = normalizedText.trim();
           const isAsciiReaction = reactionOnlyTextMatch.test(normalizedReaction);
           const isEmojiReaction = /\p{Extended_Pictographic}/u.test(normalizedReaction);
           contentText = isAsciiReaction || isEmojiReaction ? normalizedReaction : null;
-        } else if (type === "video-link") {
-          contentText = formatUrlCompact(resolvedLink || message) || "video link";
         } else if (type === "image") {
           contentText = "image sent";
         } else if (type === "video-call" || type === "audio-call" || type === "missed-call") {
@@ -829,13 +827,12 @@
           contentText = hasCallPhrase ? normalizedText : type.replace(/-/g, " ");
         }
         const timedTypes = /* @__PURE__ */ new Set(["voice-note", "video-call", "audio-call"]);
-        const noLengthTypes = /* @__PURE__ */ new Set(["image", "missed-call", "unsent", "sticker", "gif", "video-link", ...timedTypes]);
+        const noLengthTypes = /* @__PURE__ */ new Set(["image", "missed-call", "unsent", "sticker", ...timedTypes]);
         const duration = timedTypes.has(type) ? rawDuration : null;
         const linkHasTextContent = type === "link" && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
         const shouldOmitLength = noLengthTypes.has(type) || type === "link" && !linkHasTextContent;
         const wordCount = shouldOmitLength || contentText == null ? void 0 : (contentText.match(/\S+/g) || []).length;
-        const charCount = shouldOmitLength || contentText == null ? void 0 : String(contentText).length;
-        const contentLength = shouldOmitLength || contentText == null ? void 0 : type === "text" ? `${wordCount} words` : `${charCount} chars`;
+        const contentLength = shouldOmitLength || contentText == null ? void 0 : `${wordCount} words`;
         return {
           type,
           text: contentText,
@@ -970,6 +967,12 @@
         }
         const totals = /* @__PURE__ */ new Map();
         const allDays = /* @__PURE__ */ new Set();
+        let totalCalls = 0;
+        let totalCallSeconds = 0;
+        let totalImages = 0;
+        let totalImageEntries = 0;
+        let totalWords = 0;
+        let totalTextEntries = 0;
         entries.forEach((entry) => {
           const sender = entry.sender || "Unknown";
           const dayKey = formatDayKey(entry.date);
@@ -986,12 +989,21 @@
           if (isCountedCall(entry)) {
             data.calls += 1;
             data.callSeconds += Number(entry.callSeconds || 0);
+            totalCalls += 1;
+            totalCallSeconds += Number(entry.callSeconds || 0);
           }
           if (entry.imageCount) {
             data.images += Number(entry.imageCount || 0);
+            totalImages += Number(entry.imageCount || 0);
           } else if (entry.isImage) {
             data.images += 1;
+            totalImages += 1;
           }
+          if (entry.isImage) totalImageEntries += 1;
+          if (!isCountedCall(entry) && !entry.isImage && !isIgnoredForIndividualCount(entry)) {
+            totalTextEntries += 1;
+          }
+          totalWords += Number(entry.wordCount || 0);
           totals.set(sender, data);
         });
         let selectedParticipants;
@@ -1013,6 +1025,7 @@
           );
           const participantDays = /* @__PURE__ */ new Set();
           let participantImages = 0;
+          let participantImageEntries = 0;
           let participantCalls = 0;
           let participantSeconds = 0;
           let participantWords = 0;
@@ -1023,6 +1036,7 @@
           includedEntries.forEach((entry) => {
             if (entry.imageCount) participantImages += Number(entry.imageCount || 0);
             else if (entry.isImage) participantImages += 1;
+            if (entry.isImage) participantImageEntries += 1;
             if (isCountedCall(entry) && !isMissedCall(entry)) {
               participantCalls += 1;
               participantSeconds += Number(entry.callSeconds || 0);
@@ -1031,7 +1045,7 @@
           });
           const participantText = Math.max(
             0,
-            includedEntries.length - participantCalls - participantImages
+            includedEntries.length - participantCalls - participantImageEntries
           );
           return {
             name,
@@ -1046,21 +1060,13 @@
           };
         });
         const totalText = participantSummaries.reduce((sum, item) => sum + item.participantText, 0);
-        const totalImages = participantSummaries.reduce((sum, item) => sum + item.participantImages, 0);
-        const totalCalls = participantSummaries.reduce((sum, item) => sum + item.participantCalls, 0);
-        const totalCallSeconds = participantSummaries.reduce(
-          (sum, item) => sum + item.participantSeconds,
-          0
-        );
-        const totalWords = participantSummaries.reduce((sum, item) => sum + item.participantWords, 0);
         return {
           total: {
             title: TOTAL_SUMMARY_TITLE,
             messages: entries.length,
-            // Total-day count must always use all messages, not filtered subsets.
             days: allDays.size,
             rough: {
-              text: totalText,
+              text: totalTextEntries,
               words: totalWords,
               images: totalImages,
               calls: totalCalls,
@@ -1098,10 +1104,8 @@
         "text",
         "reaction",
         "link",
-        "video-link",
         "image",
         "sticker",
-        "gif",
         "poll",
         "audio-call",
         "video-call",
@@ -1367,7 +1371,7 @@ ${aliasLines}
         }
         if (includeLength && entry.contentLength) parts.push(entry.contentLength);
         const base = `[${dateText}] ${sender}: ${parts.join(" ")}`;
-        const contentTypes = /* @__PURE__ */ new Set(["text", "link", "video-link", "reaction"]);
+        const contentTypes = /* @__PURE__ */ new Set(["text", "link", "reaction"]);
         const shouldShowTextContent = includeContent && contentTypes.has(entry.semanticType) && entry.content;
         if (shouldShowTextContent) {
           return `${base} / ${entry.content}
@@ -1991,10 +1995,10 @@ ${aliasLines}
           const aliasMap = aliasChk.checked ? getAliasMap() : {};
           const aliasedText = aliasChk.checked ? (0, import_alias_utils.applyAliasToText)(text, aliasMap, sender) : text;
           const aliasedContent = aliasChk.checked ? (0, import_alias_utils.applyAliasToText)(
-            includeContentChk.checked ? rawLinkChk.checked && (type === "link" || type === "video-link") ? (0, import_message_metadata.stripTrackingParams)(link || originalHref || aliasedText) || aliasedText : originalHref || aliasedText : aliasedText,
+            includeContentChk.checked ? rawLinkChk.checked && type === "link" ? (0, import_message_metadata.stripTrackingParams)(link || originalHref || aliasedText) || aliasedText : originalHref || aliasedText : aliasedText,
             aliasMap,
             sender
-          ) : includeContentChk.checked ? rawLinkChk.checked && (type === "link" || type === "video-link") ? (0, import_message_metadata.stripTrackingParams)(link || originalHref || text) || text : originalHref || text : text;
+          ) : includeContentChk.checked ? rawLinkChk.checked && type === "link" ? (0, import_message_metadata.stripTrackingParams)(link || originalHref || text) || text : originalHref || text : text;
           const displayType = type === "reaction" && text ? "text" : type;
           const lineEntry = {
             fileType: displayType,
