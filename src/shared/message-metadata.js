@@ -319,14 +319,8 @@ function getContentMeta({
 }
 
 module.exports = {
-  parseAriaLabel,
-  normalizeDateToSimple,
-  normalizeLabel,
   normalizeDuration,
-  formatUrlCompact,
   stripTrackingParams,
-  extractLink,
-  extractPinnedLocationLink,
   chooseRule,
   getContentMeta,
 };

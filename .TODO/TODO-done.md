@@ -229,3 +229,20 @@
 ## Export format
 
 - T159. Added export-raw-date.txt variant that includes the raw aria-label date text in parentheses alongside the normalized date in each message line.
+
+## Dead code
+
+- T179. Removed unused `beautify-optimized-html.js`, `rules/selectors.js`, and `rules/classes.json`.
+
+## Cleanup
+
+- T182. Stopped exporting internal-only functions (`formatUrlCompact`, `extractPinnedLocationLink`, `isLinkOnlyText`, `normalizeContentType`) from `message-metadata.js`.
+- T186. Removed hardcoded `"Yoghurt"` → `"Youghurt"` normalization from `export-text.js` so alias configuration is the single source of truth.
+- T187. Replaced `throw err` with `console.error(err)` inside the `setTimeout` callback in `src/frontend/src/index.js` `scanStep()` to prevent unhandled promise rejections.
+- T193. Removed `src/build.js` wrapper and pointed `package.json` `build:frontend` directly at `src/frontend/build.cjs`.
+- T194. Removed dead `rel*` path constants from `build-server.cjs` lines 26–29.
+
+## Documentation
+
+- T180. Replaced stale `builds.js` references with `build.cjs` across `docs/developer-guide/` files.
+- T181. Updated `docs/user-guide/README.md` to list six TXT export variants instead of four, and mention the raw-date and JSON summary formats.

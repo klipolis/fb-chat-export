@@ -72,20 +72,6 @@
     }
   });
 
-  // src/shared/rules/selectors.js
-  var require_selectors = __commonJS({
-    "src/shared/rules/selectors.js"(exports, module) {
-      module.exports = {
-        message: '[aria-roledescription="message"]',
-        messageLabel: "[aria-label]",
-        messageText: ".html-div",
-        boldText: ".html-b",
-        italicText: ".html-i",
-        image: ".html-img"
-      };
-    }
-  });
-
   // src/shared/rules/message-rules.js
   var require_message_rules = __commonJS({
     "src/shared/rules/message-rules.js"(exports, module) {
@@ -214,10 +200,8 @@
   // src/shared/rules/index.js
   var require_rules = __commonJS({
     "src/shared/rules/index.js"(exports, module) {
-      var selectors = require_selectors();
       var { messageRules, chooseRule } = require_message_rules();
       module.exports = {
-        selectors,
         messageRules,
         chooseRule
       };
@@ -643,19 +627,6 @@
         }
         return null;
       }
-      function formatUrlCompact(url) {
-        if (!url) return url;
-        try {
-          const parsed = new URL(url);
-          const host = parsed.hostname.replace(/\./g, "_");
-          const cleanPath = parsed.pathname.replace(/\/+$/, "");
-          if (!cleanPath) return `${host}...`;
-          const truncPath = cleanPath.length > 10 ? `${cleanPath.slice(0, 10)}...` : `${cleanPath}...`;
-          return host + truncPath;
-        } catch {
-          return url;
-        }
-      }
       function stripTrackingParams2(url) {
         if (!url) return url;
         try {
@@ -847,14 +818,8 @@
         };
       }
       module.exports = {
-        parseAriaLabel: parseAriaLabel2,
-        normalizeDateToSimple,
-        normalizeLabel,
         normalizeDuration: normalizeDuration2,
-        formatUrlCompact,
         stripTrackingParams: stripTrackingParams2,
-        extractLink,
-        extractPinnedLocationLink,
         chooseRule,
         getContentMeta: getContentMeta2
       };
@@ -2204,7 +2169,7 @@ ${aliasLines}
         } catch (err) {
           noticeMsg.textContent = "An unexpected error occurred. Please try again.";
           setScanState("idle");
-          throw err;
+          console.error(err);
         }
       }
       scanStep();

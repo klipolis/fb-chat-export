@@ -11,7 +11,7 @@ flowchart TD
 	B --> D[create-nodes]
 	D --> E[data-output/json-format]
 	B --> F[data-output/final-export export-max/export-minimal]
-	G[src/frontend/src/index.js] --> H[src/frontend/builds.js]
+	G[src/frontend/src/index.js] --> H[src/frontend/build.cjs]
 	H --> I[dist/app.js]
 	J[tests/generated-txt-schema.json] --> F
 	J --> I
@@ -48,7 +48,7 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 
 - `src/frontend/`: browser-facing assets, frontend source, and frontend build tooling.
   - `src/frontend/src/`: browser-facing source entrypoint.
-  - `src/frontend/build.cjs`: frontend build wrapper that delegates to `src/frontend/builds.js`.
+  - `src/frontend/build.cjs`: frontend build script using esbuild.
 - `src/platforms/`: platform header and build helper files used by the frontend bundle build.
 - `src/server/`: build scripts such as `build-preview.js`.
 - `data-config/frontend_shared.json`: shared runtime alias mapping and relative date rules used by the browser export and server build.

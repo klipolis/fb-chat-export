@@ -32,7 +32,7 @@ export default [
   },
   // ESM frontend source (bundled by esbuild, uses import/export)
   {
-    files: ['src/build.js', 'src/frontend/src/**/*.js', 'src/shared/frontend-utils.mjs'],
+    files: ['src/frontend/src/**/*.js', 'src/shared/frontend-utils.mjs'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',

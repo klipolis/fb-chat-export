@@ -239,7 +239,7 @@ tap.test('testOptimizedHtmlNoEmptyTags', (t) => {
 
 tap.test('normalizeExportSender', (t) => {
   t.equal(normalizeExportSender('You'), 'Youghurt', 'self-sender You becomes Youghurt');
-  t.equal(normalizeExportSender('Yoghurt'), 'Youghurt', 'older Yoghurt alias becomes Youghurt');
+  t.equal(normalizeExportSender('Yoghurt'), 'Yoghurt', 'Yoghurt passes through unchanged without hardcoded normalization');
   t.equal(normalizeExportSender('Alpha'), 'Alpha', 'known sender pass through unchanged');
   t.equal(normalizeExportSender(''), 'Unknown', 'empty sender becomes Unknown');
   t.equal(normalizeExportSender(null), 'Unknown', 'null sender becomes Unknown');

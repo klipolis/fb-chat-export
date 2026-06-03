@@ -604,7 +604,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
       } catch (err) {
         noticeMsg.textContent = 'An unexpected error occurred. Please try again.';
         setScanState('idle');
-        throw err;
+        console.error(err);
       }
     }
 

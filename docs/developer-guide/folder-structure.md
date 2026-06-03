@@ -11,7 +11,7 @@ flowchart TD
   B --> D[create-nodes]
   D --> E[data-output/json-format]
   B --> F[data-output/final-export export-max/export-minimal]
-  G[src/frontend/src/index.js] --> H[src/frontend/builds.js]
+  G[src/frontend/src/index.js] --> H[src/frontend/build.cjs]
   H --> I[dist/app.js]
   J[tests/generated-json-schema.json] --> F
   J --> I

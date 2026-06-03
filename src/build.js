@@ -1,1 +1,0 @@
-import './frontend/build.cjs';

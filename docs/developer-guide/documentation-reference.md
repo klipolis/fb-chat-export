@@ -15,7 +15,7 @@ flowchart TD
   B --> D[create-nodes]
   D --> E[data-output/json-format]
   B --> F[data-output/final-export export-max/export-minimal]
-  G[src/frontend/src/index.js] --> H[src/frontend/builds.js]
+  G[src/frontend/src/index.js] --> H[src/frontend/build.cjs]
   H --> I[dist/app.js]
   J[tests/generated-txt-schema.json] --> F
   J --> I
@@ -52,7 +52,7 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 
 - `src/frontend/`: browser-facing assets, frontend source, and frontend build tooling.
   - `src/frontend/src/`: browser-facing source entrypoint.
-  - `src/frontend/build.cjs`: frontend build wrapper that delegates to `src/frontend/builds.js`.
+  - `src/frontend/build.cjs`: frontend build script using esbuild.
 - `src/platforms/`: platform header and build helper files used by the frontend bundle build.
 - `src/server/`: build scripts such as `build-preview.js`.
 - `src/shared/`: shared helper scripts and node rules.
@@ -98,7 +98,7 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 
 - `src/` contains the application source and build scripts.
 - `src/frontend/src/` contains the browser-facing source code.
-- `src/frontend/build.cjs` contains the frontend build wrapper that delegates to `src/frontend/builds.js`.
+- `src/frontend/build.cjs` contains the frontend build script using esbuild.
 - `src/platforms/` contains platform header templates and frontend build helpers.
 - `src/server/` contains server-side build scripts and preview generation.
 - `src/shared/` contains shared helpers used by both server and frontend code.

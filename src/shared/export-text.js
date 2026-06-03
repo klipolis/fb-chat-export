@@ -16,7 +16,7 @@ function normalizeLabel(text) {
 }
 
 function normalizeExportSender(sender) {
-  if (sender === 'You' || sender === 'Yoghurt') return 'Youghurt';
+  if (sender === 'You') return 'Youghurt';
   return sender || 'Unknown';
 }
 

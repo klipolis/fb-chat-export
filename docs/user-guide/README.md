@@ -111,14 +111,16 @@ Sender names are validated during export to catch malformed or non-name labels:
 
 ### Server exports
 
-The `pnpm run build:server` script generates four TXT export files in `data-output/final-export/`:
+The `pnpm run build:server` script generates six TXT export files in `data-output/final-export/`:
 
 - `export-max.txt` — full export with message content, length, and summary.
 - `export-minimal.txt` — export with length only, no content or summary.
 - `export-summary-combined.txt` — summary-only export with combined text/words/images/calls per participant.
 - `export-summary-detailed.txt` — summary-only export with per-type breakdown (text, reaction, link, image, sticker, poll, call types, missed calls, deleted, unsent) plus word count per participant.
+- `export-summary-json.txt` — summary-only export as structured JSON with per-participant counts.
+- `export-raw-date.txt` — full export that includes the original raw date string from the Facebook UI in parentheses after each normalized date.
 
-All four variants use the same header format as the browser export but list `Method: server` instead of `Method: browser`. Summary labels use "posts" and "days" (e.g. `22 posts / 8 days`) rather than the browser's "messages" convention.
+All six variants use the same header format as the browser export but list `Method: server` instead of `Method: browser`. Summary labels use "posts" and "days" (e.g. `22 posts / 8 days`) rather than the browser's "messages" convention.
 
 ### Combined vs detailed summary
 

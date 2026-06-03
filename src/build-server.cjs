@@ -23,11 +23,6 @@ const previewDir = resolveRepoPath('data-output', 'json-format');
 const rawMetadataPath = resolveRepoPath('data-output', 'json-format', 'raw-input-metadata.json');
 const exportDir = resolveRepoPath('data-output', 'final-export');
 
-const relRaw = './data-input';
-const relOptimized = './data-output/optimized-html';
-const relPreview = './data-output/json-format';
-const relExport = './data-output/final-export';
-
 const sharedConfigPath = resolveRepoPath('data-config', 'frontend_shared.json');
 const serverConfigPath = resolveRepoPath('data-config', 'server.json');
 
@@ -248,7 +243,7 @@ function main() {
   emptyDir(exportDir);
 
   if (!fs.existsSync(rawDir)) {
-    console.error('Missing HTML Raw folder:', relRaw);
+    console.error('Missing HTML Raw folder:', './data-input');
     process.exit(1);
   }
 
@@ -258,7 +253,7 @@ function main() {
   );
   const files = fs.readdirSync(rawDir).filter((name) => name.endsWith('.html'));
   if (!files.length) {
-    console.error('No raw HTML files found in', relRaw);
+    console.error('No raw HTML files found in', './data-input');
     process.exit(1);
   }
 
