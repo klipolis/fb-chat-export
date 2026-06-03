@@ -14,6 +14,8 @@ The assistant behaves best when the user gives a precise request.
 - mention current repository conventions, e.g. `CHANGELOG.md has an Unreleased section`
 - mention build or test flow if relevant, e.g. `pnpm run lint`, `pnpm run test`
 - mention targeted docs sections, e.g. `docs/README.md`, `docs/site.md`, `docs/AI-interaction`
+- mention `.aiignore` if you want the AI to skip certain paths
+- mention `AGENTS.md` and `ai-chat-behavior.config.ts` for project-specific behavior
 
 ## Summary
 

@@ -173,7 +173,7 @@ tap.test('testLinkFileUsesLinkType', (t) => {
     hasLink: false,
   });
   t.equal(result.type, 'link', 'link-text files is classified as link when raw meta link is present');
-  t.ok(result.text.startsWith('https://www.scan.co.uk/'), 'link-text content is prepended with the URL');
+  t.equal(result.text, 'https://www.scan.co.uk/ image sent', 'link-text content includes URL prefix and user text');
   t.ok(result.text.includes('image sent'), 'link-text content keep message text after the URL');
   t.ok(/\d+ words$/.test(result.contentLength), 'link-text previews with text includes content_length');
   t.equal(result.link, 'https://www.scan.co.uk/');

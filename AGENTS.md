@@ -1,21 +1,108 @@
 # Agents
 
-This repository includes AI-assisted development guidance and planning notes.
+This guide gives AI agents project-specific operating instructions.
 
-## Agent Usage
+## Before Starting
 
-- The repository uses AI helpers for refactor suggestions, build updates, and documentation cleanup.
-- The current workflow prefers a single frontend build entry (`src/frontend/build.cjs`) and avoids extra wrapper layers.
-- `pnpm` is standardized through Corepack in CI and local workflows.
+Read these first:
+- This file (AGENTS.md)
+- `ai-chat-behavior.config.ts`
+- `kilo.json` (when using Kilo)
 
-## Notes
+## Files to Ignore
 
-- If you need to extend regression coverage, use the existing `tests/` harness and `tap` as the formal runner.
-- Golden snapshots are stored under `tests/golden` and compared using `tests/snapshot-helper.js`.
-- Build metadata and version support are driven from the changelog release heading to keep package and build versions aligned.
-- Every AI interaction should be captured as a trace in the AI interaction docs so the request, result, and learning are preserved for future contributors.
+Add files with raw prompts, keys, or sensitive user data to `.aiignore` so they're never sent to AI.
 
-## Changelog rules (AI agents must follow these)
+Current entries:
+```
+dist/
+.git/
+node_modules/
+pnpm-lock.yaml
+package-lock.json
+*.log
+.env*
+coverage/
+.cache/
+tmp/
+out/
+```
+
+## What We Build
+
+Chat messages export — exports Messenger chat history to `.txt` files.
+
+## Key Commands
+
+```bash
+pnpm build              # build for production (server + frontend)
+pnpm build:server       # generate optimized HTML, JSON, and TXT exports
+pnpm build:frontend     # bundle frontend dist/app.js
+pnpm test               # lint + unit tests + integration + validations
+pnpm lint               # package, todos, changelog, eslint checks
+pnpm validate:release   # full pre-release validation
+pnpm create:nodes       # debug preview JSON generation
+```
+
+## Editing Rules
+
+- Focus on requested behavior only.
+- Never read `dist/`, `.git/`, or `node_modules/` (saves tokens).
+- Never edit output in `dist/` or `data-output/` unless making production bundle artifacts.
+- Use existing components, helpers, and patterns before adding new abstractions.
+- Remove sensitive data from AI context before sending to any cloud vendor.
+- Use direct current-state language in all text files. Describe current behavior and current rules,
+  not past states, removed options, speculative possibilities, or future blockages. Mention past or
+  future states only when the detail prevents a concrete risk.
+- Prefer the shared code in `src/shared/` before duplicating logic in server or frontend paths.
+
+## Script Rules
+
+- ESM for source-side maintenance scripts (package is `type: module`).
+- CommonJS for build scripts (`*.cjs`), deployment helpers, and tooling entry points that need `require()`.
+- Use `scripts/lib/app-config.js` from ESM scripts and `scripts/lib/app-config.cjs` from CommonJS.
+
+## Agent-Specific
+
+### OpenCode (this CLI)
+
+- Configured via `.opencode.json` at repo root.
+- Reads `AGENTS.md` for instructions.
+- Respects `.aiignore` for sensitive/ignored paths.
+- Never reads `dist/`, `.git/`, or `node_modules/`.
+
+### Kilo
+
+- Configured via `kilo.json` at repo root for agent, command, permissions.
+- New commands: `.kilo/command/*.md`; new agents: `.kilo/agent/*.md`.
+- Respects `.aiignore` (also reads `.codexignore` if present).
+- Never reads `dist/`, `.git/`, or `node_modules/`.
+
+### Other AI Coding Agents
+
+- Follow `ai-chat-behavior.config.ts` for communication style and project behavior.
+- Respect `.aiignore` for sensitive/ignored paths.
+- Respect `.gitignore` before reading source.
+- Never read `dist/`, `.git/`, or `node_modules/`.
+- Update `docs/AI-interaction/` after every durable AI instruction change, including user guidance,
+  AI-agent guidance, prompt style, text-language rules, and bookkeeping guidance.
+
+## AI Behavior
+
+- Deterministic application logic is the source of truth for all metrics.
+- AI must explain verified data, never invent metrics.
+- Log failures enough to debug without leaking prompts or data.
+- If required data is missing, state what is missing and offer next steps.
+
+## When You See These Patterns
+
+- Use `const` and narrow helpers over mutable shared state.
+- Keep server work in `src/server/` build scripts.
+- Keep frontend code in `src/frontend/` focused on browser export UI.
+- Handle failed requests with user-facing errors, not silent failures.
+- Avoid ad hoc string parsing — use schema validation (`tests/generated-txt-schema.json`) instead.
+
+## Changelog Rules (AI agents must follow these)
 
 When writing or editing `CHANGELOG.md`:
 
@@ -30,7 +117,7 @@ When writing or editing `CHANGELOG.md`:
 - Never modify a versioned section that has already been released (i.e. one that has a date and a version number in its heading).
 - When a release is made, the `[Unreleased]` heading is replaced with the new version heading (e.g. `## v5.5.0 (2026-05-21)`). Version choice: only `### Fixed` entries → patch bump; any `### Added` or `### Changed` entries → minor bump. Always check `package.json` for the current version before picking the new one.
 
-## Commit message rules (AI agents must follow these)
+## Commit Message Rules (AI agents must follow these)
 
 This repository uses [Conventional Commits](https://www.conventionalcommits.org/). Husky enforces this via a `commit-msg` hook running commitlint.
 
@@ -49,3 +136,19 @@ Rules:
 - Subject is lowercase, no trailing period.
 - Do not reference internal file names or function names in the subject.
 - Breaking changes: add `!` after the type (e.g. `feat!: redesign export format`) and describe in the commit body.
+
+### Commit Style
+
+- Tone: analytical yet concise. Active voice. Every sentence adds concrete information.
+- Order: subject-verb-object. State what is true and why.
+- Prefer direct words over inflated phrasing.
+
+## TODOs
+
+AI agents keep regular `.TODO/` queue files synced:
+- `.TODO/config.json`: owns metadata; read `nextTaskNumber` before adding; use `T-` prefix; increment after assigning.
+- `.TODO/TODO-next.md`: active queue; add confirmed work here before start; one `T-` task per bullet.
+- `.TODO/TODO-done.md`: stores completed work.
+- `.TODO/TODO-future.md`: holds valid deferred work.
+- `.TODO/TODO-ignore.md`: holds deliberate no-fix decisions with rationale.
+- Run `pnpm lint:todos` after TODO metadata changes.

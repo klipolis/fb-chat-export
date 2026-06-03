@@ -2,6 +2,15 @@
 
 Thank you for contributing! This repository uses `pnpm` and standard Node.js tooling.
 
+## AI agents
+
+This repository uses AI-assisted development. If you use an AI coding agent:
+
+- The agent reads `AGENTS.md` and `ai-chat-behavior.config.ts` for project-specific instructions.
+- The `.aiignore` file tells the agent which paths to skip (sensitive or irrelevant files).
+- See `docs/AI-interaction/` for interaction patterns and guidance.
+- Every durable AI instruction change should update the AI interaction docs.
+
 ## Getting started
 
 1. Clone the repository and change into the `support/` folder.

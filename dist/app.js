@@ -9,6 +9,7 @@
 // ==/UserScript==
 
 
+"use strict";
 (() => {
   var __create = Object.create;
   var __defProp = Object.defineProperty;
@@ -75,6 +76,7 @@
   // src/shared/rules/message-rules.js
   var require_message_rules = __commonJS({
     "src/shared/rules/message-rules.js"(exports, module) {
+      "use strict";
       var FILE_SUFFIX = "(?:-[^.]+)?\\.html$";
       var OPTIONAL_PREFIX = "(?:you-)?";
       var rules = [
@@ -200,6 +202,7 @@
   // src/shared/rules/index.js
   var require_rules = __commonJS({
     "src/shared/rules/index.js"(exports, module) {
+      "use strict";
       var { messageRules, chooseRule } = require_message_rules();
       module.exports = {
         messageRules,
@@ -211,6 +214,7 @@
   // src/shared/sender-constants.js
   var require_sender_constants = __commonJS({
     "src/shared/sender-constants.js"(exports, module) {
+      "use strict";
       var SENDER_PATTERN_SOURCE = "\\p{L}[\\p{L} .'-]{0,48}";
       var SENDER_RE = new RegExp(`^${SENDER_PATTERN_SOURCE}$`, "u");
       var SENDER_MAX_WORDS = 3;
@@ -231,6 +235,7 @@
   // src/shared/aria-label-parser.js
   var require_aria_label_parser = __commonJS({
     "src/shared/aria-label-parser.js"(exports, module) {
+      "use strict";
       var { isValidSender, SENDER_PATTERN_SOURCE } = require_sender_constants();
       function normalizeLabel(text) {
         return String(text || "").replace(/\s+/g, " ").trim();
@@ -583,6 +588,7 @@
   // src/shared/message-metadata.js
   var require_message_metadata = __commonJS({
     "src/shared/message-metadata.js"(exports, module) {
+      "use strict";
       var { messageRules, chooseRule } = require_rules();
       var { parseAriaLabel: parseAriaLabel2, normalizeDateToSimple, normalizeLabel } = require_aria_label_parser();
       var sharedFrontendConfig;
@@ -897,6 +903,7 @@
   // src/shared/export-summary.js
   var require_export_summary = __commonJS({
     "src/shared/export-summary.js"(exports, module) {
+      "use strict";
       function formatDayKey(date) {
         if (!(date instanceof Date) || isNaN(date)) return "unknown";
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -1290,6 +1297,7 @@
   // src/shared/export-formatter.js
   var require_export_formatter = __commonJS({
     "src/shared/export-formatter.js"(exports, module) {
+      "use strict";
       var { normalizeDuration: normalizeDuration2 } = require_message_metadata();
       var { normalizeDateToIso: normalizeDateToIso3 } = require_aria_label_parser();
       var { buildSummary: buildSummary2, buildDetailedSummary, buildSummaryData } = require_export_summary();
@@ -1430,6 +1438,7 @@ ${aliasLines}
   // src/shared/alias-utils.js
   var require_alias_utils = __commonJS({
     "src/shared/alias-utils.js"(exports, module) {
+      "use strict";
       function escapeRegExp(value) {
         return String(value || "").replace(/[.*+?^${}()|[\\]\\]/g, "\\$&");
       }

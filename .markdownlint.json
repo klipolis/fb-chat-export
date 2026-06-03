@@ -1,15 +1,25 @@
 {
   "default": true,
   "MD013": false,
-  "MD041": false,
-  "MD033": false,
-  "MD022": false,
   "MD024": false,
+  "MD025": {
+    "front_matter_title": ""
+  },
   "MD032": false,
-  "MD012": false,
-  "MD010": false,
-  "MD031": false,
+  "MD033": false,
   "MD034": false,
+  "MD035": {
+    "style": "consistent"
+  },
   "MD040": false,
-  "MD060": false
+  "MD041": false,
+  "MD042": false,
+  "MD043": false,
+  "MD044": false,
+  "MD045": false,
+  "MD046": {
+    "style": "consistent"
+  },
+  "MD047": false,
+  "MD059": false
 }
