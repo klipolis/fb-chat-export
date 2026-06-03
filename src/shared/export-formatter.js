@@ -49,6 +49,7 @@ function formatDate(raw, referenceDate) {
 function formatLine(entry, options = {}) {
   const includeContent = options.includeContent === true;
   const includeLength = options.includeLength !== false;
+  const includeRawDate = options.includeRawDate === true;
   const dateText = entry.dateText || 'unknown';
   const sender = entry.sender || 'Unknown';
   const displayType = /^image(?:-\d+)?$/i.test(entry.fileType || '')
@@ -62,7 +63,8 @@ function formatLine(entry, options = {}) {
   }
   if (includeLength && entry.contentLength) parts.push(entry.contentLength);
 
-  const base = `[${dateText}] ${sender}: ${parts.join(' ')}`;
+  const rawDatePart = includeRawDate && entry.rawDate ? ` (${entry.rawDate})` : '';
+  const base = `[${dateText}]${rawDatePart} ${sender}: ${parts.join(' ')}`;
   const contentTypes = new Set(['text', 'link', 'reaction']);
   const shouldShowTextContent =
     includeContent && contentTypes.has(entry.semanticType) && entry.content;

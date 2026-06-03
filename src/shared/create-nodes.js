@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { selectors, messageRules, chooseRule } = require('./rules');
+const { chooseRule } = require('./rules');
 const { parseAriaLabel, normalizeDateToSimple } = require('./aria-label-parser');
 const { getContentMeta, normalizeDuration } = require('./message-metadata');
 const aliasNames = require('../../data-config/alias-names.json');
@@ -361,7 +361,7 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
         name: rawSender,
         content: rawContent,
         duration: rawDuration,
-        length: null,
+        length: contentMeta.words != null ? `${contentMeta.words} words` : null,
       },
       data_preview: {
         date: previewDate,

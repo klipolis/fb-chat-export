@@ -15,6 +15,9 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Blocks pushes when the changelog has an empty release section, requiring changes to be recorded before publishing.
 - Provides a standalone changelog guard to verify the release notes are not empty before publishing.
 - Export filenames omit old tool prefixes for a simpler naming scheme.
+- Browser export filenames include the selected date range when filtering by date.
+- Server build generates a structured JSON summary variant for programmatic consumption.
+- Server build generates a raw-date variant that shows the original aria-label date text alongside the normalized date.
 - Documentation omits platform-specific terminology except when terms or userscript metadata require it.
 - AI interaction guidance helps users and assistants collaborate effectively.
 
@@ -30,6 +33,7 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Total summary covers every participant, not just primary senders.
 - Body content length uses word count for all message types.
 - Link-video export uses the full URL instead of the compact shorthand format.
+- Server TXT export header lists link-video as a recognised message type.
 - Text messages are no longer misclassified as voice messages in the browser scan.
 - Link detection in the browser export triggers on URL patterns only, not the bare word "link".
 
@@ -69,6 +73,9 @@ Changelog entries should describe active changes in direct present-tense stateme
 - formatExportFileName unit tests cover null, empty, and unknown mode parameters.
 - buildSummary fixedParticipants filter covered by unit tests.
 - Monolithic run-tests.js split into per-module test files.
+- User guide documents all four TXT export variants with combined and detailed summary formats.
+- Entry-line regex and payload extraction support the raw-date parenthetical format.
+- TXT export schema and validation cover the JSON summary and raw-date export variants.
 
 ## v5.4.0 (2026-05-18)
 

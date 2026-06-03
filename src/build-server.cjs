@@ -12,6 +12,7 @@ const {
   formatLine,
   formatSummarySection,
 } = require('./shared/export-text');
+const { buildSummaryJson } = require('./shared/export-summary');
 const { chooseRule } = require('./shared/message-metadata');
 const { resolveRepoPath } = require('./shared/app-config');
 const schemaConfig = require('./shared/export-config.json');
@@ -210,11 +211,32 @@ function writeTextExports(files, cleanedHtmlByFile, referenceDate) {
   const offPath = path.join(exportDir, formatExportFileName('export-minimal'));
   const summaryCombinedPath = path.join(exportDir, 'export-summary-combined.txt');
   const summaryDetailedPath = path.join(exportDir, 'export-summary-detailed.txt');
+  const rawDateLines = sortedEntries.map((entry) =>
+    formatLine(entry, { includeContent: true, includeLength: true, includeRawDate: true })
+  );
+  const headerTextRawDate = formatExportHeader({
+    method: 'server',
+    messageTypes: getBaseSemanticTypes(files),
+    exportOptions: {
+      includeContent: true,
+      includeLength: true,
+      includeSummary: true,
+      includeRawDate: true,
+    },
+    aliasMap: aliasNameMap,
+  });
+  const rawDateText = buildExportText(rawDateLines, `${headerTextRawDate}${summaryTextForContentOn}`);
+
+  const summaryJsonPath = path.join(exportDir, 'export-summary-json.txt');
+  const summaryJsonText = buildSummaryJson(sortedEntries, { fixedParticipants: participants });
+  const rawDatePath = path.join(exportDir, 'export-raw-date.txt');
   fs.writeFileSync(onPath, contentOn, 'utf8');
   fs.writeFileSync(offPath, contentOff, 'utf8');
   fs.writeFileSync(summaryCombinedPath, summaryCombined, 'utf8');
   fs.writeFileSync(summaryDetailedPath, summaryDetailed, 'utf8');
-  return [onPath, offPath, summaryCombinedPath, summaryDetailedPath];
+  fs.writeFileSync(summaryJsonPath, summaryJsonText, 'utf8');
+  fs.writeFileSync(rawDatePath, rawDateText, 'utf8');
+  return [onPath, offPath, summaryCombinedPath, summaryDetailedPath, summaryJsonPath, rawDatePath];
 }
 
 function main() {

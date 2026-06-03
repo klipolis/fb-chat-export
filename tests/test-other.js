@@ -72,7 +72,7 @@ function validatePreviewNode(t, node, fileName) {
   t.ok('content' in raw, `${fileName}: data_raw.content is required`);
   t.ok('duration' in raw, `${fileName}: data_raw.duration is required`);
   t.ok('length' in raw, `${fileName}: data_raw.length is required`);
-  t.equal(raw.length, null, `${fileName}: data_raw.length must be null`);
+  t.ok(raw.length === null || /^\d+ words$/.test(raw.length), `${fileName}: data_raw.length must be null or word count`);
 
   // data_preview keys must always be present
   t.ok('date' in preview, `${fileName}: data_preview.date is required`);

@@ -38,6 +38,8 @@ tap.test('goldenTxtSnapshots', (t) => {
     { actual: 'export-minimal.txt', golden: 'export-minimal.txt' },
     { actual: 'export-summary-combined.txt', golden: 'export-summary-combined.txt' },
     { actual: 'export-summary-detailed.txt', golden: 'export-summary-detailed.txt' },
+    { actual: 'export-summary-json.txt', golden: 'export-summary-json.txt' },
+    { actual: 'export-raw-date.txt', golden: 'export-raw-date.txt' },
   ];
 
   variants.forEach(({ actual, golden }) => {
@@ -67,17 +69,19 @@ tap.test('buildServerTextExport', (t) => {
     [
       'export-max.txt',
       'export-minimal.txt',
+      'export-raw-date.txt',
       'export-summary-combined.txt',
       'export-summary-detailed.txt',
+      'export-summary-json.txt',
     ],
-    'Expected four stable TXT export filenames'
+    'Expected six stable TXT export filenames'
   );
 
   const summaryCombinedPath = path.join(txtDir, 'export-summary-combined.txt');
   const summaryDetailedPath = path.join(txtDir, 'export-summary-detailed.txt');
   t.ok(fs.existsSync(summaryCombinedPath), 'Expected export-summary-combined.txt to be generated');
   t.ok(fs.existsSync(summaryDetailedPath), 'Expected export-summary-detailed.txt to be generated');
-  t.notOk(fs.existsSync(path.join(txtDir, 'export-summary.json')), 'Summary JSON export should not be generated');
+  t.ok(fs.existsSync(path.join(txtDir, 'export-summary-json.txt')), 'Expected export-summary-json.txt to be generated');
 
   const contentMax = fs.readFileSync(path.join(txtDir, 'export-max.txt'), 'utf8');
   const contentMinimal = fs.readFileSync(path.join(txtDir, 'export-minimal.txt'), 'utf8');
@@ -167,6 +171,30 @@ tap.test('buildServerTextExport', (t) => {
   t.ok(summaryDetailedTxt.includes('Total Summary'), 'Detailed summary TXT should include Total Summary title');
   t.ok(summaryDetailedTxt.includes('---'), 'Detailed summary TXT should include closing separator');
   t.ok(summaryDetailedTxt.includes(` / ${allMessageDayCount} `), 'Detailed summary TXT should include total day count');
+
+  const summaryJsonPath = path.join(txtDir, 'export-summary-json.txt');
+  const summaryJsonRaw = fs.readFileSync(summaryJsonPath, 'utf8');
+  let summaryJson;
+  try { summaryJson = JSON.parse(summaryJsonRaw); } catch (e) { /* empty on purpose */ }
+  t.ok(summaryJson, 'Summary JSON export should be valid JSON');
+  t.ok(summaryJson.total, 'Summary JSON should include total field');
+  t.equal(summaryJson.total.title, 'Total Summary', 'Summary JSON total title should be Total Summary');
+  t.equal(summaryJson.total.messages, allMessageDayCount ? bodyLinesOn.length : 0, 'Summary JSON total messages should match body line count');
+  t.ok(Array.isArray(summaryJson.participants), 'Summary JSON should include participants array');
+  t.ok(summaryJson.participants.length >= 2, 'Summary JSON participants should include at least 2 participants');
+
+  const rawDatePath = path.join(txtDir, 'export-raw-date.txt');
+  t.ok(fs.existsSync(rawDatePath), 'export-raw-date.txt export should exist');
+  const contentRawDate = fs.readFileSync(rawDatePath, 'utf8');
+  t.ok(contentRawDate.includes('Method: server'), 'export-raw-date export should include the server method header');
+  t.ok(contentRawDate.includes('includeRawDate'), 'export-raw-date header should indicate raw date option');
+  t.ok(contentRawDate.includes('\n---\n'), 'export-raw-date export should end with ---');
+  const rawDateBodyLines = contentRawDate
+    .split(/\r?\n/)
+    .filter((line) => /^\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}\]/.test(line));
+  t.equal(rawDateBodyLines.length, rawFiles.length, 'export-raw-date should contain one message per raw file');
+  const rawDateShown = rawDateBodyLines.some((line) => /^\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}\]\s\([^)]+\)\s/.test(line));
+  t.ok(rawDateShown, 'export-raw-date lines should include raw date in parentheses');
 
   const basePattern = /^\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}\]\s[^:]+:\s[^/]+(?:\s\/\s.*)?$/;
   t.ok(bodyLinesOn.every((line) => basePattern.test(line)), 'Each export-max line should match expected format');

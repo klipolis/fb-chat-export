@@ -97,6 +97,7 @@ function extractMessageEntry(el, fileName, referenceDate) {
     fileType,
     semanticType: contentMeta.type,
     dateText: formatDate(rawDate, referenceDate),
+    rawDate: rawDate || '',
     sender: normalizeExportSender(sender),
     content: body,
     duration: contentMeta.duration,

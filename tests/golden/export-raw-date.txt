@@ -1,0 +1,77 @@
+Method: server
+Message types:
+- audio-call
+- deleted
+- image
+- link-embed-no-text
+- link-text
+- link-video
+- missed-audio-call
+- missed-video-call
+- poll
+- reaction-emoji
+- reaction
+- sticker
+- text-image-replied
+- text-replied
+- text
+- video-call
+- voice-note
+
+Options: includeContent, includeLength, includeRawDate, includeSummary
+Unused: none
+
+Aliases:
+  You : Youghurt
+  Rob : Barnabas
+  any : XYZ
+
+---
+
+Total Summary
+22 messages / 8 days
+~ 12 text / 221 words
+~ 20 images
+~ 4 calls 00:49:41
+
+XYZ Summary
+11 messages / 5 days
+~ 6 text / 206 words
+~ 9 images
+~ 1 calls 00:31:00
+
+Youghurt Summary
+6 messages / 3 days
+~ 4 text / 4 words
+~ 5 images
+~ 1 calls 00:18:00
+
+Barnabas Summary
+1 message / 1 day
+~ 0 text / 0 words
+~ 0 images
+~ 1 calls 00:00:20
+
+---
+[2026-04-12 13:23] (April 12, 2026, 1:23 PM) Youghurt: audio-call 00:18:00
+[2026-04-14 18:34] (April 14, 2026, 6:34 PM) XYZ: text-image-replied 6 words / Well i didn't know about this
+[2026-04-16 10:55] (April 16, 2026, 10:55 AM) XYZ: text-replied 39 words / I now realised what happened. It must have been related to reviewers I added at a later stage from when we wen through that, and maybe I was duplicating and editing a reviewer who had the cancellation option on
+[2026-05-16 04:36] (Saturday 4:36am) Ötves: image
+[2026-05-19 22:25] (Tuesday 10:25pm) Youghurt: reaction-emoji 1 words / 🥳
+[2026-05-20 19:51] (Wednesday 7:51pm) XYZ: image
+[2026-05-20 19:51] (Wednesday 7:51pm) XYZ: link-text 152 words / https://www.scan.co.uk/ Yep - that’s the *Sennheiser IE 100 PRO In-Ear Monitoring* headphones, in Red. *Current UK prices for the wired version:* - *From £73.00* new — that’s the cheapest across 9 stores right now - *Typical range*: £73 - £100 depending on retailer and colour - *Scan.co.uk*: £79.00 for Black, £82.00 for Clear - *Thomann UK*: £85.00 for Clear - *idealo shows*: New from £73.00, refurbished from £26.38 - *Red version specifically*: Around £100.13 on idealo d8b549da157ec2c6e04e *Note*: There’s also a _Wireless_ version that costs more — from £84.70 to £90.35+. The box in your photo is the wired model. 13cc462b Prices change fast and stock varies by colour, but £73-£85 is the going rate for new wired IE 100 PROs in the UK as of now. Red tends to be slightly pricier than Black/Clear at some retailers. Want me to check a specific store like Amazon UK or Argos for Youghurt?
+[2026-05-20 19:52] (Wednesday 7:52pm) Barnabas: voice-note 00:00:20
+[2026-05-20 19:54] (Wednesday 7:54pm) XYZ: deleted
+[2026-05-21 17:34] (Thursday 5:34pm) XYZ: missed-call-audio
+[2026-05-22 00:26] (12:26 AM) XYZ: text 8 words / Do Youghurt have that photo and a link?
+[2026-05-22 10:15] (10:15 AM) Youghurt: link-text-2 / https://www.facebook.com/share/v/17hnQQBm6h/
+[2026-05-22 10:45] (10:45 AM) Beta: sticker
+[2026-05-22 11:14] (11:14 AM) XYZ: call-video 00:31:00
+[2026-05-22 11:15] (11:15 AM) XYZ: missed-call-video
+[2026-05-22 11:16] (11:16 AM) Youghurt: reaction 1 words / 👍
+[2026-05-22 11:57] (11:57 AM) Youghurt: link-video / https://youtube.com/shorts/IKS2vNOcZ7A?si=ly12c89dzPEHyhll
+[2026-05-22 12:00] (12:00 PM) Csaba: voice-note-2 00:00:21
+[2026-05-22 13:51] (Friday 1:51pm) XYZ: link-embed-no-text / https://www.google.com/maps/search/?api=1&query=Hall%20Mead%20Nursery%2C%20Nazeing%20Road%20Waltham%20Abbey%20England%20EN9%202EU%20United%20Kingdom
+[2026-05-22 14:18] (2:18 PM) XYZ: animated-gif
+[2026-05-22 16:02] (4:02 PM) Gamma: poll 5 words
+[2026-05-22 20:59] (8:59 PM) Youghurt: image

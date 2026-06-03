@@ -452,8 +452,14 @@ function buildSummary(entries = [], options = {}) {
   return detailLines.join('\n') + '\n';
 }
 
+function buildSummaryJson(entries = [], options = {}) {
+  const summary = buildSummaryData(entries, options);
+  return JSON.stringify(summary, null, 2) + '\n';
+}
+
 module.exports = {
   buildSummary,
   buildDetailedSummary,
   buildSummaryData,
+  buildSummaryJson,
 };

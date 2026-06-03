@@ -20,7 +20,7 @@
     "voice-note"
   ],
   "patterns": {
-    "entryLine": "^\\[\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}\\]\\s[^:]+:\\s[^/]+(?:\\s/\\s.*)?$",
+    "entryLine": "^\\[\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}\\](?:\\s\\([^)]*\\))?\\s[^:]+:\\s[^/]+(?:\\s/\\s.*)?$",
     "duration": "\\d{2}:\\d{2}:\\d{2}",
     "totalSummaryTitle": "^Total Summary$",
     "totalLine": "^\\d+\\s+(?:message|messages)\\s*/\\s*\\d+\\s+(?:day|days)$",
@@ -45,6 +45,18 @@
       "fileName": "export-minimal.txt",
       "includeContent": false,
       "includeSummary": false
+    },
+    {
+      "fileName": "export-summary-json.txt",
+      "includeContent": false,
+      "includeSummary": false,
+      "format": "json"
+    },
+    {
+      "fileName": "export-raw-date.txt",
+      "includeContent": true,
+      "includeSummary": true,
+      "includeRawDate": true
     }
   ]
 }

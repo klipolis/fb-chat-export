@@ -886,7 +886,7 @@
           "voice-note"
         ],
         patterns: {
-          entryLine: "^\\[\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}\\]\\s[^:]+:\\s[^/]+(?:\\s/\\s.*)?$",
+          entryLine: "^\\[\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}\\](?:\\s\\([^)]*\\))?\\s[^:]+:\\s[^/]+(?:\\s/\\s.*)?$",
           duration: "\\d{2}:\\d{2}:\\d{2}",
           totalSummaryTitle: "^Total Summary$",
           totalLine: "^\\d+\\s+(?:message|messages)\\s*/\\s*\\d+\\s+(?:day|days)$",
@@ -911,6 +911,18 @@
             fileName: "export-minimal.txt",
             includeContent: false,
             includeSummary: false
+          },
+          {
+            fileName: "export-summary-json.txt",
+            includeContent: false,
+            includeSummary: false,
+            format: "json"
+          },
+          {
+            fileName: "export-raw-date.txt",
+            includeContent: true,
+            includeSummary: true,
+            includeRawDate: true
           }
         ]
       };
@@ -1297,10 +1309,15 @@
         detailLines.push("---");
         return detailLines.join("\n") + "\n";
       }
+      function buildSummaryJson(entries = [], options = {}) {
+        const summary = buildSummaryData(entries, options);
+        return JSON.stringify(summary, null, 2) + "\n";
+      }
       module.exports = {
         buildSummary: buildSummary2,
         buildDetailedSummary,
-        buildSummaryData
+        buildSummaryData,
+        buildSummaryJson
       };
     }
   });
@@ -1363,6 +1380,7 @@ ${aliasLines}
       function formatLine2(entry, options = {}) {
         const includeContent = options.includeContent === true;
         const includeLength = options.includeLength !== false;
+        const includeRawDate = options.includeRawDate === true;
         const dateText = entry.dateText || "unknown";
         const sender = entry.sender || "Unknown";
         const displayType = /^image(?:-\d+)?$/i.test(entry.fileType || "") ? "image" : entry.fileType;
@@ -1372,7 +1390,8 @@ ${aliasLines}
           parts.push(ensureNormalized);
         }
         if (includeLength && entry.contentLength) parts.push(entry.contentLength);
-        const base = `[${dateText}] ${sender}: ${parts.join(" ")}`;
+        const rawDatePart = includeRawDate && entry.rawDate ? ` (${entry.rawDate})` : "";
+        const base = `[${dateText}]${rawDatePart} ${sender}: ${parts.join(" ")}`;
         const contentTypes = /* @__PURE__ */ new Set(["text", "link", "reaction"]);
         const shouldShowTextContent = includeContent && contentTypes.has(entry.semanticType) && entry.content;
         if (shouldShowTextContent) {

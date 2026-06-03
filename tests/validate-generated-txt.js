@@ -157,7 +157,7 @@ function validateBody(t, lines, patterns, startIndex, fileName, includeContent) 
       );
     }
 
-    const payloadMatch = line.match(/^\[[^\]]+\]\s[^:]+:\s(.+)$/);
+    const payloadMatch = line.match(/^\[[^\]]+\](?:\s\([^)]*\))?\s[^:]+:\s(.+)$/);
     const payload = payloadMatch ? payloadMatch[1] : line;
     const durationLike = payload.match(/\d+:\d{2}(?::\d{2})?|\b\d+\s+mins\b/i);
     if (durationLike && /:\d{2}/.test(durationLike[0])) {
@@ -169,7 +169,34 @@ function validateBody(t, lines, patterns, startIndex, fileName, includeContent) 
   });
 }
 
+function validateJsonSummary(t, fileSchema, schema) {
+  const filePath = path.join(txtDir, fileSchema.fileName);
+  t.ok(fs.existsSync(filePath), `TXT export missing: ${fileSchema.fileName}`);
+  const raw = fs.readFileSync(filePath, 'utf8');
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (e) {
+    t.fail(`${fileSchema.fileName}: invalid JSON: ${e.message}`);
+    return;
+  }
+  t.ok(parsed, `${fileSchema.fileName}: parsed JSON summary object`);
+  t.equal(typeof parsed, 'object', `${fileSchema.fileName}: JSON summary must be an object`);
+  t.ok(parsed.total, `${fileSchema.fileName}: JSON summary must have total field`);
+  t.equal(typeof parsed.total, 'object', `${fileSchema.fileName}: JSON summary total must be an object`);
+  t.ok(Array.isArray(parsed.participants), `${fileSchema.fileName}: JSON summary must have participants array`);
+  t.ok(parsed.participants.length > 0, `${fileSchema.fileName}: JSON summary participants must be non-empty`);
+  t.equal(typeof parsed.total.title, 'string', `${fileSchema.fileName}: JSON summary total.title must be a string`);
+  t.equal(typeof parsed.total.messages, 'number', `${fileSchema.fileName}: JSON summary total.messages must be a number`);
+  t.equal(typeof parsed.total.days, 'number', `${fileSchema.fileName}: JSON summary total.days must be a number`);
+}
+
 function validateFile(t, fileSchema, schema, patterns) {
+  if (fileSchema.format === 'json') {
+    validateJsonSummary(t, fileSchema, schema);
+    return;
+  }
+
   const filePath = path.join(txtDir, fileSchema.fileName);
   t.ok(fs.existsSync(filePath), `TXT export missing: ${fileSchema.fileName}`);
   const lines = fs.readFileSync(filePath, 'utf8').split(/\r?\n/);

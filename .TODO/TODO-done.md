@@ -161,7 +161,7 @@
 - T139. Set up markdownlint for the docs folder and check the new message types guide passes.
 - T140. Add cross-references between the message types guide and the JSON schema docs so related rules are easy to find.
 - T154. Review CHANGELOG entries under `## [Unreleased]` for style consistency — direct active voice, no internal identifiers or file paths, no duplicate entries.
-- T155. Merge orphan `### Fixed` sections in CHANGELOG so all fixes live under a single `### Fixed` heading.
+- T155. Merge orphan `### Fixed` sections in CHANGELOG so all fixes live under a single `### Fixed` heading. Added export-summary-json.txt variant for structured JSON summary output.
 - T158. Review AGENTS.md and doc guidance to ensure changelog and commit rules are consistently referenced across all AI-facing guides.
 
 ## Link detection
@@ -225,3 +225,7 @@
 ## Browser export
 
 - T176. Wired the selected date range into the browser export filename so downloaded files include the date range instead of using a generic conversation-name-based filename.
+
+## Export format
+
+- T159. Added export-raw-date.txt variant that includes the raw aria-label date text in parentheses alongside the normalized date in each message line.
