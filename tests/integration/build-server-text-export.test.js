@@ -33,18 +33,21 @@ tap.test('goldenTxtSnapshots', (t) => {
   const build = runServerBuildOnce();
   t.equal(build.status, 0, `build-server failed: ${build.stderr || build.stdout}`);
 
-  const actualOnPath = path.join(txtDir, 'export-max.txt');
-  const actualOffPath = path.join(txtDir, 'export-minimal.txt');
-  const goldenOnPath = path.join(__dirname, '..', 'golden', 'export-max.txt');
-  const goldenOffPath = path.join(__dirname, '..', 'golden', 'export-minimal.txt');
+  const variants = [
+    { actual: 'export-max.txt', golden: 'export-max.txt' },
+    { actual: 'export-minimal.txt', golden: 'export-minimal.txt' },
+    { actual: 'export-summary-combined.txt', golden: 'export-summary-combined.txt' },
+    { actual: 'export-summary-detailed.txt', golden: 'export-summary-detailed.txt' },
+  ];
 
-  t.ok(fs.existsSync(actualOnPath), 'export-max TXT export missing for golden snapshot test');
-  t.ok(fs.existsSync(actualOffPath), 'export-minimal TXT export missing for golden snapshot test');
-  t.ok(fs.existsSync(goldenOnPath), 'Golden snapshot for export-max TXT missing');
-  t.ok(fs.existsSync(goldenOffPath), 'Golden snapshot for export-minimal TXT missing');
+  variants.forEach(({ actual, golden }) => {
+    const actualPath = path.join(txtDir, actual);
+    const goldenPath = path.join(__dirname, '..', 'golden', golden);
+    t.ok(fs.existsSync(actualPath), `${actual} TXT export missing for golden snapshot test`);
+    t.ok(fs.existsSync(goldenPath), `Golden snapshot for ${golden} TXT missing`);
+    compareSnapshots(actualPath, goldenPath, `${actual} TXT export differs from golden snapshot`);
+  });
 
-  compareSnapshots(actualOnPath, goldenOnPath, 'export-max TXT export differs from golden snapshot');
-  compareSnapshots(actualOffPath, goldenOffPath, 'export-minimal TXT export differs from golden snapshot');
   t.end();
 });
 
@@ -229,33 +232,36 @@ tap.test('textExportDurationNormalization', (t) => {
   const contentOn = fs.readFileSync(contentOnPath, 'utf8');
   const contentOff = fs.readFileSync(contentOffPath, 'utf8');
 
-  const bodyStartOn = contentOn.indexOf('\n---\n');
+  const bodyStartOn = contentOn.lastIndexOf('\n---\n');
+  const bodyAfterSummary = bodyStartOn > -1 ? contentOn.slice(bodyStartOn + '\n---\n'.length) : contentOn;
   const bodyStartOff = contentOff.indexOf('\n---\n');
+  const bodyAfterHeaderOff = bodyStartOff > -1 ? contentOff.slice(bodyStartOff + '\n---\n'.length) : contentOff;
 
-  t.ok(bodyStartOn > -1, 'export-max should have --- separator');
-  t.ok(bodyStartOff > -1, 'export-minimal should have --- separator');
-
-  const bodyLinesOn = contentOn.substring(bodyStartOn).split(/\r?\n/).filter((line) => /^\[\d{4}-\d{2}-\d{2}/.test(line));
-  const bodyLinesOff = contentOff.substring(bodyStartOff).split(/\r?\n/).filter((line) => /^\[\d{4}-\d{2}-\d{2}/.test(line));
+  const bodyLinesOn = bodyAfterSummary
+    .split(/\r?\n/)
+    .filter((line) => /^\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}\]/.test(line));
+  const bodyLinesOff = bodyAfterHeaderOff
+    .split(/\r?\n/)
+    .filter((line) => /^\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}\]/.test(line));
 
   bodyLinesOn.forEach((line, idx) => {
     const contentPart = line.substring(line.indexOf('] ') + 2);
-    const durationMatches = contentPart.match(/(\d+:\d{2}(?::\d{2})?|\d+)\s+(?!chars)/);
-    if (durationMatches && /\d+:\d{2}(?::\d{2})?/.test(durationMatches[0])) {
+    const hms = contentPart.match(/\b(\d{2}:\d{2}:\d{2})\b/);
+    if (hms) {
       t.ok(
-        /\d+:\d{2}(?::\d{2})?\s+mins/.test(contentPart),
-        `Line ${idx + 1} in export-max should have normalized duration: ${line}`
+        /^\d{2}:\d{2}:\d{2}$/.test(hms[1]),
+        `Line ${idx + 1} in export-max should have normalized HH:MM:SS duration: ${line}`
       );
     }
   });
 
   bodyLinesOff.forEach((line, idx) => {
     const contentPart = line.substring(line.indexOf('] ') + 2);
-    const durationMatches = contentPart.match(/(\d+:\d{2}(?::\d{2})?|\d+)\s+(?!chars)/);
-    if (durationMatches && /\d+:\d{2}(?::\d{2})?/.test(durationMatches[0])) {
+    const hms = contentPart.match(/\b(\d{2}:\d{2}:\d{2})\b/);
+    if (hms) {
       t.ok(
-        /\d+:\d{2}(?::\d{2})?\s+mins/.test(contentPart),
-        `Line ${idx + 1} in export-minimal should have normalized duration: ${line}`
+        /^\d{2}:\d{2}:\d{2}$/.test(hms[1]),
+        `Line ${idx + 1} in export-minimal should have normalized HH:MM:SS duration: ${line}`
       );
     }
   });

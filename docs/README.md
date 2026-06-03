@@ -94,7 +94,7 @@ Bob Summary
 >
 > Prefer GitHub/CI builds over local builds because CI builds run in a clean, consistent environment, catch dependency and environment drift early, and ensure the same generated artifacts are reproducible for release verification.
 
-- Run `pnpm run build-preview` to generate data preview JSON directly from optimized HTML.
+- Run `pnpm run build:preview` to generate data preview JSON directly from optimized HTML.
 - Run `pnpm run build:clean` to clear generated build artifacts while preserving raw inputs.
 - Run `pnpm run create:nodes` for lower-level preview export debugging or custom workflows.
 - Run `pnpm run validate:generated-json` to verify final `data-output/json-format/` preview schema.

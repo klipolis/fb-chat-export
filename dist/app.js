@@ -185,7 +185,7 @@
             "text-replied",
             "text-image-replied"
           ],
-          matchLabel: /\byou:|\breply\b|\breplied\b|^(?!.*\b(?:link|unsent|video call|voice message|voice note|missed call)\b).*/i
+          matchLabel: /\byou:|\breply\b|\breplied\b|^(?!.*\b(?:link|unsent|video call|voice message|voice note|missed call|sticker|gif|reaction|poll|audio call)\b).*/i
         }
       ];
       var addMatchFile = (rule) => ({
@@ -872,15 +872,17 @@
           "image",
           "link-embed-no-text",
           "link-text",
+          "link-video",
           "missed-audio-call",
           "missed-video-call",
+          "poll",
           "reaction-emoji",
           "reaction",
+          "sticker",
           "text-image-replied",
           "text-replied",
           "text",
           "video-call",
-          "video-link",
           "voice-note"
         ],
         patterns: {
@@ -1516,9 +1518,16 @@ ${aliasLines}
     const withoutYou = name.replace(/\byou\b/gi, "").replace(/\s{2,}/g, " ").trim();
     return withoutYou || "chat";
   }
-  function formatExportFileName() {
-    const base = sanitizeFileNamePart(getConversationName());
+  function formatExportFileName(mode, { fromDate, toDate } = {}) {
+    const conversationName = getConversationName();
+    const base = sanitizeFileNamePart(conversationName);
     const shortName = base.replace(/[^a-z0-9]/g, "").slice(0, 3).padEnd(3, "_");
+    if (fromDate || toDate) {
+      const from = (fromDate || "").slice(0, 10).replace(/-/g, "");
+      const to = (toDate || "").slice(0, 10).replace(/-/g, "");
+      const range = `${from || "start"}--${to || "end"}`;
+      return `chat-export-${range}-${shortName}.txt`;
+    }
     return `chat-export-${shortName}.txt`;
   }
 
@@ -1841,7 +1850,7 @@ ${aliasLines}
       const hasPlayButton = Boolean(el.querySelector('[aria-label="Play"]'));
       const anchor = el.querySelector("a[href]");
       const originalHref = anchor ? anchor.getAttribute("href") : null;
-      const hasLink = Boolean(originalHref) || /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedText) || /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedLabel);
+      const hasLink = Boolean(originalHref) || /https?:\/\/|www\./i.test(normalizedText) || /https?:\/\/|www\./i.test(normalizedLabel);
       const contentMeta = (0, import_message_metadata.getContentMeta)({
         fileName: "",
         ariaLabel: label,

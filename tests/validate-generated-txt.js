@@ -71,6 +71,7 @@ function validateHeader(t, lines, schema, fileName) {
     }
   }
 
+  while (index < lines.length && lines[index] === '') index += 1;
   t.equal(lines[index], '---', `${fileName}: missing header separator`);
   return index + 1;
 }

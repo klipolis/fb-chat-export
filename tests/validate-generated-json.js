@@ -40,7 +40,11 @@ function validatePreviewJson(t, data, fileName) {
 
   if (data.type === 'reaction') {
     t.ok(raw.content === null || typeof raw.content === 'string', `${fileName}: reaction data_raw.content must be null or string`);
-    t.equal(preview.content, raw.content, `${fileName}: reaction data_preview.content must equal raw.content`);
+    if (raw.content && !/\p{Extended_Pictographic}/u.test(raw.content)) {
+      t.equal(preview.content, null, `${fileName}: reaction non-emoji raw content has null preview`);
+    } else {
+      t.equal(preview.content, raw.content, `${fileName}: reaction data_preview.content must equal raw.content`);
+    }
     if (preview.content) {
       t.equal(typeof preview.length, 'string', `${fileName}: reaction with content must have string length`);
     } else {

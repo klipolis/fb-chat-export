@@ -21,6 +21,12 @@ When you request a change, include:
 - whether the change is docs-only, code-only, or both
 - any project-relevant context, such as `this repo uses pnpm`, `export preview JSON`, or `browser export panel`
 
+## Task and changelog wording
+
+- Describe the desired outcome, not the exact commands or implementation steps.
+- Avoid mentioning specific tools or scripts in user-facing notes, since the underlying implementation can change.
+- Use language like "verify changelog guard" and "update docs to explain hook behavior" rather than command names.
+
 ## Good examples
 
 - `update changelog and docs folder to document AI interaction behavior`

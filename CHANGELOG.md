@@ -22,7 +22,7 @@ Changelog entries should describe active changes in direct present-tense stateme
 
 - Export and preview durations always display in strict `HH:MM:SS` three-part format (e.g. `00:18:00`) with zero-padded hours instead of the previous two-part `MM:SS` style.
 - Preview dates from relative weekday labels (e.g. `Saturday 4:36am`) resolve to the correct calendar date.
-- Alias replacement preserves generic lowercase wording while still anonymizing sender names.
+- Alias replacement no longer rewrites generic lowercase labels when anonymizing sender names.
 - The summary validator accepts any number of participant sections instead of a fixed count.
 - Summary title patterns are dynamic instead of relying on hardcoded sender names.
 - Message type rules include reaction and video-link variants; duration matching uses strict `HH:MM:SS`.
@@ -31,6 +31,7 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Body content length uses word count for all message types.
 - Link-video export uses the full URL instead of the compact shorthand format.
 - Text messages are no longer misclassified as voice messages in the browser scan.
+- Link detection in the browser export triggers on URL patterns only, not the bare word "link".
 
 ### Changed
 
@@ -54,6 +55,20 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Updated test expectations to match the word-length content format.
 - A dedicated lint script validates TODO file format and cross-reference consistency.
 - AI agent changelog examples follow the repository style guide without retrospective wording.
+- JSON validation allows null preview content for non-emoji reaction types.
+- TXT export config replaced unused video-link type with poll and sticker.
+- TXT header validation handles empty lines after the alias block.
+- Test script calls hidden dot-prefixed test scripts directly.
+- Generated TXT schema synchronised with runtime export config.
+- Integration test validates normalized HH:MM:SS duration format on duration-type lines.
+- Golden snapshots cover all four TXT export variants.
+- Docs command reference corrected from build-preview to build:preview.
+- User guide summary example matches actual single-line text/words format.
+- JSON schema documented with up-to-date data_raw and data_preview structure.
+- Text rule label exclusion list covers sticker, gif, reaction, poll, and audio call types.
+- formatExportFileName unit tests cover null, empty, and unknown mode parameters.
+- buildSummary fixedParticipants filter covered by unit tests.
+- Monolithic run-tests.js split into per-module test files.
 
 ## v5.4.0 (2026-05-18)
 

@@ -7,6 +7,12 @@
 - [TODO-future.md](TODO-future.md)
 - [.todo/config.json](../.todo/config.json)
 
+## Process
+
+- T160. Add a short process note at the top of TODO-next that explains how to write T-numbered tasks, group them, and avoid tool-specific wording.
+- T161. Review `.todo/config.json` and TODO files for task-numbering consistency and update any missing entries.
+- T162. Add a brief contributor note in docs/AI-interaction explaining changelog and task entries should focus on outcomes, not implementation details.
+
 ---
 
 ## Anonymisation
@@ -185,3 +191,37 @@
 ## Refactoring
 
 - T147. Consolidated message-type resolution into a single shared helper used by all code paths.
+- T171. Split monolithic run-tests.js into per-module test files for maintainability.
+
+## Coverage & testing
+
+- T163. Fixed duration format assertion in integration test to properly validate normalized HH:MM:SS durations.
+- T164. Added golden snapshot validation for TXT summary-combined and summary-detailed export variants.
+- T170. Added formatExportFileName edge case tests for null, empty, undefined, and unknown mode parameters.
+- T172. Added unit test coverage for buildSummary and buildDetailedSummary fixedParticipants filter.
+
+## Documentation
+
+- T165. Fixed broken build-preview command reference in docs/README.md (now build:preview).
+- T166. Corrected user guide summary example to match the single-line ~ N text / N words format.
+- T167. Rewrote JSON schema developer guide to match the actual data_raw / data_preview field structure.
+
+## Code quality
+
+- T168. Added sticker, gif, reaction, poll, and audio call to the text rule negative lookahead exclusion list.
+
+## Link detection
+
+- T173. Fixed hasLink detection in frontend to match server behavior: bare word "link" no longer triggers link classification — only URL patterns.
+
+## Coverage
+
+- T174. Added link-video to the TXT export message types list so the header accurately reflects all filename-derived types present in the export body.
+
+## Documentation
+
+- T175. Documented all four TXT export variants (max, minimal, summary-combined, summary-detailed) in the user guide, including the combined vs detailed summary differences and the "posts" vs "messages" label convention.
+
+## Browser export
+
+- T176. Wired the selected date range into the browser export filename so downloaded files include the date range instead of using a generic conversation-name-based filename.

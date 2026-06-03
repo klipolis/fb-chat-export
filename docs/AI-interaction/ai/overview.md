@@ -22,6 +22,12 @@ The AI works best when the user provides:
 - any repo-specific constraints, such as `commit-msg only` or `pre-push lint`
 - whether the change is docs-only, code-only, or both
 
+## Task phrasing guidelines
+
+- Prefer outcome-oriented descriptions rather than exact implementation commands.
+- Record what should be true after the change, not how it is done.
+- Avoid fixing wording with exact script names or tool references in documentation or changelog text.
+
 ## Core principles
 
 - Follow explicit user instructions precisely.

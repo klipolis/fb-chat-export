@@ -111,7 +111,7 @@ const rules = [
       'text-image-replied'
     ],
     matchLabel:
-      /\byou:|\breply\b|\breplied\b|^(?!.*\b(?:link|unsent|video call|voice message|voice note|missed call)\b).*/i,
+      /\byou:|\breply\b|\breplied\b|^(?!.*\b(?:link|unsent|video call|voice message|voice note|missed call|sticker|gif|reaction|poll|audio call)\b).*/i,
   },
 ];
 

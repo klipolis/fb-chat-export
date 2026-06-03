@@ -6,20 +6,20 @@
   "messageTypes": [
     "audio-call",
     "deleted",
-    "image-2",
-    "image-3",
     "image",
     "link-embed-no-text",
     "link-text",
+    "link-video",
     "missed-audio-call",
     "missed-video-call",
+    "poll",
     "reaction-emoji",
     "reaction",
+    "sticker",
     "text-image-replied",
     "text-replied",
     "text",
     "video-call",
-    "video-link",
     "voice-note"
   ],
   "patterns": {

@@ -208,8 +208,8 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
     const originalHref = anchor ? anchor.getAttribute('href') : null;
     const hasLink =
       Boolean(originalHref) ||
-      /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedText) ||
-      /\b(?:https?:\/\/|www\.|\blink\b)/i.test(normalizedLabel);
+      /https?:\/\/|www\./i.test(normalizedText) ||
+      /https?:\/\/|www\./i.test(normalizedLabel);
     const contentMeta = getContentMeta({
       fileName: '',
       ariaLabel: label,

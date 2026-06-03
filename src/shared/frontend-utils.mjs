@@ -53,11 +53,18 @@ export function getDisplayPersonName() {
   return withoutYou || 'chat';
 }
 
-export function formatExportFileName() {
-  const base = sanitizeFileNamePart(getConversationName());
+export function formatExportFileName(mode, { fromDate, toDate } = {}) {
+  const conversationName = getConversationName();
+  const base = sanitizeFileNamePart(conversationName);
   const shortName = base
     .replace(/[^a-z0-9]/g, '')
     .slice(0, 3)
     .padEnd(3, '_');
+  if (fromDate || toDate) {
+    const from = (fromDate || '').slice(0, 10).replace(/-/g, '');
+    const to = (toDate || '').slice(0, 10).replace(/-/g, '');
+    const range = `${from || 'start'}--${to || 'end'}`;
+    return `chat-export-${range}-${shortName}.txt`;
+  }
   return `chat-export-${shortName}.txt`;
 }

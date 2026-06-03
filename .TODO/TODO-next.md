@@ -12,3 +12,5 @@
 ## Content extraction
 
 - T110. Replace hardcoded `"voice note"` fallback content text with actual transcript text when Facebook supplies richer transcript data in chat exports. Check current export format for transcript availability; if present, wire it through metadata extraction and update golden snapshots.
+
+

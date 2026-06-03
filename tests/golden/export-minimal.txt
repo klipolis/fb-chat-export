@@ -5,10 +5,13 @@ Message types:
 - image
 - link-embed-no-text
 - link-text
+- link-video
 - missed-audio-call
 - missed-video-call
+- poll
 - reaction-emoji
 - reaction
+- sticker
 - text-image-replied
 - text-replied
 - text
