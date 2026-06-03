@@ -251,7 +251,6 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
   const nodes = [];
   const messageTagRe = /<([a-zA-Z0-9]+)([^>]*)>/gi;
   let match;
-  const route = path.join('data-output/optimized-html', fileName).replace(/\\/g, '/');
 
   while ((match = messageTagRe.exec(html)) !== null) {
     const attrs = match[2];
@@ -282,7 +281,6 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
         rawMeta.duration = fallbackDuration;
       }
     }
-    const senderAlt = parsedLabel.sender ? parsedLabel.sender.trim() : '';
     const imageTags = Array.from(rawSegment.matchAll(/<img\b[^>]*>/gi));
     // Only count as image if there is an <img> that is NOT a sender avatar (alt is not a person name and not empty)
     const imageCount = imageTags.filter((tag) => {
@@ -414,7 +412,6 @@ function main(htmlFilesByFile) {
 
   const relOptimizedDir = relativePath(optimizedDir);
   const relNodesDir = relativePath(nodesDir);
-  const relRawDir = relativePath(rawDir);
 
   if (!fs.existsSync(optimizedDir)) {
     console.error('Missing optimized HTML folder:', relOptimizedDir);
