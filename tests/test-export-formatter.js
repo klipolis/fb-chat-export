@@ -1,8 +1,8 @@
 const tap = require('tap');
-const { formatExportHeader, formatLine, buildExportText, formatSummarySection } = require(
+const { formatExportHeader, formatLine, buildExportText, buildEntryFromEntry, formatSummarySection } = require(
   '../src/shared/export-formatter'
 );
-const { buildSummary } = require(
+const { buildSummary, buildDetailedSummary, buildSummaryJson } = require(
   '../src/shared/export-summary'
 );
 const { formatServerExportFileName } = require(
@@ -227,5 +227,185 @@ tap.test('formatServerExportFileNameDateRange', (t) => {
     'export-max.txt',
     'arbitrary mode uses the mode as filename base'
   );
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// buildEntryFromEntry
+// ---------------------------------------------------------------------------
+
+tap.test('buildEntryFromEntry', (t) => {
+  const textEntry = buildEntryFromEntry({
+    sender: 'Alice',
+    ts: Date.parse('2026-01-01T12:00:00Z'),
+    fileType: 'text',
+    semanticType: 'text',
+    content: 'Hello world',
+    duration: '',
+    imageCount: 0,
+    words: 2,
+  });
+  t.equal(textEntry.sender, 'Alice', 'sender preserved');
+  t.equal(textEntry.date.getTime(), Date.parse('2026-01-01T12:00:00Z'), 'date parsed from ts');
+  t.equal(textEntry.type, 'text', 'type lowered from semanticType');
+  t.equal(textEntry.isCall, false, 'text is not a call');
+  t.equal(textEntry.isImage, false, 'text is not an image');
+  t.equal(textEntry.callSeconds, 0, 'text has no call seconds');
+  t.equal(textEntry.wordCount, 2, 'wordCount from entry.words');
+  t.equal(textEntry.imageCount, 0, 'no images');
+
+  const imageEntry = buildEntryFromEntry({
+    sender: 'Bob',
+    ts: Date.parse('2026-01-01T13:00:00Z'),
+    fileType: 'image-3',
+    semanticType: 'image',
+    content: '',
+    duration: '',
+    imageCount: 4,
+    words: 0,
+  });
+  t.equal(imageEntry.type, 'image', 'image type lowered');
+  t.equal(imageEntry.isImage, true, 'image entry flagged');
+  t.equal(imageEntry.wordCount, 0, 'image has zero wordCount');
+  t.equal(imageEntry.imageCount, 4, 'imageCount preserved');
+
+  const callEntry = buildEntryFromEntry({
+    sender: 'Alice',
+    ts: Date.parse('2026-01-01T14:00:00Z'),
+    fileType: 'audio-call',
+    semanticType: 'audio-call',
+    content: '',
+    duration: '0:05:30',
+    imageCount: 0,
+    words: 0,
+  });
+  t.equal(callEntry.type, 'audio-call', 'call type lowered');
+  t.equal(callEntry.isCall, true, 'call flagged');
+  t.equal(callEntry.wordCount, 0, 'call has zero wordCount');
+  t.equal(callEntry.callSeconds, 330, 'call seconds from duration');
+
+  const missedEntry = buildEntryFromEntry({
+    sender: 'Bob',
+    ts: Date.parse('2026-01-01T15:00:00Z'),
+    fileType: 'missed-video-call',
+    semanticType: 'missed-video-call',
+    content: '',
+    duration: '',
+    imageCount: 0,
+    words: 0,
+  });
+  t.equal(missedEntry.isCall, true, 'missed call flagged');
+  t.equal(missedEntry.callSeconds, 0, 'missed call has 0 seconds');
+
+  const voiceEntry = buildEntryFromEntry({
+    sender: 'Alice',
+    ts: Date.parse('2026-01-01T16:00:00Z'),
+    fileType: 'voice-note',
+    semanticType: 'voice-note',
+    content: 'voice note',
+    duration: '0:01:15',
+    imageCount: 0,
+    words: 0,
+  });
+  t.equal(voiceEntry.type, 'voice-note', 'voice-note type');
+  t.equal(voiceEntry.isCall, true, 'voice-note is a call');
+  t.equal(voiceEntry.wordCount, 0, 'voice-note zero wordCount');
+  t.equal(voiceEntry.callSeconds, 75, 'voice-note call seconds');
+
+  const noTsEntry = buildEntryFromEntry({
+    sender: 'Charlie',
+    fileType: 'text',
+    semanticType: 'text',
+    content: 'hello',
+    duration: '',
+    imageCount: 0,
+    words: 1,
+  });
+  t.ok(isNaN(noTsEntry.date.getTime()), 'missing ts produces NaD date');
+
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// buildDetailedSummary
+// ---------------------------------------------------------------------------
+
+tap.test('buildDetailedSummary', (t) => {
+  const empty = buildDetailedSummary([], { useMessageLabel: true });
+  t.equal(empty, '', 'empty entries returns empty string (delegates to buildSummary which returns empty for no entries)');
+
+  const singleText = buildDetailedSummary([
+    { sender: 'Alice', date: new Date('2026-01-01T12:00:00Z'), type: 'text', isCall: false, isImage: false, wordCount: 3, imageCount: 0, callSeconds: 0 },
+  ], { useMessageLabel: true });
+  t.ok(singleText.includes('Total Summary'), 'includes title');
+  t.ok(singleText.includes('1 message / 1 day'), 'useMessageLabel: message/day labels');
+  t.ok(singleText.includes('~ 3 words'), 'word count shown');
+  t.ok(singleText.includes('~ 1 text'), 'type count shown');
+  t.ok(singleText.includes('Alice Summary'), 'participant section');
+  t.ok(singleText.endsWith('---\n'), 'ends with separator');
+
+  const multiType = buildDetailedSummary([
+    { sender: 'Alice', date: new Date('2026-01-01'), type: 'text', isCall: false, isImage: false, wordCount: 5, imageCount: 0, callSeconds: 0 },
+    { sender: 'Alice', date: new Date('2026-01-01'), type: 'image', isCall: false, isImage: true, wordCount: 0, imageCount: 1, callSeconds: 0 },
+    { sender: 'Bob', date: new Date('2026-01-02'), type: 'audio-call', isCall: true, isImage: false, wordCount: 0, imageCount: 0, callSeconds: 120 },
+  ]);
+  t.ok(multiType.includes('3 posts / 2 days'), 'default: posts/days labels');
+  t.ok(multiType.includes('~ 5 words'), 'total words');
+  t.ok(multiType.includes('~ 1 text'), 'text type count');
+  t.ok(multiType.includes('~ 1 image'), 'image type count');
+  t.ok(multiType.includes('~ 1 audio call'), 'audio-call type count');
+  t.ok(multiType.includes('~ 1 calls 00:02:00'), 'call duration line');
+  t.ok(multiType.includes('Alice Summary'), 'Alice section');
+  t.ok(multiType.includes('Bob Summary'), 'Bob section');
+  t.ok(multiType.includes('1 post / 1 day'), 'Bob: 1 post 1 day');
+
+  const fixedParticipants = buildDetailedSummary([
+    { sender: 'Alice', date: new Date('2026-01-01'), type: 'text', isCall: false, isImage: false, wordCount: 2, imageCount: 0, callSeconds: 0 },
+    { sender: 'Bob', date: new Date('2026-01-02'), type: 'text', isCall: false, isImage: false, wordCount: 3, imageCount: 0, callSeconds: 0 },
+  ], { fixedParticipants: ['Alice'] });
+  t.ok(fixedParticipants.includes('Alice Summary'), 'fixed includes Alice');
+  t.notOk(fixedParticipants.includes('Bob Summary'), 'fixed excludes Bob');
+
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// buildSummaryJson
+// ---------------------------------------------------------------------------
+
+tap.test('buildSummaryJson', (t) => {
+  const empty = buildSummaryJson([]);
+  const emptyParsed = JSON.parse(empty);
+  t.equal(emptyParsed.total.messages, 0, 'empty summary has 0 messages');
+  t.equal(emptyParsed.total.days, 0, 'empty summary has 0 days');
+  t.strictSame(emptyParsed.participants, [], 'empty summary has no participants');
+  t.equal(empty.endsWith('\n'), true, 'json ends with newline');
+
+  const basic = buildSummaryJson([
+    { sender: 'Alice', date: new Date('2026-01-01'), type: 'text', isCall: false, isImage: false, wordCount: 5, imageCount: 0, callSeconds: 0 },
+    { sender: 'Bob', date: new Date('2026-01-02'), type: 'audio-call', isCall: true, isImage: false, wordCount: 0, imageCount: 0, callSeconds: 300 },
+  ]);
+  const parsed = JSON.parse(basic);
+  t.equal(parsed.total.messages, 2, '2 total messages');
+  t.equal(parsed.total.days, 2, '2 total days');
+  t.equal(parsed.total.rough.words, 5, '5 total words');
+  t.equal(parsed.total.rough.calls, 1, '1 total call');
+  t.equal(parsed.total.rough.callSeconds, 300, '300 total call seconds');
+  t.equal(parsed.total.rough.images, 0, '0 images');
+
+  t.equal(parsed.participants.length, 2, '2 participants');
+  t.equal(parsed.participants[0].name, 'Alice', 'first participant Alice');
+  t.equal(parsed.participants[0].rough.text, 1, 'Alice text count');
+  t.equal(parsed.participants[1].name, 'Bob', 'second participant Bob');
+  t.equal(parsed.participants[1].rough.calls, 1, 'Bob call count');
+
+  const fixedJson = buildSummaryJson([
+    { sender: 'Alice', date: new Date('2026-01-01'), type: 'text', isCall: false, isImage: false, wordCount: 1, imageCount: 0, callSeconds: 0 },
+    { sender: 'Bob', date: new Date('2026-01-02'), type: 'text', isCall: false, isImage: false, wordCount: 2, imageCount: 0, callSeconds: 0 },
+  ], { fixedParticipants: ['Alice'] });
+  const fixedParsed = JSON.parse(fixedJson);
+  t.equal(fixedParsed.participants.length, 1, 'fixedParticipants: 1 participant');
+  t.equal(fixedParsed.participants[0].name, 'Alice', 'fixedParticipants: Alice only');
+
   t.end();
 });

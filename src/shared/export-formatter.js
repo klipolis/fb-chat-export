@@ -136,6 +136,7 @@ module.exports = {
   buildExportText,
   formatDate,
   formatLine,
+  buildEntryFromEntry,
   formatSummarySection,
   buildSummaryData,
   durationToMinutes,

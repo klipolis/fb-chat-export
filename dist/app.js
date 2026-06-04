@@ -1450,6 +1450,7 @@ ${aliasLines}
         buildExportText,
         formatDate,
         formatLine: formatLine2,
+        buildEntryFromEntry,
         formatSummarySection,
         buildSummaryData,
         durationToMinutes: durationToMinutes2,
