@@ -95,6 +95,81 @@ tap.test('aliasChatNamesSkipsAlreadyTargetName', (t) => {
   t.end();
 });
 
+tap.test('aliasChatNamesWithRealConfig', (t) => {
+  // Explicit Rob→Barnabas mapping with You→Youghurt
+  const nameMap = { You: 'Youghurt', Rob: 'Barnabas', any: 'XYZ' };
+  const rawHtml =
+    '<title>Chat with Rob</title>' +
+    '<div aria-label="At Wednesday 7:54pm, Rob" aria-roledescription="message"></div>' +
+    '<div>Rob deleted a message</div>' +
+    '<div aria-label="At Wednesday 8:00pm, You" aria-roledescription="message"></div>' +
+    '<div>You sent a sticker</div>';
+  const cleaned = aliasChatNames(rawHtml, nameMap);
+  t.ok(cleaned.includes('Barnabas deleted a message'), 'Rob explicitly mapped to Barnabas');
+  t.ok(cleaned.includes('aria-label="At Wednesday 7:54pm, Barnabas"'), 'Explicit map in aria-label');
+  t.ok(cleaned.includes('aria-label="At Wednesday 8:00pm, Youghurt"'), 'You mapped to Youghurt');
+  t.ok(cleaned.includes('Youghurt sent a sticker'), 'You mapped in body text');
+  t.ok(cleaned.includes('<title>Chat with Barnabas</title>'), 'Detected sender in title replaced');
+  t.end();
+});
+
+tap.test('aliasChatNamesAnyFallback', (t) => {
+  // When only 'any' is provided, auto-detected name gets the fallback alias
+  // Need enough occurrences for auto-detection to cross the threshold
+  const nameMap = { any: 'XYZ' };
+  const rawHtml =
+    '<title>Chat with Rob</title>' +
+    '<div aria-label="At Wednesday 7:54pm, Rob" aria-roledescription="message"></div>' +
+    '<div aria-label="At Wednesday 7:55pm, Rob" aria-roledescription="message"></div>' +
+    '<div>Rob deleted a message</div>';
+  const cleaned = aliasChatNames(rawHtml, nameMap);
+  t.ok(cleaned.includes('XYZ deleted a message'), 'Auto-detected Rob aliased to any: XYZ');
+  t.ok(cleaned.includes('aria-label="At Wednesday 7:54pm, XYZ"'), 'Rob in first aria-label aliased to XYZ');
+  t.ok(cleaned.includes('aria-label="At Wednesday 7:55pm, XYZ"'), 'Rob in second aria-label aliased to XYZ');
+  t.ok(cleaned.includes('<title>Chat with XYZ</title>'), 'Chat title aliased to XYZ');
+  t.end();
+});
+
+tap.test('applyAliasToTextWithRealConfig', (t) => {
+  // Explicit mapping
+  t.equal(
+    applyAliasToText('Rob replied', { Rob: 'Barnabas', any: 'XYZ' }, 'Rob'),
+    'Barnabas replied',
+    'explicit Rob→Barnabas replacement'
+  );
+  // Fallback for unknown sender
+  t.equal(
+    applyAliasToText('MysteryPerson said hello', { Rob: 'Barnabas', any: 'XYZ' }, 'MysteryPerson'),
+    'XYZ said hello',
+    'unknown sender falls back to any: XYZ'
+  );
+  // You preservation with custom Youghurt
+  t.equal(
+    applyAliasToText('You sent a message', { You: 'Youghurt', any: 'XYZ' }, 'You'),
+    'Youghurt sent a message',
+    'You→Youghurt with custom any'
+  );
+  // Generic lowercase you not replaced in alias
+  t.equal(
+    applyAliasToText('I told you so', { You: 'Youghurt', any: 'XYZ' }, 'You'),
+    'I told you so',
+    'generic lowercase you not replaced'
+  );
+  // Explicit map takes priority; fallback activates for non-mapped occurrences
+  t.equal(
+    applyAliasToText('Rob and UnknownPerson are chatting', { Rob: 'Barnabas', any: 'XYZ' }, 'Rob'),
+    'Barnabas and UnknownPerson are chatting',
+    'explicit Rob→Barnabas applied; fallback not needed since Rob is explicitly mapped'
+  );
+  // Fallback for unknown sender that is not explicitly mapped
+  t.equal(
+    applyAliasToText('UnknownPerson said hi', { Rob: 'Barnabas', any: 'XYZ' }, 'UnknownPerson'),
+    'XYZ said hi',
+    'fallback any applied for unmapped sender'
+  );
+  t.end();
+});
+
 tap.test('aliasChatNamesSupportsUnicodeNames', (t) => {
   const rawHtml =
     '<title>Łukasz</title>' +

@@ -326,6 +326,59 @@ tap.test('buildEntryFromEntry', (t) => {
   t.end();
 });
 
+tap.test('unicodeSenderImageEntry', (t) => {
+  const refDate = Date.parse('2026-01-01T12:00:00Z');
+
+  // Image entry with two-word Hungarian sender
+  const otvesEntry = buildEntryFromEntry({
+    sender: 'Ötves Ernő',
+    ts: refDate,
+    fileType: 'image-3',
+    semanticType: 'image',
+    content: '',
+    duration: '',
+    imageCount: 3,
+    words: 0,
+  });
+  t.equal(otvesEntry.type, 'image', 'type normalized to image for Unicode sender');
+  t.equal(otvesEntry.isImage, true, 'flagged as image');
+  t.equal(otvesEntry.sender, 'Ötves Ernő', 'Unicode sender preserved');
+  t.equal(otvesEntry.imageCount, 3, 'image count preserved');
+  t.equal(otvesEntry.wordCount, 0, 'wordCount forced to 0 for image');
+
+  // Image entry with Japanese sender
+  const jpEntry = buildEntryFromEntry({
+    sender: '田中太郎',
+    ts: refDate,
+    fileType: 'image',
+    semanticType: 'image',
+    content: '',
+    duration: '',
+    imageCount: 1,
+    words: 0,
+  });
+  t.equal(jpEntry.type, 'image', 'Japanese sender image type');
+  t.equal(jpEntry.sender, '田中太郎', 'Japanese sender preserved');
+  t.equal(jpEntry.imageCount, 1, 'single image count');
+
+  // Text entry with Unicode sender (not image)
+  const alvarEntry = buildEntryFromEntry({
+    sender: 'Álvaro',
+    ts: refDate,
+    fileType: 'text',
+    semanticType: 'text',
+    content: 'hola mundo',
+    duration: '',
+    imageCount: 0,
+    words: 2,
+  });
+  t.equal(alvarEntry.type, 'text', 'text type preserved for Unicode sender');
+  t.equal(alvarEntry.isImage, false, 'not flagged as image');
+  t.equal(alvarEntry.wordCount, 2, 'wordCount preserved for text');
+
+  t.end();
+});
+
 // ---------------------------------------------------------------------------
 // buildDetailedSummary
 // ---------------------------------------------------------------------------
@@ -406,6 +459,91 @@ tap.test('buildSummaryJson', (t) => {
   const fixedParsed = JSON.parse(fixedJson);
   t.equal(fixedParsed.participants.length, 1, 'fixedParticipants: 1 participant');
   t.equal(fixedParsed.participants[0].name, 'Alice', 'fixedParticipants: Alice only');
+
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// wordCountConsistencyAcrossMessageTypes
+// ---------------------------------------------------------------------------
+
+tap.test('wordCountConsistencyAcrossMessageTypes', (t) => {
+  const refDate = Date.parse('2026-01-01T12:00:00Z');
+
+  function makeEntry(sender, semanticType, content, words, duration) {
+    return {
+      sender,
+      ts: refDate,
+      fileType: semanticType,
+      semanticType,
+      content,
+      contentLength: words > 0 ? `${words} words` : undefined,
+      duration: duration || '',
+      imageCount: semanticType === 'image' ? 1 : 0,
+      words,
+    };
+  }
+
+  const entries = [
+    makeEntry('Alice', 'text', 'hello world', 2),
+    makeEntry('Alice', 'text', 'one two three four five', 5),
+    makeEntry('Bob', 'link-text', 'check this link', 3),
+    makeEntry('Bob', 'reaction', '👍', 1),
+    makeEntry('Alice', 'image', '', 0),
+    makeEntry('Alice', 'voice-note', 'voice note', 0, '0:01:15'),
+    makeEntry('Bob', 'audio-call', '', 0, '0:05:30'),
+    makeEntry('Bob', 'video-call', '', 0, '0:10:00'),
+    makeEntry('Alice', 'missed-video-call', '', 0),
+    makeEntry('Alice', 'sticker', '', 0),
+    makeEntry('Bob', 'unsent', '', 0),
+    makeEntry('Bob', 'poll', '', 0),
+    makeEntry('Alice', 'text-image-replied', 'reply with text', 3),
+    makeEntry('Alice', 'text-replied', 'a simple reply', 3),
+  ];
+
+  const totalExpectedWords = 2 + 5 + 3 + 1 + 3 + 3;
+
+  // 1. Verify formatLine shows word count for content-bearing types only
+  entries.forEach((e) => {
+    const line = formatLine(e, { includeLength: true, includeContent: false });
+    if (e.contentLength) {
+      t.ok(line.includes(e.contentLength), `formatLine shows "${e.contentLength}" for ${e.semanticType}`);
+    } else {
+      t.notOk(line.includes(' words'), `formatLine omits word count for ${e.semanticType}`);
+    }
+  });
+
+  // 2. Build summary entries and verify word counts
+  const summaryEntries = entries.map((e) => buildEntryFromEntry(e));
+
+  t.equal(summaryEntries[0].wordCount, 2, 'text entry wordCount');
+  t.equal(summaryEntries[1].wordCount, 5, 'second text entry wordCount');
+  t.equal(summaryEntries[2].wordCount, 3, 'link-text entry wordCount');
+  t.equal(summaryEntries[3].wordCount, 1, 'reaction entry wordCount');
+  t.equal(summaryEntries[4].wordCount, 0, 'image entry wordCount forced to 0');
+  t.equal(summaryEntries[5].wordCount, 0, 'voice-note entry wordCount forced to 0');
+  t.equal(summaryEntries[6].wordCount, 0, 'audio-call entry wordCount forced to 0');
+  t.equal(summaryEntries[7].wordCount, 0, 'video-call entry wordCount forced to 0');
+  t.equal(summaryEntries[8].wordCount, 0, 'missed-call entry wordCount forced to 0');
+  t.equal(summaryEntries[9].wordCount, 0, 'sticker entry wordCount forced to 0');
+  t.equal(summaryEntries[10].wordCount, 0, 'unsent entry wordCount');
+
+  // 3. Text summary word count matches (format: "~ N text / N words")
+  const textSummary = buildSummary(summaryEntries);
+  const wordsPattern = new RegExp(`~\\s+\\d+\\s+text\\s+/\\s+${totalExpectedWords}\\s+words`);
+  t.ok(wordsPattern.test(textSummary), `text summary shows ${totalExpectedWords} total words in "~ N text / N words"`);
+
+  // 4. JSON summary word count matches
+  const jsonSummary = buildSummaryJson(summaryEntries);
+  const parsed = JSON.parse(jsonSummary);
+  t.equal(parsed.total.rough.words, totalExpectedWords, `JSON summary shows ${totalExpectedWords} total words`);
+  t.equal(parsed.total.rough.text, 8, '8 text entries in JSON summary');
+
+  // 5. Per-participant word counts match in JSON
+  const alice = parsed.participants.find((p) => p.name === 'Alice');
+  const bob = parsed.participants.find((p) => p.name === 'Bob');
+  t.equal(alice.rough.words, 2 + 5 + 3 + 3, 'Alice word count in JSON summary');
+  t.equal(bob.rough.words, 3 + 1, 'Bob word count in JSON summary');
 
   t.end();
 });

@@ -217,6 +217,19 @@
 ## Coverage
 
 - T-174. Added link-video to the TXT export message types list so the header accurately reflects all filename-derived types present in the export body.
+- T-183. Added direct unit tests for `buildDetailedSummary()`, `buildSummaryJson()`, and `buildEntryFromEntry()` in `tests/test-export-formatter.js`.
+- T-184. Added direct unit tests for `extractHtmlLocale()`, `findMatchingClosingTag()`, and `extractRawDuration()` in `tests/test-create-nodes.js`.
+- T-200. Added unit tests for Unicode name recognition: 15 `isValidSender` assertions with Latin-extended/Cyrillic/CJK/Arabic names, 10 `parseAriaLabel` assertions with Unicode senders, and `normalizeLabel` Unicode preservation test.
+- T-201. Added word count consistency test (30 assertions) verifying same word totals across `formatLine`, `buildEntryFromEntry`, `buildSummary` (text), and `buildSummaryJson` (JSON) for all message types.
+- T-202. Added Unicode sender + image pipeline tests: `buildEntryFromEntry` with Ötves Ernő image and `extractMessageEntry` DOM pipeline with Álvaro/王明 image entries.
+- T-203. Added voice-note duration consistency test (12 assertions) verifying `extractRawDuration` → `normalizeDuration` pipeline for MM:SS, HH:MM:SS, and mins/secs formats.
+- T-204. Added duration edge case tests (26 assertions) covering malformed formats, empty/invalid inputs, zero durations, and negative signs for both `extractRawDuration` and `normalizeDuration`.
+- T-205. Added alias name mapping tests using project's actual configured pairs: Rob→Barnabas, You→Youghurt, any→XYZ in both `aliasChatNames` and `applyAliasToText` contexts.
+- T-199. Split `tests/test-other.js` (469 lines, 14 subtests, 496 assertions) into three focused per-module test files: `tests/test-dom-pipeline.js` (5 subtests), `tests/test-preview-nodes.js` (7 subtests), and `tests/test-frontend-build.js` (2 subtests).
+
+## Integration test
+
+- T-188. Integration test harness already includes `tap.teardown()` with conditional cleanup based on `serverBuildCache`.
 
 ## Documentation
 

@@ -370,4 +370,6 @@ module.exports = {
   runCreateNodes: (htmlFilesByFile) => main(htmlFilesByFile),
   parseMessageNodes,
   buildAllMessageMetaMap,
+  extractHtmlLocale,
+  extractRawDuration,
 };

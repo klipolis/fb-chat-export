@@ -1,5 +1,5 @@
 const tap = require('tap');
-const { normalizeDateToSimple, parseAriaLabel, isValidSender, findValidDatePrefix } = require(
+const { normalizeDateToSimple, parseAriaLabel, isValidSender, findValidDatePrefix, normalizeLabel } = require(
   '../src/shared/aria-label-parser'
 );
 
@@ -148,6 +148,77 @@ tap.test('isValidSender', (t) => {
   const longName = 'A very long threeword name that is way more than allowed';
   t.ok(longName.length > 49, 'longName exceeds 49 chars');
   t.notOk(isValidSender(longName), 'name longer than 49 chars rejected');
+  t.end();
+});
+
+tap.test('isValidSenderUnicode', (t) => {
+  // Latin-extended (central european)
+  t.ok(isValidSender('Łukasz'), 'Polish L with stroke accepted');
+  t.ok(isValidSender('Ötves'), 'Hungarian O with diaeresis accepted');
+  t.ok(isValidSender('Ernő'), 'Hungarian O with double acute accepted');
+  t.ok(isValidSender('Álvaro'), 'Spanish A with acute accepted');
+  t.ok(isValidSender('François'), 'French C with cedilla accepted');
+
+  // Cyrillic
+  t.ok(isValidSender('Борис'), 'Cyrillic sender accepted');
+  t.ok(isValidSender('Елена'), 'Cyrillic female name accepted');
+
+  // CJK
+  t.ok(isValidSender('王明'), 'Chinese two-character name accepted');
+  t.ok(isValidSender('田中太郎'), 'Japanese name accepted');
+
+  // Arabic
+  t.ok(isValidSender('علي'), 'Arabic name accepted');
+
+  // Multi-word Unicode
+  t.ok(isValidSender('Ötves Ernő'), 'two-word Hungarian name accepted');
+  t.ok(isValidSender('Álvaro Martínez'), 'two-word Spanish name accepted');
+  t.ok(isValidSender('Jean-Claude Müller'), 'hyphenated Unicode first name accepted');
+
+  // Mixed script rejected: contains digit
+  t.notOk(isValidSender('Łukasz2024'), 'Unicode name with digit rejected');
+
+  // Unicode three-word
+  t.ok(isValidSender('Mária José García'), 'three-word Spanish name accepted');
+
+  t.end();
+});
+
+tap.test('parseAriaLabelUnicodeExtended', (t) => {
+  // Latin-extended with colon
+  const r1 = parseAriaLabel('At 10:00 AM, Álvaro: mensaje de prueba');
+  t.equal(r1.sender, 'Álvaro', 'Spanish sender with colon');
+  t.equal(r1.message, 'mensaje de prueba', 'Spanish message preserved');
+
+  // Two-word Unicode sender with dash
+  const r2 = parseAriaLabel('At 2:30 PM, Ötves Ernő: Szia, hogy vagy?');
+  t.equal(r2.sender, 'Ötves Ernő', 'two-word Hungarian sender');
+  t.equal(r2.message, 'Szia, hogy vagy?', 'Hungarian message preserved');
+
+  // CJK with colon
+  const r3 = parseAriaLabel('At 9:00 AM, 王明: 你好世界');
+  t.equal(r3.sender, '王明', 'Chinese sender with colon');
+  t.equal(r3.message, '你好世界', 'Chinese message preserved');
+
+  // Arabic with colon
+  const r4 = parseAriaLabel('At 8:00 PM, علي: مرحبا');
+  t.equal(r4.sender, 'علي', 'Arabic sender with colon');
+  t.equal(r4.message, 'مرحبا', 'Arabic message preserved');
+
+  // Unicode sender with dash separator (em dash)
+  const r5 = parseAriaLabel('At 3:00 PM, François — bonjour tout le monde');
+  t.equal(r5.sender, 'François', 'French sender with em dash');
+  t.ok(r5.message.includes('bonjour'), 'French message after em dash');
+
+  t.end();
+});
+
+tap.test('normalizeLabelUnicode', (t) => {
+  t.equal(normalizeLabel('Álvaro'), 'Álvaro', 'accented characters preserved');
+  t.equal(normalizeLabel('Ötves Ernő'), 'Ötves Ernő', 'Hungarian characters preserved');
+  t.equal(normalizeLabel('Борис'), 'Борис', 'Cyrillic characters preserved');
+  t.equal(normalizeLabel('王明'), '王明', 'CJK characters preserved');
+  t.equal(normalizeLabel('علي'), 'علي', 'Arabic characters preserved');
   t.end();
 });
 

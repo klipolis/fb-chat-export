@@ -12,10 +12,6 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 
 ---
 
-## Stability
-
-- T-188. Add `t.teardown()` to the integration test harness so generated artifacts in `data-output/` are cleaned up after the test suite finishes.
-
 ## Shared code
 
 - T-220. Consolidate duration normalization logic by creating a shared duration utility module that exports `normalizeDuration`, `extractRawDuration`, and related functions used across `message-metadata.js`, `create-nodes.js`, and `export-text.js`.
@@ -31,6 +27,11 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 - T-217. Add build artifact size reporting to help identify bloated output files and optimization opportunities.
 - T-218. Create a build cache mechanism to avoid reprocessing unchanged files during development iterations.
 
+## CI/CD
+
+- T-222. Add a GitHub Action test step for generated `dist/userscript.js` contents.
+- T-223. Add a second workflow for release or artifact publishing.
+
 ## Documentation
 
 - T-206. Add comprehensive inline documentation to complex utility functions in shared modules explaining their purpose, parameters, and return values.
@@ -43,13 +44,4 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 
 ## Test coverage
 
-- T-183. Add direct unit tests for `buildDetailedSummary()`, `buildSummaryJson()`, and `buildEntryFromEntry()` — currently only covered by integration golden snapshot comparison.
-- T-184. Add direct unit tests for `extractHtmlLocale()`, `findMatchingClosingTag()`, and `extractRawDuration()` from `create-nodes.js`.
-- T-199. Split `tests/test-other.js` (432 lines covering 7+ concerns) into focused per-module test files: `test-dom-pipeline.js`, `test-preview-nodes.js`, `test-export-schema.js`.
-- T-200. Add unit tests for Unicode name recognition in `aria-label-parser.js` and `utils.js` to verify proper handling of international characters in sender names.
-- T-201. Add tests to verify word count calculations are consistent across JSON exports and text exports for all message types.
-- T-202. Add tests to verify proper handling of image attachments with Unicode sender names (like Ötves Ernő) ensuring correct type normalization to 'image'.
-- T-203. Add tests for voice note duration parsing to ensure consistency between raw duration extraction and formatted output.
-- T-204. Add tests for edge cases in duration parsing (empty strings, malformed formats, etc.) to ensure robust error handling.
-- T-205. Add tests to verify alias name mapping works correctly for all configured name pairs in various message contexts.
 
