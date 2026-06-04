@@ -50,6 +50,11 @@ Changelog entries should describe active changes in direct present-tense stateme
 
 ### Dev
 
+- Build falls back to sequential alias+optimize when worker_threads is unavailable.
+- Developer guide documents incremental build, partial rebuild, cache manifest, and parallel worker pool architecture.
+- AI-interaction guidance tracks worker error propagation and cache staleness patterns.
+- Build cache JSON removed from version control.
+- Debug utilities _debug_build.cjs and _speed.cjs removed from version control.
 - Parallel processing tests verify worker alias + optimize and error reporting.
 - Build cache tests verify file addition, modification, deletion, and stale output cleanup.
 - Shared message type arrays (timed call, missed call, call types) used across export formatter and summary modules.

@@ -46,6 +46,9 @@ tap.test('partialRebuild', (t) => {
   const jsonAfter = fs.readdirSync(jsonDir).filter((n) => n.endsWith('.json')).length;
   t.equal(jsonAfter, preJson + 1, 'JSON files +1 (new file)');
   t.equal(fs.readdirSync(optDir).filter((n) => n.endsWith('.html')).length, baseHtml + 1, 'HTML count +1');
+  // onlyFiles filter during partial rebuild only regenerated JSON for changed/new files
+  const newNodeFile = resolveRepoPath('data-output-auto', 'json-format', 'temp-deleteme.json');
+  t.ok(fs.existsSync(newNodeFile), 'new JSON node created for temp-deleteme.html');
 
   // Delete temp → stale output cleanup
   const th = path.join(optDir, 'temp-deleteme.html');

@@ -29,6 +29,7 @@
 - T-218. Added build cache mechanism — three-path decision (full skip, full rebuild, partial rebuild) with changed/unchanged/deleted file detection and stale output cleanup (f96d773)
 - T-222. GitHub Action CI already validates the userscript bundle (dist/app.js) via validate-dist step in build:ci (78c8657)
 - T-233. Created .github/dependabot.yml with weekly schedule for npm and GitHub Actions dependencies (503d098)
+- T-243. Added data-output-auto/build-cache.json to .gitignore — generated cache state that should not be tracked (252b531)
 
 ## Test coverage
 
@@ -93,6 +94,9 @@
 - T-207. Created developer onboarding guide at docs/developer-guide/onboarding.md covering setup, structure, workflow, conventions (487238b)
 - T-209. Documented expected input HTML format at docs/developer-guide/input-html-format.md (503d098)
 - T-212. Updated documentation to use words instead of chars for message length (4c427d3)
+- T-239. Documented incremental build and partial rebuild in developer guide covering cache manifest, changed-file detection, and stale output cleanup (252b531)
+- T-240. Documented parallel worker pool architecture in developer guide covering threading model, worker data flow, and error handling (252b531)
+- T-241. Updated AI-interaction patterns and watch-for guidance with parallel build and cache patterns (252b531)
 
 ## Refactoring
 
@@ -196,6 +200,7 @@
 ## Cleanup
 
 - T-145, T-148, T-151. Stripped unreachable message-type references that chooseRule never produces (3adbbed)
+- T-242. Removed _debug_build.cjs and _speed.cjs from version control — debug utilities that belonged in .gitignore
 - T-179. Removed unused beautify-optimized-html.js, rules/selectors.js, and rules/classes.json (3adbbed)
 - T-182. Stopped exporting internal-only functions from message-metadata.js (3adbbed)
 - T-186. Removed hardcoded Yoghurt to Youghurt normalization from export-text.js (3adbbed)
