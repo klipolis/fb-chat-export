@@ -5,6 +5,7 @@ const { parseAriaLabel, parseReferenceDate, normalizeDateToSimple, normalizeLabe
 const { getContentMeta, normalizeDuration, stripTrackingParams } = require('./message-metadata');
 const { extractRawDuration } = require('./duration-utils');
 const { findMatchingClosingTag } = require('./html-utils');
+const { ensureDir, normalizeExportSender } = require('./utils');
 const { aliasNames } = require('../../data-config/frontend_shared.json');
 
 const helperDir = path.resolve(__dirname);
@@ -18,10 +19,6 @@ const metadataDir = path.join(helperDir, 'metadata-generated');
 function relativePath(p) {
   const rel = path.relative(rootDir, p).replace(/\\/g, '/');
   return rel.startsWith('.') ? rel : `./${rel}`;
-}
-
-function ensureDir(dir) {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
 function writeJsonIfChanged(targetPath, data) {
@@ -149,11 +146,6 @@ function formatLocalDateTime(date = new Date()) {
   return `${year}.${month}.${day} ${hours}:${minutes}`;
 }
 
-function extractLink(text) {
-  const urlMatch = text.match(/https?:\/\/[^"]+/i);
-  return urlMatch ? urlMatch[0] : null;
-}
-
 function extractMessageText(ariaLabel) {
   const parsed = parseAriaLabel(ariaLabel);
   return parsed.message || '';
@@ -249,18 +241,6 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
       : message || null;
     const rawSender = parsedLabel.sender || null;
     const previewDate = simpleDate || originalDate || exportDate;
-
-    const normalizeExportSender = (sender, aliasMap = {}) => {
-      const normalized = String(sender || '').trim();
-      if (normalized) {
-        if (Object.prototype.hasOwnProperty.call(aliasMap, normalized)) return aliasMap[normalized];
-        if (Object.prototype.hasOwnProperty.call(aliasMap, normalized.toLowerCase())) return aliasMap[normalized.toLowerCase()];
-        if (Object.prototype.hasOwnProperty.call(aliasMap, normalized.toUpperCase())) return aliasMap[normalized.toUpperCase()];
-        if (normalized === 'You' || normalized === 'Yoghurt') return 'Youghurt';
-        if (aliasMap.any) return aliasMap.any;
-      }
-      return normalized || 'Unknown';
-    };
 
     const previewSender = normalizeExportSender(rawSender, aliasNames);
     const previewContent = contentMeta.text || null;

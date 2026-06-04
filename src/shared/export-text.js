@@ -1,6 +1,7 @@
 const path = require('path');
 const { getContentMeta } = require('./message-metadata');
 const { normalizeDuration } = require('./duration-utils');
+const { normalizeExportSender } = require('./utils');
 const { parseAriaLabel, normalizeDateToIso, normalizeLabel } = require('./aria-label-parser');
 const {
   formatExportHeader,
@@ -9,11 +10,6 @@ const {
   formatLine,
   formatSummarySection,
 } = require('./export-formatter');
-
-function normalizeExportSender(sender) {
-  if (sender === 'You') return 'Youghurt';
-  return sender || 'Unknown';
-}
 
 function formatServerExportFileName(mode = 'export-max', { fromDate, toDate } = {}) {
   const from = fromDate ? String(fromDate).slice(0, 10) : '';

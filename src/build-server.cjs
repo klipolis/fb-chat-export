@@ -359,6 +359,23 @@ function processFilesInParallel(files, rawHtmlByFile, aliasNameMap, preDetectedN
   });
 }
 
+function validateExportConfig(exportPaths) {
+  const configExports = schemaConfig.exports || [];
+  const generatedNames = exportPaths.map((p) => path.basename(p));
+  for (const entry of configExports) {
+    if (!generatedNames.includes(entry.fileName)) {
+      console.error(`Export config lists "${entry.fileName}" but it was not generated`);
+      process.exit(1);
+    }
+  }
+  for (const name of generatedNames) {
+    if (!configExports.some((e) => e.fileName === name)) {
+      console.error(`Generated export "${name}" is not declared in export-config.json`);
+      process.exit(1);
+    }
+  }
+}
+
 function reportArtifactSizes() {
   const outputDir = resolveRepoPath('data-output-auto');
   if (!fs.existsSync(outputDir)) {
@@ -539,6 +556,7 @@ async function main() {
   runCreateNodes(cleanedHtmlByFile, { onlyFiles: nodeFiles });
   validateGeneratedJson();
   const exportPaths = writeTextExports(files, cleanedHtmlByFile, referenceDate);
+  validateExportConfig(exportPaths);
   reportArtifactSizes();
   saveCacheManifest(currentInputStates);
   console.log(`Done: HTML + JSON in ./data-output-auto/optimized-html and ./data-output-auto/json-format`);

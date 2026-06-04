@@ -161,9 +161,22 @@ function aliasChatNames(html, nameMap = {}, preDetectedName) {
   return result;
 }
 
+function normalizeExportSender(sender, aliasMap = {}) {
+  const normalized = String(sender || '').trim();
+  if (normalized) {
+    if (Object.prototype.hasOwnProperty.call(aliasMap, normalized)) return aliasMap[normalized];
+    if (Object.prototype.hasOwnProperty.call(aliasMap, normalized.toLowerCase())) return aliasMap[normalized.toLowerCase()];
+    if (Object.prototype.hasOwnProperty.call(aliasMap, normalized.toUpperCase())) return aliasMap[normalized.toUpperCase()];
+    if (normalized === 'You') return 'Youghurt';
+    if (aliasMap.any) return aliasMap.any;
+  }
+  return normalized || 'Unknown';
+}
+
 module.exports = {
   ensureDir,
   emptyDir,
   aliasChatNames,
   collectAutoName,
+  normalizeExportSender,
 };
