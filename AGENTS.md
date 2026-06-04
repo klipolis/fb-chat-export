@@ -48,7 +48,7 @@ pnpm create:nodes       # debug preview JSON generation
 
 - Focus on requested behavior only.
 - Never read `dist/`, `.git/`, or `node_modules/` (saves tokens).
-- Never edit output in `dist/` or `data-output/` unless making production bundle artifacts.
+- Never edit output in `dist/` or `data-output-auto/` unless making production bundle artifacts.
 - Use existing components, helpers, and patterns before adding new abstractions.
 - Remove sensitive data from AI context before sending to any cloud vendor.
 - Use direct current-state language in all text files. Describe current behavior and current rules,
@@ -152,3 +152,25 @@ AI agents keep regular `.TODO/` queue files synced:
 - `.TODO/TODO-future.md`: holds valid deferred work.
 - `.TODO/TODO-ignore.md`: holds deliberate no-fix decisions with rationale.
 - Run `pnpm lint:todos` after TODO metadata changes.
+
+## Progress
+
+### Done
+
+- T-200. Added Unicode name recognition tests (15 isValidSender assertions with Latin-extended/Cyrillic/CJK/Arabic, 10 parseAriaLabel assertions with Unicode senders, normalizeLabel Unicode preservation test)
+- T-201. Added word count consistency test (30 assertions) verifying same totals across formatLine, buildEntryFromEntry, buildSummary (text), and buildSummaryJson (JSON) for all message types
+- T-202. Added Unicode sender + image pipeline tests (buildEntryFromEntry with Ötves Ernő image, extractMessageEntry DOM pipeline with Álvaro/王明 image entries)
+- T-203. Voice note duration consistency test (12 assertions) for extractRawDuration → normalizeDuration pipeline
+- T-204. Duration edge case tests (26 assertions) for malformed/invalid/zero/negative durations in both extractRawDuration and normalizeDuration
+- T-205. Alias name mapping tests using actual configured pairs: Rob→Barnabas, You→Youghurt, any→XYZ in both aliasChatNames and applyAliasToText
+- T-199. Split `tests/test-other.js` (469 lines, 14 subtests, 496 assertions) into three focused per-module test files: `tests/test-dom-pipeline.js` (5 subtests, DOM export pipeline), `tests/test-preview-nodes.js` (7 subtests, preview node generation/schema), `tests/test-frontend-build.js` (2 subtests, frontend build/date parsing)
+- Test count: 982 total assertions (was 810)
+- Fixed `.todo/config.json` taskIdPattern from `^T\\d{2,}$` to `^T-\\d{2,}$` to match T-prefix format
+- All completed test tasks moved from TODO-next.md to TODO-done.md
+
+### Next Steps
+
+- T-206–T-212. Documentation updates (inline docs, developer guide, JSDoc, input HTML format, stale references, TXT variants, word counts)
+- T-219–T-221. Shared code consolidation (duration utilities, HTML sanitization, constants module)
+- T-213–T-218. Build improvements (schema validation, image detection, incremental builds, parallel processing, artifact size, cache mechanism)
+- T-222–T-223. CI/CD workflows (userscript test step, release/artifact publishing)

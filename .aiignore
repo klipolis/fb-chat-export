@@ -9,3 +9,4 @@ coverage/
 .cache/
 tmp/
 out/
+data-output-auto/

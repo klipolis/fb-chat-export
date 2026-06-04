@@ -2,7 +2,7 @@
  * build-raw-clean
  *
  * Strips platform-internal styling tokens from raw HTML files in
- * data-input/ without running full optimisation.
+ * data-input-test/ without running full optimisation.
  *
  * What is removed:
  *  - class tokens that start with "x" (generated utility classes)
@@ -20,7 +20,7 @@
 const fs = require('fs');
 const { resolveRepoPath } = require('./shared/app-config');
 
-const rawDir = resolveRepoPath('data-input');
+const rawDir = resolveRepoPath('data-input-test');
 
 function cleanXClasses(html) {
   // Remove inline style attributes
@@ -52,7 +52,7 @@ function main() {
 
   let changed = 0;
   for (const file of files) {
-    const filePath = resolveRepoPath('data-input', file);
+    const filePath = resolveRepoPath('data-input-test', file);
     const original = fs.readFileSync(filePath, 'utf8');
     const cleaned = cleanXClasses(original);
     if (cleaned !== original) {
@@ -65,7 +65,7 @@ function main() {
   if (changed === 0) {
     console.log('All raw HTML files already clean (no x-classes or inline styles found).');
   } else {
-    console.log(`Done: ${changed} file(s) updated in ./data-input`);
+    console.log(`Done: ${changed} file(s) updated in ./data-input-test`);
   }
 }
 

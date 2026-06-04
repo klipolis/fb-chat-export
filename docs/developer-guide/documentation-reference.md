@@ -10,11 +10,11 @@ This project exports Messenger chat history to a `.txt` file using a Tampermonke
 
 ```mermaid
 flowchart TD
-  A[data-input] --> B[build-server]
-  B --> C[data-output/optimized-html]
+  A[data-input-test] --> B[build-server]
+  B --> C[data-output-auto/optimized-html]
   B --> D[create-nodes]
-  D --> E[data-output/json-format]
-  B --> F[data-output/final-export export-max/export-minimal]
+  D --> E[data-output-auto/json-format]
+  B --> F[data-output-auto/final-export export-max/export-minimal]
   G[src/frontend/src/index.js] --> H[src/frontend/build.cjs]
   H --> I[dist/app.js]
   J[tests/generated-txt-schema.json] --> F
@@ -56,11 +56,11 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - `src/platforms/`: platform header and build helper files used by the frontend bundle build.
 - `src/server/`: build scripts such as `build-preview.js`.
 - `src/shared/`: shared helper scripts and node rules.
-- `data-input/`: static raw HTML snapshots.
-- `data-output/optimized-html/`: generated optimized HTML snapshots.
-- `data-output/json-format/`: generated JSON preview output.
-- `data-output/json-format/raw-input-metadata.json`: build metadata for raw input file stability.
-- `data-output/final-export/`: generated export files such as `export-max.txt` and `export-minimal.txt`.
+- `data-input-test/`: static raw HTML snapshots.
+- `data-output-auto/optimized-html/`: generated optimized HTML snapshots.
+- `data-output-auto/json-format/`: generated JSON preview output.
+- `data-output-auto/json-format/raw-input-metadata.json`: build metadata for raw input file stability.
+- `data-output-auto/final-export/`: generated export files such as `export-max.txt` and `export-minimal.txt`.
 - `dist/`: generated one-file bundle output.
 - `docs/`: documentation and project notes.
 - `docs/developer-guide/folder-structure.md`: file and folder reference guide.
@@ -102,8 +102,8 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - `src/platforms/` contains platform header templates and frontend build helpers.
 - `src/server/` contains server-side build scripts and preview generation.
 - `src/shared/` contains shared helpers used by both server and frontend code.
-- `data-input/` contains raw input snapshots and alias metadata used for debugging and regression.
-- `data-output/` contains generated output artifacts used for debugging and regression.
+- `data-input-test/` contains raw input snapshots and alias metadata used for debugging and regression.
+- `data-output-auto/` contains generated output artifacts used for debugging and regression.
 - `dist/` contains the bundled frontend app result.
 
 ### Docs and contribution

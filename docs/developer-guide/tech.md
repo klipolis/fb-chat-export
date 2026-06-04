@@ -14,9 +14,9 @@ flowchart TB
 The repository produces two main outputs:
 
 - `dist/app.js` — the browser bundle for the frontend user script.
-- `data-output/` — generated build artifacts from the raw HTML input.
+- `data-output-auto/` — generated build artifacts from the raw HTML input.
 
-The build-server path reads raw files from `data-input/`, optimizes them into HTML snapshots, produces JSON preview exports, and generates TXT text exports.
+The build-server path reads raw files from `data-input-test/`, optimizes them into HTML snapshots, produces JSON preview exports, and generates TXT text exports.
 
 ## Prerequisites
 
@@ -109,7 +109,7 @@ Each message line follows this pattern:
 
 - Use `nvm use` to select the Node version from `.nvmrc`.
 - Run `pnpm install --frozen-lockfile` after cloning.
-- Keep `dist/`, `data-output/optimized-html/`, and `data-output/json-format/` committed when they are generated from the source data.
+- Keep `dist/`, `data-output-auto/optimized-html/`, and `data-output-auto/json-format/` committed when they are generated from the source data.
 - Use `BUILD_PLATFORM=userscript pnpm run build:frontend` for a userscript-compatible bundle.
 - Use `BUILD_RAW=true` in server builds to write aliased raw HTML updates.
 - Use `BUILD_VERSION=<build-id>` with `pnpm run build:frontend` to generate a build-specific bundle version.

@@ -7,10 +7,10 @@ const { resolveRepoPath } = require('../../src/shared/app-config');
 const { chooseRule } = require('../../src/shared/message-metadata');
 const schemaConfig = require('../../src/shared/export-config.json');
 
-const rawDir = resolveRepoPath('data-input');
-const txtDir = resolveRepoPath('data-output', 'final-export');
-const jsonDir = resolveRepoPath('data-output', 'json-format');
-const optimizedDir = resolveRepoPath('data-output', 'optimized-html');
+const rawDir = resolveRepoPath('data-input-test');
+const txtDir = resolveRepoPath('data-output-auto', 'final-export');
+const jsonDir = resolveRepoPath('data-output-auto', 'json-format');
+const optimizedDir = resolveRepoPath('data-output-auto', 'optimized-html');
 let serverBuildCache = null;
 
 tap.teardown(() => {
@@ -75,7 +75,7 @@ tap.test('buildServerTextExport', (t) => {
   const build = runServerBuildOnce();
   t.equal(build.status, 0, `build-server failed: ${build.stderr || build.stdout}`);
 
-  t.ok(fs.existsSync(txtDir), 'data-output/final-export not created');
+  t.ok(fs.existsSync(txtDir), 'data-output-auto/final-export not created');
   const files = fs.readdirSync(txtDir);
   const sortedTxtFiles = files.filter((name) => name.endsWith('.txt')).sort();
   t.strictSame(

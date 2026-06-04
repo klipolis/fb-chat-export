@@ -11,9 +11,9 @@ const { buildAllMessageMetaMap, parseMessageNodes } = require(
 const { buildEntriesFromDocument } = require(
   '../src/shared/export-text'
 );
-const aliasNames = require('../data-config/alias-names.json');
+const { aliasNames } = require('../data-config/frontend_shared.json');
 
-const rawDir = path.join(__dirname, '../data-input');
+const rawDir = path.join(__dirname, '../data-input-test');
 
 // ---------------------------------------------------------------------------
 // generatedPreviewSchema

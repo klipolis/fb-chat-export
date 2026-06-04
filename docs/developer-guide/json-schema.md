@@ -1,6 +1,6 @@
 # Generated JSON Schema
 
-This document describes the generated preview JSON export contract for `data-output/json-format/*.json`. For the message classification rules that drive these fields, see the [Message types guide](message-types.md).
+This document describes the generated preview JSON export contract for `data-output-auto/json-format/*.json`. For the message classification rules that drive these fields, see the [Message types guide](message-types.md).
 
 ## Summary
 

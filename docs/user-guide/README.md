@@ -111,7 +111,7 @@ Sender names are validated during export to catch malformed or non-name labels:
 
 ### Server exports
 
-The `pnpm run build:server` script generates six TXT export files in `data-output/final-export/`:
+The `pnpm run build:server` script generates six TXT export files in `data-output-auto/final-export/`:
 
 - `export-max.txt` — full export with message content, length, and summary.
 - `export-minimal.txt` — export with length only, no content or summary.

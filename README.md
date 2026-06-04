@@ -6,8 +6,8 @@ A chat export project that generates `.txt`, JSON preview, HTML snapshots, and a
 
 - Source files live under `src/`.
 - Frontend source and build tooling are under `src/frontend/`.
-- Raw input artifacts are stored under `data-input/`.
-- Generated build outputs are stored under `data-output/`.
+- Raw input artifacts are stored under `data-input-test/`.
+- Generated build outputs are stored under `data-output-auto/`.
 - Built frontend bundle output is stored in `dist/`.
 - Documentation is kept in `docs/`.
 - Release notes live in `CHANGELOG.md`.
@@ -40,6 +40,6 @@ pnpm run build:ci
 - `docs/user-guide/` - end-user usage instructions.
 - `docs/developer-guide/` - build, test, and release guidance.
 - `docs/site.md` - documentation landing page with quick start and architecture overview.
-- `data-input/` - raw HTML input snapshots and alias metadata.
-- `data-output/` - generated output artifacts, including HTML, JSON, and TXT.
+- `data-input-test/` - raw HTML input snapshots and alias metadata.
+- `data-output-auto/` - generated output artifacts, including HTML, JSON, and TXT.
 - `dist/` - generated frontend bundle.

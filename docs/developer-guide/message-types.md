@@ -84,7 +84,7 @@ Relative weekday labels such as `Saturday 4:36am` are normalised against the exp
 
 ### Alias rules
 
-Preview sender names use explicit alias mappings from `data-config/alias-names.json`. If a sender does not match an explicit entry, the `any` fallback alias is used.
+Preview sender names use explicit alias mappings from the shared config (`data-config/frontend_shared.json` → `aliasNames`). If a sender does not match an explicit entry, the `any` fallback alias is used.
 
 Lowercase `you` in message text is treated as generic content and is not rewritten by alias replacement.
 

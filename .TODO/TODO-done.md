@@ -1,4 +1,4 @@
-Ôªø# TODO ‚Äî Completed tasks
+# TODO ó Completed tasks
 
 ## Links
 
@@ -18,21 +18,21 @@
 ## Anonymisation
 
 - T-44. Build-server name detection runs a two-pass approach: first scan all chat files to auto-detect a name, then apply aliases before processing each file.
-- T-45. Raw HTML write-back is opt-in ‚Äî a dedicated build flag writes aliased files; the default build preserves the originals.
+- T-45. Raw HTML write-back is opt-in ó a dedicated build flag writes aliased files; the default build preserves the originals.
 - T-46. Multi-person explicit name map supports sender-to-pseudonym pairs and a fallback for any unmatched name.
 
 ## Summary
 
 - T-47. Generate summaries for all participants, not just the two most active.
 - T-48. Non-duration types (stickers, GIFs, reactions, links) count as text in the summary.
-- T-49. Sticker and GIF treated as reaction ‚Äî image-like content excluded from image count.
+- T-49. Sticker and GIF treated as reaction ó image-like content excluded from image count.
 
 ## Message type detection
 
 - T-50. Classify text messages correctly instead of misreading them as voice-note in the browser scan.
 - T-51. Voice-note type aligned between filename and export content.
 - T-52. Fix call duration extraction for timers in HH:MM format in the frontend summary.
-- T-53. Label-locked type classification ‚Äî once a label matches, heuristic overrides are skipped.
+- T-53. Label-locked type classification ó once a label matches, heuristic overrides are skipped.
 - T-54. Missed-call rule broadened to match both missed audio and video calls.
 - T-55. Reaction emoji-image support covers emoji image reactions and preserves empty content.
 - T-56. JSON preview schema reorganised with top-level fields and separate raw/preview sections.
@@ -48,7 +48,7 @@
 
 ## Anonymisation
 
-- T-61. Time-only date edge case handled ‚Äî time-only labels resolve to the current day.
+- T-61. Time-only date edge case handled ó time-only labels resolve to the current day.
 
 ## Export format
 
@@ -160,7 +160,7 @@
 - T-138. Document multi-image count display (`~ N images`) and sender name validation rules in the user guide.
 - T-139. Set up markdownlint for the docs folder and check the new message types guide passes.
 - T-140. Add cross-references between the message types guide and the JSON schema docs so related rules are easy to find.
-- T-154. Review CHANGELOG entries under `## [Unreleased]` for style consistency ‚Äî direct active voice, no internal identifiers or file paths, no duplicate entries.
+- T-154. Review CHANGELOG entries under `## [Unreleased]` for style consistency ó direct active voice, no internal identifiers or file paths, no duplicate entries.
 - T-155. Merge orphan `### Fixed` sections in CHANGELOG so all fixes live under a single `### Fixed` heading. Added export-summary-json.txt variant for structured JSON summary output.
 - T-158. Review AGENTS.md and doc guidance to ensure changelog and commit rules are consistently referenced across all AI-facing guides.
 
@@ -170,23 +170,23 @@
 
 ## Content extraction
 
-- T-111. Preserve emoji reaction content in preview data ‚Äî emoji characters from reaction messages are now stored in data_preview.content instead of being discarded.
+- T-111. Preserve emoji reaction content in preview data ó emoji characters from reaction messages are now stored in data_preview.content instead of being discarded.
 
 ## Display and alias fixes
 
-- T-141. Extended sender name detection in labels to handle dash separators (‚Äî), so names followed by a dash instead of a colon are still found for aliasing.
-- T-142. Added `√ñtves` as an explicit alias entry in both config files so it always maps to the fallback name regardless of auto-detection thresholds.
+- T-141. Extended sender name detection in labels to handle dash separators (ó), so names followed by a dash instead of a colon are still found for aliasing.
+- T-142. Added `÷tves` as an explicit alias entry in both config files so it always maps to the fallback name regardless of auto-detection thresholds.
 - T-143. Make tests expect `image` as the label for all image messages, not the raw `image-2` or `image-3` variants.
 
 ## Cleanup
 
-- T-145, T-148‚ÄìT-151. Stripped unreachable message-type references that `chooseRule` never produces.
+- T-145, T-148ñT-151. Stripped unreachable message-type references that `chooseRule` never produces.
 
 ## Test coverage
 
 - T-146. Export tests now verify emoji reaction content in the output.
 - T-152. Updated test expectations to match the word-length content format.
-- T-156. Add raw sample files for sticker, GIF, and poll types to data-input for end-to-end coverage.
+- T-156. Add raw sample files for sticker, GIF, and poll types to data-input-test for end-to-end coverage.
 
 ## Refactoring
 
@@ -212,7 +212,7 @@
 
 ## Link detection
 
-- T-173. Fixed hasLink detection in frontend to match server behavior: bare word "link" no longer triggers link classification ‚Äî only URL patterns.
+- T-173. Fixed hasLink detection in frontend to match server behavior: bare word "link" no longer triggers link classification ó only URL patterns.
 
 ## Coverage
 
@@ -221,10 +221,10 @@
 - T-184. Added direct unit tests for `extractHtmlLocale()`, `findMatchingClosingTag()`, and `extractRawDuration()` in `tests/test-create-nodes.js`.
 - T-200. Added unit tests for Unicode name recognition: 15 `isValidSender` assertions with Latin-extended/Cyrillic/CJK/Arabic names, 10 `parseAriaLabel` assertions with Unicode senders, and `normalizeLabel` Unicode preservation test.
 - T-201. Added word count consistency test (30 assertions) verifying same word totals across `formatLine`, `buildEntryFromEntry`, `buildSummary` (text), and `buildSummaryJson` (JSON) for all message types.
-- T-202. Added Unicode sender + image pipeline tests: `buildEntryFromEntry` with √ñtves Ern≈ë image and `extractMessageEntry` DOM pipeline with √Ålvaro/ÁéãÊòé image entries.
-- T-203. Added voice-note duration consistency test (12 assertions) verifying `extractRawDuration` ‚Üí `normalizeDuration` pipeline for MM:SS, HH:MM:SS, and mins/secs formats.
+- T-202. Added Unicode sender + image pipeline tests: `buildEntryFromEntry` with ÷tves Erno image and `extractMessageEntry` DOM pipeline with ¡lvaro/?? image entries.
+- T-203. Added voice-note duration consistency test (12 assertions) verifying `extractRawDuration` ? `normalizeDuration` pipeline for MM:SS, HH:MM:SS, and mins/secs formats.
 - T-204. Added duration edge case tests (26 assertions) covering malformed formats, empty/invalid inputs, zero durations, and negative signs for both `extractRawDuration` and `normalizeDuration`.
-- T-205. Added alias name mapping tests using project's actual configured pairs: Rob‚ÜíBarnabas, You‚ÜíYoughurt, any‚ÜíXYZ in both `aliasChatNames` and `applyAliasToText` contexts.
+- T-205. Added alias name mapping tests using project's actual configured pairs: Rob?Barnabas, You?Youghurt, any?XYZ in both `aliasChatNames` and `applyAliasToText` contexts.
 - T-199. Split `tests/test-other.js` (469 lines, 14 subtests, 496 assertions) into three focused per-module test files: `tests/test-dom-pipeline.js` (5 subtests), `tests/test-preview-nodes.js` (7 subtests), and `tests/test-frontend-build.js` (2 subtests).
 
 ## Integration test
@@ -250,10 +250,10 @@
 ## Cleanup
 
 - T-182. Stopped exporting internal-only functions (`formatUrlCompact`, `extractPinnedLocationLink`, `isLinkOnlyText`, `normalizeContentType`) from `message-metadata.js`.
-- T-186. Removed hardcoded `"Yoghurt"` ‚Üí `"Youghurt"` normalization from `export-text.js` so alias configuration is the single source of truth.
+- T-186. Removed hardcoded `"Yoghurt"` ? `"Youghurt"` normalization from `export-text.js` so alias configuration is the single source of truth.
 - T-187. Replaced `throw err` with `console.error(err)` inside the `setTimeout` callback in `src/frontend/src/index.js` `scanStep()` to prevent unhandled promise rejections.
 - T-193. Removed `src/build.js` wrapper and pointed `package.json` `build:frontend` directly at `src/frontend/build.cjs`.
-- T-194. Removed dead `rel*` path constants from `build-server.cjs` lines 26‚Äì29.
+- T-194. Removed dead `rel*` path constants from `build-server.cjs` lines 26ñ29.
 
 ## Documentation
 
@@ -262,7 +262,7 @@
 
 ## Content extraction
 
-- T-110. Detects generic voice-note labels as fallback content and skips media-UI segment text ‚Äî when normalizedText contains real transcript, uses it; otherwise keeps 'voice note'.
+- T-110. Detects generic voice-note labels as fallback content and skips media-UI segment text ó when normalizedText contains real transcript, uses it; otherwise keeps 'voice note'.
 
 ## Shared logic
 
@@ -270,7 +270,7 @@
 - T-190. Imported `parseReferenceDate` from `aria-label-parser.js` into `create-nodes.js`, removed local copy.
 - T-191. Imported `stripTrackingParams` from `message-metadata.js` into `create-nodes.js`, removed local copy.
 - T-192. Extracted `findMatchingClosingTag` into `src/shared/html-utils.js`; both `optimize-html.js` and `create-nodes.js` import from there.
-- T-197. Verified all catch blocks in shared modules already have `console.warn` with error ‚Äî no bare `catch {}` blocks found.
+- T-197. Verified all catch blocks in shared modules already have `console.warn` with error ó no bare `catch {}` blocks found.
 
 ## Schema & config
 
@@ -281,8 +281,8 @@
 
 - T-153. Rebuilt frontend dist bundle (app.js, app.min.js).
 - T-185. Verified `.husky/pre-push` and `.husky/commit-msg` hooks match documentation; updated CONTRIBUTING.md to document actual pre-push hook instead of incorrect pre-commit.
-- T-195. Added `BUILD_WATCH` env variable support to `src/frontend/build.cjs` ‚Äî when set to `true`, esbuild runs in watch mode on the non-minified bundle.
-- T-196. Added input file validation in `build-server.cjs` ‚Äî checks every HTML file has at least one `aria-roledescription="message"` element before processing.
+- T-195. Added `BUILD_WATCH` env variable support to `src/frontend/build.cjs` ó when set to `true`, esbuild runs in watch mode on the non-minified bundle.
+- T-196. Added input file validation in `build-server.cjs` ó checks every HTML file has at least one `aria-roledescription="message"` element before processing.
 
 ## Cleanup
 

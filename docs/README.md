@@ -72,7 +72,7 @@ Bob Summary
 - Open the project in VS Code and use the terminal in `support/`.
 - Run `nvm use` in the `support/` folder to ensure the correct Node version from `.nvmrc`.
 - Run `pnpm install --frozen-lockfile` once after cloning the repo.
-- Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, build data preview JSON, and generate a text export in `data-output/final-export/`.
+- Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, build data preview JSON, and generate a text export in `data-output-auto/final-export/`.
 - Run `pnpm run build:frontend` to emit the built bundle into `dist/app.js`.
 - Use `BUILD_PLATFORM=userscript pnpm run build:frontend` to emit a userscript-compatible bundle header. The userscript header template is stored in `data-config/userscript/header.txt`.
 - The browser export now writes a stable download file name such as `export-<shortname>.txt`.
@@ -97,9 +97,9 @@ Bob Summary
 - Run `pnpm run build:preview` to generate data preview JSON directly from optimized HTML.
 - Run `pnpm run build:clean` to clear generated build artifacts while preserving raw inputs.
 - Run `pnpm run create:nodes` for lower-level preview export debugging or custom workflows.
-- Run `pnpm run validate:generated-json` to verify final `data-output/json-format/` preview schema.
+- Run `pnpm run validate:generated-json` to verify final `data-output-auto/json-format/` preview schema.
 - Run `pnpm run test` to execute automated shared-code regression tests and generated JSON schema validation.
-- Keep `dist/`, `data-output/optimized-html/`, and `data-output/json-format/` committed to source control.
+- Keep `dist/`, `data-output-auto/optimized-html/`, and `data-output-auto/json-format/` committed to source control.
 - Keep `.skills/` for planning and requirements.
 
 ## How to contribute

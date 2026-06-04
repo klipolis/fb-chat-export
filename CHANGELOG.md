@@ -132,7 +132,7 @@ Changelog entries should describe active changes in direct present-tense stateme
 - `formatLine` option combinations, `buildSummary` edge cases, and `parseLocalDate` format variants covered by tests.
 - `test-ui.js` DOM sandbox no longer mutates the Node global `document`.
 - `isValidSender`, `findValidDatePrefix`, and extended `normalizeDateToSimple` cases covered by unit tests.
-- `aliasChatNames` accepts an optional name map; `data-config/alias-names.json` supplies default replacements (`You` → `Youghurt`, detected name → `Alpha`) used by the server build and tests.
+- `aliasChatNames` accepts an optional name map; `data-config/frontend_shared.json` (`aliasNames` key) supplies default replacements (`You` → `Youghurt`, detected name → `Alpha`) used by the server build and tests.
 - `aliasChatNames` skips replacing a name that is already the target value (guards against double-aliasing on re-runs).
 - Alias panel shows two name fields: one for your own name and one for the other person; both replace in the export.
 - `build:ci` explicitly runs the test suite after the build step rather than relying on it being embedded in the `build` script.
@@ -203,7 +203,7 @@ Changelog entries should describe active changes in direct present-tense stateme
 
 ### Changed
 
-- Renamed demo pipeline folders to `data-input/`, `data-output/optimized-html/`, and `data-output/json-format/`.
+- Renamed demo pipeline folders to `data-input-test/`, `data-output-auto/optimized-html/`, and `data-output-auto/json-format/`.
 - Frontend and server share the same message classification and export logic.
 - Build-specific version stamping added to the frontend bundle.
 - Preview exports include optional call duration.

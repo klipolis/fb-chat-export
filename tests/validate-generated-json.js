@@ -2,7 +2,7 @@ const tap = require('tap');
 const fs = require('fs');
 const path = require('path');
 
-const previewDir = path.join(__dirname, '..', 'data-output/json-format');
+const previewDir = path.join(__dirname, '..', 'data-output-auto/json-format');
 const schemaPath = path.join(__dirname, 'generated-json-schema.json');
 const timedTypes = new Set(['voice-note', 'video-call', 'audio-call']);
 const hhmmssPattern = /^\d{2}:\d{2}:\d{2}$/;

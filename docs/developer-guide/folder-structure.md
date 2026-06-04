@@ -6,11 +6,11 @@ This page describes the repository layout and the raw/generate data folder struc
 
 ```mermaid
 flowchart TD
-  A[data-input] --> B[build-server]
-  B --> C[data-output/optimized-html]
+  A[data-input-test] --> B[build-server]
+  B --> C[data-output-auto/optimized-html]
   B --> D[create-nodes]
-  D --> E[data-output/json-format]
-  B --> F[data-output/final-export export-max/export-minimal]
+  D --> E[data-output-auto/json-format]
+  B --> F[data-output-auto/final-export export-max/export-minimal]
   G[src/frontend/src/index.js] --> H[src/frontend/build.cjs]
   H --> I[dist/app.js]
   J[tests/generated-json-schema.json] --> F
@@ -31,10 +31,10 @@ flowchart TD
 
 ## Main folders
 
-- `data-input/` — raw HTML snapshots and alias metadata used as source input.
-- `data-output/optimized-html/` — generated optimized HTML snapshots.
-- `data-output/json-format/` — generated preview JSON exports.
-- `data-output/final-export/` — generated chat export text files.
+- `data-input-test/` — raw HTML snapshots and alias metadata used as source input.
+- `data-output-auto/optimized-html/` — generated optimized HTML snapshots.
+- `data-output-auto/json-format/` — generated preview JSON exports.
+- `data-output-auto/final-export/` — generated chat export text files.
 - `dist/` — frontend bundle output.
 - `src/` — application source and build scripts.
   - `src/frontend/` — browser-facing frontend code and build tooling.

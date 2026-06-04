@@ -91,8 +91,8 @@ Always respect the applicable Terms of Service: https://www.facebook.com/legal/t
 ## Repository layout
 
 - `src/` — application source and build scripts.
-- `data-input/` — raw input and alias configuration.
-- `data-output/` — generated output artifacts.
+- `data-input-test/` — raw input and alias configuration.
+- `data-output-auto/` — generated output artifacts.
 - `dist/` — built frontend bundle deliverable.
 - `tests/` — test and validation scripts.
 - `docs/` — project documentation.

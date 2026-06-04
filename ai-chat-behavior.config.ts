@@ -32,7 +32,7 @@ export const aiChatBehaviorConfig = {
     sourceOfTruth: 'src/ is the source of truth for all app code',
     doNotEdit: [
       'dist/', // regenerated every build
-      'data-output/', // regenerated every build
+      'data-output-auto/', // regenerated every build
     ],
   },
 
@@ -55,8 +55,8 @@ export const aiChatBehaviorConfig = {
     serverBuild: 'src/server/',
     frontendSource: 'src/frontend/',
     sharedCode: 'src/shared/',
-    dataInput: 'data-input/',
-    dataOutput: 'data-output/',
+    dataInput: 'data-input-test/',
+    dataOutput: 'data-output-auto/',
     tests: 'tests/',
     dist: 'dist/',
     docs: 'docs/',

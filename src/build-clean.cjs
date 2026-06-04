@@ -2,8 +2,8 @@ const fs = require('fs');
 const { resolveRepoPath, repoRelative } = require('./shared/app-config');
 
 const dirs = [
-  resolveRepoPath('data-output', 'optimized-html'),
-  resolveRepoPath('data-output', 'json-format'),
+  resolveRepoPath('data-output-auto', 'optimized-html'),
+  resolveRepoPath('data-output-auto', 'json-format'),
   resolveRepoPath('dist'),
 ];
 

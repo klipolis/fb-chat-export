@@ -3,7 +3,7 @@
 This file documents the developer-facing rules that map raw chat HTML into end-user exports. It is intentionally separate from setup and product requirements because it describes implementation behavior, not user-facing features.
 
 ## Scope
-- Raw HTML in `data-input/` is the source of truth.
+- Raw HTML in `data-input-test/` is the source of truth.
 - Message rules map each raw file name to one primary message type.
 - Shared helpers convert the raw content into both JSON preview files and TXT exports.
 - The same semantic rules should be used by server and frontend build paths where possible.

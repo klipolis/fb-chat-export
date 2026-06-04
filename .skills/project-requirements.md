@@ -13,8 +13,8 @@ This file now serves as a central index for split requirement documents.
 - Point to dedicated files for goal definition, architecture, implementation notes, and raw-to-export message mapping.
 
 ## Summary
-- Keep raw HTML and optimized HTML separated in `data-input/` and `data-output/optimized-html/`.
-- Push final flattened JSON exports to `data-output/json-format/`.
+- Keep raw HTML and optimized HTML separated in `data-input-test/` and `data-output-auto/optimized-html/`.
+- Push final flattened JSON exports to `data-output-auto/json-format/`.
 - Avoid nested `nodes` wrappers in exported JSON; use `data_preview.optimised_date` in a simple 24-hour date/time format.
 - Use `aria-label` as the primary message dedupe key and remove `data-message-id` dependencies.
 - Alias only sender/receiver labels in raw HTML, including `aria-label` and profile image `alt` values, while preserving message text and chat titles.
@@ -27,7 +27,7 @@ This file now serves as a central index for split requirement documents.
 - Use minute-based content length for audio/video calls and voice messages, and omit length for link preview exports.
 - Expose a stable `data_preview.duration` field for timed preview exports when duration metadata is available.
 - Add a top-level `export_date` field to generated preview JSON output.
-- Validate final `data-output/json-format/` export schema with a dedicated test and JSON schema file under `tests/`.
+- Validate final `data-output-auto/json-format/` export schema with a dedicated test and JSON schema file under `tests/`.
 - Add a `pnpm run build:clean` script to safely clear generated build artifacts.
 - Provide separate `pnpm` build scripts for server, frontend, and CI workflows.
 - Keep shared metadata logic compatible with frontend one-file bundle runtime (no server file-name dependency for core content behavior).
@@ -44,7 +44,7 @@ This file now serves as a central index for split requirement documents.
 - Share alias mappings and relative-date rules in `data-config/frontend_shared.json`; fall back to `data-config/alias-names.json` for legacy explicit sender mappings when present.
 - Keep `data-config/server.json` as a deterministic server-run override source for build reference dates when `BUILD_REFERENCE_DATE` is not supplied.
 - Detect sender names from raw labels using only up to two alphabetic words to avoid long conversation names being treated as senders.
-- Keep generated `dist/`, `data-output/optimized-html/`, and `data-output/json-format/` artifacts in source control.
+- Keep generated `dist/`, `data-output-auto/optimized-html/`, and `data-output-auto/json-format/` artifacts in source control.
 - Keep build-specific `dist/app.js` versioning separate from `package.json` using `BUILD_VERSION`.
 - Keep platform header text in `data-config/userscript/header.txt` and prepend it to frontend bundles outside of minification.
 - Use minor version bumps for release-level changelog entries that contain feature or contract updates.

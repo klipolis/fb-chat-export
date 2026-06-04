@@ -4,13 +4,14 @@ const { chooseRule } = require('./rules');
 const { parseAriaLabel, parseReferenceDate, normalizeDateToSimple } = require('./aria-label-parser');
 const { getContentMeta, normalizeDuration, stripTrackingParams } = require('./message-metadata');
 const { findMatchingClosingTag } = require('./html-utils');
-const aliasNames = require('../../data-config/alias-names.json');
+const { aliasNames } = require('../../data-config/frontend_shared.json');
 
 const helperDir = path.resolve(__dirname);
 const rootDir = path.resolve(helperDir, '..', '..');
-const rawDir = path.join(rootDir, 'data-input');
-const optimizedDir = path.join(rootDir, 'data-output', 'optimized-html');
-const nodesDir = path.join(rootDir, 'data-output', 'json-format');
+const rawDir = path.join(rootDir, 'data-input-test');
+const hotDir = path.join(rawDir, 'userscript');
+const optimizedDir = path.join(rootDir, 'data-output-auto', 'optimized-html');
+const nodesDir = path.join(rootDir, 'data-output-auto', 'json-format');
 const metadataDir = path.join(helperDir, 'metadata-generated');
 
 function relativePath(p) {

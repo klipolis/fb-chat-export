@@ -17,11 +17,12 @@ const { chooseRule } = require('./shared/message-metadata');
 const { resolveRepoPath } = require('./shared/app-config');
 const schemaConfig = require('./shared/export-config.json');
 
-const rawDir = resolveRepoPath('data-input');
-const optimizedDir = resolveRepoPath('data-output', 'optimized-html');
-const previewDir = resolveRepoPath('data-output', 'json-format');
-const rawMetadataPath = resolveRepoPath('data-output', 'json-format', 'raw-input-metadata.json');
-const exportDir = resolveRepoPath('data-output', 'final-export');
+const rawDir = resolveRepoPath('data-input-test');
+const hotDir = resolveRepoPath('data-input-test', 'userscript');
+const optimizedDir = resolveRepoPath('data-output-auto', 'optimized-html');
+const previewDir = resolveRepoPath('data-output-auto', 'json-format');
+const rawMetadataPath = resolveRepoPath('data-output-auto', 'json-format', 'raw-input-metadata.json');
+const exportDir = resolveRepoPath('data-output-auto', 'final-export');
 
 const sharedConfigPath = resolveRepoPath('data-config', 'frontend_shared.json');
 const serverConfigPath = resolveRepoPath('data-config', 'server.json');
@@ -42,9 +43,11 @@ const referenceDate = process.env.BUILD_REFERENCE_DATE ||
 
 function optimizeFile(fileName, rawHtml, cleanedHtml) {
   const inputPath = path.join(rawDir, fileName);
+  const hotPath = path.join(hotDir, fileName);
   const outputPath = path.join(optimizedDir, fileName);
   if (writeRaw && cleanedHtml !== rawHtml) {
-    fs.writeFileSync(inputPath, cleanedHtml, 'utf8');
+    const targetPath = fs.existsSync(hotPath) ? hotPath : inputPath;
+    fs.writeFileSync(targetPath, cleanedHtml, 'utf8');
   }
   const html = createOptimizedHtml(cleanedHtml);
   fs.writeFileSync(outputPath, html, 'utf8');
@@ -69,7 +72,9 @@ function writeRawMetadata(fileRecords) {
 
 function getFileRecord(fileName) {
   const filePath = path.join(rawDir, fileName);
-  const stats = fs.statSync(filePath);
+  const hotPath = path.join(hotDir, fileName);
+  const sourcePath = fs.existsSync(hotPath) ? hotPath : filePath;
+  const stats = fs.statSync(sourcePath);
   return {
     fileName,
     mtimeMs: stats.mtimeMs,
@@ -244,7 +249,7 @@ function main() {
   emptyDir(exportDir);
 
   if (!fs.existsSync(rawDir)) {
-    console.error('Missing HTML Raw folder:', './data-input');
+    console.error('Missing HTML Raw folder:', './data-input-test');
     process.exit(1);
   }
 
@@ -252,19 +257,29 @@ function main() {
   const previousFileMap = new Map(
     (previousRawMetadata?.files || []).map((file) => [file.fileName, file])
   );
-  const files = fs.readdirSync(rawDir).filter((name) => name.endsWith('.html'));
+
+  // Merge cold input (data-input-test) with hot input (data-input-test/userscript).
+  // Hot files take precedence when names collide.
+  const coldFiles = fs.readdirSync(rawDir).filter((name) => name.endsWith('.html'));
+  const hotFiles = fs.existsSync(hotDir)
+    ? fs.readdirSync(hotDir).filter((name) => name.endsWith('.html'))
+    : [];
+  const hotFileSet = new Set(hotFiles);
+  const files = [...hotFiles, ...coldFiles.filter((name) => !hotFileSet.has(name))];
+
   if (!files.length) {
-    console.error('No raw HTML files found in', './data-input');
+    console.error('No raw HTML files found in', './data-input-test');
     process.exit(1);
   }
 
   // Read all raw HTML before modifying anything, then detect the
   // "any" replacement name once across all files (two-pass approach).
   const rawHtmlByFile = new Map(
-    files.map((fileName) => [
-      fileName,
-      fs.readFileSync(path.join(rawDir, fileName), 'utf8'),
-    ])
+    files.map((fileName) => {
+      const hotPath = path.join(hotDir, fileName);
+      const sourcePath = fs.existsSync(hotPath) ? hotPath : path.join(rawDir, fileName);
+      return [fileName, fs.readFileSync(sourcePath, 'utf8')];
+    })
   );
 
   // Validate that every input file contains at least one message element
@@ -305,7 +320,7 @@ function main() {
 
   runCreateNodes(cleanedHtmlByFile);
   const exportPaths = writeTextExports(files, cleanedHtmlByFile, referenceDate);
-  console.log(`Done: HTML + JSON in ./data-output/optimized-html and ./data-output/json-format`);
+  console.log(`Done: HTML + JSON in ./data-output-auto/optimized-html and ./data-output-auto/json-format`);
   exportPaths.forEach((exportPath) => {
     console.log(`Generated chat text export: ${path.relative(baseDir, exportPath)}`);
   });

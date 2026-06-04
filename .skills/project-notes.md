@@ -1,11 +1,11 @@
 # Project Notes
 
-- The helper pipeline should preserve raw HTML in `data-input` while writing cleaned snapshots to `data-output/optimized-html`.
+- The helper pipeline should preserve raw HTML in `data-input-test` while writing cleaned snapshots to `data-output-auto/optimized-html`.
 - Default server build reads raw HTML without modifying it; raw write-back is opt-in via `BUILD_RAW=true` (`build:raw` script).
 - `build:raw-clean` strips platform utility class tokens (starting with `x`) and inline styles from raw HTML for readability without full optimisation.
 - Anonymization of raw HTML should be limited to sender/receiver names in message metadata and profile `alt` attributes, not message body content.
-- `create-nodes.js` should generate JSON previews directly in `data-output/json-format` and avoid nested `nodes` arrays.
-- Build server should also generate a text export from `data-input` in `data-output/final-export/`, mirroring the user-facing export line format.
+- `create-nodes.js` should generate JSON previews directly in `data-output-auto/json-format` and avoid nested `nodes` arrays.
+- Build server should also generate a text export from `data-input-test` in `data-output-auto/final-export/`, mirroring the user-facing export line format.
 - Frontend bundle should run as a single bundled file in live Messenger pages without server-only assumptions.
 - Export metadata should use `export_date` and `data_preview.optimised_date` as simple 24-hour strings, and date metadata should include both original/raw and optimized forms.
 - Parse chat label dates consistently across browser and server exports: plain timestamps are today, weekday labels map to a recent day, and `today`/`yesterday` are normalized.
@@ -18,7 +18,7 @@
 - Reply messages should be treated as text when exporting, while location helpers can still recognize reply elements.
 - Audio/video call and voice message lengths should be expressed in minutes rather than character counts.
 - Maintain dedicated `pnpm` scripts for server, frontend, and CI builds.
-- Keep generated artifacts including `dist/`, `data-output/optimized-html/`, and `data-output/json-format/` checked into the repository.
+- Keep generated artifacts including `dist/`, `data-output-auto/optimized-html/`, and `data-output-auto/json-format/` checked into the repository.
 - Place any automated test suites and validation scripts in a dedicated `tests/` directory.
 - Use `aria-label` for deduplication and remove `data-message-id` references from helper locators and export logic.
 - Keep changelog updates consistent in `CHANGELOG.md`.
