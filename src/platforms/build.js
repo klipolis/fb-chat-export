@@ -24,7 +24,10 @@ function renderHeader(platform, buildVersion) {
 function prependHeaderToFile(filePath, headerText) {
   if (!headerText) return;
   const contents = fs.readFileSync(filePath, 'utf8');
-  fs.writeFileSync(filePath, `${headerText}\n\n${contents}`, 'utf8');
+  // Normalize line endings to LF to prevent CRLF in output
+  const normalizedHeader = headerText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const normalizedContents = contents.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  fs.writeFileSync(filePath, `${normalizedHeader}\n\n${normalizedContents}`, 'utf8');
 }
 
 module.exports = {

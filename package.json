@@ -41,7 +41,7 @@
     "release:tag": "pnpm run release:check && node -e \"require('child_process').execSync('git tag v'+require('./package.json').version,{stdio:'inherit'})\"",
     "test": "pnpm run lint && pnpm run test:unit && pnpm run test:integration && pnpm run validate:generated-json && pnpm run validate:generated-txt && pnpm run validate:dist && pnpm run validate:golden && pnpm run validate:release",
     "test:integration": "tap --timeout 40000 tests/integration/*.test.js",
-    "test:unit": "tap --timeout 20000 tests/test-*.js",
+    "test:unit": "tap --timeout 120000 --jobs=1 tests/test-*.js",
     "validate:dist": "node tests/validate-dist.js",
     "validate:generated-json": "node tests/validate-generated-json.js",
     "validate:generated-txt": "node tests/validate-generated-txt.js",

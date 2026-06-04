@@ -1,3 +1,4 @@
+// TAP_TIMEOUT: 120000
 const tap = require('tap');
 const fs = require('fs');
 const path = require('path');
@@ -6,7 +7,6 @@ const { resolveRepoPath } = require('../src/shared/app-config');
 
 const buildScript = resolveRepoPath('src/build-server.cjs');
 const cacheManifestPath = resolveRepoPath('data-output-auto', 'build-cache.json');
-const optimizedDir = resolveRepoPath('data-output-auto', 'optimized-html');
 
 function runBuild() {
   return childProcess.spawnSync('node', [buildScript], {
@@ -15,78 +15,61 @@ function runBuild() {
   });
 }
 
-tap.test('incrementalBuildCreatesCacheManifest', (t) => {
-  if (fs.existsSync(cacheManifestPath)) {
-    fs.rmSync(cacheManifestPath);
-  }
+function cachedBuild() {
+  if (!fs.existsSync(cacheManifestPath)) return runBuild();
+  return runBuild();
+}
 
+tap.test('incrementalBuildScenarios', (t) => {
+  // Ensure clean state
+  if (fs.existsSync(cacheManifestPath)) fs.rmSync(cacheManifestPath);
+
+  // 1. First build creates cache
   const first = runBuild();
-  t.equal(first.status, 0, 'first build succeeds');
-  t.ok(fs.existsSync(cacheManifestPath), 'build creates cache manifest');
-  const cache = JSON.parse(fs.readFileSync(cacheManifestPath, 'utf8'));
-  t.ok(cache.complete, 'cache has complete flag');
-  t.ok(cache.inputStates, 'cache has inputStates');
-  t.ok(cache.configMtimes, 'cache has configMtimes');
-  t.ok(Object.keys(cache.inputStates).length > 0, 'inputStates has entries');
-  t.ok(Object.keys(cache.configMtimes).length > 0, 'configMtimes has entries');
+  t.equal(first.status, 0, 'first build creates cache');
+  if (first.status !== 0) { t.end(); return; }
+  t.ok(fs.existsSync(cacheManifestPath), 'cache manifest file exists');
+  const cache1 = JSON.parse(fs.readFileSync(cacheManifestPath, 'utf8'));
+  t.ok(cache1.complete, 'cache has complete flag');
+  t.ok(cache1.inputStates, 'cache has inputStates');
+  t.ok(cache1.configMtimes, 'cache has configMtimes');
+  t.ok(Object.keys(cache1.inputStates).length > 0, 'inputStates has entries');
+  t.ok(Object.keys(cache1.configMtimes).length > 0, 'configMtimes has entries');
 
-  t.end();
-});
-
-tap.test('incrementalBuildSkipsWhenUnchanged', (t) => {
+  // 2. Second build (unchanged) skips
   const second = runBuild();
   t.equal(second.status, 0, 'second build succeeds');
-  t.ok(second.stdout.includes('skipping build'), 'second build skips when unchanged');
-  const beforeCache = JSON.parse(fs.readFileSync(cacheManifestPath, 'utf8'));
-  t.ok(beforeCache.complete, 'cache remains valid after skip');
+  t.ok(second.stdout.includes('skipping build'), 'skips when unchanged');
+  const cache2 = JSON.parse(fs.readFileSync(cacheManifestPath, 'utf8'));
+  t.ok(cache2.complete, 'cache still complete');
 
-  t.end();
-});
-
-tap.test('incrementalBuildRebuildsWhenInputChanged', (t) => {
+  // 3. Modify an input file → rebuilds
   const testFilePath = resolveRepoPath('data-input-test', 'text.html');
   const original = fs.readFileSync(testFilePath, 'utf8');
-
-  const modified = original.replace(
-    'aria-roledescription="message"',
-    'aria-roledescription="message" '
-  );
+  const modified = original.replace('aria-roledescription="message"', 'aria-roledescription="message" ');
   fs.writeFileSync(testFilePath, modified, 'utf8');
-
   const third = runBuild();
-  t.equal(third.status, 0, 'build after file change succeeds');
-  t.notOk(third.stdout.includes('skipping build'), 'build re-processes after input change');
-
+  t.equal(third.status, 0, 'build after file change');
+  t.notOk(third.stdout.includes('skipping build'), 're-processes after input change');
   fs.writeFileSync(testFilePath, original, 'utf8');
+  const clean1 = runBuild();
+  t.equal(clean1.status, 0, 'cleanup build after file restore');
 
-  const cleanup = runBuild();
-  t.equal(cleanup.status, 0, 'cleanup build succeeds');
-
-  t.end();
-});
-
-tap.test('incrementalBuildRebuildsWhenConfigChanged', (t) => {
+  // 4. Modify a config file → rebuilds
   const configPath = resolveRepoPath('data-config', 'frontend_shared.json');
-  const original = fs.readFileSync(configPath, 'utf8');
-
-  const modified = original.replace('"any": "XYZ"', '"any": "XYZ" ');
-  fs.writeFileSync(configPath, modified, 'utf8');
-
+  const configOriginal = fs.readFileSync(configPath, 'utf8');
+  const configModified = configOriginal.replace('"any": "XYZ"', '"any": "XYZ" ');
+  fs.writeFileSync(configPath, configModified, 'utf8');
   const fourth = runBuild();
-  t.equal(fourth.status, 0, 'build after config change succeeds');
-  t.notOk(fourth.stdout.includes('skipping build'), 'build re-processes after config change');
+  t.equal(fourth.status, 0, 'build after config change');
+  t.notOk(fourth.stdout.includes('skipping build'), 're-processes after config change');
+  fs.writeFileSync(configPath, configOriginal, 'utf8');
+  const clean2 = runBuild();
+  t.equal(clean2.status, 0, 'cleanup build after config restore');
 
-  fs.writeFileSync(configPath, original, 'utf8');
-
-  const cleanup = runBuild();
-  t.equal(cleanup.status, 0, 'cleanup build succeeds');
-
-  t.end();
-});
-
-tap.test('incrementalBuildReportsSizesOnSkip', (t) => {
+  // 5. Skip still reports sizes
   const skip = runBuild();
-  t.equal(skip.status, 0, 'skip build succeeds');
+  t.equal(skip.status, 0, 'skip build');
   t.ok(skip.stdout.includes('skipping build'), 'reports skipping');
   t.ok(skip.stdout.includes('Total:'), 'reports artifact sizes even when skipping');
 

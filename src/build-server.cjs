@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
+const { Worker } = require('worker_threads');
 const { JSDOM } = require('jsdom');
 const { ensureDir, emptyDir, aliasChatNames, collectAutoName } = require('./shared/utils');
 const { createOptimizedHtml } = require('./shared/optimize-html');
@@ -44,35 +46,11 @@ const writeRaw = process.env.BUILD_RAW === 'true';
 const referenceDate = process.env.BUILD_REFERENCE_DATE ||
   (serverConfig.overwriteToday ? `${serverConfig.overwriteToday.replace(/-/g, '.')} 00:00` : '2026.05.22 00:00');
 
-function optimizeFile(fileName, rawHtml, cleanedHtml) {
-  const inputPath = path.join(rawDir, fileName);
-  const hotPath = path.join(hotDir, fileName);
-  const outputPath = path.join(optimizedDir, fileName);
-  if (writeRaw && cleanedHtml !== rawHtml) {
-    const targetPath = fs.existsSync(hotPath) ? hotPath : inputPath;
-    fs.writeFileSync(targetPath, cleanedHtml, 'utf8');
-  }
-  const html = createOptimizedHtml(cleanedHtml);
-  fs.writeFileSync(outputPath, html, 'utf8');
-}
-
 function writeRawMetadata(fileRecords) {
   const payload = {
     files: fileRecords,
   };
   fs.writeFileSync(rawMetadataPath, JSON.stringify(payload, null, 2) + '\n', 'utf8');
-}
-
-function getFileRecord(fileName) {
-  const filePath = path.join(rawDir, fileName);
-  const hotPath = path.join(hotDir, fileName);
-  const sourcePath = fs.existsSync(hotPath) ? hotPath : filePath;
-  const stats = fs.statSync(sourcePath);
-  return {
-    fileName,
-    mtimeMs: stats.mtimeMs,
-    size: stats.size,
-  };
 }
 
 function buildTextEntries(files, cleanedHtmlByFile, referenceDate) {
@@ -313,6 +291,49 @@ function saveCacheManifest(inputStates) {
   fs.writeFileSync(cacheManifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
 }
 
+function processFilesInParallel(files, rawHtmlByFile, aliasNameMap, preDetectedName) {
+  return new Promise((resolve, reject) => {
+    if (files.length === 0) {
+      resolve(new Map());
+      return;
+    }
+    const numWorkers = Math.min(os.availableParallelism?.() || os.cpus().length, files.length);
+    const results = new Map();
+    let nextIndex = 0;
+    let activeCount = 0;
+    let hasError = false;
+
+    function startNext() {
+      if (nextIndex >= files.length || hasError) {
+        if (activeCount === 0) resolve(results);
+        return;
+      }
+      const idx = nextIndex++;
+      const fileName = files[idx];
+      const html = rawHtmlByFile.get(fileName);
+      activeCount++;
+
+      const worker = new Worker(resolveRepoPath('src/workers/build-worker.cjs'), {
+        workerData: { fileName, rawHtml: html, aliasNameMap, preDetectedName },
+      });
+
+      worker.on('message', (msg) => {
+        if (msg.error) { hasError = true; reject(new Error(`Worker error for ${fileName}: ${msg.error}`)); return; }
+        results.set(msg.fileName, msg);
+        activeCount--;
+        startNext();
+      });
+
+      worker.on('error', (err) => { hasError = true; reject(err); });
+      worker.on('exit', (code) => {
+        if (code !== 0 && !hasError) { hasError = true; reject(new Error(`Worker exited with code ${code}`)); }
+      });
+    }
+
+    for (let i = 0; i < numWorkers; i++) startNext();
+  });
+}
+
 function reportArtifactSizes() {
   const outputDir = resolveRepoPath('data-output-auto');
   if (!fs.existsSync(outputDir)) {
@@ -349,7 +370,7 @@ function reportArtifactSizes() {
   console.log(`  Total: ${totalKb} KB across ${entries.length} files`);
 }
 
-function main() {
+async function main() {
   if (!fs.existsSync(rawDir)) {
     console.error('Missing HTML Raw folder:', './data-input-test');
     process.exit(1);
@@ -369,34 +390,47 @@ function main() {
     process.exit(1);
   }
 
-  // Incremental build: skip processing if no input files or config changed.
+  // Incremental build: detect changed, unchanged, and deleted files from cache.
   const previousCache = loadCacheManifest();
   const currentInputStates = computeInputStates(files);
   const currentConfigMtimes = getConfigMtimes();
   const configChanged = !previousCache ||
     Object.keys(currentConfigMtimes).some((p) => currentConfigMtimes[p] !== previousCache.configMtimes?.[p]);
-  const inputChanged = !previousCache ||
-    files.some((fileName) => {
-      const prev = previousCache.inputStates?.[fileName];
-      const curr = currentInputStates[fileName];
-      return !prev || prev.mtimeMs !== curr.mtimeMs || prev.size !== curr.size;
-    });
 
-  if (!configChanged && !inputChanged && previousCache?.complete) {
+  const changedFiles = [];
+  const unchangedFiles = [];
+  for (const fileName of files) {
+    const prev = previousCache?.inputStates?.[fileName];
+    const curr = currentInputStates[fileName];
+    if (!prev || prev.mtimeMs !== curr.mtimeMs || prev.size !== curr.size) {
+      changedFiles.push(fileName);
+    } else {
+      unchangedFiles.push(fileName);
+    }
+  }
+  const deletedFiles = previousCache
+    ? Object.keys(previousCache.inputStates || {}).filter((name) => !currentInputStates[name])
+    : [];
+
+  if (!configChanged && changedFiles.length === 0 && deletedFiles.length === 0 && previousCache?.complete) {
     console.log('All input files and config unchanged — skipping build');
     reportArtifactSizes();
     return;
   }
 
+  const fullRebuild = configChanged || !previousCache?.complete;
+
   ensureDir(optimizedDir);
   ensureDir(previewDir);
   ensureDir(exportDir);
-  emptyDir(optimizedDir);
-  emptyDir(previewDir);
-  emptyDir(exportDir);
 
-  // Read all raw HTML before modifying anything, then detect the
-  // "any" replacement name once across all files (two-pass approach).
+  if (fullRebuild) {
+    emptyDir(optimizedDir);
+    emptyDir(previewDir);
+    emptyDir(exportDir);
+  }
+
+  // Read all raw HTML (cheap I/O, needed for validation and meta map).
   const rawHtmlByFile = new Map(
     files.map((fileName) => {
       const hotPath = path.join(hotDir, fileName);
@@ -417,23 +451,67 @@ function main() {
     aliasNameMap
   );
 
-  // Build aliased HTML for every file (used for both optimized output
-  // and text-export entry parsing, so names are correct without write-back).
-  const cleanedHtmlByFile = new Map(
-    files.map((fileName) => [
-      fileName,
-      aliasChatNames(rawHtmlByFile.get(fileName), aliasNameMap, preDetectedName),
-    ])
-  );
+  // Process files: workers do the heavy JSDOM work, alias-only is a cheap string pass.
+  const filesToProcess = fullRebuild ? files : changedFiles;
+  const workerResults = await processFilesInParallel(filesToProcess, rawHtmlByFile, aliasNameMap, preDetectedName);
 
-  const fileRecords = files.map((fileName) => {
-    optimizeFile(fileName, rawHtmlByFile.get(fileName), cleanedHtmlByFile.get(fileName));
-    return getFileRecord(fileName);
-  });
+  const cleanedHtmlByFile = new Map();
+  const fileRecords = [];
+
+  function addFileRecord(fileName) {
+    const sourcePath = fs.existsSync(path.join(hotDir, fileName))
+      ? path.join(hotDir, fileName)
+      : path.join(rawDir, fileName);
+    const stats = fs.statSync(sourcePath);
+    fileRecords.push({ fileName, mtimeMs: stats.mtimeMs, size: stats.size });
+  }
+
+  if (fullRebuild) {
+    for (const fileName of files) {
+      const result = workerResults.get(fileName);
+      if (!result) { console.error(`No result for ${fileName}`); process.exit(1); }
+      cleanedHtmlByFile.set(fileName, result.aliasedHtml);
+      fs.writeFileSync(path.join(optimizedDir, fileName), result.optimizedHtml, 'utf8');
+      if (writeRaw && result.aliasedHtml !== rawHtmlByFile.get(fileName)) {
+        const hotPath = path.join(hotDir, fileName);
+        const targetPath = fs.existsSync(hotPath) ? hotPath : path.join(rawDir, fileName);
+        fs.writeFileSync(targetPath, result.aliasedHtml, 'utf8');
+      }
+      addFileRecord(fileName);
+    }
+  } else {
+    // Partial rebuild: only alias + optimize changed files; alias-only for unchanged.
+    for (const fileName of changedFiles) {
+      const result = workerResults.get(fileName);
+      if (!result) { console.error(`No result for ${fileName}`); process.exit(1); }
+      cleanedHtmlByFile.set(fileName, result.aliasedHtml);
+      fs.writeFileSync(path.join(optimizedDir, fileName), result.optimizedHtml, 'utf8');
+      if (writeRaw && result.aliasedHtml !== rawHtmlByFile.get(fileName)) {
+        const hotPath = path.join(hotDir, fileName);
+        const targetPath = fs.existsSync(hotPath) ? hotPath : path.join(rawDir, fileName);
+        fs.writeFileSync(targetPath, result.aliasedHtml, 'utf8');
+      }
+      addFileRecord(fileName);
+    }
+    for (const fileName of unchangedFiles) {
+      const aliasedHtml = aliasChatNames(rawHtmlByFile.get(fileName), aliasNameMap, preDetectedName);
+      cleanedHtmlByFile.set(fileName, aliasedHtml);
+      addFileRecord(fileName);
+    }
+    // Remove stale output for deleted files
+    for (const fileName of deletedFiles) {
+      const htmlPath = path.join(optimizedDir, fileName);
+      const jsonPath = path.join(previewDir, fileName.replace(/\.html$/, '.json'));
+      if (fs.existsSync(htmlPath)) fs.unlinkSync(htmlPath);
+      if (fs.existsSync(jsonPath)) fs.unlinkSync(jsonPath);
+      console.log(`  Removed stale output for ${fileName}`);
+    }
+  }
 
   writeRawMetadata(fileRecords);
 
-  runCreateNodes(cleanedHtmlByFile);
+  const nodeFiles = fullRebuild || deletedFiles.length > 0 ? undefined : changedFiles;
+  runCreateNodes(cleanedHtmlByFile, { onlyFiles: nodeFiles });
   validateGeneratedJson();
   const exportPaths = writeTextExports(files, cleanedHtmlByFile, referenceDate);
   reportArtifactSizes();
@@ -444,4 +522,19 @@ function main() {
   });
 }
 
-main();
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('Build failed:', err.message);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  computeInputStates,
+  loadCacheManifest,
+  saveCacheManifest,
+  getConfigMtimes,
+  processFilesInParallel,
+  aliasChatNames,
+  createOptimizedHtml,
+};

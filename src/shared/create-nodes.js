@@ -324,7 +324,7 @@ function writeExportMetadata(createdFiles) {
   writeJsonIfChanged(path.join(metadataDir, 'metadata.json'), meta);
 }
 
-function main(htmlFilesByFile) {
+function main(htmlFilesByFile, opts) {
   ensureDir(nodesDir);
   ensureDir(metadataDir);
 
@@ -336,10 +336,19 @@ function main(htmlFilesByFile) {
     process.exit(1);
   }
 
-  const htmlFiles = fs.readdirSync(optimizedDir).filter((name) => name.endsWith('.html'));
+  let htmlFiles = fs.readdirSync(optimizedDir).filter((name) => name.endsWith('.html'));
   if (!htmlFiles.length) {
     console.error('No optimized HTML files found in', relOptimizedDir);
     process.exit(1);
+  }
+
+  if (opts && opts.onlyFiles) {
+    htmlFiles = htmlFiles.filter((f) => opts.onlyFiles.includes(f));
+  }
+
+  if (!htmlFiles.length) {
+    console.log('All JSON files already up to date — skipping create-nodes');
+    return;
   }
 
   const exportDate = formatLocalDateTime();
@@ -354,7 +363,7 @@ if (require.main === module) {
 }
 
 module.exports = {
-  runCreateNodes: (htmlFilesByFile) => main(htmlFilesByFile),
+  runCreateNodes: (htmlFilesByFile, opts) => main(htmlFilesByFile, opts),
   parseMessageNodes,
   buildAllMessageMetaMap,
   extractHtmlLocale,

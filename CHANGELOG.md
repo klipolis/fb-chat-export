@@ -11,6 +11,8 @@ Changelog entries should describe active changes in direct present-tense stateme
 
 ### Added
 
+- Partial rebuild processes only changed input files and removes stale output for deleted files.
+- Parallel worker pool processes HTML optimization across all available CPU cores.
 - `pnpm run release` automates version bumps and changelog heading updates. Supports patch, minor, and major override arguments; defaults to minor when new features are present.
 - Blocks pushes when the changelog has an empty release section, requiring changes to be recorded before publishing.
 - Provides a standalone changelog guard to verify the release notes are not empty before publishing.
@@ -48,6 +50,8 @@ Changelog entries should describe active changes in direct present-tense stateme
 
 ### Dev
 
+- Parallel processing tests verify worker alias + optimize and error reporting.
+- Build cache tests verify file addition, modification, deletion, and stale output cleanup.
 - Shared message type arrays (timed call, missed call, call types) used across export formatter and summary modules.
 - Duration normalization logic consolidated into a single shared utility module.
 - HTML tag and attribute sanitization moved to a shared module.

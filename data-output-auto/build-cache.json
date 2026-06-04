@@ -1,114 +1,98 @@
 {
-  "files": [
-    {
-      "fileName": "animated-gif.html",
+  "inputStates": {
+    "animated-gif.html": {
       "mtimeMs": 1780481828981.6797,
       "size": 1603
     },
-    {
-      "fileName": "audio-call.html",
+    "audio-call.html": {
       "mtimeMs": 1779901568547.8477,
       "size": 5696
     },
-    {
-      "fileName": "call-video.html",
+    "call-video.html": {
       "mtimeMs": 1779901568749.9182,
       "size": 3290
     },
-    {
-      "fileName": "deleted.html",
+    "deleted.html": {
       "mtimeMs": 1779901568576.8936,
       "size": 2446
     },
-    {
-      "fileName": "image-2.html",
+    "image-2.html": {
       "mtimeMs": 1779901568594.1,
       "size": 213838
     },
-    {
-      "fileName": "image-3.html",
+    "image-3.html": {
       "mtimeMs": 1779901568619.5781,
       "size": 301111
     },
-    {
-      "fileName": "image.html",
+    "image.html": {
       "mtimeMs": 1779901568637.7979,
       "size": 99204
     },
-    {
-      "fileName": "link-embed-no-text.html",
+    "link-embed-no-text.html": {
       "mtimeMs": 1779901568647.9167,
       "size": 3109
     },
-    {
-      "fileName": "link-text-2.html",
+    "link-text-2.html": {
       "mtimeMs": 1780064787410.3538,
       "size": 28765
     },
-    {
-      "fileName": "link-text.html",
+    "link-text.html": {
       "mtimeMs": 1779901568654.011,
       "size": 7577
     },
-    {
-      "fileName": "link-video.html",
+    "link-video.html": {
       "mtimeMs": 1779901568770.0347,
       "size": 3112
     },
-    {
-      "fileName": "missed-call-audio.html",
+    "missed-call-audio.html": {
       "mtimeMs": 1779901568665.605,
       "size": 6504
     },
-    {
-      "fileName": "missed-call-video.html",
+    "missed-call-video.html": {
       "mtimeMs": 1779901568674.9001,
       "size": 4320
     },
-    {
-      "fileName": "poll.html",
+    "poll.html": {
       "mtimeMs": 1780481832141.3079,
       "size": 1608
     },
-    {
-      "fileName": "reaction-emoji.html",
+    "reaction-emoji.html": {
       "mtimeMs": 1779901568687.14,
       "size": 2250
     },
-    {
-      "fileName": "reaction.html",
+    "reaction.html": {
       "mtimeMs": 1779901568696.2876,
       "size": 6038
     },
-    {
-      "fileName": "sticker.html",
+    "sticker.html": {
       "mtimeMs": 1780481825922.378,
       "size": 1669
     },
-    {
-      "fileName": "text-image-replied.html",
+    "text-image-replied.html": {
       "mtimeMs": 1779901568701.7234,
       "size": 5187
     },
-    {
-      "fileName": "text-replied.html",
+    "text-replied.html": {
       "mtimeMs": 1779901568711.9717,
       "size": 5056
     },
-    {
-      "fileName": "text.html",
+    "text.html": {
       "mtimeMs": 1780578883725.508,
       "size": 3191
     },
-    {
-      "fileName": "voice-note-2.html",
+    "voice-note-2.html": {
       "mtimeMs": 1779901568792.431,
       "size": 28811
     },
-    {
-      "fileName": "voice-note.html",
+    "voice-note.html": {
       "mtimeMs": 1779901568798.6416,
       "size": 7097
     }
-  ]
+  },
+  "configMtimes": {
+    "C:\\_ckaroli\\KLient\\Photomeet\\photomeet invoice\\support\\data-config\\frontend_shared.json": 1780578894128.9097,
+    "C:\\_ckaroli\\KLient\\Photomeet\\photomeet invoice\\support\\data-config\\server.json": 1779615607267.254,
+    "C:\\_ckaroli\\KLient\\Photomeet\\photomeet invoice\\support\\src\\shared\\export-config.json": 1780536966705.4163
+  },
+  "complete": true
 }
