@@ -169,15 +169,19 @@ AI agents keep regular `.TODO/` queue files synced:
 - T-212. Changed `length chars` to `length words` in 4 doc files (`docs/user-guide/README.md`, `docs/developer-guide/tech.md`, `docs/developer-guide/project-overview.md`, `docs/README.md`)
 - T-214. Optimized image detection in `create-nodes.js` with early `<img>` tag check to skip matchAll pipeline for segments without images
 - T-224. Added unit tests for `formatDurationSeconds`, `durationToMinutes`, `durationToSeconds` (24 assertions)
-- Test count: 1006 total assertions (was 982, previously 810)
+- T-207. Created developer onboarding guide at `docs/developer-guide/onboarding.md` covering project overview, setup, structure, workflow, and coding conventions
+- T-225. Added unit tests for HTML sanitization utilities (31 assertions) covering stripAttributes and normalizeTagStrings
+- T-226. Added unit tests for shared constants module (27 assertions) verifying all message type arrays
+- Test count: 1064 total assertions (was 1006, previously 982, originally 810)
 - Fixed `.todo/config.json` taskIdPattern from `^T\\d{2,}$` to `^T-\\d{2,}$` to match T-prefix format
 - All completed test tasks moved from TODO-next.md to TODO-done.md
+- Reviewed and fixed language style in CHANGELOG.md Unreleased section, TODO-done.md entries, and docs with retrospective phrasing
 
 ### Next Steps
 
-- T-206–T-209. Documentation updates (inline docs, developer guide, JSDoc, input HTML format)
-- T-219–T-221. Shared code consolidation (duration utilities, HTML sanitization, constants module)
+- T-206, T-208. Documentation inline docs and JSDoc (blocked by AGENTS.md "no comments unless asked" rule)
+- T-209. Document input HTML format
 - T-213, T-215–T-218. Build improvements (schema validation done, incremental builds, parallel processing, artifact size, cache mechanism)
 - T-222. CI/CD workflows (userscript test step)
-- T-225–T-231. Test coverage (HTML utils, constants, schema validation, incremental, parallel, cache, CI)
+- T-227–T-231. Test coverage (schema validation, incremental, parallel, cache, CI)
 - T-233, T-235–T-237. Process improvements (deps, contributing guidelines, issue templates, semver automation)

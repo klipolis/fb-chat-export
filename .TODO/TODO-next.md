@@ -26,15 +26,11 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 ## Documentation
 
 - T-206. Add comprehensive inline documentation to complex utility functions in shared modules explaining their purpose, parameters, and return values.
-- T-207. Create a developer onboarding guide that explains the project architecture, build process, and contribution guidelines.
 - T-208. Add JSDoc comments to all public functions in shared modules to enable IDE autocomplete and type checking.
 - T-209. Document the expected format and structure of input HTML files for the chat exporter to process correctly.
 
-
 ## Test coverage
 
-- T-225. Add tests for the shared HTML sanitization utilities to ensure proper handling of malformed HTML.
-- T-226. Add tests for the shared constants module to verify all message type mappings are correct.
 - T-227. Add tests for build-time JSON schema validation to catch structural issues early.
 - T-228. Add tests for incremental build functionality to ensure only changed files are processed.
 - T-229. Add tests for parallel processing in the build server to verify correct utilization of CPU cores.

@@ -226,6 +226,8 @@
 - T-204. Added duration edge case tests (26 assertions) covering malformed formats, empty/invalid inputs, zero durations, and negative signs for both `extractRawDuration` and `normalizeDuration`.
 - T-205. Added alias name mapping tests using project's actual configured pairs: Rob→Barnabas, You→Youghurt, any→XYZ in both aliasChatNames and applyAliasToText contexts.
 - T-224. Added unit tests for duration formatting and conversion functions (24 assertions) covering zero, normal, negative, null, undefined, and invalid inputs.
+- T-225. Added unit tests for HTML sanitization utilities stripAttributes and normalizeTagStrings (31 assertions) covering attribute stripping, case handling, and edge cases.
+- T-226. Added unit tests for shared constants module (27 assertions) verifying TIMED_CALL_TYPES, MISSED_CALL_TYPES, CALL_TYPES composition, CONTENT_TYPES set, and export checks.
 - T-199. Split `tests/test-other.js` (469 lines, 14 subtests, 496 assertions) into three focused per-module test files: `tests/test-dom-pipeline.js` (5 subtests), `tests/test-preview-nodes.js` (7 subtests), and `tests/test-frontend-build.js` (2 subtests).
 
 ## Integration test
@@ -261,6 +263,7 @@
 - T-180. Updated developer guide references to use the renamed build script.
 - T-181. Updated user guide to list six TXT export variants, including raw-date and JSON summary formats.
 - T-212. Updated documentation to use words instead of chars for message length, reflecting the character-to-word count change.
+- T-207. Created developer onboarding guide covering project overview, setup, structure, workflow, and coding conventions linked from existing documentation.
 
 ## Content extraction
 
