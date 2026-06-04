@@ -23,9 +23,9 @@
     "entryLine": "^\\[\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}\\](?:\\s\\([^)]*\\))?\\s[^:]+:\\s[^/]+(?:\\s/\\s.*)?$",
     "duration": "\\d{2}:\\d{2}:\\d{2}",
     "totalSummaryTitle": "^Total Summary$",
-    "totalLine": "^\\d+\\s+(?:message|messages)\\s*/\\s*\\d+\\s+(?:day|days)$",
+    "totalLine": "^\\d+\\s+(?:message|messages|post|posts)\\s*/\\s*\\d+\\s+(?:day|days)$",
     "roughTextLine": "^~\\s+\\d+\\s+text\\s*/\\s*\\d+\\s+words$",
-    "roughWordsLine": "^$",
+    "roughWordsLine": "^~\\s+\\d+\\s+words$",
     "roughImagesLine": "^~\\s+\\d+\\s+images$",
     "roughCallsLine": "^~\\s+\\d+\\s+calls\\s+\\d{2}:\\d{2}:\\d{2}$",
     "personSummaryTitle": "^.{1,80} Summary$"
@@ -45,6 +45,20 @@
       "fileName": "export-minimal.txt",
       "includeContent": false,
       "includeSummary": false
+    },
+    {
+      "fileName": "export-summary-combined.txt",
+      "includeContent": false,
+      "includeSummary": true,
+      "includeLength": false,
+      "skipBodyValidation": true
+    },
+    {
+      "fileName": "export-summary-detailed.txt",
+      "includeContent": false,
+      "includeSummary": false,
+      "includeLength": false,
+      "skipBodyValidation": true
     },
     {
       "fileName": "export-summary-json.txt",

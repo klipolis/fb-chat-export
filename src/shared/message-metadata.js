@@ -4,7 +4,8 @@ const { parseAriaLabel, normalizeDateToSimple, normalizeLabel } = require('./ari
 let sharedFrontendConfig;
 try {
   sharedFrontendConfig = require('../../data-config/frontend_shared.json') || {};
-} catch {
+} catch (err) {
+  console.warn('message-metadata: failed to load shared frontend config', err);
   sharedFrontendConfig = {};
 }
 
@@ -66,7 +67,8 @@ function formatUrlCompact(url) {
     if (!cleanPath) return `${host}...`;
     const truncPath = cleanPath.length > 10 ? `${cleanPath.slice(0, 10)}...` : `${cleanPath}...`;
     return host + truncPath;
-  } catch {
+  } catch (err) {
+    console.warn('message-metadata: truncateUrl failed for', url, err);
     return url;
   }
 }
@@ -85,7 +87,8 @@ function stripTrackingParams(url) {
     }
     parsed.hash = '';
     return parsed.toString();
-  } catch {
+  } catch (err) {
+    console.warn('message-metadata: stripTrackingParams failed for', url, err);
     return url;
   }
 }
@@ -107,7 +110,8 @@ function normalizeRedirectUrl(url) {
     if (!candidate) return url;
     const decoded = decodeURIComponent(candidate);
     return /^https?:\/\//i.test(decoded) ? decoded : url;
-  } catch {
+  } catch (err) {
+    console.warn('message-metadata: resolveRedirectUrl outer failed for', url, err);
     const redirectMatch = url.match(
       /https?:\/\/(?:l\.facebook\.com|l\.m\.facebook\.com|l\.messenger\.com|l\.m\.messenger\.com)\/l\.php\?(?:[^#]*?)(?:u|url|q)=([^&#]+)/i
     );
@@ -115,7 +119,8 @@ function normalizeRedirectUrl(url) {
     try {
       const decoded = decodeURIComponent(redirectMatch[1]);
       return /^https?:\/\//i.test(decoded) ? decoded : url;
-    } catch {
+    } catch (err2) {
+      console.warn('message-metadata: resolveRedirectUrl inner failed for', url, err2);
       return redirectMatch[1];
     }
   }
@@ -278,7 +283,9 @@ function getContentMeta({
       contentText = resolvedLink || 'link';
     }
   } else if (type === 'voice-note') {
-    contentText = 'voice note';
+    const trimmed = normalizeLabel(normalizedText || '');
+    const isUINoise = !trimmed || /^play\s*\d{1,2}:\d{2}/i.test(trimmed) || /^audio\s+scrubber/i.test(trimmed) || /^(voice\s+(message|note)|audio\s+(message|note))$/i.test(trimmed);
+    contentText = isUINoise ? 'voice note' : normalizedText;
   } else if (type === 'sticker') {
     contentText = 'sticker';
   } else if (type === 'reaction') {

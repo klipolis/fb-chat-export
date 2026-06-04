@@ -46,12 +46,12 @@ chore: release v5.5.0
 
 ## Git hooks (Husky)
 
-Two hooks run automatically on every commit:
+Two hooks run automatically:
 
-| Hook | Command | Purpose |
-|---|---|---|
-| `pre-commit` | `pnpm run lint` | ESLint on source and test files |
-| `commit-msg` | `commitlint` | Validates the commit message format |
+| Hook | Trigger | Command | Purpose |
+|---|---|---|---|
+| `pre-push` | Before `git push` | `pnpm run lint:unreleased && pnpm run lint` | Lint check and changelog validation |
+| `commit-msg` | Before `git commit` | `commitlint` | Validates the commit message format |
 
 To bypass hooks in exceptional circumstances: `git commit --no-verify` (use sparingly).
 

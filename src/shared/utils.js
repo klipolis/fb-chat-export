@@ -1,6 +1,7 @@
 const fs = require('fs');
 
 const { isValidSender } = require('./sender-constants');
+const { escapeRegExp, replaceWholeWord } = require('./string-utils');
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) {
@@ -22,10 +23,6 @@ function emptyDir(dir) {
       fs.unlinkSync(entryPath);
     }
   }
-}
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 const normalizeName = (name) => name.trim().replace(/\s+/g, ' ');
@@ -121,14 +118,6 @@ function aliasChatNames(html, nameMap = {}, preDetectedName) {
     const candidates = extractAriaLabelCandidates(html);
     selectedName = pickBestName(candidates, html, excludeNames);
   }
-
-  // Replace name only when it appears as a whole word (not as substring of another name)
-  // using a pattern that works with Unicode letters.
-  const replaceWholeWord = (text, name, replacement) => {
-    const escaped = escapeRegExp(name);
-    const regex = new RegExp(`(^|[^\\p{L}])${escaped}(?=[^\\p{L}]|$)`, 'giu');
-    return text.replace(regex, (match, prefix) => `${prefix}${replacement}`);
-  };
 
   if (selectedName) {
     result = result.replace(/aria-label="([^"]*)"/g, (match, label) => {

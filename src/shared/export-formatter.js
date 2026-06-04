@@ -32,7 +32,8 @@ function formatDate(raw, referenceDate) {
   if (typeof raw === 'string') {
     try {
       dateValue = normalizeDateToIso(raw, referenceDate) || raw;
-    } catch {
+    } catch (err) {
+      console.warn('export-formatter: normalizeDateToIso failed for', raw, err);
       dateValue = raw;
     }
   }

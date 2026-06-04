@@ -5,7 +5,7 @@ const { formatExportHeader, formatLine, buildExportText, formatSummarySection } 
 const { buildSummary } = require(
   '../src/shared/export-summary'
 );
-const { formatExportFileName } = require(
+const { formatServerExportFileName } = require(
   '../src/shared/export-text'
 );
 
@@ -183,47 +183,47 @@ tap.test('formatExportHeaderAllTypes', (t) => {
 });
 
 // ---------------------------------------------------------------------------
-// formatExportFileNameDateRange
+// formatServerExportFileNameDateRange
 // ---------------------------------------------------------------------------
 
-tap.test('formatExportFileNameDateRange', (t) => {
+tap.test('formatServerExportFileNameDateRange', (t) => {
   t.equal(
-    formatExportFileName('export-max', { fromDate: '2026-05-01', toDate: '2026-05-19' }),
+    formatServerExportFileName('export-max', { fromDate: '2026-05-01', toDate: '2026-05-19' }),
     'export-2026-05-01\u20132026-05-19-max.txt',
     'export-max with date range'
   );
   t.equal(
-    formatExportFileName('export-minimal', { fromDate: '2026-05-01', toDate: '2026-05-19' }),
+    formatServerExportFileName('export-minimal', { fromDate: '2026-05-01', toDate: '2026-05-19' }),
     'export-2026-05-01\u20132026-05-19-minimal.txt',
     'export-minimal with date range'
   );
   t.equal(
-    formatExportFileName('export-max'),
+    formatServerExportFileName('export-max'),
     'export-max.txt',
     'no date range falls back to fixed name'
   );
   t.equal(
-    formatExportFileName('export-minimal'),
+    formatServerExportFileName('export-minimal'),
     'export-minimal.txt',
     'export-minimal no date range falls back to fixed name'
   );
   t.equal(
-    formatExportFileName(undefined),
+    formatServerExportFileName(undefined),
     'export-max.txt',
     'undefined mode defaults to export-max'
   );
   t.equal(
-    formatExportFileName(null),
+    formatServerExportFileName(null),
     'export-max.txt',
     'null mode defaults to export-max'
   );
   t.equal(
-    formatExportFileName(''),
+    formatServerExportFileName(''),
     'export-max.txt',
     'empty string mode defaults to export-max'
   );
   t.equal(
-    formatExportFileName('unknown-mode'),
+    formatServerExportFileName('unknown-mode'),
     'export-max.txt',
     'arbitrary mode uses the mode as filename base'
   );

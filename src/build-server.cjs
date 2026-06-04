@@ -7,7 +7,7 @@ const { runCreateNodes } = require('./shared/create-nodes');
 const {
   buildEntriesFromDocument,
   buildExportText,
-  formatExportFileName,
+  formatServerExportFileName,
   formatExportHeader,
   formatLine,
   formatSummarySection,
@@ -54,7 +54,8 @@ function loadRawMetadata() {
   if (!fs.existsSync(rawMetadataPath)) return null;
   try {
     return JSON.parse(fs.readFileSync(rawMetadataPath, 'utf8'));
-  } catch {
+  } catch (err) {
+    console.warn('build-server: failed to parse raw metadata at', rawMetadataPath, err);
     return null;
   }
 }
@@ -202,8 +203,8 @@ function writeTextExports(files, cleanedHtmlByFile, referenceDate) {
   const summaryCombined = buildExportText([], `${headerTextSummaryOnly}${summaryTextForSummaryOnlyCombined}`);
   const summaryDetailed = buildExportText([], `${headerTextSummaryOnly}${summaryTextForSummaryOnlyDetailed}`);
 
-  const onPath = path.join(exportDir, formatExportFileName('export-max'));
-  const offPath = path.join(exportDir, formatExportFileName('export-minimal'));
+  const onPath = path.join(exportDir, formatServerExportFileName('export-max'));
+  const offPath = path.join(exportDir, formatServerExportFileName('export-minimal'));
   const summaryCombinedPath = path.join(exportDir, 'export-summary-combined.txt');
   const summaryDetailedPath = path.join(exportDir, 'export-summary-detailed.txt');
   const rawDateLines = sortedEntries.map((entry) =>
@@ -265,6 +266,14 @@ function main() {
       fs.readFileSync(path.join(rawDir, fileName), 'utf8'),
     ])
   );
+
+  // Validate that every input file contains at least one message element
+  for (const [fileName, html] of rawHtmlByFile) {
+    if (!/<[a-zA-Z0-9]+[^>]*\saria-roledescription="message"/i.test(html)) {
+      console.error(`Input file ${fileName} has no aria-roledescription="message" elements`);
+      process.exit(1);
+    }
+  }
   const preDetectedName = collectAutoName(
     Array.from(rawHtmlByFile.values()),
     aliasNameMap

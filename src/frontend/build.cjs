@@ -11,6 +11,7 @@ const minOutputPath = resolveRepoPath('dist', 'app.min.js');
 const relOutputPath = './dist/app.js';
 const relMinOutputPath = './dist/app.min.js';
 const buildPlatform = process.env.BUILD_PLATFORM || 'userscript';
+const buildWatch = process.env.BUILD_WATCH === 'true';
 
 if (!fs.existsSync(distDir)) {
   fs.mkdirSync(distDir, { recursive: true });
@@ -33,7 +34,7 @@ const buildVersion =
 const platformHeader = getPlatformHeader(buildPlatform, buildVersion);
 
 async function bundleOutput(outputFile, minify) {
-  await build({
+  const config = {
     entryPoints: [sourcePath],
     bundle: true,
     platform: 'browser',
@@ -41,7 +42,24 @@ async function bundleOutput(outputFile, minify) {
     legalComments: 'none',
     minify,
     outfile: outputFile,
-  });
+  };
+
+  if (buildWatch) {
+    config.watch = {
+      onRebuild(error) {
+        if (error) {
+          console.error(`Watch build failed for ${outputFile}:`, error.message);
+        } else {
+          console.log(`Watch build succeeded: ${outputFile}`);
+          if (platformHeader) {
+            attachHeader(outputFile, buildPlatform, buildVersion);
+          }
+        }
+      },
+    };
+  }
+
+  await build(config);
 
   if (platformHeader) {
     attachHeader(outputFile, buildPlatform, buildVersion);
@@ -49,6 +67,13 @@ async function bundleOutput(outputFile, minify) {
 }
 
 (async () => {
+  if (buildWatch) {
+    console.log('Starting frontend build in watch mode...');
+    await bundleOutput(outputPath, false);
+    console.log(`Watching for changes — ${relOutputPath}`);
+    return;
+  }
+
   await bundleOutput(outputPath, false);
   await bundleOutput(minOutputPath, true);
 

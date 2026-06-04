@@ -28,6 +28,9 @@
 - T190. Import `parseReferenceDate` from `aria-label-parser.js` into `create-nodes.js` instead of redefining the identical 20-line function.
 - T191. Import `stripTrackingParams` from `message-metadata.js` into `create-nodes.js` and remove the redundant explicit parameter names already covered by the `utm_` prefix check.
 - T192. Extract duplicated `findMatchingClosingTag` from `optimize-html.js` and `create-nodes.js` into a shared `html-utils.js` module.
+- T193. Consolidate duration normalization logic by creating a shared duration utility module that exports `normalizeDuration`, `extractRawDuration`, and related functions used across `message-metadata.js`, `create-nodes.js`, and `export-text.js`.
+- T194. Extract common HTML sanitization utilities (like `normalizeTagStrings`, `stripAttributes`) into a shared module to avoid duplication between `optimize-html.js` and other HTML processing code.
+- T195. Create a shared constants module for message type mappings and regex patterns used across multiple modules to ensure consistency.
 
 ## Build
 
@@ -35,6 +38,9 @@
 - T185. Verify `.husky/pre-push` and `.husky/commit-msg` hooks match documentation and only lint on push.
 - T195. Add `BUILD_WATCH` environment variable support to the frontend esbuild build so `pnpm build:frontend` can run in watch mode during development.
 - T196. Add lightweight structural validation in `build-server.cjs` — check that input HTML files contain at least one `aria-roledescription="message"` element before attempting extraction so malformed files produce a clear error instead of garbage output.
+- T197. Add build-time validation to ensure all exported JSON files conform to a predefined schema, catching structural issues early in the pipeline.
+- T198. Optimize image detection logic in `create-nodes.js` to reduce unnecessary DOM traversal when processing messages without attachments.
+- T199. Add support for incremental builds by tracking file modification times and only rebuilding changed components.
 
 ## Schema & config
 
@@ -52,4 +58,6 @@
 - T199. Split `tests/test-other.js` (432 lines covering 7+ concerns) into focused per-module test files: `test-dom-pipeline.js`, `test-preview-nodes.js`, `test-export-schema.js`.
 - T200. Add unit tests for Unicode name recognition in `aria-label-parser.js` and `utils.js` to verify proper handling of international characters in sender names.
 - T201. Add tests to verify word count calculations are consistent across JSON exports and text exports for all message types.
+- T202. Add tests to verify proper handling of image attachments with Unicode sender names (like Ötves Ernő) ensuring correct type normalization to 'image'.
+- T203. Add tests for voice note duration parsing to ensure consistency between raw duration extraction and formatted output.
 

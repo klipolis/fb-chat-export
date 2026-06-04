@@ -23,7 +23,8 @@ function splitSenderAndMessage(value) {
 let sharedRelativeDateRules = [];
 try {
   sharedRelativeDateRules = require('../../data-config/frontend_shared.json').relativeDateRules || [];
-} catch {
+} catch (err) {
+  console.warn('aria-label-parser: failed to load shared relative date rules', err);
   sharedRelativeDateRules = [];
 }
 
@@ -387,6 +388,7 @@ function normalizeDateToIso(dateString, referenceDate) {
 
 module.exports = {
   parseAriaLabel,
+  parseReferenceDate,
   normalizeDateToSimple,
   normalizeDateToIso,
   normalizeLabel,

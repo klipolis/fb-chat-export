@@ -1,4 +1,5 @@
 const { beautifyHtml } = require('./beautify');
+const { findMatchingClosingTag } = require('./html-utils');
 
 function stripAttributes(tag, attrs) {
   const keep = ['aria-label', 'aria-roledescription'];
@@ -60,36 +61,6 @@ function normalizeText(text) {
 function extractAriaLabelMessageText(label) {
   const messageMatch = label.match(/^(?:At\s+|Enter,\s*Message sent\s+)[\s\S]*:\s*([\s\S]+)$/i);
   return messageMatch ? normalizeText(messageMatch[1]) : null;
-}
-
-function findMatchingClosingTag(html, tag, fromIndex) {
-  const openRe = new RegExp(`<${tag}\\b[^>]*>`, 'gi');
-  const closeRe = new RegExp(`</${tag}>`, 'gi');
-  openRe.lastIndex = fromIndex;
-  closeRe.lastIndex = fromIndex;
-
-  let depth = 1;
-  let nextOpen = openRe.exec(html);
-  let nextClose = closeRe.exec(html);
-
-  while (nextClose) {
-    if (nextOpen && nextOpen.index < nextClose.index) {
-      depth += 1;
-      openRe.lastIndex = nextOpen.index + nextOpen[0].length;
-      nextOpen = openRe.exec(html);
-      continue;
-    }
-
-    depth -= 1;
-    if (depth === 0) {
-      return nextClose.index;
-    }
-
-    closeRe.lastIndex = nextClose.index + nextClose[0].length;
-    nextClose = closeRe.exec(html);
-  }
-
-  return -1;
 }
 
 function removeDuplicateAriaLabelNodes(html) {

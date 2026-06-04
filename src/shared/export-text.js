@@ -20,7 +20,7 @@ function normalizeExportSender(sender) {
   return sender || 'Unknown';
 }
 
-function formatExportFileName(mode = 'export-max', { fromDate, toDate } = {}) {
+function formatServerExportFileName(mode = 'export-max', { fromDate, toDate } = {}) {
   const from = fromDate ? String(fromDate).slice(0, 10) : '';
   const to = toDate ? String(toDate).slice(0, 10) : '';
   const range = from || to ? `${from || 'start'}–${to || 'end'}` : '';
@@ -74,7 +74,8 @@ function extractMessageEntry(el, fileName, referenceDate) {
   let resolvedDate;
   try {
     resolvedDate = normalizeDateToIso(rawDate, referenceDate) || rawDate;
-  } catch {
+  } catch (err) {
+    console.warn('export-text: normalizeDateToIso failed for', rawDate, err);
     resolvedDate = rawDate;
   }
   const timestamp = Number.isFinite(Date.parse(resolvedDate)) ? Date.parse(resolvedDate) : 0;
@@ -129,7 +130,7 @@ function buildEntriesFromDocument(document, fileName, referenceDate) {
 
 module.exports = {
   formatDate,
-  formatExportFileName,
+  formatServerExportFileName,
   formatExportHeader,
   normalizeExportSender,
   extractMessageEntry,

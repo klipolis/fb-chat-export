@@ -9,7 +9,21 @@ const schemaConfig = require('../../src/shared/export-config.json');
 
 const rawDir = resolveRepoPath('data-input');
 const txtDir = resolveRepoPath('data-output', 'final-export');
+const jsonDir = resolveRepoPath('data-output', 'json-format');
+const optimizedDir = resolveRepoPath('data-output', 'optimized-html');
 let serverBuildCache = null;
+
+tap.teardown(() => {
+  if (serverBuildCache) {
+    [txtDir, jsonDir, optimizedDir].forEach((dir) => {
+      if (fs.existsSync(dir)) {
+        fs.readdirSync(dir).forEach((file) => {
+          fs.rmSync(path.join(dir, file), { recursive: true, force: true });
+        });
+      }
+    });
+  }
+});
 
 function runServerBuildOnce() {
   if (!serverBuildCache) {

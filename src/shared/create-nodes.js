@@ -1,8 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const { chooseRule } = require('./rules');
-const { parseAriaLabel, normalizeDateToSimple } = require('./aria-label-parser');
-const { getContentMeta, normalizeDuration } = require('./message-metadata');
+const { parseAriaLabel, parseReferenceDate, normalizeDateToSimple } = require('./aria-label-parser');
+const { getContentMeta, normalizeDuration, stripTrackingParams } = require('./message-metadata');
+const { findMatchingClosingTag } = require('./html-utils');
 const aliasNames = require('../../data-config/alias-names.json');
 
 const helperDir = path.resolve(__dirname);
@@ -17,25 +18,6 @@ function relativePath(p) {
   return rel.startsWith('.') ? rel : `./${rel}`;
 }
 
-function stripTrackingParams(url) {
-  if (!url) return url;
-  try {
-    const u = new URL(url);
-    for (const key of Array.from(u.searchParams.keys())) {
-      if (
-        key.toLowerCase().startsWith('utm_') ||
-        ['fbclid', 'gclid', 'dclid', 'msclkid', 'ref', 'ref_src'].includes(key.toLowerCase())
-      ) {
-        u.searchParams.delete(key);
-      }
-    }
-    u.hash = '';
-    return u.toString();
-  } catch {
-    return url;
-  }
-}
-
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
@@ -48,36 +30,6 @@ function writeJsonIfChanged(targetPath, data) {
   }
   fs.writeFileSync(targetPath, content, 'utf8');
   return true;
-}
-
-function findMatchingClosingTag(html, tag, fromIndex) {
-  const openRe = new RegExp(`<${tag}\\b[^>]*>`, 'gi');
-  const closeRe = new RegExp(`</${tag}>`, 'gi');
-  openRe.lastIndex = fromIndex;
-  closeRe.lastIndex = fromIndex;
-
-  let depth = 1;
-  let nextOpen = openRe.exec(html);
-  let nextClose = closeRe.exec(html);
-
-  while (nextClose) {
-    if (nextOpen && nextOpen.index < nextClose.index) {
-      depth += 1;
-      openRe.lastIndex = nextOpen.index + nextOpen[0].length;
-      nextOpen = openRe.exec(html);
-      continue;
-    }
-
-    depth -= 1;
-    if (depth === 0) {
-      return nextClose.index;
-    }
-
-    closeRe.lastIndex = nextClose.index + nextClose[0].length;
-    nextClose = closeRe.exec(html);
-  }
-
-  return -1;
 }
 
 function normalizeLabel(text) {
@@ -206,27 +158,6 @@ function generateSimpleDate(ariaLabel, referenceDate) {
   return normalizeDateToSimple(parsed.date, referenceDate);
 }
 
-function parseReferenceDate(value) {
-  if (value instanceof Date) return new Date(value.getTime());
-  if (typeof value === 'string') {
-    const match = value.match(/^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})$/);
-    if (match) {
-      return new Date(
-        Number(match[1]),
-        Number(match[2]) - 1,
-        Number(match[3]),
-        Number(match[4]),
-        Number(match[5]),
-        0,
-        0
-      );
-    }
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) return parsed;
-  }
-  return new Date();
-}
-
 function formatLocalDateTime(date = new Date()) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -305,7 +236,7 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
         message = 'audio call';
       } else if (/\bvoice(?: message| note)\b/i.test(segmentText)) {
         message = 'voice message';
-      } else {
+      } else if (!hasPlayButton && !rawMeta.duration) {
         message = segmentText;
       }
     }

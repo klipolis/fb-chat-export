@@ -255,7 +255,8 @@
       var sharedRelativeDateRules = [];
       try {
         sharedRelativeDateRules = require_frontend_shared().relativeDateRules || [];
-      } catch {
+      } catch (err) {
+        console.warn("aria-label-parser: failed to load shared relative date rules", err);
         sharedRelativeDateRules = [];
       }
       function findValidDatePrefix(text, referenceDate) {
@@ -576,6 +577,7 @@
       }
       module.exports = {
         parseAriaLabel: parseAriaLabel2,
+        parseReferenceDate,
         normalizeDateToSimple,
         normalizeDateToIso: normalizeDateToIso3,
         normalizeLabel,
@@ -594,7 +596,8 @@
       var sharedFrontendConfig;
       try {
         sharedFrontendConfig = require_frontend_shared() || {};
-      } catch {
+      } catch (err) {
+        console.warn("message-metadata: failed to load shared frontend config", err);
         sharedFrontendConfig = {};
       }
       var asciiReactionPattern = sharedFrontendConfig.reactionOptions?.asciiSmileyPattern ? new RegExp(sharedFrontendConfig.reactionOptions.asciiSmileyPattern, "u") : /^[:;=8Xx][-~]?[)DdpP(/\\\]]$/u;
@@ -644,7 +647,8 @@
           }
           parsed.hash = "";
           return parsed.toString();
-        } catch {
+        } catch (err) {
+          console.warn("message-metadata: stripTrackingParams failed for", url, err);
           return url;
         }
       }
@@ -660,7 +664,8 @@
           if (!candidate) return url;
           const decoded = decodeURIComponent(candidate);
           return /^https?:\/\//i.test(decoded) ? decoded : url;
-        } catch {
+        } catch (err) {
+          console.warn("message-metadata: resolveRedirectUrl outer failed for", url, err);
           const redirectMatch = url.match(
             /https?:\/\/(?:l\.facebook\.com|l\.m\.facebook\.com|l\.messenger\.com|l\.m\.messenger\.com)\/l\.php\?(?:[^#]*?)(?:u|url|q)=([^&#]+)/i
           );
@@ -668,7 +673,8 @@
           try {
             const decoded = decodeURIComponent(redirectMatch[1]);
             return /^https?:\/\//i.test(decoded) ? decoded : url;
-          } catch {
+          } catch (err2) {
+            console.warn("message-metadata: resolveRedirectUrl inner failed for", url, err2);
             return redirectMatch[1];
           }
         }
@@ -788,7 +794,9 @@
             contentText = resolvedLink || "link";
           }
         } else if (type === "voice-note") {
-          contentText = "voice note";
+          const trimmed = normalizeLabel(normalizedText || "");
+          const isUINoise = !trimmed || /^play\s*\d{1,2}:\d{2}/i.test(trimmed) || /^audio\s+scrubber/i.test(trimmed) || /^(voice\s+(message|note)|audio\s+(message|note))$/i.test(trimmed);
+          contentText = isUINoise ? "voice note" : normalizedText;
         } else if (type === "sticker") {
           contentText = "sticker";
         } else if (type === "reaction") {
@@ -860,9 +868,9 @@
           entryLine: "^\\[\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}\\](?:\\s\\([^)]*\\))?\\s[^:]+:\\s[^/]+(?:\\s/\\s.*)?$",
           duration: "\\d{2}:\\d{2}:\\d{2}",
           totalSummaryTitle: "^Total Summary$",
-          totalLine: "^\\d+\\s+(?:message|messages)\\s*/\\s*\\d+\\s+(?:day|days)$",
+          totalLine: "^\\d+\\s+(?:message|messages|post|posts)\\s*/\\s*\\d+\\s+(?:day|days)$",
           roughTextLine: "^~\\s+\\d+\\s+text\\s*/\\s*\\d+\\s+words$",
-          roughWordsLine: "^$",
+          roughWordsLine: "^~\\s+\\d+\\s+words$",
           roughImagesLine: "^~\\s+\\d+\\s+images$",
           roughCallsLine: "^~\\s+\\d+\\s+calls\\s+\\d{2}:\\d{2}:\\d{2}$",
           personSummaryTitle: "^.{1,80} Summary$"
@@ -882,6 +890,20 @@
             fileName: "export-minimal.txt",
             includeContent: false,
             includeSummary: false
+          },
+          {
+            fileName: "export-summary-combined.txt",
+            includeContent: false,
+            includeSummary: true,
+            includeLength: false,
+            skipBodyValidation: true
+          },
+          {
+            fileName: "export-summary-detailed.txt",
+            includeContent: false,
+            includeSummary: false,
+            includeLength: false,
+            skipBodyValidation: true
           },
           {
             fileName: "export-summary-json.txt",
@@ -1337,7 +1359,8 @@ ${aliasLines}
         if (typeof raw === "string") {
           try {
             dateValue = normalizeDateToIso3(raw, referenceDate) || raw;
-          } catch {
+          } catch (err) {
+            console.warn("export-formatter: normalizeDateToIso failed for", raw, err);
             dateValue = raw;
           }
         }
@@ -1435,12 +1458,12 @@ ${aliasLines}
     }
   });
 
-  // src/shared/alias-utils.js
-  var require_alias_utils = __commonJS({
-    "src/shared/alias-utils.js"(exports, module) {
+  // src/shared/string-utils.js
+  var require_string_utils = __commonJS({
+    "src/shared/string-utils.js"(exports, module) {
       "use strict";
       function escapeRegExp(value) {
-        return String(value || "").replace(/[.*+?^${}()|[\\]\\]/g, "\\$&");
+        return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       }
       function replaceWholeWord(text, name, replacement) {
         const escaped = escapeRegExp(name);
@@ -1453,6 +1476,15 @@ ${aliasLines}
           return `${prefix}${replacement}`;
         });
       }
+      module.exports = { escapeRegExp, replaceWholeWord };
+    }
+  });
+
+  // src/shared/alias-utils.js
+  var require_alias_utils = __commonJS({
+    "src/shared/alias-utils.js"(exports, module) {
+      "use strict";
+      var { escapeRegExp, replaceWholeWord } = require_string_utils();
       function applyAliasToText2(text, aliasMap = {}, sender) {
         let result = String(text || "");
         for (const [from, to] of Object.entries(aliasMap || {})) {

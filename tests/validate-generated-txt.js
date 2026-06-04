@@ -206,7 +206,9 @@ function validateFile(t, fileSchema, schema, patterns) {
     bodyStart = validateSummary(t, lines, schema, patterns, bodyStart, fileSchema.fileName);
   }
 
-  validateBody(t, lines, patterns, bodyStart, fileSchema.fileName, fileSchema.includeContent);
+  if (!fileSchema.skipBodyValidation) {
+    validateBody(t, lines, patterns, bodyStart, fileSchema.fileName, fileSchema.includeContent);
+  }
 }
 
 tap.test('validate generated TXT exports', (t) => {
