@@ -18,9 +18,11 @@ function validatePreviewJson(t, data, fileName) {
   const raw = data.data_raw;
   t.ok(raw && typeof raw === 'object', `${fileName}: data_raw is required`);
   t.ok('date' in raw, `${fileName}: data_raw.date is required`);
+  t.ok('name' in raw, `${fileName}: data_raw.name is required`);
   t.ok('content' in raw, `${fileName}: data_raw.content is required`);
   t.ok('duration' in raw, `${fileName}: data_raw.duration is required`);
   t.ok('length' in raw, `${fileName}: data_raw.length is required`);
+  t.ok(raw.name === null || typeof raw.name === 'string', `${fileName}: data_raw.name must be string or null`);
   t.ok(raw.length === null || /^\d+ words$/.test(raw.length), `${fileName}: data_raw.length must be null or word count`);
 
   if (raw.duration !== null) {
@@ -30,11 +32,13 @@ function validatePreviewJson(t, data, fileName) {
   const preview = data.data_preview;
   t.ok(preview && typeof preview === 'object', `${fileName}: data_preview is required`);
   t.equal(typeof preview.date, 'string', `${fileName}: data_preview.date is required`);
+  t.ok('name' in preview, `${fileName}: data_preview.name is required`);
   t.ok('content' in preview, `${fileName}: data_preview.content is required`);
   t.ok(
     preview.content === null || typeof preview.content === 'string',
     `${fileName}: data_preview.content must be a string or null`
   );
+  t.ok(preview.name === null || typeof preview.name === 'string', `${fileName}: data_preview.name must be string or null`);
   t.ok('duration' in preview, `${fileName}: data_preview.duration is required`);
   t.ok('length' in preview, `${fileName}: data_preview.length is required`);
 

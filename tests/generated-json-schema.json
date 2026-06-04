@@ -9,20 +9,22 @@
     "type": { "type": "string" },
     "data_raw": {
       "type": "object",
-      "required": ["date", "content", "duration", "length"],
+      "required": ["date", "name", "content", "duration", "length"],
       "properties": {
         "date": { "type": ["string", "null"] },
+        "name": { "type": ["string", "null"] },
         "content": { "type": ["string", "null"] },
         "duration": { "type": ["string", "null"] },
-        "length": { "type": "null" }
+        "length": { "type": ["string", "null"] }
       },
       "additionalProperties": false
     },
     "data_preview": {
       "type": "object",
-      "required": ["date", "content", "duration", "length"],
+      "required": ["date", "name", "content", "duration", "length"],
       "properties": {
         "date": { "type": "string" },
+        "name": { "type": ["string", "null"] },
         "content": { "type": ["string", "null"] },
         "duration": { "type": ["string", "null"] },
         "length": { "type": ["string", "null"] }

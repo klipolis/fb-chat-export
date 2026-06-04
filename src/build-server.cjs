@@ -16,6 +16,7 @@ const { buildSummaryJson } = require('./shared/export-summary');
 const { chooseRule } = require('./shared/message-metadata');
 const { resolveRepoPath } = require('./shared/app-config');
 const schemaConfig = require('./shared/export-config.json');
+const jsonSchema = require('../tests/generated-json-schema.json');
 
 const rawDir = resolveRepoPath('data-input-test');
 const hotDir = resolveRepoPath('data-input-test', 'userscript');
@@ -240,6 +241,46 @@ function writeTextExports(files, cleanedHtmlByFile, referenceDate) {
   return [onPath, offPath, summaryCombinedPath, summaryDetailedPath, summaryJsonPath, rawDatePath];
 }
 
+function validateGeneratedJson() {
+  const files = fs.readdirSync(previewDir).filter((name) => name.endsWith('.json'));
+  const props = jsonSchema.properties;
+  const rawProps = props.data_raw.properties;
+  const previewProps = props.data_preview.properties;
+  let errors = 0;
+
+  files.forEach((fileName) => {
+    const data = JSON.parse(fs.readFileSync(path.join(previewDir, fileName), 'utf8'));
+
+    if (typeof data.title !== 'string') { console.error(`  ${fileName}: title must be a string`); errors++; }
+    if (typeof data.type !== 'string') { console.error(`  ${fileName}: type must be a string`); errors++; }
+
+    ['data_raw', 'data_preview'].forEach((section) => {
+      const obj = data[section];
+      if (!obj || typeof obj !== 'object') { console.error(`  ${fileName}: ${section} is required`); errors++; return; }
+      const schemaProps = section === 'data_raw' ? rawProps : previewProps;
+      Object.keys(schemaProps).forEach((field) => {
+        if (!(field in obj)) { console.error(`  ${fileName}: ${section}.${field} is required`); errors++; }
+      });
+    });
+
+    const raw = data.data_raw;
+    if (raw && raw.length !== null && !/^\d+ words$/.test(raw.length)) {
+      console.error(`  ${fileName}: data_raw.length must be null or "N words"`);
+      errors++;
+    }
+    if (raw && raw.name !== null && typeof raw.name !== 'string') {
+      console.error(`  ${fileName}: data_raw.name must be string or null`);
+      errors++;
+    }
+  });
+
+  if (errors) {
+    console.error(`Build validation failed: ${errors} schema violations in generated JSON`);
+    process.exit(1);
+  }
+  console.log(`Validated ${files.length} generated JSON files against schema`);
+}
+
 function main() {
   ensureDir(optimizedDir);
   ensureDir(previewDir);
@@ -319,6 +360,7 @@ function main() {
   }
 
   runCreateNodes(cleanedHtmlByFile);
+  validateGeneratedJson();
   const exportPaths = writeTextExports(files, cleanedHtmlByFile, referenceDate);
   console.log(`Done: HTML + JSON in ./data-output-auto/optimized-html and ./data-output-auto/json-format`);
   exportPaths.forEach((exportPath) => {
