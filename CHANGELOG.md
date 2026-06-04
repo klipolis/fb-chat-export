@@ -11,50 +11,46 @@ Changelog entries should describe active changes in direct present-tense stateme
 
 ### Added
 
-- `pnpm run release` automates the release process: renames `[Unreleased]` to the new version heading, inserts a fresh empty `[Unreleased]` above it, and bumps `package.json` version. Supports `patch`, `minor`, `major` override arguments; defaults to minor if any `Added`/`Changed` entries are present, otherwise patch.
+- `pnpm run release` automates version bumps and changelog heading updates. Supports patch, minor, and major override arguments; defaults to minor when new features are present.
 - Blocks pushes when the changelog has an empty release section, requiring changes to be recorded before publishing.
 - Provides a standalone changelog guard to verify the release notes are not empty before publishing.
 - Export filenames omit old tool prefixes for a simpler naming scheme.
 - Browser export filenames include the selected date range when filtering by date.
 - Server build generates a structured JSON summary variant for programmatic consumption.
-- Server build generates a raw-date variant that shows the original aria-label date text alongside the normalized date.
-- Documentation omits platform-specific terminology except when terms or userscript metadata require it.
-- AI interaction guidance helps users and assistants collaborate effectively.
+- Server build generates a raw-date variant that shows the original date label text alongside the normalized date.
 
 ### Fixed
 
-- Export and preview durations always display in strict `HH:MM:SS` three-part format (e.g. `00:18:00`) with zero-padded hours instead of the previous two-part `MM:SS` style.
+- Export and preview durations display in strict `HH:MM:SS` three-part format (e.g. `00:18:00`) with zero-padded hours.
 - Preview dates from relative weekday labels (e.g. `Saturday 4:36am`) resolve to the correct calendar date.
-- Alias replacement no longer rewrites generic lowercase labels when anonymizing sender names.
-- The summary validator accepts any number of participant sections instead of a fixed count.
-- Summary title patterns are dynamic instead of relying on hardcoded sender names.
+- Alias replacement skips generic lowercase labels when anonymizing sender names.
+- The summary validator accepts any number of participant sections.
+- Summary title patterns are dynamic.
 - Message type rules include reaction and video-link variants; duration matching uses strict `HH:MM:SS`.
-- Summary text count no longer inflates entries that carry multiple images.
-- Total summary covers every participant, not just primary senders.
+- Summary text count correctly handles entries that carry multiple images.
+- Total summary covers every participant.
 - Body content length uses word count for all message types.
-- Link-video export uses the full URL instead of the compact shorthand format.
+- Link-video export uses the full URL.
 - Server TXT export header lists link-video as a recognised message type.
-- Text messages are no longer misclassified as voice messages in the browser scan.
-- Link detection in the browser export triggers on URL patterns only, not the bare word "link".
+- Text messages classify correctly as text, not voice, in the browser scan.
+- Link detection in the browser export triggers on URL patterns only.
 
 ### Changed
 
-- Updated alias configuration so a single source defines runtime replacements and duplicate metadata is no longer needed.
-- Cleaned build and lint script ordering and added a new todos validation command.
-- Reorganized documentation into separate user and developer guides, with flowcharts added to key pages.
-- TODO guidance allows extra manual note files without requiring changes.
+- Updated alias configuration so a single source defines runtime replacements and removes duplicate metadata.
+- Build and lint script ordering cleaned; added a todos validation command.
 - Sticker and animated gif messages are not counted as images in the summary; they count toward the text total alongside reactions.
-- Reaction messages using an emoji image instead of an SVG icon are correctly classified as `reaction` type.
+- Reaction messages using an emoji image classify as `reaction` type.
 - Reorganises the JSON preview schema with top-level fields and separate raw and preview sections.
-- Reaction messages always produce null content in both raw and preview data.
+- Reaction messages produce null content in both raw and preview data.
 - `video-link` is a new message type for video platform URLs, using the URL as content.
-- The voice-note message type is consistently named `voice-note` across all rule, preview, and export paths.
+- The voice-note message type uses the name `voice-note` across all rule, preview, and export paths.
 
 ### Dev
 
 - Shared message type arrays (timed call, missed call, call types) used across export formatter and summary modules.
 - Duration normalization logic consolidated into a single shared utility module.
-- HTML tag and attribute sanitization moved to the shared html-utils module.
+- HTML tag and attribute sanitization moved to a shared module.
 - Whitespace normalization function consolidated to its canonical source module.
 - Message-type resolution is shared between server and browser code paths.
 - Removed unreachable message-type branches that could never be triggered.
@@ -64,20 +60,16 @@ Changelog entries should describe active changes in direct present-tense stateme
 - A dedicated lint script validates TODO file format and cross-reference consistency.
 - AI agent changelog examples follow the repository style guide without retrospective wording.
 - JSON validation allows null preview content for non-emoji reaction types.
-- TXT export config replaced unused video-link type with poll and sticker.
+- TXT export config includes poll and sticker types.
 - TXT header validation handles empty lines after the alias block.
 - Test script calls hidden dot-prefixed test scripts directly.
 - Generated TXT schema synchronised with runtime export config.
 - Integration test validates normalized HH:MM:SS duration format on duration-type lines.
 - Golden snapshots cover all four TXT export variants.
-- Docs command reference corrected from build-preview to build:preview.
-- User guide summary example matches actual single-line text/words format.
-- JSON schema documented with up-to-date data_raw and data_preview structure.
 - Text rule label exclusion list covers sticker, gif, reaction, poll, and audio call types.
-- formatExportFileName unit tests cover null, empty, and unknown mode parameters.
-- buildSummary fixedParticipants filter covered by unit tests.
-- Monolithic run-tests.js split into per-module test files.
-- User guide documents all four TXT export variants with combined and detailed summary formats.
+- Export filename unit tests cover null, empty, and unknown mode parameters.
+- Summary participant filtering covered by unit tests.
+- Monolithic test file split into per-module test files.
 - Entry-line regex and payload extraction support the raw-date parenthetical format.
 - TXT export schema and validation cover the JSON summary and raw-date export variants.
 

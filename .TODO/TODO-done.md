@@ -222,10 +222,10 @@
 - T-200. Added unit tests for Unicode name recognition: 15 `isValidSender` assertions with Latin-extended/Cyrillic/CJK/Arabic names, 10 `parseAriaLabel` assertions with Unicode senders, and `normalizeLabel` Unicode preservation test.
 - T-201. Added word count consistency test (30 assertions) verifying same word totals across `formatLine`, `buildEntryFromEntry`, `buildSummary` (text), and `buildSummaryJson` (JSON) for all message types.
 - T-202. Added Unicode sender + image pipeline tests: `buildEntryFromEntry` with Ötves Erno image and `extractMessageEntry` DOM pipeline with �lvaro/?? image entries.
-- T-203. Added voice-note duration consistency test (12 assertions) verifying `extractRawDuration` ? `normalizeDuration` pipeline for MM:SS, HH:MM:SS, and mins/secs formats.
+- T-203. Added voice-note duration consistency test (12 assertions) verifying extractRawDuration → normalizeDuration pipeline for MM:SS, HH:MM:SS, and mins/secs formats.
 - T-204. Added duration edge case tests (26 assertions) covering malformed formats, empty/invalid inputs, zero durations, and negative signs for both `extractRawDuration` and `normalizeDuration`.
-- T-205. Added alias name mapping tests using project's actual configured pairs: Rob?Barnabas, You?Youghurt, any?XYZ in both `aliasChatNames` and `applyAliasToText` contexts.
-- T-224. Added unit tests for `formatDurationSeconds`, `durationToMinutes`, and `durationToSeconds` (24 assertions) covering zero, normal, negative, null, undefined, and invalid inputs for all three functions.
+- T-205. Added alias name mapping tests using project's actual configured pairs: Rob→Barnabas, You→Youghurt, any→XYZ in both aliasChatNames and applyAliasToText contexts.
+- T-224. Added unit tests for duration formatting and conversion functions (24 assertions) covering zero, normal, negative, null, undefined, and invalid inputs.
 - T-199. Split `tests/test-other.js` (469 lines, 14 subtests, 496 assertions) into three focused per-module test files: `tests/test-dom-pipeline.js` (5 subtests), `tests/test-preview-nodes.js` (7 subtests), and `tests/test-frontend-build.js` (2 subtests).
 
 ## Integration test
@@ -258,9 +258,9 @@
 
 ## Documentation
 
-- T-180. Replaced stale `builds.js` references with `build.cjs` across `docs/developer-guide/` files.
-- T-181. Updated `docs/user-guide/README.md` to list six TXT export variants instead of four, and mention the raw-date and JSON summary formats.
-- T-212. Updated `docs/user-guide/README.md`, `docs/developer-guide/tech.md`, `docs/developer-guide/project-overview.md`, and `docs/README.md` to use `words` instead of `chars` for message length, reflecting the character-to-word count change.
+- T-180. Updated developer guide references to use the renamed build script.
+- T-181. Updated user guide to list six TXT export variants, including raw-date and JSON summary formats.
+- T-212. Updated documentation to use words instead of chars for message length, reflecting the character-to-word count change.
 
 ## Content extraction
 
@@ -289,7 +289,7 @@
 - T-185. Verified `.husky/pre-push` and `.husky/commit-msg` hooks match documentation; updated CONTRIBUTING.md to document actual pre-push hook instead of incorrect pre-commit.
 - T-195. Added `BUILD_WATCH` env variable support to `src/frontend/build.cjs` - when set to `true`, esbuild runs in watch mode on the non-minified bundle.
 - T-196. Added input file validation in `build-server.cjs` - checks every HTML file has at least one `aria-roledescription="message"` element before processing.
-- T-214. Optimized image detection in `create-nodes.js` by adding an early `<img>` tag check that skips the full matchAll + filter pipeline when a message segment contains no image tags.
+- T-214. Optimized image detection by skipping full analysis when a message segment contains no image tags.
 
 ## Cleanup
 

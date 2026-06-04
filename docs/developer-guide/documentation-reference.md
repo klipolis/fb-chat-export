@@ -1,6 +1,6 @@
 # Documentation Reference
 
-This document preserves the detailed documentation landing content that was moved out of `docs/README.md` and `docs/site.md`.
+This document contains the detailed documentation landing content used across the project's user-facing documentation.
 
 ## Project documentation overview
 

@@ -153,11 +153,11 @@ Bob Summary
 - Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, build data preview JSON, and generate a text export in `data-output-auto/final-export/`.
 - Run `pnpm run build:frontend` to emit the built bundle into `dist/app.js`.
 - Use `BUILD_PLATFORM=userscript pnpm run build:frontend` to emit a userscript-compatible bundle header. The userscript header template is stored in `data-config/userscript/header.txt`.
-- The browser export now writes a stable download file name such as `export-<shortname>.txt`.
+- The browser export writes a stable download file name such as `export-<shortname>.txt`.
 - Run `pnpm run validate:dist` to verify the generated bundle header and versioned dist artifact.
 - Run `pnpm run lint` to verify JavaScript style and catch syntax issues early.
 - Run `pnpm run audit` to check dependency security status.
-- `build:server` now runs non-interactively by default and uses `BUILD_RAW=true` when set.
+- `build:server` runs non-interactively by default and uses `BUILD_RAW=true` when set.
 - Use `pnpm run build:ci` to run the full CI-aligned build, including linting, build, and validation.
 - Use `pnpm run build:ci:frontend` to run only the frontend build in CI mode.
 - Set `BUILD_RAW=true` to write aliased raw HTML files during server builds.

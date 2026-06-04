@@ -21,7 +21,7 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 
 ## CI/CD
 
-- T-222. Add a GitHub Action test step for generated `dist/userscript.js` contents.
+- T-222. Add a GitHub Action test step for the generated userscript bundle contents.
 
 ## Documentation
 
@@ -39,7 +39,7 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 - T-228. Add tests for incremental build functionality to ensure only changed files are processed.
 - T-229. Add tests for parallel processing in the build server to verify correct utilization of CPU cores.
 - T-230. Add tests for build cache mechanism to verify it correctly avoids reprocessing unchanged files.
-- T-231. Add tests for GitHub Action validation of dist/userscript.js contents.
+- T-231. Add tests for GitHub Action validation of userscript bundle contents.
 
 ## Process improvements
 
