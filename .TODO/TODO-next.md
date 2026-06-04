@@ -12,10 +12,20 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 ---
 
 
+## Test coverage
+
+- T-244. Add tests for create-nodes.js onlyFiles option to verify filtered processing skips unchanged files during partial rebuild.
+- T-253. Add integration tests for Unicode sender names in browser export flow.
+- T-254. Add tests for word count edge cases (empty content, single word, very long messages).
+
+## Build / CI
+
+- T-245. Add worker_threads availability check fallback so the build function returns a promise-based alias+optimize path when workers are unavailable (e.g., older Node versions).
+- T-255. Add CI step to validate dist/app.js bundle syntax before release.
+
 ## Documentation
 
-- T-251. Update AI interaction guidance with post-interaction and post-close save procedures.
-- T-252. Review and update documentation files where needed based on recent changes.
+- T-256. Update README.md to describe data_raw.name and data_preview.name fields in JSON export.
 
 
 
