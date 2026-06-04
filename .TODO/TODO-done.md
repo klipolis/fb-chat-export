@@ -23,7 +23,9 @@
 - T-196. Added input file validation - checks every HTML file has at least one message element before processing (3e31f9d)
 - T-213. Added build-time JSON schema validation for all generated preview files, exits with code 1 on violations (36f7f81)
 - T-214. Optimized image detection in create-nodes.js with early `<img>` tag check to skip matchAll for segments without images (4c427d3)
+- T-215. Added incremental build support — caches input file mtimes and config mtimes, skips all processing when nothing changed (0adb916)
 - T-217. Added artifact size reporting to build-server.cjs - walks data-output-auto/ recursively, logs relative paths and KB sizes (503d098)
+- T-222. GitHub Action CI already validates the userscript bundle (dist/app.js) via validate-dist step in build:ci (78c8657)
 - T-233. Created .github/dependabot.yml with weekly schedule for npm and GitHub Actions dependencies (503d098)
 
 ## Test coverage
@@ -202,6 +204,6 @@
 - T-160. Add process note at top of TODO-next explaining T-numbered task conventions, grouping, and tool-agnostic wording (c4b59ce)
 - T-161. Review .todo/config.json and TODO files for task-numbering consistency; standardised T- prefix across all files (5972a43)
 - T-162. Add contributor note in docs/AI-interaction explaining changelog and task entries focus on outcomes, not implementation (c4b59ce)
-- T-235. Create contributing guidelines that clearly explain how to submit bug fixes, features, and improvements.
-- T-236. Add issue templates for bug reports, feature requests, and questions to standardize issue reporting.
-- T-237. Implement semantic versioning automation that detects breaking changes, features, and fixes to suggest version bumps.
+- T-235. Create contributing guidelines that clearly explain how to submit bug fixes, features, and improvements (0205824)
+- T-236. Add issue templates for bug reports, feature requests, and questions to standardize issue reporting (0205824)
+- T-237. Implement semantic versioning automation that detects breaking changes, features, and fixes to suggest version bumps (0205824)
