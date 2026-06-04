@@ -17,10 +17,14 @@ Each generated JSON file contains a top-level object with `html_locale`, `title`
 Both objects share the same sub-field structure:
 
 - `date`: string — raw field uses the original aria-label date text; preview field uses an ISO-formatted `YYYY.MM.DD HH:mm` date
-- `name`: string — sender name (raw uses the original; preview applies alias mapping)
+- `name`: string — sender name (see details below)
 - `content`: string or null — message text, URL, or null for media-only types
 - `duration`: string or null — normalized `HH:MM:SS` format when present (audio calls, video calls, voice notes)
 - `length`: string or null — word count like `"N words"` when applicable (text messages, link text)
+
+**Name field details:**
+- `data_raw.name`: contains the original sender name as found in the HTML
+- `data_preview.name`: contains the sender name after applying alias mapping (e.g., "You" → "Youghurt", or any unknown sender → "XYZ")
 
 ### Type-specific behavior
 

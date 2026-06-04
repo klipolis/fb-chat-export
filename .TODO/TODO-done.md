@@ -69,6 +69,11 @@
 - T-228. Added tests for incremental build — verifies cache manifest creation, skip on no changes, rebuild on input or config change, and artifact size reporting on skip (99017e0)
 - T-229. Added tests for parallel processing — verifies worker alias + optimize, error reporting, and pool processing for all input files (f96d773)
 - T-230. Added tests for build cache partial rebuild — verifies full skip, changed-file-only processing, stale output cleanup on delete (f96d773)
+- T-246. Added tests for Unicode name recognition in sender detection - validates isValidSender and extractAriaLabelData with Hungarian, Cyrillic, and other Unicode names (db73f35)
+- T-247. Added tests for word count consistency across JSON and text exports - verifies length field uses word count for text messages and is null for media types (db73f35)
+- T-248. Verified golden snapshots match after Unicode name fixes - confirmed no regressions in TXT export variants (db73f35)
+- T-249. Added tests for new data_raw.name and data_preview.name fields with alias mapping - validates original name preservation and alias application (db73f35)
+- T-250. Updated documentation to reflect new JSON export format with data_raw.name and data_preview.name fields (db73f35)
 
 ## Documentation
 

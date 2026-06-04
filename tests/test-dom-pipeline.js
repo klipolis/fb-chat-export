@@ -65,9 +65,9 @@ tap.test('unicodeSenderImageInExport', (t) => {
   const refDate = '2026.05.22 00:00';
   const testCases = [
     {
-      label: 'At 10:15 AM, Ötves Ernő: 3 images',
+      label: 'At 10:15 AM, Ötten Bernő: 3 images',
       fileName: 'image-3.html',
-      expectedSender: 'Ötves Ernő',
+      expectedSender: 'Ötten Bernő',
       expectedType: 'image',
     },
     {

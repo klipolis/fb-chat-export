@@ -171,7 +171,7 @@ tap.test('isValidSenderUnicode', (t) => {
   t.ok(isValidSender('علي'), 'Arabic name accepted');
 
   // Multi-word Unicode
-  t.ok(isValidSender('Ötves Ernő'), 'two-word Hungarian name accepted');
+  t.ok(isValidSender('Ötten Bernő'), 'two-word Hungarian name accepted');
   t.ok(isValidSender('Álvaro Martínez'), 'two-word Spanish name accepted');
   t.ok(isValidSender('Jean-Claude Müller'), 'hyphenated Unicode first name accepted');
 
@@ -191,8 +191,8 @@ tap.test('parseAriaLabelUnicodeExtended', (t) => {
   t.equal(r1.message, 'mensaje de prueba', 'Spanish message preserved');
 
   // Two-word Unicode sender with dash
-  const r2 = parseAriaLabel('At 2:30 PM, Ötves Ernő: Szia, hogy vagy?');
-  t.equal(r2.sender, 'Ötves Ernő', 'two-word Hungarian sender');
+  const r2 = parseAriaLabel('At 2:30 PM, Ötten Bernő: Szia, hogy vagy?');
+  t.equal(r2.sender, 'Ötten Bernő', 'two-word Hungarian sender');
   t.equal(r2.message, 'Szia, hogy vagy?', 'Hungarian message preserved');
 
   // CJK with colon
@@ -215,7 +215,7 @@ tap.test('parseAriaLabelUnicodeExtended', (t) => {
 
 tap.test('normalizeLabelUnicode', (t) => {
   t.equal(normalizeLabel('Álvaro'), 'Álvaro', 'accented characters preserved');
-  t.equal(normalizeLabel('Ötves Ernő'), 'Ötves Ernő', 'Hungarian characters preserved');
+  t.equal(normalizeLabel('Ötten Bernő'), 'Ötten Bernő', 'Hungarian characters preserved');
   t.equal(normalizeLabel('Борис'), 'Борис', 'Cyrillic characters preserved');
   t.equal(normalizeLabel('王明'), '王明', 'CJK characters preserved');
   t.equal(normalizeLabel('علي'), 'علي', 'Arabic characters preserved');

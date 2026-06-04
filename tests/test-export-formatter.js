@@ -331,7 +331,7 @@ tap.test('unicodeSenderImageEntry', (t) => {
 
   // Image entry with two-word Hungarian sender
   const otvesEntry = buildEntryFromEntry({
-    sender: 'Ötves Ernő',
+    sender: 'Ötten Bernő',
     ts: refDate,
     fileType: 'image-3',
     semanticType: 'image',
@@ -342,7 +342,7 @@ tap.test('unicodeSenderImageEntry', (t) => {
   });
   t.equal(otvesEntry.type, 'image', 'type normalized to image for Unicode sender');
   t.equal(otvesEntry.isImage, true, 'flagged as image');
-  t.equal(otvesEntry.sender, 'Ötves Ernő', 'Unicode sender preserved');
+  t.equal(otvesEntry.sender, 'Ötten Bernő', 'Unicode sender preserved');
   t.equal(otvesEntry.imageCount, 3, 'image count preserved');
   t.equal(otvesEntry.wordCount, 0, 'wordCount forced to 0 for image');
 

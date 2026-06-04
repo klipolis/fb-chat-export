@@ -10,6 +10,7 @@ Changelog entries should describe active changes in direct present-tense stateme
 ## [Unreleased]
 
 ### Added
+- Add data_raw.name and data_preview.name fields with alias mapping to JSON exports
 
 - Partial rebuild processes only changed input files and removes stale output for deleted files.
 - Parallel worker pool processes HTML optimization across all available CPU cores.
