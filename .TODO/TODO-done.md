@@ -63,6 +63,7 @@
 - T-225. Unit tests for HTML sanitization utilities stripAttributes and normalizeTagStrings (31 assertions) (487238b)
 - T-226. Unit tests for shared constants module verifying TIMED_CALL_TYPES, MISSED_CALL_TYPES, CALL_TYPES composition, CONTENT_TYPES set, and export checks (487238b)
 - T-227. Build-time JSON schema validation tests (264 assertions across 25 subtests) covering schema structure, missing fields, bad length format, name acceptance (503d098)
+- T-228. Added tests for incremental build — verifies cache manifest creation, skip on no changes, rebuild on input or config change, and artifact size reporting on skip (99017e0)
 
 ## Documentation
 

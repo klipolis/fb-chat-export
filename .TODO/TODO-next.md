@@ -18,7 +18,6 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 
 ## Test coverage
 
-- T-228. Add tests for incremental build functionality to ensure only changed files are processed.
 - T-229. Add tests for parallel processing in the build server to verify correct utilization of CPU cores.
 - T-230. Add tests for build cache mechanism to verify it correctly avoids reprocessing unchanged files.
 
