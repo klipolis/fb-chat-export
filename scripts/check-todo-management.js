@@ -45,7 +45,7 @@ function parseTaskIds(fileText) {
   const ids = [];
   const lines = fileText.split(/\r?\n/);
   for (const line of lines) {
-    const match = line.match(/^\s*[-*]\s*(T\d{2,})\./);
+    const match = line.match(/^\s*[-*]\s*(T-?\d{2,})\./);
     if (match) ids.push(match[1]);
   }
   return ids;
@@ -57,7 +57,7 @@ function assertLinksSection(fileText, expectedHeader) {
 }
 
 function normalizeTaskLine(line) {
-  const match = line.match(/^([*-]\s+T\d+\.\s*)(.+)$/i);
+  const match = line.match(/^([*-]\s+T-?\d+\.\s*)(.+)$/i);
   if (!match) return { line, changed: false };
 
   const taskText = match[2];

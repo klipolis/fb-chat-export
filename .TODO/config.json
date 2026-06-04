@@ -1,6 +1,6 @@
 {
-  "currentTaskPrefix": "T",
-  "nextTaskNumber": 213,
+  "currentTaskPrefix": "T-",
+  "nextTaskNumber": 222,
   "todoFiles": {
     "next": "TODO-next.md",
     "done": "TODO-done.md",
@@ -8,7 +8,7 @@
     "future": "TODO-future.md"
   },
   "linksHeader": "Links",
-  "taskIdPattern": "^T\\d{2,}$",
+  "taskIdPattern": "^T-\\d{2,}$",
   "instructions": "Get the T-number from .todo/config before adding tasks. Assign a stable T-number to each task in TODO-next and keep that number unchanged when moving the task to TODO-done. Keep one task per bullet, use a Links section for related references, and store TODO metadata inside .todo. Write task descriptions as direct present-action statements and avoid retrospective phrasing such as 'now ...'.",
   "suggestions": [
     "Keep TODO-next focused on important developer and end-user work.",
