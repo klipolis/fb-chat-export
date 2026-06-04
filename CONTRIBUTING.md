@@ -15,7 +15,8 @@ This repository uses AI-assisted development. If you use an AI coding agent:
 
 1. Clone the repository and change into the `support/` folder.
 2. Run `pnpm install --frozen-lockfile`. This also installs the Husky Git hooks automatically via the `prepare` script.
-3. Use `pnpm run build:ci` to verify the repository end-to-end.
+3. Read `docs/developer-guide/onboarding.md` for a full project walkthrough.
+4. Use `pnpm run build:ci` to verify the repository end-to-end.
 
 ## Code style and validation
 

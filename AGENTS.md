@@ -155,33 +155,10 @@ AI agents keep regular `.TODO/` queue files synced:
 
 ## Progress
 
-### Done
+See `.TODO/` files for the full task queue:
+- [TODO-done.md](.TODO/TODO-done.md) — completed tasks organised by category with commit references
+- [TODO-next.md](.TODO/TODO-next.md) — active task queue
+- [TODO-ignore.md](.TODO/TODO-ignore.md) — deliberate no-fix decisions
+- [TODO-future.md](.TODO/TODO-future.md) — deferred work
 
-- T-200. Added Unicode name recognition tests (15 isValidSender assertions with Latin-extended/Cyrillic/CJK/Arabic, 10 parseAriaLabel assertions with Unicode senders, normalizeLabel Unicode preservation test)
-- T-201. Added word count consistency test (30 assertions) verifying same totals across formatLine, buildEntryFromEntry, buildSummary (text), and buildSummaryJson (JSON) for all message types
-- T-202. Added Unicode sender + image pipeline tests (buildEntryFromEntry with Ötves Ernő image, extractMessageEntry DOM pipeline with Álvaro/王明 image entries)
-- T-203. Voice note duration consistency test (12 assertions) for extractRawDuration → normalizeDuration pipeline
-- T-204. Duration edge case tests (26 assertions) for malformed/invalid/zero/negative durations in both extractRawDuration and normalizeDuration
-- T-205. Alias name mapping tests using actual configured pairs: Rob→Barnabas, You→Youghurt, any→XYZ in both aliasChatNames and applyAliasToText
-- T-199. Split `tests/test-other.js` (469 lines, 14 subtests, 496 assertions) into three focused per-module test files: `tests/test-dom-pipeline.js` (5 subtests, DOM export pipeline), `tests/test-preview-nodes.js` (7 subtests, preview node generation/schema), `tests/test-frontend-build.js` (2 subtests, frontend build/date parsing)
-- T-210. Updated stale `src/frontend/builds.js` references to `build.cjs` across `docs/developer-guide/` files
-- T-211. Updated `docs/developer-guide/tech.md` to list all six TXT export variants (was only listing two in that file)
-- T-212. Changed `length chars` to `length words` in 4 doc files (`docs/user-guide/README.md`, `docs/developer-guide/tech.md`, `docs/developer-guide/project-overview.md`, `docs/README.md`)
-- T-214. Optimized image detection in `create-nodes.js` with early `<img>` tag check to skip matchAll pipeline for segments without images
-- T-224. Added unit tests for `formatDurationSeconds`, `durationToMinutes`, `durationToSeconds` (24 assertions)
-- T-207. Created developer onboarding guide at `docs/developer-guide/onboarding.md` covering project overview, setup, structure, workflow, and coding conventions
-- T-225. Added unit tests for HTML sanitization utilities (31 assertions) covering stripAttributes and normalizeTagStrings
-- T-226. Added unit tests for shared constants module (27 assertions) verifying all message type arrays
-- Test count: 1064 total assertions (was 1006, previously 982, originally 810)
-- Fixed `.todo/config.json` taskIdPattern from `^T\\d{2,}$` to `^T-\\d{2,}$` to match T-prefix format
-- All completed test tasks moved from TODO-next.md to TODO-done.md
-- Reviewed and fixed language style in CHANGELOG.md Unreleased section, TODO-done.md entries, and docs with retrospective phrasing
-
-### Next Steps
-
-- T-206, T-208. Documentation inline docs and JSDoc (blocked by AGENTS.md "no comments unless asked" rule)
-- T-209. Document input HTML format
-- T-213, T-215–T-218. Build improvements (schema validation done, incremental builds, parallel processing, artifact size, cache mechanism)
-- T-222. CI/CD workflows (userscript test step)
-- T-227–T-231. Test coverage (schema validation, incremental, parallel, cache, CI)
-- T-233, T-235–T-237. Process improvements (deps, contributing guidelines, issue templates, semver automation)
+All tasks use the `T-NNN` convention from `.todo/config.json`. Categories are defined in `config.json` and kept consistent across all TODO files. Completed entries include a short commit hash reference where the work was done.
