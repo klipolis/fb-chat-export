@@ -21,4 +21,7 @@
 - T-144. Never assigned — numbering jumped from T-143 directly to T-145 during a renumbering pass. This slot remains permanently unused.
 - T-234. Add code owners file to clearly define responsibility for different parts of the codebase.
 - T-223. Add a second workflow for release or artifact publishing.
+- T-231. **Tests for CI userscript validation** — The userscript bundle (dist/app.js) is already validated by validate-dist in the CI pipeline. Adding separate unit tests for CI step behaviour would test GitHub Actions internals, not application code.
+- T-206. **Inline documentation in shared modules** — Permanently blocked by AGENTS.md rule: "DO NOT ADD ANY COMMENTS unless asked". Inline docs would violate this rule. Consider removing the AGENTS.md restriction first.
+- T-208. **JSDoc comments** — Permanently blocked by AGENTS.md no-comment rule for the same reason as T-206.
 - T-232. Add tests for release/publishing workflow to ensure proper artifact generation.
