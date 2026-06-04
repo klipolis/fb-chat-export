@@ -1,8 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const { chooseRule } = require('./rules');
-const { parseAriaLabel, parseReferenceDate, normalizeDateToSimple } = require('./aria-label-parser');
+const { parseAriaLabel, parseReferenceDate, normalizeDateToSimple, normalizeLabel } = require('./aria-label-parser');
 const { getContentMeta, normalizeDuration, stripTrackingParams } = require('./message-metadata');
+const { extractRawDuration } = require('./duration-utils');
 const { findMatchingClosingTag } = require('./html-utils');
 const { aliasNames } = require('../../data-config/frontend_shared.json');
 
@@ -31,26 +32,6 @@ function writeJsonIfChanged(targetPath, data) {
   }
   fs.writeFileSync(targetPath, content, 'utf8');
   return true;
-}
-
-function normalizeLabel(text) {
-  return String(text || '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function extractRawDuration(text) {
-  if (!text) return null;
-  const normalized = normalizeLabel(text);
-  const hhmmss = normalized.match(/(\d+:\d{2}:\d{2})/i);
-  if (hhmmss) return hhmmss[1];
-  const mmss = normalized.match(/(\d+:\d{2})(?!\s*(?:am|pm)\b)/i);
-  if (mmss) return mmss[1];
-  const mins = normalized.match(/(\d+(?:\.\d+)?\s*min(?:s)?)/i);
-  if (mins) return mins[1];
-  const secs = normalized.match(/(\d+\s*sec(?:ond)?s?)/i);
-  if (secs) return secs[1];
-  return null;
 }
 
 function extractHtmlLocale(html) {

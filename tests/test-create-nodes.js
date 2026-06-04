@@ -1,12 +1,12 @@
 const tap = require('tap');
-const { extractHtmlLocale, extractRawDuration } = require(
+const { extractHtmlLocale } = require(
   '../src/shared/create-nodes'
+);
+const { extractRawDuration, normalizeDuration } = require(
+  '../src/shared/duration-utils'
 );
 const { findMatchingClosingTag } = require(
   '../src/shared/html-utils'
-);
-const { normalizeDuration } = require(
-  '../src/shared/message-metadata'
 );
 
 // ---------------------------------------------------------------------------

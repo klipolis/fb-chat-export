@@ -587,12 +587,91 @@
     }
   });
 
+  // src/shared/duration-utils.js
+  var require_duration_utils = __commonJS({
+    "src/shared/duration-utils.js"(exports, module) {
+      "use strict";
+      var { normalizeLabel } = require_aria_label_parser();
+      function formatDurationSeconds(totalSeconds) {
+        const safeSeconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
+        const hours = Math.floor(safeSeconds / 3600);
+        const minutes = Math.floor(safeSeconds % 3600 / 60);
+        const seconds = safeSeconds % 60;
+        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      }
+      function normalizeDuration2(text) {
+        if (!text) return null;
+        const normalized = String(text).trim();
+        const suffix = normalized.match(/\b(?:am|pm)\b/i);
+        const hhmmss = normalized.match(/^(\d+):(\d{2}):(\d{2})(?!\s*(?:am|pm)\b)/i);
+        if (hhmmss && !suffix) {
+          const totalSeconds = Number(hhmmss[1]) * 3600 + Number(hhmmss[2]) * 60 + Number(hhmmss[3]);
+          return formatDurationSeconds(totalSeconds);
+        }
+        const hhmm = normalized.match(/^(\d+):(\d{2})(?!\s*(?:am|pm)\b)/i);
+        if (hhmm && !suffix) {
+          const totalSeconds = Number(hhmm[1]) * 60 + Number(hhmm[2]);
+          return formatDurationSeconds(totalSeconds);
+        }
+        const minMatch = normalized.match(/(\d+(?:\.\d+)?)\s*min(?:s)?/i);
+        if (minMatch) {
+          const totalSeconds = parseFloat(minMatch[1]) * 60;
+          return formatDurationSeconds(totalSeconds);
+        }
+        const secMatch = normalized.match(/(\d+)\s*sec/i);
+        if (secMatch) {
+          return formatDurationSeconds(parseInt(secMatch[1], 10));
+        }
+        return null;
+      }
+      function extractRawDuration(text) {
+        if (!text) return null;
+        const normalized = normalizeLabel(text);
+        const hhmmss = normalized.match(/(\d+:\d{2}:\d{2})/i);
+        if (hhmmss) return hhmmss[1];
+        const mmss = normalized.match(/(\d+:\d{2})(?!\s*(?:am|pm)\b)/i);
+        if (mmss) return mmss[1];
+        const mins = normalized.match(/(\d+(?:\.\d+)?\s*min(?:s)?)/i);
+        if (mins) return mins[1];
+        const secs = normalized.match(/(\d+\s*sec(?:ond)?s?)/i);
+        if (secs) return secs[1];
+        return null;
+      }
+      function durationToMinutes2(duration) {
+        if (!duration) return 0;
+        const normalized = normalizeDuration2(duration) || duration;
+        const hms = String(normalized).match(/^(\d+):(\d{2}):(\d{2})$/);
+        if (hms) {
+          return Number(hms[1]) * 60 + Number(hms[2]) + Math.ceil(Number(hms[3]) / 60);
+        }
+        return 0;
+      }
+      function durationToSeconds(duration) {
+        if (!duration) return 0;
+        const normalized = normalizeDuration2(duration) || duration;
+        const hms = String(normalized).match(/^(\d+):(\d{2}):(\d{2})$/);
+        if (hms) {
+          return Number(hms[1]) * 3600 + Number(hms[2]) * 60 + Number(hms[3]);
+        }
+        return 0;
+      }
+      module.exports = {
+        normalizeDuration: normalizeDuration2,
+        extractRawDuration,
+        formatDurationSeconds,
+        durationToMinutes: durationToMinutes2,
+        durationToSeconds
+      };
+    }
+  });
+
   // src/shared/message-metadata.js
   var require_message_metadata = __commonJS({
     "src/shared/message-metadata.js"(exports, module) {
       "use strict";
       var { messageRules, chooseRule } = require_rules();
       var { parseAriaLabel: parseAriaLabel2, normalizeDateToSimple, normalizeLabel } = require_aria_label_parser();
+      var { normalizeDuration: normalizeDuration2 } = require_duration_utils();
       var sharedFrontendConfig;
       try {
         sharedFrontendConfig = require_frontend_shared() || {};
@@ -603,38 +682,6 @@
       var asciiReactionPattern = sharedFrontendConfig.reactionOptions?.asciiSmileyPattern ? new RegExp(sharedFrontendConfig.reactionOptions.asciiSmileyPattern, "u") : /^[:;=8Xx][-~]?[)DdpP(/\\\]]$/u;
       function isAsciiReactionText(text) {
         return asciiReactionPattern.test(String(text || "").trim());
-      }
-      function normalizeDuration2(text) {
-        if (!text) return null;
-        const normalized = String(text).trim();
-        const suffix = normalized.match(/\b(?:am|pm)\b/i);
-        const formatFromSeconds = (totalSeconds) => {
-          const safeSeconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
-          const hours = Math.floor(safeSeconds / 3600);
-          const minutes = Math.floor(safeSeconds % 3600 / 60);
-          const seconds = safeSeconds % 60;
-          return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-        };
-        const hhmmss = normalized.match(/^(\d+):(\d{2}):(\d{2})(?!\s*(?:am|pm)\b)/i);
-        if (hhmmss && !suffix) {
-          const totalSeconds = Number(hhmmss[1]) * 3600 + Number(hhmmss[2]) * 60 + Number(hhmmss[3]);
-          return formatFromSeconds(totalSeconds);
-        }
-        const hhmm = normalized.match(/^(\d+):(\d{2})(?!\s*(?:am|pm)\b)/i);
-        if (hhmm && !suffix) {
-          const totalSeconds = Number(hhmm[1]) * 60 + Number(hhmm[2]);
-          return formatFromSeconds(totalSeconds);
-        }
-        const minMatch = normalized.match(/(\d+(?:\.\d+)?)\s*min(?:s)?/i);
-        if (minMatch) {
-          const totalSeconds = parseFloat(minMatch[1]) * 60;
-          return formatFromSeconds(totalSeconds);
-        }
-        const secMatch = normalized.match(/(\d+)\s*sec/i);
-        if (secMatch) {
-          return formatFromSeconds(parseInt(secMatch[1], 10));
-        }
-        return null;
       }
       function stripTrackingParams2(url) {
         if (!url) return url;
@@ -922,6 +969,23 @@
     }
   });
 
+  // src/shared/constants.js
+  var require_constants = __commonJS({
+    "src/shared/constants.js"(exports, module) {
+      "use strict";
+      var TIMED_CALL_TYPES = ["audio-call", "video-call", "voice-note"];
+      var MISSED_CALL_TYPES = ["missed-call", "missed-audio-call", "missed-video-call"];
+      var CALL_TYPES = [...TIMED_CALL_TYPES, ...MISSED_CALL_TYPES];
+      var CONTENT_TYPES = /* @__PURE__ */ new Set(["text", "link", "reaction"]);
+      module.exports = {
+        TIMED_CALL_TYPES,
+        MISSED_CALL_TYPES,
+        CALL_TYPES,
+        CONTENT_TYPES
+      };
+    }
+  });
+
   // src/shared/export-summary.js
   var require_export_summary = __commonJS({
     "src/shared/export-summary.js"(exports, module) {
@@ -931,29 +995,22 @@
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
       }
       var { summaryConcept } = require_export_config();
+      var { TIMED_CALL_TYPES, MISSED_CALL_TYPES } = require_constants();
+      var { formatDurationSeconds } = require_duration_utils();
       var TOTAL_SUMMARY_TITLE = summaryConcept.totalSummaryTitle || "Total Summary";
       var ROUGH_PREFIX = summaryConcept.roughPrefix || "~";
       var PERSON_SUMMARY_SUFFIX = summaryConcept.personSummarySuffix || " Summary";
-      function formatDurationSeconds(seconds) {
-        const totalSeconds = Math.max(0, Number(seconds) || 0);
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor(totalSeconds % 3600 / 60);
-        const secs = totalSeconds % 60;
-        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-      }
       function isIgnoredForIndividualCount(entry) {
         const type = String(entry.type || entry.fileType || "").toLowerCase();
-        return ["unsent", "deleted", "missed-call", "missed-audio-call", "missed-video-call"].includes(
-          type
-        );
+        return ["unsent", "deleted", ...MISSED_CALL_TYPES].includes(type);
       }
       function isMissedCall(entry) {
         const type = String(entry.type || entry.fileType || "").toLowerCase();
-        return ["missed-call", "missed-audio-call", "missed-video-call"].includes(type);
+        return MISSED_CALL_TYPES.includes(type);
       }
       function isCountedCall(entry) {
         const type = String(entry.type || entry.fileType || "").toLowerCase();
-        return ["audio-call", "video-call", "voice-note"].includes(type);
+        return TIMED_CALL_TYPES.includes(type);
       }
       function buildSummaryData(entries = [], options = {}) {
         if (!entries.length) {
@@ -1147,7 +1204,7 @@
             words: 0,
             typeCounts: {}
           };
-          const isTimedCall = ["audio-call", "video-call", "voice-note"].includes(type);
+          const isTimedCall = TIMED_CALL_TYPES.includes(type);
           const isCall = isTimedCall || type === "missed-call";
           if (isTimedCall) {
             data.calls += 1;
@@ -1185,7 +1242,7 @@
             const dayKey = formatDayKey(entry.date);
             participantDays.add(dayKey);
             const type = String(entry.type || entry.fileType || "").toLowerCase();
-            const isTimedCall = ["audio-call", "video-call", "voice-note"].includes(type);
+            const isTimedCall = TIMED_CALL_TYPES.includes(type);
             if (isTimedCall) {
               participantCalls += 1;
               participantSeconds += Number(entry.callSeconds || 0);
@@ -1320,9 +1377,10 @@
   var require_export_formatter = __commonJS({
     "src/shared/export-formatter.js"(exports, module) {
       "use strict";
-      var { normalizeDuration: normalizeDuration2 } = require_message_metadata();
+      var { normalizeDuration: normalizeDuration2, durationToMinutes: durationToMinutes2, durationToSeconds } = require_duration_utils();
       var { normalizeDateToIso: normalizeDateToIso3 } = require_aria_label_parser();
       var { buildSummary: buildSummary2, buildDetailedSummary, buildSummaryData } = require_export_summary();
+      var { TIMED_CALL_TYPES, CALL_TYPES, CONTENT_TYPES } = require_constants();
       function formatExportHeader2({ method, messageTypes, exportOptions = {}, aliasMap = {} }) {
         const types = messageTypes.map((type) => `- ${type}`).join("\n");
         const optionKeys = Object.keys(exportOptions).sort();
@@ -1388,8 +1446,7 @@ ${aliasLines}
         if (includeLength && entry.contentLength) parts.push(entry.contentLength);
         const rawDatePart = includeRawDate && entry.rawDate ? ` (${entry.rawDate})` : "";
         const base = `[${dateText}]${rawDatePart} ${sender}: ${parts.join(" ")}`;
-        const contentTypes = /* @__PURE__ */ new Set(["text", "link", "reaction"]);
-        const shouldShowTextContent = includeContent && contentTypes.has(entry.semanticType) && entry.content;
+        const shouldShowTextContent = includeContent && CONTENT_TYPES.has(entry.semanticType) && entry.content;
         if (shouldShowTextContent) {
           return `${base} / ${entry.content}
 `;
@@ -1399,7 +1456,7 @@ ${aliasLines}
       }
       function buildEntryFromEntry(entry) {
         const semanticType = String(entry.semanticType || entry.fileType || "").toLowerCase();
-        const isTimedCall = ["audio-call", "video-call", "voice-note"].includes(semanticType);
+        const isTimedCall = TIMED_CALL_TYPES.includes(semanticType);
         const contentText = String(entry.content || "").trim();
         const textWords = contentText ? contentText.split(/\s+/).filter(Boolean).length : 0;
         const callSeconds = isTimedCall ? durationToSeconds(entry.duration) : 0;
@@ -1407,7 +1464,7 @@ ${aliasLines}
           sender: entry.sender,
           date: Number.isFinite(entry.ts) ? new Date(entry.ts) : /* @__PURE__ */ new Date(NaN),
           type: semanticType,
-          isCall: ["audio-call", "video-call", "voice-note", "missed-call", "missed-audio-call", "missed-video-call"].includes(semanticType),
+          isCall: CALL_TYPES.includes(semanticType),
           isImage: semanticType === "image",
           callSeconds,
           wordCount: isTimedCall || semanticType === "image" ? 0 : entry.words || textWords,
@@ -1427,24 +1484,6 @@ ${aliasLines}
           useMessageLabel: Boolean(options.useMessageLabel)
         });
       }
-      function durationToMinutes2(duration) {
-        if (!duration) return 0;
-        const normalized = normalizeDuration2(duration) || duration;
-        const hms = String(normalized).match(/^(\d+):(\d{2}):(\d{2})$/);
-        if (hms) {
-          return Number(hms[1]) * 60 + Number(hms[2]) + Math.ceil(Number(hms[3]) / 60);
-        }
-        return 0;
-      }
-      function durationToSeconds(duration) {
-        if (!duration) return 0;
-        const normalized = normalizeDuration2(duration) || duration;
-        const hms = String(normalized).match(/^(\d+):(\d{2}):(\d{2})$/);
-        if (hms) {
-          return Number(hms[1]) * 3600 + Number(hms[2]) * 60 + Number(hms[3]);
-        }
-        return 0;
-      }
       module.exports = {
         formatExportHeader: formatExportHeader2,
         buildExportText,
@@ -1452,9 +1491,7 @@ ${aliasLines}
         formatLine: formatLine2,
         buildEntryFromEntry,
         formatSummarySection,
-        buildSummaryData,
-        durationToMinutes: durationToMinutes2,
-        durationToSeconds
+        buildSummaryData
       };
     }
   });

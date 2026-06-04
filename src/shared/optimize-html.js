@@ -1,27 +1,5 @@
 const { beautifyHtml } = require('./beautify');
-const { findMatchingClosingTag } = require('./html-utils');
-
-function stripAttributes(tag, attrs) {
-  const keep = ['aria-label', 'aria-roledescription'];
-  const lowerTag = tag.toLowerCase();
-  if (lowerTag === 'img') return '<img>';
-  const cleaned = attrs
-    .replace(
-      /\s*(id|style|class|tabindex|role|src|href|alt|referrerpolicy|data-[^\s=]+|aria-[^\s=]+)="[^"]*"/gi,
-      (m, name) => {
-        return keep.includes(name.toLowerCase()) ? m : '';
-      }
-    )
-    .replace(/\s+/g, ' ')
-    .trim();
-  return cleaned ? `<${tag} ${cleaned}>` : `<${tag}>`;
-}
-
-function normalizeTagStrings(html) {
-  return html.replace(/<([a-zA-Z0-9]+)([^>]*)>/g, (match, tag, attrs) =>
-    stripAttributes(tag, attrs)
-  );
-}
+const { findMatchingClosingTag, stripAttributes, normalizeTagStrings } = require('./html-utils');
 
 function removeLinkContent(html) {
   return html.replace(/<a[^>]*>([\s\S]*?)<\/a>/gi, (_match, content) => {

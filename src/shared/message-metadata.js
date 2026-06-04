@@ -1,5 +1,6 @@
 const { messageRules, chooseRule } = require('./rules');
 const { parseAriaLabel, normalizeDateToSimple, normalizeLabel } = require('./aria-label-parser');
+const { normalizeDuration } = require('./duration-utils');
 
 let sharedFrontendConfig;
 try {
@@ -15,47 +16,6 @@ const asciiReactionPattern = sharedFrontendConfig.reactionOptions?.asciiSmileyPa
 
 function isAsciiReactionText(text) {
   return asciiReactionPattern.test(String(text || '').trim());
-}
-
-function normalizeDuration(text) {
-  if (!text) return null;
-  const normalized = String(text).trim();
-  const suffix = normalized.match(/\b(?:am|pm)\b/i);
-
-  const formatFromSeconds = (totalSeconds) => {
-    const safeSeconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
-    const hours = Math.floor(safeSeconds / 3600);
-    const minutes = Math.floor((safeSeconds % 3600) / 60);
-    const seconds = safeSeconds % 60;
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-  };
-
-  // Standard duration format: H:MM:SS mins
-  const hhmmss = normalized.match(/^(\d+):(\d{2}):(\d{2})(?!\s*(?:am|pm)\b)/i);
-  if (hhmmss && !suffix) {
-    const totalSeconds = Number(hhmmss[1]) * 3600 + Number(hhmmss[2]) * 60 + Number(hhmmss[3]);
-    return formatFromSeconds(totalSeconds);
-  }
-
-  // Treat M:SS as a duration only when it is not a wall-clock time like "1:23 PM".
-  const hhmm = normalized.match(/^(\d+):(\d{2})(?!\s*(?:am|pm)\b)/i);
-  if (hhmm && !suffix) {
-    const totalSeconds = Number(hhmm[1]) * 60 + Number(hhmm[2]);
-    return formatFromSeconds(totalSeconds);
-  }
-
-  const minMatch = normalized.match(/(\d+(?:\.\d+)?)\s*min(?:s)?/i);
-  if (minMatch) {
-    const totalSeconds = parseFloat(minMatch[1]) * 60;
-    return formatFromSeconds(totalSeconds);
-  }
-
-  const secMatch = normalized.match(/(\d+)\s*sec/i);
-  if (secMatch) {
-    return formatFromSeconds(parseInt(secMatch[1], 10));
-  }
-
-  return null;
 }
 
 function formatUrlCompact(url) {

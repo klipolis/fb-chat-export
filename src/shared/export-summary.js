@@ -4,33 +4,25 @@ function formatDayKey(date) {
 }
 
 const { summaryConcept } = require('./export-config.json');
+const { TIMED_CALL_TYPES, MISSED_CALL_TYPES } = require('./constants');
+const { formatDurationSeconds } = require('./duration-utils');
 const TOTAL_SUMMARY_TITLE = summaryConcept.totalSummaryTitle || 'Total Summary';
 const ROUGH_PREFIX = summaryConcept.roughPrefix || '~';
 const PERSON_SUMMARY_SUFFIX = summaryConcept.personSummarySuffix || ' Summary';
 
-function formatDurationSeconds(seconds) {
-  const totalSeconds = Math.max(0, Number(seconds) || 0);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const secs = totalSeconds % 60;
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-}
-
 function isIgnoredForIndividualCount(entry) {
   const type = String(entry.type || entry.fileType || '').toLowerCase();
-  return ['unsent', 'deleted', 'missed-call', 'missed-audio-call', 'missed-video-call'].includes(
-    type
-  );
+  return ['unsent', 'deleted', ...MISSED_CALL_TYPES].includes(type);
 }
 
 function isMissedCall(entry) {
   const type = String(entry.type || entry.fileType || '').toLowerCase();
-  return ['missed-call', 'missed-audio-call', 'missed-video-call'].includes(type);
+  return MISSED_CALL_TYPES.includes(type);
 }
 
 function isCountedCall(entry) {
   const type = String(entry.type || entry.fileType || '').toLowerCase();
-  return ['audio-call', 'video-call', 'voice-note'].includes(type);
+  return TIMED_CALL_TYPES.includes(type);
 }
 
 function buildSummaryData(entries = [], options = {}) {
@@ -245,7 +237,7 @@ function buildDetailedSummary(entries = [], options = {}) {
       typeCounts: {},
     };
 
-    const isTimedCall = ['audio-call', 'video-call', 'voice-note'].includes(type);
+    const isTimedCall = TIMED_CALL_TYPES.includes(type);
     const isCall = isTimedCall || type === 'missed-call';
     if (isTimedCall) {
       data.calls += 1;
@@ -287,7 +279,7 @@ function buildDetailedSummary(entries = [], options = {}) {
       const dayKey = formatDayKey(entry.date);
       participantDays.add(dayKey);
       const type = String(entry.type || entry.fileType || '').toLowerCase();
-      const isTimedCall = ['audio-call', 'video-call', 'voice-note'].includes(type);
+      const isTimedCall = TIMED_CALL_TYPES.includes(type);
       if (isTimedCall) {
         participantCalls += 1;
         participantSeconds += Number(entry.callSeconds || 0);

@@ -1,6 +1,7 @@
 const path = require('path');
-const { getContentMeta, normalizeDuration } = require('./message-metadata');
-const { parseAriaLabel, normalizeDateToIso } = require('./aria-label-parser');
+const { getContentMeta } = require('./message-metadata');
+const { normalizeDuration } = require('./duration-utils');
+const { parseAriaLabel, normalizeDateToIso, normalizeLabel } = require('./aria-label-parser');
 const {
   formatExportHeader,
   buildExportText,
@@ -8,12 +9,6 @@ const {
   formatLine,
   formatSummarySection,
 } = require('./export-formatter');
-
-function normalizeLabel(text) {
-  return String(text || '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
 
 function normalizeExportSender(sender) {
   if (sender === 'You') return 'Youghurt';
