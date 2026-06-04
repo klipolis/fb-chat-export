@@ -29,3 +29,4 @@ The folder is split into three separate areas:
 - `prompts/README.md` — overview of prompt examples and intent.
 - `prompts/project-reproduction.md` — project-specific prompt examples for this repo.
 - `prompts/trace-guidance.md` — guidance for recording AI interactions as trace documentation.
+- `prompts/interaction-log.md` — session recording for continuity after AI closes.

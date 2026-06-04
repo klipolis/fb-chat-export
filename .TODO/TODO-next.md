@@ -12,14 +12,10 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 ---
 
 
+## Documentation
 
-## Test coverage
-
-- T-244. Add tests for create-nodes.js onlyFiles option to verify filtered processing skips unchanged files during partial rebuild.
-
-## Build / CI
-
-- T-245. Add worker_threads availability check fallback so the build function returns a promise-based alias+optimize path when workers are unavailable (e.g., older Node versions).
+- T-251. Update AI interaction guidance with post-interaction and post-close save procedures.
+- T-252. Review and update documentation files where needed based on recent changes.
 
 
 
