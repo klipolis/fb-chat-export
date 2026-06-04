@@ -28,6 +28,8 @@ const exportDir = resolveRepoPath('data-output-auto', 'final-export');
 const sharedConfigPath = resolveRepoPath('data-config', 'frontend_shared.json');
 const serverConfigPath = resolveRepoPath('data-config', 'server.json');
 
+const cacheManifestPath = resolveRepoPath('data-output-auto', 'build-cache.json');
+
 const sharedConfig = fs.existsSync(sharedConfigPath)
   ? JSON.parse(fs.readFileSync(sharedConfigPath, 'utf8'))
   : {};
@@ -52,16 +54,6 @@ function optimizeFile(fileName, rawHtml, cleanedHtml) {
   }
   const html = createOptimizedHtml(cleanedHtml);
   fs.writeFileSync(outputPath, html, 'utf8');
-}
-
-function loadRawMetadata() {
-  if (!fs.existsSync(rawMetadataPath)) return null;
-  try {
-    return JSON.parse(fs.readFileSync(rawMetadataPath, 'utf8'));
-  } catch (err) {
-    console.warn('build-server: failed to parse raw metadata at', rawMetadataPath, err);
-    return null;
-  }
 }
 
 function writeRawMetadata(fileRecords) {
@@ -242,7 +234,7 @@ function writeTextExports(files, cleanedHtmlByFile, referenceDate) {
 }
 
 function validateGeneratedJson() {
-  const files = fs.readdirSync(previewDir).filter((name) => name.endsWith('.json'));
+  const files = fs.readdirSync(previewDir).filter((name) => name.endsWith('.json') && name !== 'raw-input-metadata.json');
   const props = jsonSchema.properties;
   const rawProps = props.data_raw.properties;
   const previewProps = props.data_preview.properties;
@@ -279,6 +271,46 @@ function validateGeneratedJson() {
     process.exit(1);
   }
   console.log(`Validated ${files.length} generated JSON files against schema`);
+}
+
+function getConfigMtimes() {
+  const configPaths = [sharedConfigPath, serverConfigPath, resolveRepoPath('src/shared/export-config.json')];
+  const result = {};
+  for (const p of configPaths) {
+    if (fs.existsSync(p)) {
+      result[p] = fs.statSync(p).mtimeMs;
+    }
+  }
+  return result;
+}
+
+function computeInputStates(files) {
+  const states = {};
+  for (const fileName of files) {
+    const hotPath = path.join(hotDir, fileName);
+    const sourcePath = fs.existsSync(hotPath) ? hotPath : path.join(rawDir, fileName);
+    const stats = fs.statSync(sourcePath);
+    states[fileName] = { mtimeMs: stats.mtimeMs, size: stats.size };
+  }
+  return states;
+}
+
+function loadCacheManifest() {
+  if (!fs.existsSync(cacheManifestPath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(cacheManifestPath, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+function saveCacheManifest(inputStates) {
+  const manifest = {
+    inputStates,
+    configMtimes: getConfigMtimes(),
+    complete: true,
+  };
+  fs.writeFileSync(cacheManifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
 }
 
 function reportArtifactSizes() {
@@ -318,22 +350,10 @@ function reportArtifactSizes() {
 }
 
 function main() {
-  ensureDir(optimizedDir);
-  ensureDir(previewDir);
-  ensureDir(exportDir);
-  emptyDir(optimizedDir);
-  emptyDir(previewDir);
-  emptyDir(exportDir);
-
   if (!fs.existsSync(rawDir)) {
     console.error('Missing HTML Raw folder:', './data-input-test');
     process.exit(1);
   }
-
-  const previousRawMetadata = loadRawMetadata();
-  const previousFileMap = new Map(
-    (previousRawMetadata?.files || []).map((file) => [file.fileName, file])
-  );
 
   // Merge cold input (data-input-test) with hot input (data-input-test/userscript).
   // Hot files take precedence when names collide.
@@ -348,6 +368,32 @@ function main() {
     console.error('No raw HTML files found in', './data-input-test');
     process.exit(1);
   }
+
+  // Incremental build: skip processing if no input files or config changed.
+  const previousCache = loadCacheManifest();
+  const currentInputStates = computeInputStates(files);
+  const currentConfigMtimes = getConfigMtimes();
+  const configChanged = !previousCache ||
+    Object.keys(currentConfigMtimes).some((p) => currentConfigMtimes[p] !== previousCache.configMtimes?.[p]);
+  const inputChanged = !previousCache ||
+    files.some((fileName) => {
+      const prev = previousCache.inputStates?.[fileName];
+      const curr = currentInputStates[fileName];
+      return !prev || prev.mtimeMs !== curr.mtimeMs || prev.size !== curr.size;
+    });
+
+  if (!configChanged && !inputChanged && previousCache?.complete) {
+    console.log('All input files and config unchanged — skipping build');
+    reportArtifactSizes();
+    return;
+  }
+
+  ensureDir(optimizedDir);
+  ensureDir(previewDir);
+  ensureDir(exportDir);
+  emptyDir(optimizedDir);
+  emptyDir(previewDir);
+  emptyDir(exportDir);
 
   // Read all raw HTML before modifying anything, then detect the
   // "any" replacement name once across all files (two-pass approach).
@@ -387,18 +433,11 @@ function main() {
 
   writeRawMetadata(fileRecords);
 
-  const unchanged = fileRecords.every((record) => {
-    const previous = previousFileMap.get(record.fileName);
-    return previous && previous.mtimeMs === record.mtimeMs && previous.size === record.size;
-  });
-  if (unchanged) {
-    console.log('Raw input files are unchanged since the last build.');
-  }
-
   runCreateNodes(cleanedHtmlByFile);
   validateGeneratedJson();
   const exportPaths = writeTextExports(files, cleanedHtmlByFile, referenceDate);
   reportArtifactSizes();
+  saveCacheManifest(currentInputStates);
   console.log(`Done: HTML + JSON in ./data-output-auto/optimized-html and ./data-output-auto/json-format`);
   exportPaths.forEach((exportPath) => {
     console.log(`Generated chat text export: ${path.relative(baseDir, exportPath)}`);
