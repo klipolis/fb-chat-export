@@ -2,7 +2,7 @@ const tap = require('tap');
 const { extractHtmlLocale } = require(
   '../src/shared/create-nodes'
 );
-const { extractRawDuration, normalizeDuration } = require(
+const { extractRawDuration, normalizeDuration, formatDurationSeconds, durationToMinutes, durationToSeconds } = require(
   '../src/shared/duration-utils'
 );
 const { findMatchingClosingTag } = require(
@@ -167,5 +167,53 @@ tap.test('durationEdgeCases', (t) => {
     t.equal(normalizeDuration(input), expected, `normalizeDuration: ${desc}`);
   });
 
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// formatDurationSeconds
+// ---------------------------------------------------------------------------
+
+tap.test('formatDurationSeconds', (t) => {
+  t.equal(formatDurationSeconds(0), '00:00:00', 'zero seconds');
+  t.equal(formatDurationSeconds(30), '00:00:30', '30 seconds');
+  t.equal(formatDurationSeconds(60), '00:01:00', 'one minute');
+  t.equal(formatDurationSeconds(3661), '01:01:01', 'one hour one minute one second');
+  t.equal(formatDurationSeconds(86400), '24:00:00', '24 hours');
+  t.equal(formatDurationSeconds(-1), '00:00:00', 'negative clamped to zero');
+  t.equal(formatDurationSeconds(null), '00:00:00', 'null treated as zero');
+  t.equal(formatDurationSeconds(undefined), '00:00:00', 'undefined treated as zero');
+  t.equal(formatDurationSeconds('abc'), '00:00:00', 'invalid string treated as zero');
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// durationToMinutes
+// ---------------------------------------------------------------------------
+
+tap.test('durationToMinutes', (t) => {
+  t.equal(durationToMinutes('00:00:30'), 1, '30 seconds rounds up to 1 minute');
+  t.equal(durationToMinutes('00:01:00'), 1, 'exactly one minute');
+  t.equal(durationToMinutes('00:01:30'), 2, '1:30 rounds up to 2 minutes');
+  t.equal(durationToMinutes('01:00:00'), 60, 'one hour is 60 minutes');
+  t.equal(durationToMinutes('00:00:00'), 0, 'all zeros');
+  t.equal(durationToMinutes(null), 0, 'null returns 0');
+  t.equal(durationToMinutes(undefined), 0, 'undefined returns 0');
+  t.equal(durationToMinutes('invalid'), 0, 'invalid returns 0');
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// durationToSeconds
+// ---------------------------------------------------------------------------
+
+tap.test('durationToSeconds', (t) => {
+  t.equal(durationToSeconds('00:00:30'), 30, '30 seconds');
+  t.equal(durationToSeconds('00:01:00'), 60, 'one minute');
+  t.equal(durationToSeconds('01:01:01'), 3661, 'one hour one minute one second');
+  t.equal(durationToSeconds('00:00:00'), 0, 'all zeros');
+  t.equal(durationToSeconds(null), 0, 'null returns 0');
+  t.equal(durationToSeconds(undefined), 0, 'undefined returns 0');
+  t.equal(durationToSeconds('invalid'), 0, 'invalid returns 0');
   t.end();
 });

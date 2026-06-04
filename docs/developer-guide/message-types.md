@@ -62,7 +62,7 @@ When counting images per message:
 
 ### Duration rules
 
-Call and voice-note durations are normalised to `HH:MM:SS` format by `normalizeDuration()` in `src/shared/message-metadata.js`. Input formats:
+Call and voice-note durations are normalised to `HH:MM:SS` format by `normalizeDuration()` in `src/shared/duration-utils.js`. Input formats:
 
 - `M:SS` or `H:MM:SS` — colon-separated
 - `N mins` — minutes

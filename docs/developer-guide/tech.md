@@ -58,9 +58,14 @@ The generated `.txt` export has three main sections:
 2. Optional summary block
 3. One-line message entries
 
-The server build also writes two summary-only exports:
-- `export-summary-combined.txt` for the existing combined totals.
-- `export-summary-detailed.txt` for non-combined per-type totals and participant counts.
+The `pnpm run build:server` script generates six TXT export files in `data-output-auto/final-export/`:
+
+- `export-max.txt` — full export with message content, length, and summary.
+- `export-minimal.txt` — export with length only, no content or summary.
+- `export-summary-combined.txt` — summary-only export with combined text/words/images/calls per participant.
+- `export-summary-detailed.txt` — summary-only export with per-type breakdown plus word count per participant.
+- `export-summary-json.txt` — summary-only export as structured JSON with per-participant counts.
+- `export-raw-date.txt` — full export that includes the original raw date string in parentheses after each normalized date.
 
 ### Header block
 
@@ -98,10 +103,10 @@ Total Summary
 Each message line follows this pattern:
 
 ```text
-[YYYY-MM-DD HH:MM] Sender: type length chars / content text
+[YYYY-MM-DD HH:MM] Sender: type length words / content text
 ```
 
-- `length chars` is omitted for images, calls, and voice messages.
+- `length words` is omitted for images, calls, and voice messages.
 - `/ content text` is included when `Include content` is enabled.
 - Call lines include duration when available.
 

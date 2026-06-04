@@ -52,6 +52,10 @@ Changelog entries should describe active changes in direct present-tense stateme
 
 ### Dev
 
+- Shared message type arrays (timed call, missed call, call types) used across export formatter and summary modules.
+- Duration normalization logic consolidated into a single shared utility module.
+- HTML tag and attribute sanitization moved to the shared html-utils module.
+- Whitespace normalization function consolidated to its canonical source module.
 - Message-type resolution is shared between server and browser code paths.
 - Removed unreachable message-type branches that could never be triggered.
 - Export tests verify emoji reaction content in the output.

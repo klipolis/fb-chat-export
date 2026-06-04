@@ -164,13 +164,20 @@ AI agents keep regular `.TODO/` queue files synced:
 - T-204. Duration edge case tests (26 assertions) for malformed/invalid/zero/negative durations in both extractRawDuration and normalizeDuration
 - T-205. Alias name mapping tests using actual configured pairs: Rob→Barnabas, You→Youghurt, any→XYZ in both aliasChatNames and applyAliasToText
 - T-199. Split `tests/test-other.js` (469 lines, 14 subtests, 496 assertions) into three focused per-module test files: `tests/test-dom-pipeline.js` (5 subtests, DOM export pipeline), `tests/test-preview-nodes.js` (7 subtests, preview node generation/schema), `tests/test-frontend-build.js` (2 subtests, frontend build/date parsing)
-- Test count: 982 total assertions (was 810)
+- T-210. Updated stale `src/frontend/builds.js` references to `build.cjs` across `docs/developer-guide/` files
+- T-211. Updated `docs/developer-guide/tech.md` to list all six TXT export variants (was only listing two in that file)
+- T-212. Changed `length chars` to `length words` in 4 doc files (`docs/user-guide/README.md`, `docs/developer-guide/tech.md`, `docs/developer-guide/project-overview.md`, `docs/README.md`)
+- T-214. Optimized image detection in `create-nodes.js` with early `<img>` tag check to skip matchAll pipeline for segments without images
+- T-224. Added unit tests for `formatDurationSeconds`, `durationToMinutes`, `durationToSeconds` (24 assertions)
+- Test count: 1006 total assertions (was 982, previously 810)
 - Fixed `.todo/config.json` taskIdPattern from `^T\\d{2,}$` to `^T-\\d{2,}$` to match T-prefix format
 - All completed test tasks moved from TODO-next.md to TODO-done.md
 
 ### Next Steps
 
-- T-206–T-212. Documentation updates (inline docs, developer guide, JSDoc, input HTML format, stale references, TXT variants, word counts)
+- T-206–T-209. Documentation updates (inline docs, developer guide, JSDoc, input HTML format)
 - T-219–T-221. Shared code consolidation (duration utilities, HTML sanitization, constants module)
-- T-213–T-218. Build improvements (schema validation, image detection, incremental builds, parallel processing, artifact size, cache mechanism)
-- T-222–T-223. CI/CD workflows (userscript test step, release/artifact publishing)
+- T-213, T-215–T-218. Build improvements (schema validation done, incremental builds, parallel processing, artifact size, cache mechanism)
+- T-222. CI/CD workflows (userscript test step)
+- T-225–T-231. Test coverage (HTML utils, constants, schema validation, incremental, parallel, cache, CI)
+- T-233, T-235–T-237. Process improvements (deps, contributing guidelines, issue templates, semver automation)

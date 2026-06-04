@@ -134,13 +134,13 @@ Bob Summary
 **Message lines** — one line per message:
 
 ```
-[YYYY-MM-DD HH:MM] Sender: type length chars / content text
+[YYYY-MM-DD HH:MM] Sender: type length words / content text
 [YYYY-MM-DD HH:MM] Sender: image
 [YYYY-MM-DD HH:MM] Sender: voice-note 00:20:00
 [YYYY-MM-DD HH:MM] Sender: missed-audio-call
 ```
 
-- `length chars` is omitted for images, calls, and voice messages.
+- `length words` is omitted for images, calls, and voice messages.
 - `/ content text` is included when the `Include content` toggle is on.
 - Call lines include duration (e.g. `00:18:00`) when available.
 - The server build labels counts as `posts`; the browser export labels them as `messages`.

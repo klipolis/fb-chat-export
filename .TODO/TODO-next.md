@@ -12,16 +12,8 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 
 ---
 
-## Shared code
-
-- T-220. Consolidate duration normalization logic by creating a shared duration utility module that exports `normalizeDuration`, `extractRawDuration`, and related functions used across `message-metadata.js`, `create-nodes.js`, and `export-text.js`.
-- T-221. Extract common HTML sanitization utilities (like `normalizeTagStrings`, `stripAttributes`) into a shared module to avoid duplication between `optimize-html.js` and other HTML processing code.
-- T-219. Create a shared constants module for message type mappings and regex patterns used across multiple modules to ensure consistency.
-
 ## Build
 
-- T-213. Add build-time validation to ensure all exported JSON files conform to a predefined schema, catching structural issues early in the pipeline.
-- T-214. Optimize image detection logic in `create-nodes.js` to reduce unnecessary DOM traversal when processing messages without attachments.
 - T-215. Add support for incremental builds by tracking file modification times and only rebuilding changed components.
 - T-216. Implement parallel processing in the build server to utilize multiple CPU cores for faster HTML optimization and JSON generation.
 - T-217. Add build artifact size reporting to help identify bloated output files and optimization opportunities.
@@ -30,7 +22,6 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 ## CI/CD
 
 - T-222. Add a GitHub Action test step for generated `dist/userscript.js` contents.
-- T-223. Add a second workflow for release or artifact publishing.
 
 ## Documentation
 
@@ -38,10 +29,23 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 - T-207. Create a developer onboarding guide that explains the project architecture, build process, and contribution guidelines.
 - T-208. Add JSDoc comments to all public functions in shared modules to enable IDE autocomplete and type checking.
 - T-209. Document the expected format and structure of input HTML files for the chat exporter to process correctly.
-- T-210. Update stale `src/frontend/builds.js` references to `build.cjs` across `docs/developer-guide/` files.
-- T-211. Update `docs/user-guide/README.md` and `docs/developer-guide/tech.md` to list six TXT export variants instead of four, and mention the raw-date and JSON summary formats.
-- T-212. Update documentation to reflect the change from character counts to word counts in export formats, including update to any user-facing documentation about the export format.
+
 
 ## Test coverage
+
+- T-225. Add tests for the shared HTML sanitization utilities to ensure proper handling of malformed HTML.
+- T-226. Add tests for the shared constants module to verify all message type mappings are correct.
+- T-227. Add tests for build-time JSON schema validation to catch structural issues early.
+- T-228. Add tests for incremental build functionality to ensure only changed files are processed.
+- T-229. Add tests for parallel processing in the build server to verify correct utilization of CPU cores.
+- T-230. Add tests for build cache mechanism to verify it correctly avoids reprocessing unchanged files.
+- T-231. Add tests for GitHub Action validation of dist/userscript.js contents.
+
+## Process improvements
+
+- T-233. Implement automated dependency updates using tools like Dependabot or Renovate to keep project dependencies current.
+- T-235. Create contributing guidelines that clearly explain how to submit bug fixes, features, and improvements.
+- T-236. Add issue templates for bug reports, feature requests, and questions to standardize issue reporting.
+- T-237. Implement semantic versioning automation that detects breaking changes, features, and fixes to suggest version bumps.
 
 

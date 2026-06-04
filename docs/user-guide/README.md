@@ -89,13 +89,13 @@ Bob Summary
 Each message is written as a single line:
 
 ```text
-[YYYY-MM-DD HH:MM] Sender: type length chars / content text
+[YYYY-MM-DD HH:MM] Sender: type length words / content text
 [YYYY-MM-DD HH:MM] Sender: image
 [YYYY-MM-DD HH:MM] Sender: voice-note 00:20:00
 [YYYY-MM-DD HH:MM] Sender: missed-audio-call
 ```
 
-- `length chars` is omitted for images, calls, and voice messages.
+- `length words` is omitted for images, calls, and voice messages.
 - Content text appears only when `Include content` is enabled.
 - Calls include duration when available.
 

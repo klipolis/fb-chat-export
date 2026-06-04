@@ -194,18 +194,23 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
         rawMeta.duration = fallbackDuration;
       }
     }
-    const imageTags = Array.from(rawSegment.matchAll(/<img\b[^>]*>/gi));
-    // Only count as image if there is an <img> that is NOT a sender avatar (alt is not a person name and not empty)
-    const imageCount = imageTags.filter((tag) => {
-      const altMatch = tag[0].match(/alt="([^"]*)"/i);
-      const altText = altMatch ? altMatch[1].trim() : '';
-      // If alt is missing or empty, treat as possible image (could be sticker, etc)
-      if (!altText) return true;
-      // If alt is a person name, treat as avatar, not message image
-      const isPersonName = /^[A-Z][a-z]+(?: [A-Z][a-z]+)*$/.test(altText);
-      return !isPersonName;
-    }).length;
-    const hasImage = imageCount > 0;
+    let imageCount = 0;
+    let hasImage = false;
+    // Only scan for <img> tags when the segment actually contains one
+    if (/<img\b/i.test(rawSegment)) {
+      const imageTags = Array.from(rawSegment.matchAll(/<img\b[^>]*>/gi));
+      // Only count as image if there is an <img> that is NOT a sender avatar (alt is not a person name and not empty)
+      imageCount = imageTags.filter((tag) => {
+        const altMatch = tag[0].match(/alt="([^"]*)"/i);
+        const altText = altMatch ? altMatch[1].trim() : '';
+        // If alt is missing or empty, treat as possible image (could be sticker, etc)
+        if (!altText) return true;
+        // If alt is a person name, treat as avatar, not message image
+        const isPersonName = /^[A-Z][a-z]+(?: [A-Z][a-z]+)*$/.test(altText);
+        return !isPersonName;
+      }).length;
+      hasImage = imageCount > 0;
+    }
     const hasLink = Boolean(rawMeta.link || /<a\s[^>]*href=/i.test(rawSegment));
     const hasPlayButton = /aria-label="Play"/i.test(rawSegment);
     let message = parsedLabel.message || '';
