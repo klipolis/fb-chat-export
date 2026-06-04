@@ -281,6 +281,42 @@ function validateGeneratedJson() {
   console.log(`Validated ${files.length} generated JSON files against schema`);
 }
 
+function reportArtifactSizes() {
+  const outputDir = resolveRepoPath('data-output-auto');
+  if (!fs.existsSync(outputDir)) {
+    console.log('No output directory found at data-output-auto');
+    return;
+  }
+
+  let totalBytes = 0;
+  const entries = [];
+
+  function walk(dir) {
+    const dirContent = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of dirContent) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(fullPath);
+      } else {
+        const stats = fs.statSync(fullPath);
+        totalBytes += stats.size;
+        entries.push({ path: fullPath, size: stats.size });
+      }
+    }
+  }
+
+  walk(outputDir);
+
+  entries.sort((a, b) => a.path.localeCompare(b.path));
+  entries.forEach(({ path: filePath, size }) => {
+    const kb = (size / 1024).toFixed(1);
+    console.log(`  ${path.relative(baseDir, filePath)} — ${kb} KB`);
+  });
+
+  const totalKb = (totalBytes / 1024).toFixed(1);
+  console.log(`  Total: ${totalKb} KB across ${entries.length} files`);
+}
+
 function main() {
   ensureDir(optimizedDir);
   ensureDir(previewDir);
@@ -362,6 +398,7 @@ function main() {
   runCreateNodes(cleanedHtmlByFile);
   validateGeneratedJson();
   const exportPaths = writeTextExports(files, cleanedHtmlByFile, referenceDate);
+  reportArtifactSizes();
   console.log(`Done: HTML + JSON in ./data-output-auto/optimized-html and ./data-output-auto/json-format`);
   exportPaths.forEach((exportPath) => {
     console.log(`Generated chat text export: ${path.relative(baseDir, exportPath)}`);
