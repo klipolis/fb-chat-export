@@ -24,9 +24,9 @@
 - T-213. Added build-time JSON schema validation for all generated preview files, exits with code 1 on violations (36f7f81)
 - T-214. Optimized image detection in create-nodes.js with early `<img>` tag check to skip matchAll for segments without images (4c427d3)
 - T-215. Added incremental build support — caches input file mtimes and config mtimes, skips all processing when nothing changed (0adb916)
-- T-216. Implemented parallel processing in the build server using worker_threads to utilize multiple CPU cores for faster HTML optimization
+- T-216. Implemented parallel processing in the build server using worker_threads to utilize multiple CPU cores for faster HTML optimization (f96d773)
 - T-217. Added artifact size reporting to build-server.cjs - walks data-output-auto/ recursively, logs relative paths and KB sizes (503d098)
-- T-218. Added build cache mechanism — three-path decision (full skip, full rebuild, partial rebuild) with changed/unchanged/deleted file detection and stale output cleanup
+- T-218. Added build cache mechanism — three-path decision (full skip, full rebuild, partial rebuild) with changed/unchanged/deleted file detection and stale output cleanup (f96d773)
 - T-222. GitHub Action CI already validates the userscript bundle (dist/app.js) via validate-dist step in build:ci (78c8657)
 - T-233. Created .github/dependabot.yml with weekly schedule for npm and GitHub Actions dependencies (503d098)
 
@@ -66,8 +66,8 @@
 - T-226. Unit tests for shared constants module verifying TIMED_CALL_TYPES, MISSED_CALL_TYPES, CALL_TYPES composition, CONTENT_TYPES set, and export checks (487238b)
 - T-227. Build-time JSON schema validation tests (264 assertions across 25 subtests) covering schema structure, missing fields, bad length format, name acceptance (503d098)
 - T-228. Added tests for incremental build — verifies cache manifest creation, skip on no changes, rebuild on input or config change, and artifact size reporting on skip (99017e0)
-- T-229. Added tests for parallel processing — verifies worker alias + optimize, error reporting, and pool processing for all input files
-- T-230. Added tests for build cache partial rebuild — verifies full skip, changed-file-only processing, stale output cleanup on delete
+- T-229. Added tests for parallel processing — verifies worker alias + optimize, error reporting, and pool processing for all input files (f96d773)
+- T-230. Added tests for build cache partial rebuild — verifies full skip, changed-file-only processing, stale output cleanup on delete (f96d773)
 
 ## Documentation
 

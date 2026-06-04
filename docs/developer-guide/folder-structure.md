@@ -35,12 +35,14 @@ flowchart TD
 - `data-output-auto/optimized-html/` — generated optimized HTML snapshots.
 - `data-output-auto/json-format/` — generated preview JSON exports.
 - `data-output-auto/final-export/` — generated chat export text files.
+- `data-output-auto/build-cache.json` — cache manifest recording input file mtimes and sizes for incremental rebuild decisions.
 - `dist/` — frontend bundle output.
 - `src/` — application source and build scripts.
   - `src/frontend/` — browser-facing frontend code and build tooling.
   - `src/platforms/` — platform-specific header templates and bundle helpers.
   - `src/server/` — server-side build scripts.
   - `src/shared/` — shared helper libraries used by both server and frontend.
+- `src/workers/` — worker thread entry points for parallel processing (e.g. `build-worker.cjs`).
 - `tests/` — automated tests, validation scripts, fixtures, and integration helpers.
 - `docs/` — documentation pages and supporting documents.
 

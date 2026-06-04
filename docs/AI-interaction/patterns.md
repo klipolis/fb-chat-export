@@ -8,3 +8,5 @@
 - **Deterministic logic is the source of truth for metrics**. Application code and config produce metrics, not AI guesses. Never invent numbers.
 - **`.aiignore` must stay in sync with `.gitignore`**. Every new generated or sensitive path should be considered for both files. Run a periodic cross-check.
 - **`ai-chat-behavior.config.ts` drives agent behavior, not AGENTS.md**. The config file owns machine-readable rules; AGENTS.md owns human-facing instructions. Keep both updated.
+- **Build cache decisions use deterministic file states**. Compare mtime and size from cached state against current filesystem state. Never guess or infer whether a file changed. The cache manifest is the single source of truth for rebuild decisions.
+- **Parallel worker pool processes files concurrently with bounded concurrency**. Use `worker_threads` with a pool size equal to available CPU cores. Each worker is self-contained: no shared state between workers, all data passed via `workerData`. Error isolation matters — a single worker crash must not hang the pool.

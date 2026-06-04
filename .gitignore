@@ -13,5 +13,12 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
+# Build cache
+data-output-auto/build-cache.json
+
+# Debug utilities
+_debug_build.cjs
+_speed.cjs
+
 # tap output
 .tap/

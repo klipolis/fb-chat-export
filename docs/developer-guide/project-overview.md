@@ -58,6 +58,7 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - `data-output-auto/optimized-html/`: generated optimized HTML snapshots.
 - `data-output-auto/json-format/`: generated JSON preview output.
 - `data-output-auto/json-format/raw-input-metadata.json`: build metadata for raw input file stability.
+- `data-output-auto/build-cache.json`: cache manifest that records input file mtimes and sizes — the build server reads this to decide between full skip, partial rebuild, or full rebuild.
 - `data-output-auto/final-export/`: generated export files such as `export-max.txt` and `export-minimal.txt`.
 - `dist/`: generated one-file bundle output.
 - `docs/`: documentation and project notes.
@@ -150,7 +151,7 @@ Bob Summary
 - Open the project in VS Code and use the terminal in `support/`.
 - Run `nvm use` in the `support/` folder to ensure the correct Node version from `.nvmrc`.
 - Run `pnpm install --frozen-lockfile` once after cloning the repo.
-- Run `pnpm run build:server` to clear outputs, regenerate optimized HTML, build data preview JSON, and generate a text export in `data-output-auto/final-export/`.
+- Run `pnpm run build:server` to run the full server build pipeline. The build uses a three-way decision: **full skip** (all files unchanged, cache complete), **partial rebuild** (only changed and deleted files processed), or **full rebuild** (config changed or no cache). HTML optimization runs in parallel across available CPU cores via `worker_threads`.
 - Run `pnpm run build:frontend` to emit the built bundle into `dist/app.js`.
 - Use `BUILD_PLATFORM=userscript pnpm run build:frontend` to emit a userscript-compatible bundle header. The userscript header template is stored in `data-config/userscript/header.txt`.
 - The browser export writes a stable download file name such as `export-<shortname>.txt`.
