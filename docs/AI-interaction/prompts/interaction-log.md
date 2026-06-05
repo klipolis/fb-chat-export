@@ -1,31 +1,113 @@
 # AI Interaction Log
 
-This document records each AI interaction session for continuity and learning.
+Reverse-chronological record of AI sessions. Each entry captures the exact user input, what the AI did, and resulting commits.
 
-## Session Template
+## Format
 
-Each session should record:
+```
+### YYYY-MM-DD HH:MM – Short title
 
-- **Date**: YYYY-MM-DD
-- **Tasks completed**: List of completed T-numbered tasks
-- **Tasks pending**: List of still-pending T-numbered tasks
-- **Key changes**: Summary of files modified
-- **Blockers**: Any issues that prevented progress
-- **Next steps**: Recommended follow-up work
+**User**: Exact user input / prompt text.
 
-## Sessions
+**AI**: Short summary of what was done — key files changed, decisions made.
 
-<!-- Sessions are recorded below this line -->
+**Commits**:
+- `abc1234` YYYY-MM-DD HH:MM — commit message
+```
 
-### 2026-06-04 - Unicode name recognition and JSON export fields
+---
 
-- **Tasks completed**: T-246, T-247, T-248, T-249, T-250
-- **Tasks pending**: T-244, T-245, T-251, T-252
-- **Key changes**:
-  - Fixed Unicode name recognition in sender detection (Ötves, Csaba)
-  - Added data_raw.name and data_preview.name fields with alias mapping
-  - Changed body content length from chars to words count
-  - Added test coverage for Unicode names and word count consistency
-  - Updated JSON schema documentation
-- **Commit**: 7731e11
-- **Next steps**: Implement worker_threads fallback, add more tests for create-nodes.js
+### 2026-06-05 12:00 – Session log format, move plan to docs/logs/
+
+**User**: update proper file name, move to docs folder, but what subfolder should be? Analytics, Logs? Need another file as well in ai interaction, similar, it is a log ai session record entries: date-time and exact user entry, followed entry by short ai response summary, then date-time commits; recent on top. Add this request to the agents and ai instructions, update docs, and ai-interaction post-interaction analisation
+
+**AI**: Moved `.TODO/plan.md` → `docs/logs/session-plan.md`. Rewrote `interaction-log.md` with reverse-chronological format (date-time, exact user entry, AI summary, commits). Updated `trace-guidance.md` and `AGENTS.md` with session log maintenance rules. Deleted old `.TODO/plan.md`.
+
+**Commits**:
+- (pending — not yet committed)
+
+### 2026-06-05 09:00 – Node engine constraint, remove worker_threads fallback
+
+**User**: Add Node >=26.0.0 engines constraint, remove worker_threads fallback.
+
+**AI**: Added `"engines": {"node": ">=26.0.0"}` to package.json. Removed `hasWorkers` fallback from `build-server.cjs`. Changed `Worker` import from try-catch to direct require. Updated TODO files.
+
+**Commits**:
+- `cf4ef2d` 2026-06-05 09:41 — refactor: remove worker_threads fallback...
+- `5d25d80` 2026-06-05 09:37 — chore: add Node >=26.0.0 engines constraint...
+- `cccf06a` 2026-06-05 09:46 — chore: update TODO tasks for empty input...
+
+### 2026-06-05 08:30 – Word count edge cases, Unicode integration tests
+
+**User**: Add word count edge cases and Unicode integration tests. Update TODO files.
+
+**AI**: Added test cases for word count across all message types. Added Unicode sender integration tests. Documented JSON preview format with name fields. Updated TODO tracking.
+
+**Commits**:
+- `5197685` 2026-06-05 09:02 — test: add onlyFiles option tests...
+- `4c62eba` 2026-06-05 09:08 — test: add word count edge cases...
+- `3fc7c02` 2026-06-05 09:11 — docs: add JSON preview format documentation...
+- `19ea27d` 2026-06-05 09:13 — chore: add new TODO tasks...
+- `739a379` 2026-06-05 09:16 — chore: add worker pool graceful shutdown test task...
+
+### 2026-06-04 22:00 – Name fields, Unicode, word count consistency
+
+**User**: Add data_raw.name and data_preview.name fields. Unicode name support. Word count consistency.
+
+**AI**: Added `data_raw.name` and `data_preview.name` to JSON exports with alias mapping. Fixed Unicode name recognition in sender detection. Changed body content length from chars to words. Added tests for Unicode names and word count consistency. Updated post-interaction save procedures.
+
+**Commits**:
+- `db73f35` 2026-06-04 22:01 — feat: add data_raw.name and data_preview.name...
+- `7731e11` 2026-06-04 23:14 — feat: add unicode name recognition...
+- `3902d07` 2026-06-04 23:26 — docs: add post-interaction and post-close save procedures...
+- `3a5426e` 2026-06-04 23:30 — chore: add new TODO tasks...
+
+### 2026-06-04 18:00 – Worker fallback, onlyFiles test
+
+**User**: Add worker_threads availability check fallback so builds work on Node without worker_threads support.
+
+**AI**: Added `hasWorkers` try-catch and sequential fallback path in `build-server.cjs`. Added `onlyFiles` assertion to `test-cache-partial-rebuild.js`. Consolidated shared code (`ensureDir`, `normalizeExportSender`, `validateExportConfig`). Updated TODO tracking and AI-interaction docs.
+
+**Commits**:
+- `252b531` 2026-06-04 18:09 — docs: update TODO tracking, AI-interaction patterns...
+- `81c14bd` 2026-06-04 18:34 — feat: add worker_threads fallback and onlyFiles test...
+
+### 2026-06-04 12:00 – Parallel processing, incremental build
+
+**User**: Add parallel worker pool for HTML optimization. Add incremental build cache.
+
+**AI**: Implemented `worker_threads` pool in `build-server.cjs` with bounded concurrency. Added cache manifest that tracks file mtimes and config mtimes for three-path decisions (full skip, full rebuild, partial rebuild). Added stale output cleanup and change-only processing. Updated developer guide, AI-interaction patterns.
+
+**Commits**:
+- `f96d773` 2026-06-04 18:03 — feat: add parallel worker pool and partial rebuild...
+- `0adb916` 2026-06-04 12:09 — feat: add incremental build support with cache manifest
+- `feae95d` 2026-06-04 12:10 — docs: mark T-215 done...
+- `99017e0` 2026-06-04 12:11 — test: add incremental build cache and skip tests
+- `503d098` 2026-06-04 11:48 — feat: add artifact size reporting...
+- `0205824` 2026-06-04 11:57 — chore: standardise TODO categories...
+
+### 2026-06-04 09:00 – Schema validation, shared module consolidation
+
+**User**: Add build-time JSON schema validation. Consolidate shared code into dedicated modules. Add tests.
+
+**AI**: Added `validateGeneratedJson()` to `build-server.cjs` that validates all preview JSON files against `generated-json-schema.json`. Consolidated shared code into `string-utils.js`, `html-utils.js`, `aria-label-parser.js`, `message-metadata.js`. Added shared module tests. Created developer onboarding guide.
+
+**Commits**:
+- `0d01301` 2026-06-04 11:04 — refactor: consolidate shared code into dedicated modules
+- `36f7f81` 2026-06-04 11:16 — feat: add build-time JSON schema validation
+- `487238b` 2026-06-04 11:31 — test: add shared module tests...
+- `4c427d3` 2026-06-04 11:21 — docs: update TODO files and AGENTS.md...
+- `512f5c0` 2026-06-04 03:28 — test: add direct unit tests...
+
+### 2026-06-03 – Dead code cleanup, link-text fix
+
+**User**: Fix structure, summary, stats. Fix link video. Server structure. Dead code cleanup.
+
+**AI**: Removed dead code (stale message-type references, unused exports). Fixed browser unhandled promise rejection. Updated link-text content to include both URL and user text. Standardized TODO categories, commit refs.
+
+**Commits**:
+- `c4b59ce` 2026-06-03 19:23 — chore: update TODO backlog...
+- `3adbbed` 2026-06-03 19:32 — chore: cleanup dead code...
+- `cc7b8a3` 2026-06-04 00:08 — fix: link-text content includes both URL and user text
+- `3e31f9d` 2026-06-04 03:20 — chore: voice-note transcript detection...
+- `5972a43` 2026-06-04 03:25 — chore: standardize T- prefix...
