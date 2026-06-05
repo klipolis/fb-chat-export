@@ -14,13 +14,17 @@ YYYY-MM-DD HH:MM | commit | <hash> <commit subject>
 Do not group or nest entries. Each line is a standalone event. Do not modify existing entries below.
 
 2026-06-05 12:15 | user | Add more todo-next.md tasks and resolve the tasks
-2026-06-05 12:15 | commit | (pending) chore: add future/next tasks, update interaction log
+2026-06-05 12:15 | commit | da872cb chore: add future/next tasks, update activity log
 
 ---
 
+2026-06-05 12:30 | commit | 500c68b docs: add code improvement prompts to prompts-collection
+2026-06-05 12:30 | user | Add prompts to library: code improvement tasks for build, stability, shared code
+2026-06-05 12:20 | commit | 503f7e4 docs: rename session-plan to activity-log, add AI agent prompt
+2026-06-05 12:15 | user | Better file naming than session-plan.md; pattern: date | type | text; add AI agent prompt
+2026-06-05 12:15 | commit | 66ab709 docs: restructure AI-interaction folders, clarify session plan
 2026-06-05 12:00 | user | Restructure AI-interaction docs: rename prompts folder, create ai-logs folder, clarify logs purpose
-2026-06-05 12:00 | commit | 66ab709 docs: restructure AI-interaction folders, clarify session plan
-2026-06-05 11:00 | user | Add session history file recording user inputs and commits
+2026-06-05 11:30 | user | Add session history file recording user inputs and commits
 2026-06-05 11:00 | commit | f44d73f docs: add session plan file, update TODO tracking
 2026-06-05 09:00 | user | Add Node >=26.0.0 engines constraint, remove worker_threads fallback
 2026-06-05 09:46 | commit | cccf06a chore: update TODO tasks for empty input validation and error handling

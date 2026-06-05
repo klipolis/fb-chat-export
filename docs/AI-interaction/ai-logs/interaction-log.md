@@ -17,6 +17,43 @@ Reverse-chronological record of AI sessions. Each entry captures the exact user 
 
 ---
 
+### 2026-06-05 12:30 – Add code improvement prompts to prompts-collection
+
+**User**: add prompt to library: add more meaningful tasks to improve build, stability, shared code
+
+**AI**: Created `code-improvement-prompts.md` with four reusable prompts (build audit, stability gaps, shared code consolidation, combined task queue). Each addresses "this AI Agent" generically. Updated `prompts-collection/README.md`.
+
+**Commits**:
+- `500c68b` 2026-06-05 12:30 — docs: add code improvement prompts to prompts-collection
+
+### 2026-06-05 12:15 – Rename session-plan to activity-log, add AI agent prompt
+
+**User**: better file naming than session-plan.md to reflect the goal. pattern is: date | type (user, commit) | text. Update the prompt so any AI agent can fill it. Also with type include commit nr.
+
+**AI**: Renamed `session-plan.md` → `activity-log.md`. Rewrote with `date | type (user|commit) | text` format. Added AI agent prompt at top addressing "this AI Agent" generically. Updated `AGENTS.md`, `trace-guidance.md`, `patterns.md`. Also updated TODO files and interaction-log pending commit reference.
+
+**Commits**:
+- `503f7e4` 2026-06-05 12:20 — docs: rename session-plan to activity-log, add AI agent prompt
+
+### 2026-06-05 12:00 – Restructure AI-interaction folders, clarify session plan
+
+**User**: Looks like needs to have clarifications: AI-interaction have prompts folder (rename to prompts collection), then add ai-logs folder which have ai session logs taken out from the prompt files, I see they are mixed. Then the docs/logs clarify that log is not precise ai user interaction, but logs the user request summary and similar reverse-chronological order, date-time for all entry, no grouping
+
+**AI**: Renamed `prompts/` → `prompts-collection/`. Created `ai-logs/` folder and moved `interaction-log.md` there. Rewrote `session-plan.md` with reverse-chronological, date-time per entry, no grouping, user request summaries only. Updated `AI-interaction/README.md`, `trace-guidance.md`, `AGENTS.md`, `patterns.md`.
+
+**Commits**:
+- `66ab709` 2026-06-05 12:15 — docs: restructure AI-interaction folders, clarify session plan
+
+### 2026-06-05 11:30 – Add session history file
+
+**User**: add a .todo/plan file, ai prompt to record the history of user inputs, it should include user input, with date time, then add datetime entry to in-between for commits happened, anything for the history?
+
+**AI**: Created `.TODO/plan.md` with chronological session log of user inputs and commits. Later moved to `docs/logs/session-plan.md`. Updated `TODO-done.md`, `TODO-ignore.md`, `TODO-next.md`. Added `node --check` syntax validation to `validate-dist.js`.
+
+**Commits**:
+- `f44d73f` 2026-06-05 11:00 — docs: add session plan file, update TODO tracking
+- `7de1cd3` 2026-06-05 12:00 — docs: restructure session logs, update AI interaction docs
+
 ### 2026-06-05 12:00 – Session log format, move plan to docs/logs/
 
 **User**: update proper file name, move to docs folder, but what subfolder should be? Analytics, Logs? Need another file as well in ai interaction, similar, it is a log ai session record entries: date-time and exact user entry, followed entry by short ai response summary, then date-time commits; recent on top. Add this request to the agents and ai instructions, update docs, and ai-interaction post-interaction analisation
