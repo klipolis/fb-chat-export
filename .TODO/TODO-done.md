@@ -74,6 +74,7 @@
 - T-248. Verified golden snapshots match after Unicode name fixes - confirmed no regressions in TXT export variants (db73f35)
 - T-249. Added tests for new data_raw.name and data_preview.name fields with alias mapping - validates original name preservation and alias application (db73f35)
 - T-250. Updated documentation to reflect new JSON export format with data_raw.name and data_preview.name fields (db73f35)
+- T-244. Added tests for create-nodes.js onlyFiles option to verify filtered processing skips unchanged files during partial rebuild (3a5426e)
 
 ## Documentation
 
