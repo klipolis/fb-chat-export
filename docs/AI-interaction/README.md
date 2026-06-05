@@ -8,11 +8,12 @@ It is intended as an educational reference for:
 - future maintainers who want consistent AI behavior and response expectations
 - contributors who want to understand the current AI workflow for code and docs changes
 
-The folder is split into three separate areas:
+The folder is split into four separate areas:
 
 - `user/` — user-facing behaviour, request guidance, past style, and best future examples.
 - `ai/` — assistant-facing workflow rules, what the AI needs, past style, and best future examples.
-- `prompts/` — reusable prompt examples for reproducing this project and capturing AI interaction traces.
+- `prompts-collection/` — reusable prompt examples for reproducing this project and capturing AI interaction traces.
+- `ai-logs/` — reverse-chronological record of AI sessions with exact user inputs, AI summaries, and commit references.
 
 ## Contents
 
@@ -26,7 +27,8 @@ The folder is split into three separate areas:
 - `ai/what-ai-needs.md` — what the assistant needs from the user.
 - `ai/good-best-examples.md` — good and best assistant behavior examples.
 
-- `prompts/README.md` — overview of prompt examples and intent.
-- `prompts/project-reproduction.md` — project-specific prompt examples for this repo.
-- `prompts/trace-guidance.md` — guidance for recording AI interactions as trace documentation.
-- `prompts/interaction-log.md` — session recording for continuity after AI closes.
+- `prompts-collection/README.md` — overview of prompt examples and intent.
+- `prompts-collection/project-reproduction.md` — project-specific prompt examples for this repo.
+- `prompts-collection/trace-guidance.md` — guidance for recording AI interactions as trace documentation.
+
+- `ai-logs/interaction-log.md` — session recording with exact user input, AI summary, and commits.

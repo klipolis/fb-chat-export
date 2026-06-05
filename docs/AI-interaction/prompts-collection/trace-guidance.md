@@ -22,7 +22,7 @@ A good interaction trace includes:
 
 ## Session log
 
-Maintain a reverse-chronological log in `docs/AI-interaction/prompts/interaction-log.md`.
+Maintain a reverse-chronological log in `docs/AI-interaction/ai-logs/interaction-log.md`.
 
 Each session entry must include:
 
@@ -35,22 +35,22 @@ Add new entries at the top of the list (most recent first).
 
 ## Session plan
 
-`docs/logs/session-plan.md` holds a chronological (oldest-first) record of user inputs and corresponding commits across the full project history. Update it when adding significant new sessions.
+`docs/logs/session-plan.md` holds a reverse-chronological record of user request summaries and corresponding commits across the full project history. Each entry has a single date-time and no grouping. Update it when adding significant new sessions.
 
 ## Post-interaction saves
 
 After an interaction completes, save the following to the AI interaction docs:
 
-- Add a summary entry to `docs/AI-interaction/prompts/project-reproduction.md` if the work produces a reusable pattern
+- Add a summary entry to `docs/AI-interaction/prompts-collection/project-reproduction.md` if the work produces a reusable pattern
 - Update relevant guidance in `docs/AI-interaction/user/` or `docs/AI-interaction/ai/` if conventions changed
 - Add any new patterns to `docs/AI-interaction/patterns.md` for future reference
-- Add a session entry to `docs/AI-interaction/prompts/interaction-log.md`
+- Add a session entry to `docs/AI-interaction/ai-logs/interaction-log.md`
 
 ## Post-close saves
 
 When an AI session closes:
 
-- Record the session outcome in `docs/AI-interaction/prompts/interaction-log.md` (add a new entry at top)
+- Record the session outcome in `docs/AI-interaction/ai-logs/interaction-log.md` (add a new entry at top)
 - Include the exact user input, AI summary, and all commit references
 - If the session plan in `docs/logs/session-plan.md` is outdated, update it
 

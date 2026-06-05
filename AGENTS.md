@@ -157,10 +157,8 @@ AI agents keep regular `.TODO/` queue files synced:
 
 AI agents maintain two session history files:
 
-- **`docs/AI-interaction/prompts/interaction-log.md`** — reverse-chronological log of AI sessions. Each entry records date-time, exact user input, short AI response summary, and resulting commits. Add new entries at the top.
-- **`docs/logs/session-plan.md`** — chronological (oldest-first) record of user inputs and commits across the full project history. Update when adding significant new sessions.
-
-Both files must stay current after every session. Entries use verbatim user input (do not paraphrase the prompt).
+- **`docs/AI-interaction/ai-logs/interaction-log.md`** — reverse-chronological log of AI sessions. Each entry records date-time, exact user input, short AI response summary, and resulting commits. Add new entries at the top.
+- **`docs/logs/session-plan.md`** — reverse-chronological record of user request summaries and commits across the full project history. Each entry has a single date-time with no grouping. Update when adding significant new sessions.
 
 ## Progress
 
