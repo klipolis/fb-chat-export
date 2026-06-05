@@ -16,6 +16,7 @@ Do not modify existing entries below. Update `project-logs/interaction-log.md` a
 
 2026-06-05 13:56 | (user) | restructure: move prompts+logs out of docs/ into project-prompts/ and project-logs/, add prompt script
 2026-06-05 13:56 | (ai) | Moved prompts-collection/ → project-prompts/, logs/ → project-logs/, created scripts/run-prompt.cjs, updated AGENTS.md/docs cross-refs
+2026-06-05 13:56 | (commit 50dfcf8) | refactor: move hot prompt and log files out of docs/ into project-prompts/ and project-logs/
 
 
 2026-06-05 13:45 | (user) | review and rebuild the log format, update docs, agents, contribute

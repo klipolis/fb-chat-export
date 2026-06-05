@@ -16,6 +16,7 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 
 2026-06-05 13:56 (user) move prompt collection and logs out of docs/, add pnpm prompt script
 2026-06-05 13:56 (ai) Created project-prompts/ (from prompts-collection), project-logs/ (from docs/logs), scripts/run-prompt.cjs, updated AGENTS.md, patterns, cross-references, removed old dirs
+2026-06-05 13:56 (commit 50dfcf8) refactor: move hot prompt and log files out of docs/ into project-prompts/ and project-logs/
 
 
 2026-06-05 13:45 (user) review log format, hash within brackets. also update the docs, agents, contribute, ..
