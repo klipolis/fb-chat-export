@@ -16,6 +16,9 @@ Do not modify existing entries below.
 
 2026-06-05 13:45 | (user) | review and rebuild the log format, update docs, agents, contribute
 2026-06-05 13:45 | (ai) | Fixed all commit entries to (commit <hash>) format, updated format specs, checked cross-references
+2026-06-05 13:45 | (user) | review log format, hash within brackets. also update the docs, agents, contribute
+2026-06-05 13:45 | (ai) | Fixed all commit entries to (commit <hash>) format, updated AGENTS.md and trace-guidance.md log format descriptions
+2026-06-05 13:45 | (commit e5d3fa6) | docs: fix commit hash format to (commit <hash>) across logs and doc references
 2026-06-05 13:30 | (user) | review and rebuild the interaction-log.md, then commit all session work
 2026-06-05 13:30 | (ai) | Fixed interaction-log.md header to match actual entry format, removed stale example block, added current session entry
 2026-06-05 13:30 | (commit 931e21e) | feat: consolidate error handling, add empty input test, code audit tasks
