@@ -1,21 +1,39 @@
 # AI Interaction Log
 
-Reverse-chronological record of AI sessions. Each entry captures the exact user input, what the AI did, and resulting commits.
+This AI Agent: add entries for your session at the top of this file in reverse-chronological order. Do not modify existing entries below.
 
-## Format
+**Format:**
 
 ```
 ### YYYY-MM-DD HH:MM – Short title
 
-**User**: Exact user input / prompt text.
+**User**: exact user input / prompt text.
 
-**AI**: Short summary of what was done — key files changed, decisions made.
+**AI**: short summary of what was done — key files changed, decisions made.
 
 **Commits**:
 - `abc1234` YYYY-MM-DD HH:MM — commit message
 ```
 
 ---
+
+### 2026-06-05 13:30 – Error handling consolidation, empty input test, code audit tasks
+
+**User**: Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+
+**AI**: Completed T-264 (empty input directory test), T-265 (shared error-utils.js with fatal() replacing 11 console.error+process.exit across 3 files). Ran code improvement prompts audit — added 8 future tasks (T-266 through T-273) to TODO-future.md covering worker pool shutdown, stale export cleanup, CLI args, catch-all, date normalize helper, worker pool extraction, HTML cleaning dedup, error isolation test. Updated TODO-done.md, TODO-next.md, config.json. Verified all doc cross-references pass `link:docs`.
+
+**Commits**:
+- `209caea` 2026-06-05 13:30 — feat: consolidate error handling, add empty input test, code audit tasks
+
+### 2026-06-05 13:00 – Update activity-log format with parentheses and AI entries
+
+**User**: pattern for rows and no date grouping, but you can include new line between dates: date time (user, ai one-line response, commit + nr) text — there is no sep, because (brackets) are enough
+
+**AI**: Rewrote activity-log.md with `(user)`, `(ai)`, `(commit)` bracketed types throughout. Added one-line AI response summaries between user requests and commits across all entries. Inserted blank lines between session groups for readability.
+
+**Commits**:
+- `0eb1269` 2026-06-05 13:00 — docs: add current session entries to interaction-log and activity-log
 
 ### 2026-06-05 12:30 – Add code improvement prompts to prompts-collection
 

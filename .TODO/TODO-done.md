@@ -78,6 +78,7 @@
 - T-244. Added tests for create-nodes.js onlyFiles option to verify filtered processing skips unchanged files during partial rebuild (3a5426e)
 - T-253. Added integration tests for Unicode sender names in browser export flow - Hungarian, Cyrillic, and Arabic names preserved through DOM parsing (5197685)
 - T-254. Added tests for word count edge cases - empty content, single word, very long messages (5197685)
+- T-264. Added test for empty input directory handling in build-server.cjs covering missing directory and no HTML files
 
 ## Documentation
 
@@ -126,6 +127,7 @@
 - T-219. Created shared constants module with message type arrays used by export formatter and summary modules (0d01301)
 - T-220. Consolidated duration normalization into src/shared/duration-utils.js, removed duplicate definitions from four files (0d01301)
 - T-221. Moved stripAttributes and normalizeTagStrings from optimize-html.js into src/shared/html-utils.js (0d01301)
+- T-265. Consolidated shared error handling patterns — created src/shared/error-utils.js with fatal() function, replaced 11 console.error+process.exit occurrences across 3 files
 
 ## Schema & config
 

@@ -3,6 +3,7 @@ const path = require('path');
 const os = require('os');
 const { Worker } = require('worker_threads');
 const { JSDOM } = require('jsdom');
+const { fatal } = require('./shared/error-utils');
 const { ensureDir, emptyDir, aliasChatNames, collectAutoName } = require('./shared/utils');
 const { createOptimizedHtml } = require('./shared/optimize-html');
 const { runCreateNodes } = require('./shared/create-nodes');
@@ -245,8 +246,7 @@ function validateGeneratedJson() {
   });
 
   if (errors) {
-    console.error(`Build validation failed: ${errors} schema violations in generated JSON`);
-    process.exit(1);
+    fatal(`Build validation failed: ${errors} schema violations in generated JSON`);
   }
   console.log(`Validated ${files.length} generated JSON files against schema`);
 }
@@ -340,14 +340,12 @@ function validateExportConfig(exportPaths) {
   const generatedNames = exportPaths.map((p) => path.basename(p));
   for (const entry of configExports) {
     if (!generatedNames.includes(entry.fileName)) {
-      console.error(`Export config lists "${entry.fileName}" but it was not generated`);
-      process.exit(1);
+      fatal(`Export config lists "${entry.fileName}" but it was not generated`);
     }
   }
   for (const name of generatedNames) {
     if (!configExports.some((e) => e.fileName === name)) {
-      console.error(`Generated export "${name}" is not declared in export-config.json`);
-      process.exit(1);
+      fatal(`Generated export "${name}" is not declared in export-config.json`);
     }
   }
 }
@@ -390,8 +388,7 @@ function reportArtifactSizes() {
 
 async function main() {
   if (!fs.existsSync(rawDir)) {
-    console.error('Missing HTML Raw folder:', './data-input-test');
-    process.exit(1);
+    fatal('Missing HTML Raw folder: ./data-input-test');
   }
 
   // Merge cold input (data-input-test) with hot input (data-input-test/userscript).
@@ -404,8 +401,7 @@ async function main() {
   const files = [...hotFiles, ...coldFiles.filter((name) => !hotFileSet.has(name))];
 
   if (!files.length) {
-    console.error('No raw HTML files found in', './data-input-test');
-    process.exit(1);
+    fatal('No raw HTML files found in ./data-input-test');
   }
 
   // Incremental build: detect changed, unchanged, and deleted files from cache.
@@ -460,8 +456,7 @@ async function main() {
   // Validate that every input file contains at least one message element
   for (const [fileName, html] of rawHtmlByFile) {
     if (!/<[a-zA-Z0-9]+[^>]*\saria-roledescription="message"/i.test(html)) {
-      console.error(`Input file ${fileName} has no aria-roledescription="message" elements`);
-      process.exit(1);
+      fatal(`Input file ${fileName} has no aria-roledescription="message" elements`);
     }
   }
   const preDetectedName = collectAutoName(
@@ -487,7 +482,7 @@ async function main() {
   if (fullRebuild) {
     for (const fileName of files) {
       const result = workerResults.get(fileName);
-      if (!result) { console.error(`No result for ${fileName}`); process.exit(1); }
+      if (!result) { fatal(`No result for ${fileName}`); }
       cleanedHtmlByFile.set(fileName, result.aliasedHtml);
       fs.writeFileSync(path.join(optimizedDir, fileName), result.optimizedHtml, 'utf8');
       if (writeRaw && result.aliasedHtml !== rawHtmlByFile.get(fileName)) {
@@ -501,7 +496,7 @@ async function main() {
     // Partial rebuild: only alias + optimize changed files; alias-only for unchanged.
     for (const fileName of changedFiles) {
       const result = workerResults.get(fileName);
-      if (!result) { console.error(`No result for ${fileName}`); process.exit(1); }
+      if (!result) { fatal(`No result for ${fileName}`); }
       cleanedHtmlByFile.set(fileName, result.aliasedHtml);
       fs.writeFileSync(path.join(optimizedDir, fileName), result.optimizedHtml, 'utf8');
       if (writeRaw && result.aliasedHtml !== rawHtmlByFile.get(fileName)) {

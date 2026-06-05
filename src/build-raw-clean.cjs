@@ -18,6 +18,7 @@
 'use strict';
 
 const fs = require('fs');
+const { fatal } = require('./shared/error-utils');
 const { resolveRepoPath } = require('./shared/app-config');
 
 const rawDir = resolveRepoPath('data-input-test');
@@ -40,8 +41,7 @@ function cleanXClasses(html) {
 
 function main() {
   if (!fs.existsSync(rawDir)) {
-    console.error('Missing raw HTML folder:', rawDir);
-    process.exit(1);
+    fatal('Missing raw HTML folder: ' + rawDir);
   }
 
   const files = fs.readdirSync(rawDir).filter((f) => f.endsWith('.html'));

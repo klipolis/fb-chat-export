@@ -5,6 +5,7 @@ const { parseAriaLabel, parseReferenceDate, normalizeDateToSimple, normalizeLabe
 const { getContentMeta, normalizeDuration, stripTrackingParams } = require('./message-metadata');
 const { extractRawDuration } = require('./duration-utils');
 const { findMatchingClosingTag } = require('./html-utils');
+const { fatal } = require('./error-utils');
 const { ensureDir, normalizeExportSender } = require('./utils');
 const { aliasNames } = require('../../data-config/frontend_shared.json');
 
@@ -312,14 +313,12 @@ function main(htmlFilesByFile, opts) {
   const relNodesDir = relativePath(nodesDir);
 
   if (!fs.existsSync(optimizedDir)) {
-    console.error('Missing optimized HTML folder:', relOptimizedDir);
-    process.exit(1);
+    fatal('Missing optimized HTML folder: ' + relOptimizedDir);
   }
 
   let htmlFiles = fs.readdirSync(optimizedDir).filter((name) => name.endsWith('.html'));
   if (!htmlFiles.length) {
-    console.error('No optimized HTML files found in', relOptimizedDir);
-    process.exit(1);
+    fatal('No optimized HTML files found in ' + relOptimizedDir);
   }
 
   if (opts && opts.onlyFiles) {
