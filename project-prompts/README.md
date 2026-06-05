@@ -12,4 +12,6 @@ Files:
 
 - `project-reproduction.md` — prompt examples for reproducing the project and code/docs changes.
 - `trace-guidance.md` — guidance on recording AI interactions as trace documentation.
-- `code-improvement-prompts.md` — prompts for auditing build system, stability, and shared code consolidation.
+- `code-improvement-prompts.md` — index: links to audit and task-generation prompts.
+- `code-audit-prompts.md` — audit prompts that write findings to `project-logs/audit-log.md`.
+- `code-task-generation.md` — generates improvement tasks across all project areas and writes to TODO files.

@@ -11,5 +11,9 @@
     }
   },
   "formatter": true,
-  "instructions": ["AGENTS.md"]
+  "instructions": ["AGENTS.md"],
+  "tool_output": {
+    "max_lines": 5,
+    "max_bytes": 1024
+  }
 }

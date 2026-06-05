@@ -32,6 +32,10 @@
 - T-243. Added data-output-auto/build-cache.json to .gitignore — generated cache state that should not be tracked (252b531)
 - T-255. Added dist/app.js bundle syntax validation using `node --check` before release (cccf06a)
 
+## Prompts / Docs
+
+- T-274. Moved hot AI prompt files from docs/AI-interaction/prompts-collection/ → project-prompts/ and session logs from docs/logs/ and docs/AI-interaction/ai-logs/ → project-logs/; created scripts/run-prompt.cjs and pnpm prompt command
+
 ## Test coverage
 
 - T-66. Unit tests added for file-name and label-rule priority in type detection (a5f5d7f)

@@ -67,7 +67,7 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - `docs/developer-guide/tech.md`: technology and dependency overview.
 - `docs/site.md`: documentation landing page with quick start and architecture overview.
 - `docs/user-guide/terms-and-conditions.md`
-- `docs/AI-interaction/`: AI interaction guides for user prompts and assistant behavior.
+- `docs/AI-interaction/`: AI interaction reference docs for user prompts and assistant behavior (hot prompt files live in `project-prompts/`).
 - `CHANGELOG.md`: release history and version notes.
 - `tests/`: automated tests, fixtures, and validation scripts.
 - `tests/generated-json-schema.json`: formal contract for generated preview JSON exports.
@@ -114,7 +114,7 @@ If PowerShell blocks `pnpm.ps1` or `npm` script execution because scripts are no
 - `docs/developer-guide/project-overview.md` contains the overall project architecture and workflow.
 - `docs/developer-guide/release-management.md` contains release workflow and changelog rules.
 - `docs/developer-guide/todo-management.md` contains the repository TODO process and numbering rules.
-- `docs/AI-interaction/` contains AI interaction and assistant behavior guidance.
+- `docs/AI-interaction/` contains AI interaction reference docs (hot prompt files live in `project-prompts/`, logs in `project-logs/`).
 - `CONTRIBUTING.md` explains how to contribute.
 - `CHANGELOG.md` contains release history and notes.
 - `CODE_OF_CONDUCT.md` describes expected community behavior.

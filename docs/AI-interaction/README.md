@@ -1,6 +1,6 @@
 # AI Interaction Guidance
 
-This folder contains guidance for working with the repository through AI-assisted editing and collaboration.
+This folder contains reference documentation for working with the repository through AI-assisted editing and collaboration. It is a one-way reference — hot AI instruction files (prompts, session logs) live outside `docs/`.
 
 It is intended as an educational reference for:
 
@@ -8,12 +8,17 @@ It is intended as an educational reference for:
 - future maintainers who want consistent AI behavior and response expectations
 - contributors who want to understand the current AI workflow for code and docs changes
 
-The folder is split into four separate areas:
+The folder is split into two areas:
 
 - `user/` — user-facing behaviour, request guidance, past style, and best future examples.
 - `ai/` — assistant-facing workflow rules, what the AI needs, past style, and best future examples.
-- `prompts-collection/` — reusable prompt examples for reproducing this project and capturing AI interaction traces.
-- `ai-logs/` — reverse-chronological record of AI sessions with exact user inputs, AI summaries, and commit references.
+
+## Related hot files (outside `docs/`)
+
+- `project-prompts/` — reusable AI prompt files (code audit, task generation, reproduction, trace guidance)
+- `project-logs/interaction-log.md` — reverse-chronological record of AI sessions
+- `project-logs/activity-log.md` — reverse-chronological log of user requests, AI responses, and commits
+- `project-logs/audit-log.md` — audit findings log
 
 ## Contents
 
@@ -26,9 +31,3 @@ The folder is split into four separate areas:
 - `ai/past-behavior.md` — historical assistant behavior style and lessons learned.
 - `ai/what-ai-needs.md` — what the assistant needs from the user.
 - `ai/good-best-examples.md` — good and best assistant behavior examples.
-
-- `prompts-collection/README.md` — overview of prompt examples and intent.
-- `prompts-collection/project-reproduction.md` — project-specific prompt examples for this repo.
-- `prompts-collection/trace-guidance.md` — guidance for recording AI interactions as trace documentation.
-
-- `ai-logs/interaction-log.md` — session recording with exact user input, AI summary, and commits.

@@ -10,9 +10,13 @@ YYYY-MM-DD HH:MM | (ai) | one-line summary of what the AI did in response
 YYYY-MM-DD HH:MM | (commit <hash>) | commit subject
 ```
 
-Do not modify existing entries below.
+Do not modify existing entries below. Update `project-logs/interaction-log.md` as well for AI session details.
 
 ---
+
+2026-06-05 13:56 | (user) | restructure: move prompts+logs out of docs/ into project-prompts/ and project-logs/, add prompt script
+2026-06-05 13:56 | (ai) | Moved prompts-collection/ → project-prompts/, logs/ → project-logs/, created scripts/run-prompt.cjs, updated AGENTS.md/docs cross-refs
+
 
 2026-06-05 13:45 | (user) | review and rebuild the log format, update docs, agents, contribute
 2026-06-05 13:45 | (ai) | Fixed all commit entries to (commit <hash>) format, updated format specs, checked cross-references

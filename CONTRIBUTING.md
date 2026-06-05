@@ -8,7 +8,7 @@ This repository uses AI-assisted development. If you use an AI coding agent:
 
 - The agent reads `AGENTS.md` and `ai-chat-behavior.config.ts` for project-specific instructions.
 - The `.aiignore` file tells the agent which paths to skip (sensitive or irrelevant files).
-- See `docs/AI-interaction/` for interaction patterns and guidance.
+- See `docs/AI-interaction/` for interaction reference docs, `project-prompts/` for hot AI prompt files, and `project-logs/` for session logs.
 - Every durable AI instruction change should update the AI interaction docs.
 
 ## Getting started

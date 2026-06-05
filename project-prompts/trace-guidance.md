@@ -22,7 +22,7 @@ A good interaction trace includes:
 
 ## Session log
 
-Maintain a reverse-chronological log in `docs/AI-interaction/ai-logs/interaction-log.md`.
+Maintain a reverse-chronological log in `project-logs/interaction-log.md`.
 
 Each session entry must include:
 
@@ -35,24 +35,24 @@ Add new entries at the top of the list (most recent first).
 
 ## Activity log
 
-`docs/logs/activity-log.md` holds a reverse-chronological log of user requests, AI responses, and commits. Each entry is a standalone line: `date | (user) | <summary>`, `date | (ai) | <summary>`, or `date | (commit <hash>) | <subject>`. Update it when adding significant new sessions.
+`project-logs/activity-log.md` holds a reverse-chronological log of user requests, AI responses, and commits. Each entry is a standalone line: `date | (user) | <summary>`, `date | (ai) | <summary>`, or `date | (commit <hash>) | <subject>`. Update it when adding significant new sessions.
 
 ## Post-interaction saves
 
 After an interaction completes, save the following to the AI interaction docs:
 
-- Add a summary entry to `docs/AI-interaction/prompts-collection/project-reproduction.md` if the work produces a reusable pattern
-- Update relevant guidance in `docs/AI-interaction/user/` or `docs/AI-interaction/ai/` if conventions changed
+- Add a summary entry to `project-prompts/project-reproduction.md` if the work produces a reusable pattern
+- Update relevant guidance in `docs/AI-interaction/user/` or `docs/AI-interaction/ai/` if conventions changed (the reference docs under `docs/AI-interaction/`, not the hot prompt files in `project-prompts/`)
 - Add any new patterns to `docs/AI-interaction/patterns.md` for future reference
-- Add a session entry to `docs/AI-interaction/ai-logs/interaction-log.md`
+- Add a session entry to `project-logs/interaction-log.md`
 
 ## Post-close saves
 
 When an AI session closes:
 
-- Record the session outcome in `docs/AI-interaction/ai-logs/interaction-log.md` (add a new entry at top)
+- Record the session outcome in `project-logs/interaction-log.md` (add a new entry at top)
 - Include the exact user input, AI summary, and all commit references
-- If the activity log in `docs/logs/activity-log.md` is outdated, update it
+- If the activity log in `project-logs/activity-log.md` is outdated, update it
 
 ## How to use traces
 

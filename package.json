@@ -39,6 +39,7 @@
     "lint:unreleased": "node scripts/check-unreleased.js --self-heal",
     "lint:unreleased:fix": "node scripts/check-unreleased.js --self-heal",
     "prepare": "husky",
+    "prompt": "node scripts/run-prompt.cjs",
     "release": "node scripts/do-release.js",
     "release:check": "pnpm run validate:release",
     "release:tag": "pnpm run release:check && node -e \"require('child_process').execSync('git tag v'+require('./package.json').version,{stdio:'inherit'})\"",

@@ -42,6 +42,8 @@ pnpm test               # lint + unit tests + integration + validations
 pnpm lint               # package, todos, changelog, eslint checks
 pnpm validate:release   # full pre-release validation
 pnpm create:nodes       # debug preview JSON generation
+pnpm prompt             # list available prompt files in project-prompts/
+pnpm prompt -- <name>   # show a specific prompt's content
 ```
 
 ## Editing Rules
@@ -84,7 +86,8 @@ pnpm create:nodes       # debug preview JSON generation
 - Respect `.aiignore` for sensitive/ignored paths.
 - Respect `.gitignore` before reading source.
 - Never read `dist/`, `.git/`, or `node_modules/`.
-- Update `docs/AI-interaction/` after every durable AI instruction change, including user guidance,
+- Update `project-prompts/` (hot AI prompt files) after every prompt or guidance change.
+- Update `docs/AI-interaction/` (reference docs) after every durable AI instruction change, including user guidance,
   AI-agent guidance, prompt style, text-language rules, and bookkeeping guidance.
 
 ## AI Behavior
@@ -101,6 +104,12 @@ pnpm create:nodes       # debug preview JSON generation
 - Keep frontend code in `src/frontend/` focused on browser export UI.
 - Handle failed requests with user-facing errors, not silent failures.
 - Avoid ad hoc string parsing — use schema validation (`tests/generated-txt-schema.json`) instead.
+
+## Output Verbosity
+
+- Keep screen output tight. Do not echo code that can be seen via git diff. Summarise changes in 1–3 lines instead.
+- Skip explanatory preamble/postamble. Give the answer directly.
+- Tool calls (reads, writes, edits) already show file paths and line numbers — do not repeat that info in prose.
 
 ## Changelog Rules (AI agents must follow these)
 
@@ -155,10 +164,10 @@ AI agents keep regular `.TODO/` queue files synced:
 
 ## Session Logs
 
-AI agents maintain two session history files:
+AI agents maintain two session history files (hot files outside `docs/`):
 
-- **`docs/AI-interaction/ai-logs/interaction-log.md`** — reverse-chronological log of AI sessions. Each entry records date-time, exact user input, short AI response summary, and resulting commits. Add new entries at the top.
-- **`docs/logs/activity-log.md`** — reverse-chronological log of user requests, AI responses, and commits. Each entry is a standalone line: `date | (user) | <summary>`, `date | (ai) | <summary>`, or `date | (commit <hash>) | <subject>`. Update when adding significant new sessions.
+- **`project-logs/interaction-log.md`** — reverse-chronological log of AI sessions. Each entry records date-time, exact user input, short AI response summary, and resulting commits. Add new entries at the top.
+- **`project-logs/activity-log.md`** — reverse-chronological log of user requests, AI responses, and commits. Each entry is a standalone line: `date | (user) | <summary>`, `date | (ai) | <summary>`, or `date | (commit <hash>) | <subject>`. Update when adding significant new sessions.
 
 ## Progress
 

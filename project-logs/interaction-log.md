@@ -10,9 +10,13 @@ YYYY-MM-DD HH:MM (ai) one-line summary of what the AI did in response
 YYYY-MM-DD HH:MM (commit <hash>) commit subject
 ```
 
-Do not modify existing entries below.
+Do not modify existing entries below. Update `project-logs/activity-log.md` as well for user-request-level summaries.
 
 ---
+
+2026-06-05 13:56 (user) move prompt collection and logs out of docs/, add pnpm prompt script
+2026-06-05 13:56 (ai) Created project-prompts/ (from prompts-collection), project-logs/ (from docs/logs), scripts/run-prompt.cjs, updated AGENTS.md, patterns, cross-references, removed old dirs
+
 
 2026-06-05 13:45 (user) review log format, hash within brackets. also update the docs, agents, contribute, ..
 2026-06-05 13:45 (ai) Fixed all commit entries to (commit <hash>) format, updated AGENTS.md and trace-guidance.md log format descriptions
