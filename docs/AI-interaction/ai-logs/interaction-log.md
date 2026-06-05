@@ -14,8 +14,11 @@ Do not modify existing entries below.
 
 ---
 
-2026-06-05 13:45 (user) review and rebuild the interaction-log.md
-2026-06-05 13:45 (ai) Fixed header to flat format, converted all entries from sectioned to flat, removed stale example block
+2026-06-05 13:45 (user) review log format, hash within brackets. also update the docs, agents, contribute, ..
+2026-06-05 13:45 (ai) Fixed all commit entries to (commit <hash>) format, updated AGENTS.md and trace-guidance.md log format descriptions
+2026-06-05 13:45 (commit da96a4d) docs: flatten interaction-log to single-line entries matching activity-log format
+2026-06-05 13:30 (user) review and rebuild the interaction-log.md
+2026-06-05 13:30 (ai) Fixed header to flat format, converted all entries from sectioned to flat, removed stale example block
 2026-06-05 13:30 (user) Continue if you have next steps, or stop and ask for clarification
 2026-06-05 13:30 (ai) Completed T-264 empty input test, T-265 error-utils.js, added 8 future tasks T-266–T-273, verified doc references
 2026-06-05 13:30 (commit 931e21e) feat: consolidate error handling, add empty input test, code audit tasks

@@ -35,7 +35,7 @@ Add new entries at the top of the list (most recent first).
 
 ## Activity log
 
-`docs/logs/activity-log.md` holds a reverse-chronological log of user requests and commits. Each entry is a standalone line: `date | user | <summary>` or `date | commit | <hash> <subject>`. Update it when adding significant new sessions.
+`docs/logs/activity-log.md` holds a reverse-chronological log of user requests, AI responses, and commits. Each entry is a standalone line: `date | (user) | <summary>`, `date | (ai) | <summary>`, or `date | (commit <hash>) | <subject>`. Update it when adding significant new sessions.
 
 ## Post-interaction saves
 
