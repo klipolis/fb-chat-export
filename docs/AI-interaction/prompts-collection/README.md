@@ -12,3 +12,4 @@ Files:
 
 - `project-reproduction.md` — prompt examples for reproducing the project and code/docs changes.
 - `trace-guidance.md` — guidance on recording AI interactions as trace documentation.
+- `code-improvement-prompts.md` — prompts for auditing build system, stability, and shared code consolidation.
