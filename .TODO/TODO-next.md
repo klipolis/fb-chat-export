@@ -14,14 +14,18 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 
 ## Build / CI
 
-- T-245. Add worker_threads availability check fallback so the build function returns a promise-based alias+optimize path when workers are unavailable (e.g., older Node versions).
 - T-255. Add CI step to validate dist/app.js bundle syntax before release.
 - T-257. Add validation for empty input directory to prevent silent build failures.
-- T-259. Add test for worker pool graceful shutdown on signal interruption.
+- T-260. Add package.json engines constraint for Node >=26.0.0.
 
 ## Refactoring
 
 - T-258. Consolidate shared error handling patterns across server modules.
+- T-261. Remove worker_threads fallback code since Node 26+ is now required.
+
+## Test coverage
+
+- T-262. Add test for build:server output on empty input directory.
 
 
 

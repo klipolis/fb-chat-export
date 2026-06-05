@@ -25,3 +25,4 @@
 - T-206. **Inline documentation in shared modules** — Permanently blocked by AGENTS.md rule: "DO NOT ADD ANY COMMENTS unless asked". Inline docs would violate this rule. Consider removing the AGENTS.md restriction first.
 - T-208. **JSDoc comments** — Permanently blocked by AGENTS.md no-comment rule for the same reason as T-206.
 - T-232. Add tests for release/publishing workflow to ensure proper artifact generation.
+- T-245. worker_threads availability check fallback — Removed since Node >=26.0.0 is now required; fallback code is no longer needed.
