@@ -108,6 +108,8 @@
 - T-251. Updated AI interaction docs with post-interaction and post-close save procedures for session continuity (7731e11)
 - T-252. Created interaction-log.md for recording session outcomes and next steps (7731e11)
 - T-256. Updated docs/README.md with data_raw.name and data_preview.name fields documentation in JSON preview format (4c62eba)
+- T-260. Added engines constraint for Node >=26.0.0 to package.json (5d25d80)
+- T-261. Removed worker_threads fallback code since Node 26+ is now required (5d25d80)
 
 ## Refactoring
 

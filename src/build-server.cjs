@@ -1,14 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-let Worker;
-let hasWorkers = false;
-try {
-  ({ Worker } = require('worker_threads'));
-  hasWorkers = true;
-} catch {
-  hasWorkers = false;
-}
+const { Worker } = require('worker_threads');
 const { JSDOM } = require('jsdom');
 const { ensureDir, emptyDir, aliasChatNames, collectAutoName } = require('./shared/utils');
 const { createOptimizedHtml } = require('./shared/optimize-html');
@@ -305,24 +298,7 @@ function processFilesInParallel(files, rawHtmlByFile, aliasNameMap, preDetectedN
       return;
     }
 
-    if (!hasWorkers) {
-      const results = new Map();
-      for (const fileName of files) {
-        try {
-          const html = rawHtmlByFile.get(fileName);
-          const aliasedHtml = aliasChatNames(html, aliasNameMap, preDetectedName);
-          const optimizedHtml = createOptimizedHtml(aliasedHtml);
-          results.set(fileName, { fileName, optimizedHtml, aliasedHtml });
-        } catch (err) {
-          reject(new Error(`Sequential fallback error for ${fileName}: ${err.message}`));
-          return;
-        }
-      }
-      resolve(results);
-      return;
-    }
-
-    const numWorkers = Math.min(os.availableParallelism?.() || os.cpus().length, files.length);
+    const numWorkers = os.availableParallelism?.() || os.cpus().length;
     const results = new Map();
     let nextIndex = 0;
     let activeCount = 0;
