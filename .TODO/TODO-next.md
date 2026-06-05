@@ -16,6 +16,11 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 
 - T-245. Add worker_threads availability check fallback so the build function returns a promise-based alias+optimize path when workers are unavailable (e.g., older Node versions).
 - T-255. Add CI step to validate dist/app.js bundle syntax before release.
+- T-257. Add validation for empty input directory to prevent silent build failures.
+
+## Refactoring
+
+- T-258. Consolidate shared error handling patterns across server modules.
 
 
 
