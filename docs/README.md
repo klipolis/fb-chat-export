@@ -67,6 +67,36 @@ Bob Summary
 - Call lines include duration (e.g. `00:18:00`) when available.
 - The server build labels counts as `posts`; the browser export labels them as `messages`.
 
+## JSON preview format
+
+The `data-output-auto/json-format/*.json` files contain structured message metadata:
+
+```json
+{
+  "html_locale": "en",
+  "title": "text",
+  "type": "text",
+  "data_raw": {
+    "date": "2026.05.15 15:30",
+    "name": "You",
+    "content": "Hello world",
+    "duration": null,
+    "length": "2"
+  },
+  "data_preview": {
+    "date": "2026.05.15 15:30",
+    "name": "Youghurt",
+    "content": "Hello world",
+    "duration": null,
+    "length": "2 words"
+  }
+}
+```
+
+- `data_raw.name` contains the original sender name from the HTML.
+- `data_preview.name` contains the aliased sender name after applying alias mapping.
+- `data_raw.date` uses the original aria-label date text; `data_preview.date` uses normalized ISO format.
+
 ## Developer guide
 
 - Open the project in VS Code and use the terminal in `support/`.

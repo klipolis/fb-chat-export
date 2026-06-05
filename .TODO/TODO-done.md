@@ -107,6 +107,7 @@
 - T-241. Updated AI-interaction patterns and watch-for guidance with parallel build and cache patterns (252b531)
 - T-251. Updated AI interaction docs with post-interaction and post-close save procedures for session continuity (7731e11)
 - T-252. Created interaction-log.md for recording session outcomes and next steps (7731e11)
+- T-256. Updated docs/README.md with data_raw.name and data_preview.name fields documentation in JSON preview format (4c62eba)
 
 ## Refactoring
 
