@@ -17,6 +17,15 @@ This AI Agent: add entries for your session at the top of this file in reverse-c
 
 ---
 
+### 2026-06-05 13:45 – Review and rebuild interaction-log.md format
+
+**User**: review and rebuild the docs/AI-interaction/ai-logs/interaction-log.md
+
+**AI**: Fixed the header prompt to accurately describe the `###` heading format used throughout (was incorrectly showing activity-log's flat format). Removed stale example block that mixed in activity-log format. Added current session entry at top. Updated activity-log.md with corrected entries.
+
+**Commits**:
+- `931e21e` 2026-06-05 13:30 — feat: consolidate error handling, add empty input test, code audit tasks
+
 ### 2026-06-05 13:30 – Error handling consolidation, empty input test, code audit tasks
 
 **User**: Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
@@ -24,7 +33,7 @@ This AI Agent: add entries for your session at the top of this file in reverse-c
 **AI**: Completed T-264 (empty input directory test), T-265 (shared error-utils.js with fatal() replacing 11 console.error+process.exit across 3 files). Ran code improvement prompts audit — added 8 future tasks (T-266 through T-273) to TODO-future.md covering worker pool shutdown, stale export cleanup, CLI args, catch-all, date normalize helper, worker pool extraction, HTML cleaning dedup, error isolation test. Updated TODO-done.md, TODO-next.md, config.json. Verified all doc cross-references pass `link:docs`.
 
 **Commits**:
-- `209caea` 2026-06-05 13:30 — feat: consolidate error handling, add empty input test, code audit tasks
+- `931e21e` 2026-06-05 13:30 — feat: consolidate error handling, add empty input test, code audit tasks
 
 ### 2026-06-05 13:00 – Update activity-log format with parentheses and AI entries
 
