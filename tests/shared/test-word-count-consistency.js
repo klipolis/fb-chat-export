@@ -103,3 +103,62 @@ tap.test('Link message length consistency', (t) => {
   
   t.end();
 });
+
+tap.test('Word count edge cases', (t) => {
+  // Test edge cases for word count handling
+  const textHtml = loadFixture('text.html');
+  const textNodes = createNodes(textHtml, { onlyFiles: ['text.html'] });
+  
+  const textNode = textNodes[0];
+  const contentMeta = getContentMeta(textNode.data_raw.content, textNode.type);
+  
+  // Single word should count as 1
+  const singleWordMeta = getContentMeta('hello', 'text');
+  t.equal(singleWordMeta.words, 1, 'Single word should count as 1');
+  
+  // Multiple words should count correctly
+  const multiWordMeta = getContentMeta('hello world foo bar baz', 'text');
+  t.equal(multiWordMeta.words, 5, 'Multiple words should count correctly');
+  
+  // Empty content should return null words (or 0)
+  const emptyMeta = getContentMeta('', 'text');
+  t.ok(emptyMeta.words === null || emptyMeta.words === 0, 'Empty content should return null or 0 words');
+  
+  // Whitespace only should return null words (or 0)
+  const whitespaceMeta = getContentMeta('   ', 'text');
+  t.ok(whitespaceMeta.words === null || whitespaceMeta.words === 0, 'Whitespace-only content should return null or 0 words');
+  
+  // Very long message should count all words
+  const longMessage = 'word '.repeat(1000).trim();
+  const longMeta = getContentMeta(longMessage, 'text');
+  t.equal(longMeta.words, 1000, 'Very long message should count all 1000 words');
+  
+  t.end();
+});
+
+tap.test('Unicode sender names in browser export flow', (t) => {
+  // Test Unicode sender names through the full export pipeline
+  const { JSDOM } = require('jsdom');
+  const { extractMessageEntry } = require('../../src/shared/export-text.js');
+  
+  const refDate = '2026.05.15 00:00';
+  
+  // Test Hungarian sender with diacritics
+  const dom1 = new JSDOM('<div aria-roledescription="message" aria-label="At 10:15 AM, Ötten Bernő: hello there">hello there</div>');
+  const entry1 = extractMessageEntry(dom1.window.document.querySelector('[aria-roledescription="message"]'), 'text.html', refDate);
+  t.equal(entry1.sender, 'Ötten Bernő', 'Hungarian sender name preserved in browser export flow');
+  t.equal(entry1.wordCount, 2, 'Word count correct for Hungarian sender message');
+  
+  // Test Cyrillic sender
+  const dom2 = new JSDOM('<div aria-roledescription="message" aria-label="At 11:00 AM, Борис: привет мир">привет мир</div>');
+  const entry2 = extractMessageEntry(dom2.window.document.querySelector('[aria-roledescription="message"]'), 'text.html', refDate);
+  t.equal(entry2.sender, 'Борис', 'Cyrillic sender name preserved in browser export flow');
+  t.equal(entry2.wordCount, 2, 'Word count correct for Cyrillic sender message');
+  
+  // Test Arabic sender
+  const dom3 = new JSDOM('<div aria-roledescription="message" aria-label="At 12:00 PM, علي: مرحبا بالعالم">مرحبا بالعالم</div>');
+  const entry3 = extractMessageEntry(dom3.window.document.querySelector('[aria-roledescription="message"]'), 'text.html', refDate);
+  t.equal(entry3.sender, 'علي', 'Arabic sender name preserved in browser export flow');
+  
+  t.end();
+});
