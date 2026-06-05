@@ -33,9 +33,9 @@ Each session entry must include:
 
 Add new entries at the top of the list (most recent first).
 
-## Session plan
+## Activity log
 
-`docs/logs/session-plan.md` holds a reverse-chronological record of user request summaries and corresponding commits across the full project history. Each entry has a single date-time and no grouping. Update it when adding significant new sessions.
+`docs/logs/activity-log.md` holds a reverse-chronological log of user requests and commits. Each entry is a standalone line: `date | user | <summary>` or `date | commit | <hash> <subject>`. Update it when adding significant new sessions.
 
 ## Post-interaction saves
 
@@ -52,7 +52,7 @@ When an AI session closes:
 
 - Record the session outcome in `docs/AI-interaction/ai-logs/interaction-log.md` (add a new entry at top)
 - Include the exact user input, AI summary, and all commit references
-- If the session plan in `docs/logs/session-plan.md` is outdated, update it
+- If the activity log in `docs/logs/activity-log.md` is outdated, update it
 
 ## How to use traces
 

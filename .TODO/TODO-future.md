@@ -9,4 +9,10 @@
 
 ---
 
-*(No future tasks currently identified.)*
+## Test coverage
+
+- T-264. Add test for empty input directory handling in build-server.cjs.
+
+## Refactoring
+
+- T-265. Consolidate shared error handling patterns into a utility module.
