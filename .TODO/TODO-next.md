@@ -11,20 +11,7 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 
 ---
 
-
-## Build / CI
-
-- T-255. Add CI step to validate dist/app.js bundle syntax before release.
-- T-257. Add validation for empty input directory to prevent silent build failures.
-- T-263. Add test for build:server with empty input directory.
-
-## Refactoring
-
-- T-258. Consolidate shared error handling patterns across server modules.
-
-## Test coverage
-
-- T-262. Add test for build:server output on empty input directory.
+(No tasks currently queued)
 
 
 

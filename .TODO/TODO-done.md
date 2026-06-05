@@ -30,6 +30,7 @@
 - T-222. GitHub Action CI already validates the userscript bundle (dist/app.js) via validate-dist step in build:ci (78c8657)
 - T-233. Created .github/dependabot.yml with weekly schedule for npm and GitHub Actions dependencies (503d098)
 - T-243. Added data-output-auto/build-cache.json to .gitignore — generated cache state that should not be tracked (252b531)
+- T-255. Added dist/app.js bundle syntax validation using `node --check` before release (cccf06a)
 
 ## Test coverage
 

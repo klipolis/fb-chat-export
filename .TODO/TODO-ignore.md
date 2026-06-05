@@ -26,3 +26,4 @@
 - T-208. **JSDoc comments** — Permanently blocked by AGENTS.md no-comment rule for the same reason as T-206.
 - T-232. Add tests for release/publishing workflow to ensure proper artifact generation.
 - T-245. worker_threads availability check fallback — Removed since Node >=26.0.0 is now required; fallback code is no longer needed.
+- T-262. Test for empty input directory — Already validated in build-server.cjs (lines 392-409) and tested as part of build failure handling.

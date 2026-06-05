@@ -22,6 +22,16 @@ tap.test('validate dist artifacts', (t) => {
   t.ok(fs.existsSync(distPath), 'dist/app.js exists after build');
 
   const contents = fs.readFileSync(distPath, 'utf8');
+  const checkResult = spawnSync('node', ['--check', distPath], {
+    cwd: resolveRepoPath(),
+    encoding: 'utf8',
+  });
+  t.equal(checkResult.status, 0, `dist/app.js has valid JavaScript syntax: ${checkResult.stderr || checkResult.stdout}`);
+  const minCheckResult = spawnSync('node', ['--check', minDistPath], {
+    cwd: resolveRepoPath(),
+    encoding: 'utf8',
+  });
+  t.equal(minCheckResult.status, 0, `dist/app.min.js has valid JavaScript syntax: ${minCheckResult.stderr || minCheckResult.stdout}`);
   t.ok(/\/\/ ==UserScript==/.test(contents), 'dist/app.js contains userscript header');
   t.ok(/\/\/ @version\s+/.test(contents), 'dist/app.js contains version annotation');
   t.ok(contents.length > 200, 'dist/app.js is not empty');
