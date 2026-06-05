@@ -11,7 +11,13 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 
 ---
 
-(No tasks currently queued)
+## Test coverage
+
+- T-264. Add test for empty input directory handling in build-server.cjs.
+
+## Refactoring
+
+- T-265. Consolidate shared error handling patterns into a utility module.
 
 
 
