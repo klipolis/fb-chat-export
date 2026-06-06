@@ -31,6 +31,14 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 
 - T-273. Add test for worker pool error isolation — verify one failing worker doesn't hang the pool
 
+## Documentation
+
+- T-275. Add developer guide section for worker pool architecture and graceful shutdown
+
+## Cleanup
+
+- *(No pending Cleanup tasks)*
+
 
 
 
