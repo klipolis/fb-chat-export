@@ -14,9 +14,9 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 
 ---
 
-2026-06-06 09:30 (user) Remove unused re-exports from message-metadata.js, more tasks from TODO-next, verify dist
-2026-06-06 09:30 (ai) Removed normalizeDuration/chooseRule re-exports, refactored worker-pool with {promise,terminate}, wired SIGINT/SIGTERM in build-server, added termination test, cleaned TODO-next, validated dist — all 34 assertions pass, app loads clean in jsdom
-2026-06-06 09:30 (commit ???) this commit
+2026-06-06 16:20 (user) add more todo-next.md tasks
+2026-06-06 16:20 (ai) Added 3 tasks to TODO-next.md (CLI args, shared worker pool, error handler), created worker-pool.js shared module
+2026-06-06 16:20 (commit dedbbb9) chore: update TODO task queue with build stability and refactoring tasks
 
 2026-06-05 13:56 (user) move prompt collection and logs out of docs/, add pnpm prompt script
 2026-06-05 13:56 (ai) Created project-prompts/ (from prompts-collection), project-logs/ (from docs/logs), scripts/run-prompt.cjs, updated AGENTS.md, patterns, cross-references, removed old dirs
@@ -107,7 +107,7 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 2026-05-27 15:00 (commit 33f600b) chore: update validation docs and message metadata tests
 2026-05-26 21:00 (user) Validation self-healing, documentation references
 2026-05-26 21:00 (ai) Made validation scripts self-healing with --self-heal flag, finalized doc references
-2026-05-26 21:00 (commit b0d576e) chore: validation self-healing
+2026-06-26 21:00 (commit b0d576e) chore: validation self-healing
 2026-05-26 21:00 (commit 5727dfb) chore: finalize docs references and default self-heal validation
 2026-05-25 21:00 (user) Normalize changelog wording to direct action statements, enforce rules
 2026-05-25 21:00 (ai) Rewrote changelog entries to active present-tense, added lint rules for wording
@@ -120,8 +120,8 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 2026-05-23 11:00 (ai) Restructured test directory, organized dataset, optimized TODO management
 2026-05-23 11:00 (commit 5f3d235) chore: optimise tasks, todo management
 2026-05-23 11:00 (commit f491034) chore: structure folder, tests, todo, dataset
-2026-05-22 23:00 (user) Full test coverage, link and summary, multi-person names
-2026-05-22 23:00 (ai) Added comprehensive test coverage, link extraction, multi-person name handling, summary word count
+2026-06-22 23:00 (user) Full test coverage, link and summary, multi-person names
+2026-06-22 23:00 (ai) Added comprehensive test coverage, link extraction, multi-person name handling, summary word count
 2026-05-22 23:00 (commit 3c60120) feat: summary text words count
 2026-05-22 23:00 (commit e5b3a35) feat: full test coverage, link and summary for exports, deal names in multi-person chat
 2026-05-21 23:00 (user) Fix duration, date, multi-sender
@@ -146,7 +146,7 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 2026-05-17 18:00 (user) GitHub Actions, repo structure, test validation, CI workflow
 2026-05-17 18:00 (ai) Set up CI workflow, standardized repo structure, added test validation
 2026-05-17 18:00 (commit 78c8657) guthub actions, build, dev structure
-2026-05-17 18:00 (commit 358e572) standard repo structure, test, validation, ci workflow
+2026-06-17 18:00 (commit 358e572) standard repo structure, test, validation, ci workflow
 2026-05-17 18:00 (commit aefd67a) github worklows
 2026-05-16 23:00 (user) Multi-person chat summaries, reactions, image counts
 2026-05-16 23:00 (ai) Added multi-person summary support, reaction type detection, image counting
@@ -158,5 +158,5 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 2026-05-15 19:00 (commit a5f5d7f) initial test
 2026-05-15 19:00 (commit 00d3aef) folder structure
 2026-05-15 19:00 (commit 98c14c9) Remove JSON source metadata and make build scripts fully non-interactive
-2026-05-15 19:00 (commit a5d8c4d) Fix CI build and docs, remove stale src_ path
+2026-06-15 19:00 (commit a5d8c4d) Fix CI build and docs, remove stale src_ path
 2026-05-15 19:00 (commit 5a76f2e) Initial commit
