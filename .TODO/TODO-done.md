@@ -11,6 +11,10 @@
 
 ## Build / CI
 
+- T-279. Add graceful worker pool shutdown on SIGINT/SIGTERM — terminate active workers instead of leaving orphans
+- T-267. Add stale export file cleanup for final-export — remove .txt outputs when input files are deleted
+- T-268. Accept build options via CLI arguments (--raw, --reference-date) instead of environment variables
+- T-269. Add top-level error handler to build-raw-clean.cjs — wrap main() call in try-catch to prevent raw stack traces on failure
 - T-85. Full test suite includes lint and both unit suites (78c8657)
 - T-86. Dist validation no longer triggers a rebuild as a side effect (78c8657)
 - T-104. Golden snapshot validation for encoding, line endings, and whitespace (358e572)
@@ -38,6 +42,8 @@
 
 ## Test coverage
 
+- T-281. Add test for parallel worker pool termination — verify `pool.terminate()` rejects the promise immediately
+- T-273. Add test for worker pool error isolation — verify one failing worker doesn't hang the pool
 - T-66. Unit tests added for file-name and label-rule priority in type detection (a5f5d7f)
 - T-67. Export header coverage added for all recognised message types (a5f5d7f)
 - T-87. Export line format option combinations covered (e5b3a35)
@@ -86,6 +92,7 @@
 
 ## Documentation
 
+- T-275. Add developer guide section for worker pool architecture, error isolation, and graceful shutdown
 - T-102. Export format docs added to README (9ad105b)
 - T-124. TXT export header format, option state, and alias map documented in user guide (5727dfb)
 - T-125. Developer docs reviewed for shared config and server config (5727dfb)
@@ -119,6 +126,10 @@
 
 ## Refactoring
 
+- T-280. Remove unused re-exports from message-metadata.js — consumers import normalizeDuration and chooseRule directly from their canonical modules
+- T-270. Consolidate duplicate try-catch for normalizeDateToIso in export-text.js and export-formatter.js into a shared helper normalizeDateToIsoSafe
+- T-271. Extract worker pool logic from processFilesInParallel into reusable src/shared/worker-pool.js helper
+- T-272. Deduplicate HTML cleaning logic — move cleanXClasses from build-raw-clean.cjs into shared html-utils.js
 - T-135. Pulled sender name validation rules into one shared place (3e31f9d)
 - T-147. Consolidated message-type resolution into a single shared helper (3e31f9d)
 - T-171. Split monolithic run-tests.js into per-module test files (e98c792)
