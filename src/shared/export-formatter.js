@@ -114,4 +114,5 @@ module.exports = {
   buildEntryFromEntry,
   formatSummarySection,
   buildSummaryData,
+  durationToMinutes,
 };

@@ -19,6 +19,7 @@ function processInPool(files, workerPath, buildWorkerData) {
   const numWorkers = os.availableParallelism?.() || os.cpus().length;
   const results = new Map();
   const workers = new Set();
+  const doneWorkers = new Set();
   let nextIndex = 0;
   let activeCount = 0;
   let hasError = false;
@@ -56,6 +57,8 @@ function processInPool(files, workerPath, buildWorkerData) {
     workers.add(worker);
 
     const done = () => {
+      if (doneWorkers.has(worker)) return;
+      doneWorkers.add(worker);
       workers.delete(worker);
       activeCount--;
       if (finished) return;
@@ -87,6 +90,9 @@ function processInPool(files, workerPath, buildWorkerData) {
         terminate(`Worker exited with code ${code}`);
         return;
       }
+      // If the worker posted a message, done() was already called. If the worker
+      // exited without ever posting (shouldn't happen with healthy workers), call
+      // done() here to avoid hanging the pool.
       done();
     });
   }

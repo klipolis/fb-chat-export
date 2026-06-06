@@ -24,7 +24,7 @@ Unused: none
 Aliases:
   You : Youghurt
   Rob : Barnabas
-  any : XYZ
+  any : ABC
 
 ---
 
@@ -34,11 +34,11 @@ Total Summary
 ~ 20 images
 ~ 4 calls 00:49:41
 
-XYZ Summary
-11 messages / 5 days
-~ 6 text / 206 words
-~ 9 images
-~ 1 calls 00:31:00
+ABC Summary
+15 messages / 6 days
+~ 8 text / 211 words
+~ 12 images
+~ 2 calls 00:31:21
 
 Youghurt Summary
 6 messages / 3 days
@@ -54,24 +54,24 @@ Barnabas Summary
 
 ---
 [2026-04-12 13:23] Youghurt: audio-call 00:18:00
-[2026-04-14 18:34] XYZ: text-image-replied 6 words / Well i didn't know about this
-[2026-04-16 10:55] XYZ: text-replied 39 words / I now realised what happened. It must have been related to reviewers I added at a later stage from when we wen through that, and maybe I was duplicating and editing a reviewer who had the cancellation option on
-[2026-05-16 04:36] Ötves: image
+[2026-04-14 18:34] ABC: text-image-replied 6 words / Well i didn't know about this
+[2026-04-16 10:55] ABC: text-replied 39 words / I now realised what happened. It must have been related to reviewers I added at a later stage from when we wen through that, and maybe I was duplicating and editing a reviewer who had the cancellation option on
+[2026-05-16 04:36] ABC: image
 [2026-05-19 22:25] Youghurt: reaction-emoji 1 words / 🥳
-[2026-05-20 19:51] XYZ: image
-[2026-05-20 19:51] XYZ: link-text 152 words / https://www.scan.co.uk/ Yep - that’s the *Sennheiser IE 100 PRO In-Ear Monitoring* headphones, in Red. *Current UK prices for the wired version:* - *From £73.00* new — that’s the cheapest across 9 stores right now - *Typical range*: £73 - £100 depending on retailer and colour - *Scan.co.uk*: £79.00 for Black, £82.00 for Clear - *Thomann UK*: £85.00 for Clear - *idealo shows*: New from £73.00, refurbished from £26.38 - *Red version specifically*: Around £100.13 on idealo d8b549da157ec2c6e04e *Note*: There’s also a _Wireless_ version that costs more — from £84.70 to £90.35+. The box in your photo is the wired model. 13cc462b Prices change fast and stock varies by colour, but £73-£85 is the going rate for new wired IE 100 PROs in the UK as of now. Red tends to be slightly pricier than Black/Clear at some retailers. Want me to check a specific store like Amazon UK or Argos for you?
+[2026-05-20 19:51] ABC: image
+[2026-05-20 19:51] ABC: link-text 152 words / https://www.scan.co.uk/ Yep - that’s the *Sennheiser IE 100 PRO In-Ear Monitoring* headphones, in Red. *Current UK prices for the wired version:* - *From £73.00* new — that’s the cheapest across 9 stores right now - *Typical range*: £73 - £100 depending on retailer and colour - *Scan.co.uk*: £79.00 for Black, £82.00 for Clear - *Thomann UK*: £85.00 for Clear - *idealo shows*: New from £73.00, refurbished from £26.38 - *Red version specifically*: Around £100.13 on idealo d8b549da157ec2c6e04e *Note*: There’s also a _Wireless_ version that costs more — from £84.70 to £90.35+. The box in your photo is the wired model. 13cc462b Prices change fast and stock varies by colour, but £73-£85 is the going rate for new wired IE 100 PROs in the UK as of now. Red tends to be slightly pricier than Black/Clear at some retailers. Want me to check a specific store like Amazon UK or Argos for you?
 [2026-05-20 19:52] Barnabas: voice-note 00:00:20
-[2026-05-20 19:54] XYZ: deleted
-[2026-05-21 17:34] XYZ: missed-call-audio
-[2026-05-22 00:26] XYZ: text 8 words / Do you have that photo and a link?
+[2026-05-20 19:54] ABC: deleted
+[2026-05-21 17:34] ABC: missed-call-audio
+[2026-05-22 00:26] ABC: text 8 words / Do you have that photo and a link?
 [2026-05-22 10:15] Youghurt: link-text-2 / https://www.facebook.com/share/v/17hnQQBm6h/
-[2026-05-22 10:45] Beta: sticker
-[2026-05-22 11:14] XYZ: call-video 00:31:00
-[2026-05-22 11:15] XYZ: missed-call-video
+[2026-05-22 10:45] ABC: sticker
+[2026-05-22 11:14] ABC: call-video 00:31:00
+[2026-05-22 11:15] ABC: missed-call-video
 [2026-05-22 11:16] Youghurt: reaction 1 words / 👍
 [2026-05-22 11:57] Youghurt: link-video / https://youtube.com/shorts/IKS2vNOcZ7A?si=ly12c89dzPEHyhll
-[2026-05-22 12:00] Csaba: voice-note-2 00:00:21
-[2026-05-22 13:51] XYZ: link-embed-no-text / https://www.google.com/maps/search/?api=1&query=Hall%20Mead%20Nursery%2C%20Nazeing%20Road%20Waltham%20Abbey%20England%20EN9%202EU%20United%20Kingdom
-[2026-05-22 14:18] XYZ: animated-gif
-[2026-05-22 16:02] Gamma: poll 5 words
+[2026-05-22 12:00] ABC: voice-note-2 00:00:21
+[2026-05-22 13:51] ABC: link-embed-no-text / https://www.google.com/maps/search/?api=1&query=Hall%20Mead%20Nursery%2C%20Nazeing%20Road%20Waltham%20Abbey%20England%20EN9%202EU%20United%20Kingdom
+[2026-05-22 14:18] ABC: animated-gif
+[2026-05-22 16:02] ABC: poll 5 words
 [2026-05-22 20:59] Youghurt: image

@@ -4,14 +4,14 @@
   "type": "unsent",
   "data_raw": {
     "date": "Wednesday 7:54pm",
-    "name": "XYZ",
-    "content": "XYZ deleted a message",
+    "name": "ABC",
+    "content": "ABC deleted a message",
     "duration": null,
     "length": null
   },
   "data_preview": {
     "date": "2026.06.03 19:54",
-    "name": "XYZ",
+    "name": "ABC",
     "content": "message unsent",
     "duration": null,
     "length": null

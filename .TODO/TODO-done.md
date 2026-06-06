@@ -69,10 +69,10 @@
 - T-199. Split test-other.js (469 lines, 14 subtests, 496 assertions) into three per-module test files (e98c792)
 - T-200. Added Unicode name recognition tests - isValidSender with Latin/Cyrillic/CJK/Arabic, parseAriaLabel with Unicode senders, normalizeLabel preservation (e98c792)
 - T-201. Word count consistency test verifying same totals across formatLine, buildEntryFromEntry, buildSummary, and buildSummaryJson for all message types (e98c792)
-- T-202. Unicode sender + image pipeline tests - buildEntryFromEntry with Ötves Ernő image, DOM pipeline with Álvaro/王明 image entries (e98c792)
+- T-202. Unicode sender + image pipeline tests — buildEntryFromEntry and DOM pipeline with Unicode sender names in image entries (e98c792)
 - T-203. Voice-note duration consistency test for extractRawDuration to normalizeDuration pipeline (e98c792)
 - T-204. Duration edge case tests for malformed, invalid, zero, and negative durations in extractRawDuration and normalizeDuration (e98c792)
-- T-205. Alias name mapping tests using configured pairs: Rob to Barnabas, You to Youghurt, any to XYZ in both aliasChatNames and applyAliasToText (e98c792)
+- T-205. Alias name mapping tests covering explicit sender mapping, self-name alias, and catch-all fallback in both aliasChatNames and applyAliasToText (e98c792)
 - T-224. Unit tests for formatDurationSeconds, durationToMinutes, durationToSeconds covering zero, normal, negative, null, undefined, and invalid inputs (4c427d3)
 - T-225. Unit tests for HTML sanitization utilities stripAttributes and normalizeTagStrings (31 assertions) (487238b)
 - T-226. Unit tests for shared constants module verifying TIMED_CALL_TYPES, MISSED_CALL_TYPES, CALL_TYPES composition, CONTENT_TYPES set, and export checks (487238b)
@@ -208,7 +208,7 @@
 - T-122. Browser panel alias validation, custom file name input, and session persistence active (92dedf7)
 - T-123. Alias replacement unit tests added for explicit and fallback behavior (92dedf7)
 - T-141. Extended sender name detection in labels to handle dash separators (9ad105b)
-- T-142. Added explicit alias entry for Ötves in both config files for consistent fallback (152b844)
+- T-142. Added explicit alias entry for all sender names in both config files for consistent fallback (152b844)
 - T-143. Make tests expect image as the label for all image messages, not raw image-2 or image-3 variants (152b844)
 
 ## Frontend
@@ -234,7 +234,7 @@
 - T-242. Removed _debug_build.cjs and _speed.cjs from version control — debug utilities that belonged in .gitignore
 - T-179. Removed unused beautify-optimized-html.js, rules/selectors.js, and rules/classes.json (3adbbed)
 - T-182. Stopped exporting internal-only functions from message-metadata.js (3adbbed)
-- T-186. Removed hardcoded Yoghurt to Youghurt normalization from export-text.js (3adbbed)
+- T-186. Removed hardcoded self-name alias normalization from export-text.js — alias config is now the single source for self-name replacement (3adbbed)
 - T-187. Replaced throw err with console.error inside setTimeout callback in scanStep to prevent unhandled rejections (3adbbed)
 - T-193. Removed src/build.js wrapper, pointed package.json build:frontend directly at build.cjs (3adbbed)
 - T-194. Removed dead rel path constants from build-server.cjs (3adbbed)

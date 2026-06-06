@@ -2,7 +2,7 @@
   "aliasNames": {
     "You": "Youghurt",
     "Rob": "Barnabas",
-    "any": "XYZ"
+    "any": "ABC"
   },
   "reactionOptions": {
     "asciiSmileyPattern": "^[:;=8Xx][-~]?[)DdpP(/\\\\]$"

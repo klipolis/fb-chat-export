@@ -168,6 +168,7 @@ function normalizeExportSender(sender, aliasMap = {}) {
     if (Object.prototype.hasOwnProperty.call(aliasMap, normalized.toLowerCase())) return aliasMap[normalized.toLowerCase()];
     if (Object.prototype.hasOwnProperty.call(aliasMap, normalized.toUpperCase())) return aliasMap[normalized.toUpperCase()];
     if (normalized === 'You') return 'Youghurt';
+    if (Object.values(aliasMap).includes(normalized)) return normalized;
     if (aliasMap.any) return aliasMap.any;
   }
   return normalized || 'Unknown';

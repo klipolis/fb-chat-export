@@ -70,7 +70,7 @@ function buildTextEntries(files, cleanedHtmlByFile, referenceDate) {
       cleanedHtmlByFile?.get(fileName) ??
       fs.readFileSync(path.join(rawDir, fileName), 'utf8');
     const document = new JSDOM(html).window.document;
-    const docEntries = buildEntriesFromDocument(document, fileName, referenceDate);
+    const docEntries = buildEntriesFromDocument(document, fileName, referenceDate, aliasNameMap);
     if (!docEntries.length) {
       return;
     }

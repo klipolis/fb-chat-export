@@ -44,7 +44,7 @@
         aliasNames: {
           You: "Youghurt",
           Rob: "Barnabas",
-          any: "XYZ"
+          any: "ABC"
         },
         reactionOptions: {
           asciiSmileyPattern: "^[:;=8Xx][-~]?[)DdpP(/\\\\]$"
@@ -1493,7 +1493,8 @@ ${aliasLines}
         formatLine: formatLine2,
         buildEntryFromEntry,
         formatSummarySection,
-        buildSummaryData
+        buildSummaryData,
+        durationToMinutes: durationToMinutes2
       };
     }
   });

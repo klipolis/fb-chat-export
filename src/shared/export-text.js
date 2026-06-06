@@ -20,7 +20,7 @@ function formatServerExportFileName(mode = 'export-max', { fromDate, toDate } = 
   return `${base}${suffix}.txt`;
 }
 
-function extractMessageEntry(el, fileName, referenceDate) {
+function extractMessageEntry(el, fileName, referenceDate, aliasMap = {}) {
   const ariaLabel = el.getAttribute('aria-label') || '';
   const parsedLabel = parseAriaLabel(ariaLabel);
   const rawDate = parsedLabel.date || '';
@@ -84,7 +84,7 @@ function extractMessageEntry(el, fileName, referenceDate) {
     semanticType: contentMeta.type,
     dateText: formatDate(rawDate, referenceDate),
     rawDate: rawDate || '',
-    sender: normalizeExportSender(sender),
+    sender: normalizeExportSender(sender, aliasMap),
     content: body,
     duration: contentMeta.duration,
     contentLength: contentMeta.contentLength,
@@ -93,10 +93,10 @@ function extractMessageEntry(el, fileName, referenceDate) {
   };
 }
 
-function buildEntriesFromDocument(document, fileName, referenceDate) {
+function buildEntriesFromDocument(document, fileName, referenceDate, aliasMap = {}) {
   const entries = [];
   document.querySelectorAll('[aria-roledescription="message"]').forEach((el) => {
-    const entry = extractMessageEntry(el, fileName, referenceDate);
+    const entry = extractMessageEntry(el, fileName, referenceDate, aliasMap);
     if (entry && entry.semanticType) {
       entries.push(entry);
     }

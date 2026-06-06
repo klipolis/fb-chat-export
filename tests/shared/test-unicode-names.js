@@ -8,7 +8,7 @@ const { extractAriaLabelData, isValidSender } = require('../../src/shared/aria-l
 tap.test('isValidSender Unicode recognition', (t) => {
   // Test Unicode letters in sender names
   t.ok(isValidSender('Ötten Bernő'), 'Hungarian name with diacritics accepted');
-  t.ok(isValidSender('Csaba Sztoika'), 'Hungarian name accepted');
+  t.ok(isValidSender('Ccoba Sloka'), 'Hungarian name accepted');
   t.ok(isValidSender('Müller'), 'German name with umlaut accepted');
   t.ok(isValidSender('François'), 'French name with cedilla accepted');
   t.ok(isValidSender('Борис'), 'Cyrillic name accepted');
