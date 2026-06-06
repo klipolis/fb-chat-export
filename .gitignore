@@ -15,6 +15,7 @@ Thumbs.db
 
 # Build cache
 data-output-auto/build-cache.json
+data-output-auto/
 
 # Debug utilities
 _debug_build.cjs

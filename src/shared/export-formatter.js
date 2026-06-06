@@ -1,5 +1,5 @@
 const { normalizeDuration, durationToMinutes, durationToSeconds } = require('./duration-utils');
-const { normalizeDateToIso } = require('./aria-label-parser');
+const { normalizeDateToIsoSafe } = require('./aria-label-parser');
 const { buildSummary, buildDetailedSummary, buildSummaryData } = require('./export-summary');
 const { TIMED_CALL_TYPES, CALL_TYPES, CONTENT_TYPES } = require('./constants');
 
@@ -31,12 +31,7 @@ function buildExportText(lines, headerLines = '') {
 function formatDate(raw, referenceDate) {
   let dateValue = raw;
   if (typeof raw === 'string') {
-    try {
-      dateValue = normalizeDateToIso(raw, referenceDate) || raw;
-    } catch (err) {
-      console.warn('export-formatter: normalizeDateToIso failed for', raw, err);
-      dateValue = raw;
-    }
+    dateValue = normalizeDateToIsoSafe(raw, referenceDate, 'export-formatter');
   }
   const date = new Date(dateValue);
   if (isNaN(date)) return String(raw || '');

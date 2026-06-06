@@ -286,8 +286,6 @@ function getContentMeta({
 }
 
 module.exports = {
-  normalizeDuration,
   stripTrackingParams,
-  chooseRule,
   getContentMeta,
 };

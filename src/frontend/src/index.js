@@ -1,5 +1,6 @@
 ﻿import sharedConfig from '../../../data-config/frontend_shared.json';
-import { getContentMeta, normalizeDuration, stripTrackingParams } from '../../shared/message-metadata.js';
+import { getContentMeta, stripTrackingParams } from '../../shared/message-metadata.js';
+import { normalizeDuration } from '../../shared/duration-utils.js';
 import { parseAriaLabel, normalizeDateToIso } from '../../shared/aria-label-parser.js';
 import { buildSummary } from '../../shared/export-summary.js';
 import { formatExportHeader, formatLine, durationToMinutes } from '../../shared/export-formatter.js';

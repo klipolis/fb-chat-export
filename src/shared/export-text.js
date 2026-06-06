@@ -2,7 +2,7 @@ const path = require('path');
 const { getContentMeta } = require('./message-metadata');
 const { normalizeDuration } = require('./duration-utils');
 const { normalizeExportSender } = require('./utils');
-const { parseAriaLabel, normalizeDateToIso, normalizeLabel } = require('./aria-label-parser');
+const { parseAriaLabel, normalizeDateToIsoSafe, normalizeLabel } = require('./aria-label-parser');
 const {
   formatExportHeader,
   buildExportText,
@@ -62,13 +62,7 @@ function extractMessageEntry(el, fileName, referenceDate) {
     timerText,
   });
 
-  let resolvedDate;
-  try {
-    resolvedDate = normalizeDateToIso(rawDate, referenceDate) || rawDate;
-  } catch (err) {
-    console.warn('export-text: normalizeDateToIso failed for', rawDate, err);
-    resolvedDate = rawDate;
-  }
+  const resolvedDate = normalizeDateToIsoSafe(rawDate, referenceDate, 'export-text');
   const timestamp = Number.isFinite(Date.parse(resolvedDate)) ? Date.parse(resolvedDate) : 0;
 
   const isRedundantVoiceText =

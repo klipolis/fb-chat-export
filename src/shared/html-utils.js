@@ -50,4 +50,16 @@ function findMatchingClosingTag(html, tag, fromIndex) {
   return -1;
 }
 
-module.exports = { findMatchingClosingTag, stripAttributes, normalizeTagStrings };
+function cleanXClasses(html) {
+  let result = html.replace(/\s+style="[^"]*"/gi, '');
+  result = result.replace(/\sclass="([^"]*)"/gi, (_, tokens) => {
+    const kept = tokens
+      .trim()
+      .split(/\s+/)
+      .filter((t) => t && !t.startsWith('x'));
+    return kept.length ? ` class="${kept.join(' ')}"` : '';
+  });
+  return result;
+}
+
+module.exports = { findMatchingClosingTag, stripAttributes, normalizeTagStrings, cleanXClasses };

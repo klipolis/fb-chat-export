@@ -20,24 +20,9 @@
 const fs = require('fs');
 const { fatal } = require('./shared/error-utils');
 const { resolveRepoPath } = require('./shared/app-config');
+const { cleanXClasses } = require('./shared/html-utils');
 
 const rawDir = resolveRepoPath('data-input-test');
-
-function cleanXClasses(html) {
-  // Remove inline style attributes
-  let result = html.replace(/\s+style="[^"]*"/gi, '');
-
-  // Strip x-prefixed tokens from class attributes; remove attr if empty
-  result = result.replace(/\sclass="([^"]*)"/gi, (_, tokens) => {
-    const kept = tokens
-      .trim()
-      .split(/\s+/)
-      .filter((t) => t && !t.startsWith('x'));
-    return kept.length ? ` class="${kept.join(' ')}"` : '';
-  });
-
-  return result;
-}
 
 function main() {
   if (!fs.existsSync(rawDir)) {
@@ -69,4 +54,8 @@ function main() {
   }
 }
 
-main();
+try {
+  main();
+} catch (err) {
+  fatal(`build-raw-clean failed: ${err.message}`);
+}

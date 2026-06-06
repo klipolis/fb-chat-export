@@ -14,6 +14,9 @@ Do not modify existing entries below. Update `project-logs/interaction-log.md` a
 
 ---
 
+2026-06-06 09:30 | (user) | complete TODO-next tasks, verify dist, update docs, trace-guidance, post-interaction saves
+2026-06-06 09:30 | (ai) | Removed unused exports from message-metadata, refactored worker-pool with terminate(), added signal handling and test, cleaned TODO files, validated dist (34/34 pass), updated logs
+
 2026-06-05 13:56 | (user) | restructure: move prompts+logs out of docs/ into project-prompts/ and project-logs/, add prompt script
 2026-06-05 13:56 | (ai) | Moved prompts-collection/ → project-prompts/, logs/ → project-logs/, created scripts/run-prompt.cjs, updated AGENTS.md/docs cross-refs
 2026-06-05 13:56 | (commit 50dfcf8) | refactor: move hot prompt and log files out of docs/ into project-prompts/ and project-logs/

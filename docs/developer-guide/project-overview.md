@@ -146,6 +146,29 @@ Bob Summary
 - Call lines include duration (e.g. `00:18:00`) when available.
 - The server build labels counts as `posts`; the browser export labels them as `messages`.
 
+## Worker pool architecture
+
+HTML optimization uses a bounded worker pool via Node.js `worker_threads` to parallelize work across available CPU cores.
+
+### Pool behaviour
+
+- `src/shared/worker-pool.js` exports `processInPool(files, workerPath, buildWorkerData)` — a generic pool that dispatches file processing to workers.
+- `src/build-server.cjs` wraps this as `processFilesInParallel` with build-specific worker data (raw HTML, alias map, pre-detected name).
+- Each worker runs `src/workers/build-worker.cjs` which performs alias replacement and HTML optimization in a separate thread.
+- Worker count is determined by `os.availableParallelism()` (or CPU count as fallback).
+- Workers are created on demand up to the pool limit — when a worker finishes, the next file is dispatched.
+
+### Error isolation
+
+- If a worker posts an error message, the pool rejects immediately without waiting for remaining workers.
+- Worker crashes (exit code != 0) also cause immediate rejection.
+- The pool does not hang when one worker fails — all pending workers are abandoned and the promise rejects.
+
+### Graceful shutdown
+
+- SIGINT/SIGTERM handling is not yet implemented — active workers may be left orphaned on abrupt termination.
+- Workers that finish after a rejection are silently discarded since the promise is already settled.
+
 ## Developer guide
 
 - Open the project in VS Code and use the terminal in `support/`.

@@ -1,7 +1,7 @@
 const tap = require('tap');
-const { getContentMeta, normalizeDuration, chooseRule } = require(
-  '../src/shared/message-metadata'
-);
+const { getContentMeta } = require('../src/shared/message-metadata');
+const { normalizeDuration } = require('../src/shared/duration-utils');
+const { chooseRule } = require('../src/shared/rules');
 
 // ---------------------------------------------------------------------------
 // normalizeDuration

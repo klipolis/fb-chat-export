@@ -54,6 +54,26 @@ When an AI session closes:
 - Include the exact user input, AI summary, and all commit references
 - If the activity log in `project-logs/activity-log.md` is outdated, update it
 
+## How other AI agents use this guidance
+
+Other AI coding agents (OpenCode, Kilo, etc.) can load this guidance with:
+
+```
+pnpm run prompt -- 'trace-guidance'
+```
+
+The `pnpm prompt` mechanism reads files from `project-prompts/` (the hot prompt directory). Agents should first read `AGENTS.md` then use `pnpm prompt` to load relevant guidance before starting work.
+
+## Hot file rules
+
+Files in `project-prompts/` are hot prompt files that AI agents should always read. When guidance or procedure changes:
+
+1. Update the relevant file in `project-prompts/` (this file for trace procedures)
+2. If the change is durable (not session-specific), also update the corresponding reference doc in `docs/AI-interaction/`
+3. Add a session entry to `project-logs/interaction-log.md` recording the change
+4. Update `project-logs/activity-log.md` with a one-line activity summary
+5. Stage and commit the log changes with the rest of the session work
+
 ## How to use traces
 
 - Keep traces in the AI interaction docs folder.
@@ -65,3 +85,11 @@ When an AI session closes:
 - `Add AI interaction trace guidance so every future request is preserved in the docs for educational review.`
 - `Create post-interaction save procedure so work is documented after each session.`
 - `Document post-close session recording so AI work continuity is maintained.`
+
+## Example: telling an AI agent to follow this
+
+When starting a session with a new AI agent, include in the initial prompt:
+
+```
+Read AGENTS.md, then run pnpm run prompt -- 'trace-guidance' to load interaction trace procedures. Follow each session with post-interaction and post-close saves to project-logs/interaction-log.md and project-logs/activity-log.md.
+```

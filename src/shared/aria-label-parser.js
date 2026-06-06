@@ -386,11 +386,21 @@ function normalizeDateToIso(dateString, referenceDate) {
   return date.toISOString();
 }
 
+function normalizeDateToIsoSafe(dateString, referenceDate, sourceLabel) {
+  try {
+    return normalizeDateToIso(dateString, referenceDate) || dateString;
+  } catch (err) {
+    console.warn(`${sourceLabel}: normalizeDateToIso failed for`, dateString, err);
+    return dateString;
+  }
+}
+
 module.exports = {
   parseAriaLabel,
   parseReferenceDate,
   normalizeDateToSimple,
   normalizeDateToIso,
+  normalizeDateToIsoSafe,
   normalizeLabel,
   isValidSender,
   findValidDatePrefix,

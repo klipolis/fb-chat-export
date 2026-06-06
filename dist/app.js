@@ -575,11 +575,20 @@
         if (isNaN(date.getTime())) return null;
         return date.toISOString();
       }
+      function normalizeDateToIsoSafe(dateString, referenceDate, sourceLabel) {
+        try {
+          return normalizeDateToIso3(dateString, referenceDate) || dateString;
+        } catch (err) {
+          console.warn(`${sourceLabel}: normalizeDateToIso failed for`, dateString, err);
+          return dateString;
+        }
+      }
       module.exports = {
         parseAriaLabel: parseAriaLabel2,
         parseReferenceDate,
         normalizeDateToSimple,
         normalizeDateToIso: normalizeDateToIso3,
+        normalizeDateToIsoSafe,
         normalizeLabel,
         isValidSender,
         findValidDatePrefix
@@ -879,9 +888,7 @@
         };
       }
       module.exports = {
-        normalizeDuration: normalizeDuration2,
         stripTrackingParams: stripTrackingParams2,
-        chooseRule,
         getContentMeta: getContentMeta2
       };
     }
@@ -1378,7 +1385,7 @@
     "src/shared/export-formatter.js"(exports, module) {
       "use strict";
       var { normalizeDuration: normalizeDuration2, durationToMinutes: durationToMinutes2, durationToSeconds } = require_duration_utils();
-      var { normalizeDateToIso: normalizeDateToIso3 } = require_aria_label_parser();
+      var { normalizeDateToIsoSafe } = require_aria_label_parser();
       var { buildSummary: buildSummary2, buildDetailedSummary, buildSummaryData } = require_export_summary();
       var { TIMED_CALL_TYPES, CALL_TYPES, CONTENT_TYPES } = require_constants();
       function formatExportHeader2({ method, messageTypes, exportOptions = {}, aliasMap = {} }) {
@@ -1415,12 +1422,7 @@ ${aliasLines}
       function formatDate(raw, referenceDate) {
         let dateValue = raw;
         if (typeof raw === "string") {
-          try {
-            dateValue = normalizeDateToIso3(raw, referenceDate) || raw;
-          } catch (err) {
-            console.warn("export-formatter: normalizeDateToIso failed for", raw, err);
-            dateValue = raw;
-          }
+          dateValue = normalizeDateToIsoSafe(raw, referenceDate, "export-formatter");
         }
         const date = new Date(dateValue);
         if (isNaN(date)) return String(raw || "");
@@ -1543,6 +1545,7 @@ ${aliasLines}
   // src/frontend/src/index.js
   var import_frontend_shared = __toESM(require_frontend_shared(), 1);
   var import_message_metadata = __toESM(require_message_metadata(), 1);
+  var import_duration_utils = __toESM(require_duration_utils(), 1);
   var import_aria_label_parser2 = __toESM(require_aria_label_parser(), 1);
   var import_export_summary = __toESM(require_export_summary(), 1);
   var import_export_formatter = __toESM(require_export_formatter(), 1);

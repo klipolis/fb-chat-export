@@ -4,7 +4,7 @@ const path = require('path');
 const childProcess = require('child_process');
 const { compareSnapshots } = require('../snapshot-helper');
 const { resolveRepoPath } = require('../../src/shared/app-config');
-const { chooseRule } = require('../../src/shared/message-metadata');
+const { chooseRule } = require('../../src/shared/rules');
 const schemaConfig = require('../../src/shared/export-config.json');
 
 const rawDir = resolveRepoPath('data-input-test');

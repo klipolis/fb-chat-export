@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { Worker } = require('worker_threads');
 const { resolveRepoPath } = require('../src/shared/app-config');
+const { processInPool } = require('../src/shared/worker-pool');
 
 const isUnderTapRunner = process.execArgv.some((a) => a.includes('@tapjs'));
 
@@ -126,6 +127,76 @@ tap.test('processFilesInParallelProducesOutputForAllFiles', (t) => {
     t.end();
   }).catch((err) => {
     t.fail('pool error: ' + err.message);
+    t.end();
+  });
+});
+
+tap.test('workerPoolErrorIsolation', (t) => {
+  if (isUnderTapRunner) {
+    t.plan(0);
+    return t.end();
+  }
+
+  const fileNames = ['good-a.html', 'bad.html', 'good-b.html'];
+  const rawHtmlByFile = new Map([
+    ['good-a.html', '<div lang="en" aria-roledescription="message"><span>OK</span></div>'],
+    ['bad.html', null],
+    ['good-b.html', '<div lang="en" aria-roledescription="message"><span>OK</span></div>'],
+  ]);
+
+  const workerPath = resolveRepoPath('src/workers/build-worker.cjs');
+
+  processInPool(
+    fileNames,
+    workerPath,
+    (fileName) => ({
+      fileName,
+      rawHtml: rawHtmlByFile.get(fileName),
+      aliasNameMap: { any: 'Alice' },
+      preDetectedName: 'XYZ',
+    })
+  ).promise.then(() => {
+    t.fail('pool should have rejected due to bad worker input');
+    t.end();
+  }).catch((err) => {
+    t.ok(err, 'pool rejects on worker error');
+    t.ok(err.message.includes('Worker error'), 'error message indicates worker failure');
+    t.end();
+  });
+});
+
+tap.test('workerPoolTerminateRejectsPromise', (t) => {
+  if (isUnderTapRunner) {
+    t.plan(0);
+    return t.end();
+  }
+
+  const fileNames = ['good.html'];
+  const rawHtmlByFile = new Map([
+    ['good.html', '<div lang="en" aria-roledescription="message"><span>OK</span></div>'],
+  ]);
+
+  const workerPath = resolveRepoPath('src/workers/build-worker.cjs');
+
+  const pool = processInPool(
+    fileNames,
+    workerPath,
+    (fileName) => ({
+      fileName,
+      rawHtml: rawHtmlByFile.get(fileName),
+      aliasNameMap: {},
+      preDetectedName: null,
+    })
+  );
+
+  pool.terminate();
+
+  pool.promise.then(() => {
+    t.fail('pool should have rejected after terminate');
+    t.end();
+  }).catch((err) => {
+    t.ok(err, 'pool rejects after terminate');
+    t.ok(err.message.includes('terminated'), 'error message indicates termination');
     t.end();
   });
 });

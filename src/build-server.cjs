@@ -1,11 +1,10 @@
 const fs = require('fs');
 const path = require('path');
-const os = require('os');
-const { Worker } = require('worker_threads');
 const { JSDOM } = require('jsdom');
 const { fatal } = require('./shared/error-utils');
 const { ensureDir, emptyDir, aliasChatNames, collectAutoName } = require('./shared/utils');
 const { createOptimizedHtml } = require('./shared/optimize-html');
+const { processInPool } = require('./shared/worker-pool');
 const { runCreateNodes } = require('./shared/create-nodes');
 const {
   buildEntriesFromDocument,
@@ -16,7 +15,7 @@ const {
   formatSummarySection,
 } = require('./shared/export-text');
 const { buildSummaryJson } = require('./shared/export-summary');
-const { chooseRule } = require('./shared/message-metadata');
+const { chooseRule } = require('./shared/rules');
 const { resolveRepoPath } = require('./shared/app-config');
 const schemaConfig = require('./shared/export-config.json');
 const jsonSchema = require('../tests/generated-json-schema.json');
@@ -43,9 +42,18 @@ const serverConfig = fs.existsSync(serverConfigPath)
 const aliasNameMap = sharedConfig.aliasNames || {};
 const baseDir = resolveRepoPath('.');
 
-const writeRaw = process.env.BUILD_RAW === 'true';
-const referenceDate = process.env.BUILD_REFERENCE_DATE ||
+let writeRaw = process.env.BUILD_RAW === 'true';
+let referenceDate = process.env.BUILD_REFERENCE_DATE ||
   (serverConfig.overwriteToday ? `${serverConfig.overwriteToday.replace(/-/g, '.')} 00:00` : '2026.05.22 00:00');
+
+// CLI arguments override env vars
+const cliArgs = process.argv.slice(2);
+for (let i = 0; i < cliArgs.length; i++) {
+  if (cliArgs[i] === '--raw') writeRaw = true;
+  if (cliArgs[i].startsWith('--raw=')) writeRaw = cliArgs[i].slice(6) !== 'false';
+  if (cliArgs[i] === '--reference-date' && i + 1 < cliArgs.length) { referenceDate = cliArgs[++i]; }
+  if (cliArgs[i].startsWith('--reference-date=')) referenceDate = cliArgs[i].slice(17);
+}
 
 function writeRawMetadata(fileRecords) {
   const payload = {
@@ -292,47 +300,18 @@ function saveCacheManifest(inputStates) {
 }
 
 function processFilesInParallel(files, rawHtmlByFile, aliasNameMap, preDetectedName) {
-  return new Promise((resolve, reject) => {
-    if (files.length === 0) {
-      resolve(new Map());
-      return;
-    }
+  const pool = processInPool(
+    files,
+    resolveRepoPath('src/workers/build-worker.cjs'),
+    (fileName) => ({ fileName, rawHtml: rawHtmlByFile.get(fileName), aliasNameMap, preDetectedName })
+  );
 
-    const numWorkers = os.availableParallelism?.() || os.cpus().length;
-    const results = new Map();
-    let nextIndex = 0;
-    let activeCount = 0;
-    let hasError = false;
+  function onSignal() { pool.terminate(); process.exit(1); }
+  process.on('SIGINT', onSignal);
+  process.on('SIGTERM', onSignal);
+  pool.promise.finally(() => { process.off('SIGINT', onSignal); process.off('SIGTERM', onSignal); });
 
-    function startNext() {
-      if (nextIndex >= files.length || hasError) {
-        if (activeCount === 0) resolve(results);
-        return;
-      }
-      const idx = nextIndex++;
-      const fileName = files[idx];
-      const html = rawHtmlByFile.get(fileName);
-      activeCount++;
-
-      const worker = new Worker(resolveRepoPath('src/workers/build-worker.cjs'), {
-        workerData: { fileName, rawHtml: html, aliasNameMap, preDetectedName },
-      });
-
-      worker.on('message', (msg) => {
-        if (msg.error) { hasError = true; reject(new Error(`Worker error for ${fileName}: ${msg.error}`)); return; }
-        results.set(msg.fileName, msg);
-        activeCount--;
-        startNext();
-      });
-
-      worker.on('error', (err) => { hasError = true; reject(err); });
-      worker.on('exit', (code) => {
-        if (code !== 0 && !hasError) { hasError = true; reject(new Error(`Worker exited with code ${code}`)); }
-      });
-    }
-
-    for (let i = 0; i < numWorkers; i++) startNext();
-  });
+  return pool.promise;
 }
 
 function validateExportConfig(exportPaths) {
@@ -518,6 +497,10 @@ async function main() {
       if (fs.existsSync(htmlPath)) fs.unlinkSync(htmlPath);
       if (fs.existsSync(jsonPath)) fs.unlinkSync(jsonPath);
       console.log(`  Removed stale output for ${fileName}`);
+    }
+    // Export files aggregate all input files — clean entire export dir for fresh generation
+    if (deletedFiles.length) {
+      emptyDir(exportDir);
     }
   }
 

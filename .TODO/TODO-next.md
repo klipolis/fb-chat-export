@@ -13,19 +13,12 @@ Process note: use T-prefixed IDs from `.todo/config.json`, keep one task per bul
 
 ## Build / CI
 
-- *(No pending Build / CI tasks)*
+- T-276. Add CLI argument parsing to build-server.cjs — replace BUILD_RAW and BUILD_REFERENCE_DATE env vars with --raw and --reference-date flags
+- T-277. Refactor processFilesInParallel in build-server.cjs to use shared worker-pool.js module
 
 ## Stability
 
-- *(No pending Stability tasks)*
-
-## Refactoring
-
-- *(No pending Refactoring tasks)*
-
-## Test coverage
-
-- *(No pending Test coverage tasks)*
+- T-278. Add top-level error handler to build-raw-clean.cjs — wrap main() call in try-catch to prevent raw stack traces on failure
 
 ## Documentation
 
