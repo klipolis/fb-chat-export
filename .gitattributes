@@ -1,6 +1,10 @@
 # Auto-detect text files and normalize line endings
 * text=auto
 
+# Generated outputs — build writes LF; don't let autocrlf convert on checkout
+[data-output-auto/**]
+text eol=lf
+
 # Force LF for source and documentation files
 *.js text eol=lf
 *.mjs text eol=lf

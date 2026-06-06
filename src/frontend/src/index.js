@@ -117,7 +117,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
 
   const { wrap: includeCallsWrap, input: includeCallsChk } = createCheckboxToggle('Calls');
   const aliasDefaults = sharedConfig.aliasNames || { You: 'Youghurt', any: 'Alpha' };
-  const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows } = createAliasRows(aliasDefaults);
+  const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk } = createAliasRows(aliasDefaults);
   const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle('Summary');
   const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle('Content');
   const { wrap: rawLinkWrap, input: rawLinkChk } = createCheckboxToggle('Raw link');
@@ -330,6 +330,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
     noticeMsg.textContent = 'Scanning: 0';
 
     const collected = new Map();
+    const detectedSenders = new Set();
 
     let reachedFromDate = false;
 
@@ -354,6 +355,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
           contentLength,
         } = extractMessageParts(el);
         if (!rawDate || !sender) return;
+        detectedSenders.add(sender);
 
         const resolvedRaw = timeEl ? timeEl.getAttribute('datetime') : resolveRelativeDate(rawDate);
         // Date-only ISO strings (e.g. "2026-05-15") parse as UTC midnight in all browsers.
@@ -493,6 +495,10 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
           (scroller.scrollTop <= 0 && stableCount >= 3)
         ) {
           actionBtn.dataset.scanning = 'false';
+
+          if (aliasChk.checked) {
+            setDetectedNames(detectedSenders);
+          }
 
           const sortedEntries = Array.from(collected.values()).sort((a, b) => a.ts - b.ts);
           const messages = sortedEntries.map((e) => e.line);

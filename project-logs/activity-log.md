@@ -14,6 +14,12 @@ Do not modify existing entries below. Update `project-logs/interaction-log.md` a
 
 ---
 
+2026-06-06 20:00 | user | review sender name policy, fix editorconfig CRLF warning, fix UTF-8 encoding for Hungarian text, update AI interaction tracing
+2026-06-06 20:00 | ai | Restored corrupted UTF-8 files from git, added data-output-auto rules to .editorconfig and .gitattributes, verified sender name policy compliance, updated session logs and AI interaction docs
+
+2026-06-06 18:00 | user | fix full-name img alt not fully aliased, add frontend auto-populate alias panel, add group chat checkbox
+2026-06-06 18:00 | ai | Fixed aliasChatNames full-name alt replacement, added setDetectedNames to createAliasRows, added sender name collection during scan and auto-populate on completion, added group chat mode checkbox
+
 2026-06-06 17:30 | user | add more todo-next.md tasks
 2026-06-06 17:30 | ai | Added 3 tasks to TODO-next.md (CLI args, worker pool refactoring, error handler), created worker-pool.js shared module
 2026-06-06 17:30 | commit 10d9511 | docs: record AI session entry for TODO task queue update and worker-pool module

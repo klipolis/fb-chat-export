@@ -128,6 +128,9 @@ function aliasChatNames(html, nameMap = {}, preDetectedName) {
     result = result.replace(
       /(<img\b[^>]*\balt=")([^"]*)("[^>]*>)/gi,
       (match, prefix, altText, suffix) => {
+        if (selectedName && new RegExp(`^${escapeRegExp(selectedName)}\\s`, 'i').test(altText)) {
+          return `${prefix}${replacementName}${suffix}`;
+        }
         const updatedAlt = replaceWholeWord(altText, selectedName, replacementName);
         return updatedAlt === altText ? match : `${prefix}${updatedAlt}${suffix}`;
       }
@@ -150,6 +153,9 @@ function aliasChatNames(html, nameMap = {}, preDetectedName) {
     result = result.replace(
       /(<img\b[^>]*\balt=")([^"]*)("[^>]*>)/gi,
       (match, prefix, altText, suffix) => {
+        if (new RegExp(`^${escapeRegExp(from)}\\s`, 'i').test(altText)) {
+          return `${prefix}${to}${suffix}`;
+        }
         const updated = replaceWholeWord(altText, from, to);
         return updated === altText ? match : `${prefix}${updated}${suffix}`;
       }

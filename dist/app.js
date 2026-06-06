@@ -1744,10 +1744,44 @@ ${aliasLines}
       });
       return valid;
     };
+    const setDetectedNames = (names) => {
+      const nameSet = new Set(Array.from(names).map((n) => String(n).trim()).filter(Boolean));
+      const existingRows = Array.from(rows.querySelectorAll(".alias-row"));
+      existingRows.forEach((row) => {
+        const inputs = row.querySelectorAll('input[type="text"]');
+        if (inputs.length < 2) return;
+        const rowName = inputs[0].value.trim();
+        const isFixed = inputs[0].disabled;
+        if (!isFixed && rowName && !nameSet.has(rowName)) {
+          row.remove();
+        }
+      });
+      nameSet.forEach((name) => {
+        const found = Array.from(rows.querySelectorAll(".alias-row")).some((row) => {
+          const inputs = row.querySelectorAll('input[type="text"]');
+          return inputs.length >= 2 && inputs[0].value.trim() === name;
+        });
+        if (!found) {
+          addRow(name, "", false);
+        }
+      });
+    };
+    const groupChatWrap = document.createElement("label");
+    groupChatWrap.style.cssText = "display: flex; align-items: center; gap: 6px; color: #888; font-size: 11px; cursor: pointer; padding-left: 22px; margin-top: 4px;";
+    groupChatWrap.title = "When checked, new names detected during scan are added as alias rows";
+    const groupChatChk = document.createElement("input");
+    groupChatChk.type = "checkbox";
+    groupChatChk.checked = false;
+    groupChatChk.style.cssText = "cursor: pointer;";
+    const groupChatLabel = document.createElement("span");
+    groupChatLabel.textContent = "Group chat";
+    groupChatWrap.appendChild(groupChatChk);
+    groupChatWrap.appendChild(groupChatLabel);
     wrap.appendChild(header);
     wrap.appendChild(rows);
     wrap.appendChild(addButton);
-    return { wrap, input: checkbox, getAliasMap, validateAll };
+    wrap.appendChild(groupChatWrap);
+    return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk };
   }
   function createLinkAction(labelText, onClick) {
     const link = document.createElement("a");
@@ -1845,7 +1879,7 @@ ${aliasLines}
     rightCol.style.cssText = "display: flex; flex-direction: column; gap: 8px; min-width: 160px; padding-left: 10px;";
     const { wrap: includeCallsWrap, input: includeCallsChk } = createCheckboxToggle("Calls");
     const aliasDefaults = import_frontend_shared.default.aliasNames || { You: "Youghurt", any: "Alpha" };
-    const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows } = createAliasRows(aliasDefaults);
+    const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk } = createAliasRows(aliasDefaults);
     const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle("Summary");
     const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle("Content");
     const { wrap: rawLinkWrap, input: rawLinkChk } = createCheckboxToggle("Raw link");
@@ -2027,6 +2061,7 @@ ${aliasLines}
       saveAgainLink.style.display = "none";
       noticeMsg.textContent = "Scanning: 0";
       const collected = /* @__PURE__ */ new Map();
+      const detectedSenders = /* @__PURE__ */ new Set();
       let reachedFromDate = false;
       function collectVisible() {
         const allMessages = document.querySelectorAll('[aria-roledescription="message"]');
@@ -2049,6 +2084,7 @@ ${aliasLines}
             contentLength
           } = extractMessageParts(el);
           if (!rawDate || !sender) return;
+          detectedSenders.add(sender);
           const resolvedRaw = timeEl ? timeEl.getAttribute("datetime") : resolveRelativeDate(rawDate);
           const msgDate = /^\d{4}-\d{2}-\d{2}$/.test(resolvedRaw) ? (() => {
             const [y, m, d] = resolvedRaw.split("-").map(Number);
@@ -2188,6 +2224,9 @@ ${aliasLines}
               setScanState("idle");
             };
             actionBtn.dataset.scanning = "false";
+            if (aliasChk.checked) {
+              setDetectedNames(detectedSenders);
+            }
             const sortedEntries = Array.from(collected.values()).sort((a, b) => a.ts - b.ts);
             const messages = sortedEntries.map((e) => e.line);
             if (messages.length === 0) {

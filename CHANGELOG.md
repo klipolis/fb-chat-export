@@ -11,6 +11,8 @@ Changelog entries should describe active changes in direct present-tense stateme
 
 ### Added
 - Add data_raw.name and data_preview.name fields with alias mapping to JSON exports
+- Alias panel in browser export auto-populates with detected sender names after scan completes
+- Group chat mode checkbox in alias panel controls whether new names auto-populate during scan
 
 - Partial rebuild processes only changed input files and removes stale output for deleted files.
 - Parallel worker pool processes HTML optimization across all available CPU cores.
@@ -27,6 +29,7 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Export and preview durations display in strict `HH:MM:SS` three-part format (e.g. `00:18:00`) with zero-padded hours.
 - Preview dates from relative weekday labels (e.g. `Saturday 4:36am`) resolve to the correct calendar date.
 - Alias replacement skips generic lowercase labels when anonymizing sender names.
+- Full-name profile images in chat messages have their alt text replaced entirely with the alias instead of only the first name.
 - The summary validator accepts any number of participant sections.
 - Summary title patterns are dynamic.
 - Message type rules include reaction and video-link variants; duration matching uses strict `HH:MM:SS`.

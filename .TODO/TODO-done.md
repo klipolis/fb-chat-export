@@ -210,8 +210,12 @@
 - T-141. Extended sender name detection in labels to handle dash separators (9ad105b)
 - T-142. Added explicit alias entry for all sender names in both config files for consistent fallback (152b844)
 - T-143. Make tests expect image as the label for all image messages, not raw image-2 or image-3 variants (152b844)
+- T-282. Full-name img alt text replaced entirely with alias instead of only the first name
 
 ## Frontend
+
+- T-283. Browser export auto-populates alias panel with detected sender names after scan completes
+- T-284. Group chat mode checkbox in alias panel controls auto-population behavior
 
 - T-68. Date parser accepts slash-separated date formats (a87ec74)
 - T-69. Scan completion displays elapsed time (a87ec74)

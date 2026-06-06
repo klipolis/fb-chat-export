@@ -12,7 +12,7 @@ tap.test('aliasChatNames', (t) => {
   const cleaned = aliasChatNames(rawHtml);
   t.ok(cleaned.includes('aria-label="At Wednesday 7:54pm, Alpha"'), 'Sender aria-label is aliased');
   t.ok(cleaned.includes('aria-label="Enter, Message sent Wednesday 7:54pm by Alpha"'), 'Enter message sender is aliased');
-  t.ok(cleaned.includes('<img alt="Alpha Leon"'), 'Profile alt text sender word is aliased');
+  t.ok(cleaned.includes('<img alt="Alpha"'), 'Profile alt text sender word is aliased');
   t.notOk(cleaned.includes('Rob deleted a message'), 'Message content is aliased');
   t.notOk(cleaned.includes('Message body mentioning Rob is aliased.'), 'Message body text references is aliased');
   t.ok(cleaned.includes('<title>Alpha</title>'), 'Chat title is aliased');

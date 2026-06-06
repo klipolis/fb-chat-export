@@ -57,6 +57,7 @@ pnpm run prompt:<name>  # show a specific prompt's content (e.g. prompt:trace-gu
   not past states, removed options, speculative possibilities, or future blockages. Mention past or
   future states only when the detail prevents a concrete risk.
 - Prefer the shared code in `src/shared/` before duplicating logic in server or frontend paths.
+- Never record exact sender names from chat data in logs, changelogs, TODO files, or documentation. Sender names are modifiable inputs — describe them generically (e.g. "the sender", "a detected name") instead.
 
 ## Script Rules
 

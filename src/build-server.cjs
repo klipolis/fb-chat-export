@@ -463,11 +463,12 @@ async function main() {
       const result = workerResults.get(fileName);
       if (!result) { fatal(`No result for ${fileName}`); }
       cleanedHtmlByFile.set(fileName, result.aliasedHtml);
-      fs.writeFileSync(path.join(optimizedDir, fileName), result.optimizedHtml, 'utf8');
+      const lfHtml = result.optimizedHtml.replace(/\r\n/g, '\n');
+      fs.writeFileSync(path.join(optimizedDir, fileName), lfHtml, 'utf8');
       if (writeRaw && result.aliasedHtml !== rawHtmlByFile.get(fileName)) {
         const hotPath = path.join(hotDir, fileName);
         const targetPath = fs.existsSync(hotPath) ? hotPath : path.join(rawDir, fileName);
-        fs.writeFileSync(targetPath, result.aliasedHtml, 'utf8');
+        fs.writeFileSync(targetPath, result.aliasedHtml.replace(/\r\n/g, '\n'), 'utf8');
       }
       addFileRecord(fileName);
     }
@@ -477,11 +478,12 @@ async function main() {
       const result = workerResults.get(fileName);
       if (!result) { fatal(`No result for ${fileName}`); }
       cleanedHtmlByFile.set(fileName, result.aliasedHtml);
-      fs.writeFileSync(path.join(optimizedDir, fileName), result.optimizedHtml, 'utf8');
+      const lfHtml = result.optimizedHtml.replace(/\r\n/g, '\n');
+      fs.writeFileSync(path.join(optimizedDir, fileName), lfHtml, 'utf8');
       if (writeRaw && result.aliasedHtml !== rawHtmlByFile.get(fileName)) {
         const hotPath = path.join(hotDir, fileName);
         const targetPath = fs.existsSync(hotPath) ? hotPath : path.join(rawDir, fileName);
-        fs.writeFileSync(targetPath, result.aliasedHtml, 'utf8');
+        fs.writeFileSync(targetPath, result.aliasedHtml.replace(/\r\n/g, '\n'), 'utf8');
       }
       addFileRecord(fileName);
     }

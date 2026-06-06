@@ -10,3 +10,9 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
+
+# Generated output files — build writes LF, editors should preserve as-is
+[data-output-auto/**]
+end_of_line = unset
+insert_final_newline = false
+trim_trailing_whitespace = false

@@ -248,11 +248,50 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
     return valid;
   };
 
+  const setDetectedNames = (names) => {
+    const nameSet = new Set(Array.from(names).map((n) => String(n).trim()).filter(Boolean));
+    const existingRows = Array.from(rows.querySelectorAll('.alias-row'));
+
+    existingRows.forEach((row) => {
+      const inputs = row.querySelectorAll('input[type="text"]');
+      if (inputs.length < 2) return;
+      const rowName = inputs[0].value.trim();
+      const isFixed = inputs[0].disabled;
+      if (!isFixed && rowName && !nameSet.has(rowName)) {
+        row.remove();
+      }
+    });
+
+    nameSet.forEach((name) => {
+      const found = Array.from(rows.querySelectorAll('.alias-row')).some((row) => {
+        const inputs = row.querySelectorAll('input[type="text"]');
+        return inputs.length >= 2 && inputs[0].value.trim() === name;
+      });
+      if (!found) {
+        addRow(name, '', false);
+      }
+    });
+  };
+
+  const groupChatWrap = document.createElement('label');
+  groupChatWrap.style.cssText =
+    'display: flex; align-items: center; gap: 6px; color: #888; font-size: 11px; cursor: pointer; padding-left: 22px; margin-top: 4px;';
+  groupChatWrap.title = 'When checked, new names detected during scan are added as alias rows';
+  const groupChatChk = document.createElement('input');
+  groupChatChk.type = 'checkbox';
+  groupChatChk.checked = false;
+  groupChatChk.style.cssText = 'cursor: pointer;';
+  const groupChatLabel = document.createElement('span');
+  groupChatLabel.textContent = 'Group chat';
+  groupChatWrap.appendChild(groupChatChk);
+  groupChatWrap.appendChild(groupChatLabel);
+
   wrap.appendChild(header);
   wrap.appendChild(rows);
   wrap.appendChild(addButton);
+  wrap.appendChild(groupChatWrap);
 
-  return { wrap, input: checkbox, getAliasMap, validateAll };
+  return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk };
 }
 
 export function createLinkAction(labelText, onClick) {

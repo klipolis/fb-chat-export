@@ -20,6 +20,12 @@ A good interaction trace includes:
 - the high-level reason for the change
 - any learning or educational notes relevant to future contributors
 
+## Sensitive data rules
+
+- Never record exact sender names from chat data in logs, changelogs, TODO files, or documentation. Sender names are modifiable inputs — describe them generically (e.g. "the sender", "a detected name") instead.
+- Do not commit sensitive user data, secrets, or keys to the repository.
+- Generated files in `data-output-auto/` must use LF line endings and UTF-8 without BOM. The build normalizes line endings automatically. If non-ASCII characters (e.g. Hungarian text) appear corrupted after a rebuild, restore from git and verify the source input encoding.
+
 ## Session log
 
 Maintain a reverse-chronological log in `project-logs/interaction-log.md`.
