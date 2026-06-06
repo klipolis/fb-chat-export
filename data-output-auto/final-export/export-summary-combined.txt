@@ -1,0 +1,55 @@
+Method: server
+Message types:
+- audio-call
+- deleted
+- image
+- link-embed-no-text
+- link-text
+- link-video
+- missed-audio-call
+- missed-video-call
+- poll
+- reaction-emoji
+- reaction
+- sticker
+- text-image-replied
+- text-replied
+- text
+- video-call
+- voice-note
+
+Options: includeSummary
+Unused: includeContent, includeLength
+
+Aliases:
+  You : Youghurt
+  Rob : Barnabas
+  any : XYZ
+
+---
+
+Total Summary
+22 posts / 8 days
+~ 12 text / 221 words
+~ 20 images
+~ 4 calls 00:49:41
+
+XYZ Summary
+11 posts / 5 days
+~ 6 text / 206 words
+~ 9 images
+~ 1 calls 00:31:00
+
+Youghurt Summary
+6 posts / 3 days
+~ 4 text / 4 words
+~ 5 images
+~ 1 calls 00:18:00
+
+Barnabas Summary
+1 post / 1 days
+~ 0 text / 0 words
+~ 0 images
+~ 1 calls 00:00:20
+
+---

@@ -1,0 +1,19 @@
+{
+  "html_locale": null,
+  "title": "voice-note",
+  "type": "voice-note",
+  "data_raw": {
+    "date": "12:00 PM",
+    "name": "Csaba",
+    "content": null,
+    "duration": "00:00:21",
+    "length": null
+  },
+  "data_preview": {
+    "date": "2026.06.05 12:00",
+    "name": "XYZ",
+    "content": "voice note",
+    "duration": "00:00:21",
+    "length": null
+  }
+}

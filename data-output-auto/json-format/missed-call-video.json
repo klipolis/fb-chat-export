@@ -1,0 +1,19 @@
+{
+  "html_locale": null,
+  "title": "missed-call",
+  "type": "missed-call",
+  "data_raw": {
+    "date": "11:15 AM",
+    "name": "XYZ",
+    "content": "missed call",
+    "duration": null,
+    "length": null
+  },
+  "data_preview": {
+    "date": "2026.06.05 11:15",
+    "name": "XYZ",
+    "content": "missed call",
+    "duration": null,
+    "length": null
+  }
+}
