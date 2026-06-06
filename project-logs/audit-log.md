@@ -7,8 +7,8 @@ This AI Agent: append audit findings here. Start each audit session with a level
 ```
 ### YYYY-MM-DD – Short audit title
 
-YYYY-MM-DD HH:MM | (audit: <area>) | findings summary
-YYYY-MM-DD HH:MM | (finding: low|medium|high) | specific issue at file:line — recommended fix
+YYYY-MM-DD HH:MM | audit: <area> | findings summary
+YYYY-MM-DD HH:MM | finding: low|medium|high | specific issue at file:line — recommended fix
 ```
 
 ---

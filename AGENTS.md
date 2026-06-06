@@ -43,7 +43,7 @@ pnpm lint               # package, todos, changelog, eslint checks
 pnpm validate:release   # full pre-release validation
 pnpm create:nodes       # debug preview JSON generation
 pnpm prompt             # list available prompt files in project-prompts/
-pnpm prompt -- <name>   # show a specific prompt's content
+pnpm run prompt:<name>  # show a specific prompt's content (e.g. prompt:trace-guidance)
 ```
 
 ## Editing Rules

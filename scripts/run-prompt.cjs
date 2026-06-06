@@ -3,16 +3,21 @@
  * pnpm prompt — list or show prompt files from project-prompts/
  *
  * Usage:
- *   pnpm prompt                  list available prompts
- *   pnpm prompt <name>           show a prompt's content
- *   pnpm prompt -- <name>        show (alt form, same as without --)
+ *   pnpm prompt                        list available prompts
+ *   pnpm prompt <name>                 show a prompt's content
+ *   pnpm prompt -- <name>              same (alt form)
+ *   pnpm run prompt:<name>             dedicated script per prompt
  */
 
 const fs = require('fs');
 const path = require('path');
 
 const promptsDir = path.resolve(__dirname, '..', 'project-prompts');
-const name = process.argv.slice(2).find(a => a !== '--');
+
+const lifecycle = process.env.npm_lifecycle_event || '';
+const name = lifecycle.startsWith('prompt:')
+  ? lifecycle.slice('prompt:'.length)
+  : process.argv.slice(2).find(a => a !== '--');
 
 const catalog = {
   'code-improvement-prompts': {
@@ -50,7 +55,8 @@ if (name) {
 } else {
   console.log('Available prompts:\n');
   for (const [key, entry] of Object.entries(catalog)) {
-    console.log(`  ${key.padEnd(28)} ${entry.description}`);
+    console.log(`  prompt:${key.padEnd(24)} ${entry.description}`);
   }
-  console.log('\nUsage: pnpm prompt <name>');
+  console.log('\nUsage: pnpm run prompt:<name>   (e.g. pnpm run prompt:trace-guidance)');
+  console.log('       pnpm prompt <name>        (same)');
 }

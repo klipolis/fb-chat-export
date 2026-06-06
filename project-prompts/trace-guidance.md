@@ -59,7 +59,7 @@ When an AI session closes:
 Other AI coding agents (OpenCode, Kilo, etc.) can load this guidance with:
 
 ```
-pnpm run prompt -- 'trace-guidance'
+pnpm run prompt:trace-guidance
 ```
 
 The `pnpm prompt` mechanism reads files from `project-prompts/` (the hot prompt directory). Agents should first read `AGENTS.md` then use `pnpm prompt` to load relevant guidance before starting work.
@@ -91,5 +91,5 @@ Files in `project-prompts/` are hot prompt files that AI agents should always re
 When starting a session with a new AI agent, include in the initial prompt:
 
 ```
-Read AGENTS.md, then run pnpm run prompt -- 'trace-guidance' to load interaction trace procedures. Follow each session with post-interaction and post-close saves to project-logs/interaction-log.md and project-logs/activity-log.md.
+Read AGENTS.md, then run pnpm run prompt:trace-guidance to load interaction trace procedures. Follow each session with post-interaction and post-close saves to project-logs/interaction-log.md and project-logs/activity-log.md.
 ```
