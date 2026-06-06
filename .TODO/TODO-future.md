@@ -11,18 +11,16 @@
 
 ## Build / CI
 
-- T-267. Add stale export file cleanup when input files are deleted — currently only cleans optimized-html and json-format dirs
-- T-268. Accept build options via CLI arguments (e.g. --raw, --reference-date) instead of environment variables
+- *(No future Build / CI tasks currently identified)*
 
 ## Stability
 
-- T-270. Consolidate duplicate try-catch for normalizeDateToIso in export-text.js and export-formatter.js into a shared helper
+- *(No future Stability tasks currently identified)*
 
 ## Refactoring
 
-- T-271. Extract worker pool logic from processFilesInParallel into reusable shared helper
-- T-272. Deduplicate HTML cleaning logic between build-raw-clean.cjs and optimize-html.js
+- *(No future Refactoring tasks currently identified)*
 
 ## Test coverage
 
-- T-273. Add test for worker pool error isolation — verify one failing worker doesn't hang the pool
+- *(No future Test coverage tasks currently identified)*
