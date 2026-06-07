@@ -14,9 +14,14 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 
 ---
 
+2026-06-07 20:00 | user | review updated export1.txt — names still failing, add more name/date finding rules
+2026-06-07 20:00 | ai | Added extractNameAfterBy helper for "by X" name extraction from labels. Added DOM-based name fallback (by X in child aria-labels, img alt text). Added isValidDateCandidate (max 6 words, only letters/digits/spaces/commas/colons/dashes). Updated findValidDatePrefix to truncate at " by ". Applied date validation to comma-iteration. Rebuilt frontend bundle. Updated pre-commit hook to enforce project-logs.
+2026-06-07 20:00 | user | continue
+2026-06-07 20:00 | ai | Ran full lint (passed). Updated session logs. Ready for next step — regenerate browser export to verify fixes, or continue with other improvements.
+
 2026-06-07 15:00 | user | run lint + validation, audit inconsistencies, then fix all 15 items
 2026-06-07 15:00 | ai | Ran lint/validation (passed). Conducted 4 parallel audits finding 15 inconsistencies. Fixed stale docs, eslint config, export-config schema, server config, test fixtures. Wrapped parseRawHtml with dedup. Regenerated 3 golden files. Improved sender regex (50 chars, 5 words). Added date:sender pattern to parseAriaLabel. Skipped redundant Enter aria labels in parseMessageNodes. Updated all affected tests. Rebuilt frontend bundle.
-2026-06-07 15:00 | commit <hash> | fix: resolve 15 inconsistencies, expand sender validation, deduplicate parser nodes
+2026-06-07 15:00 | commit 5a5f5c3 | fix: resolve 15 inconsistencies, expand sender validation, deduplicate parser nodes
 
 2026-06-06 20:00 | user | review sender name policy, fix editorconfig CRLF warning, fix UTF-8 encoding for Hungarian text, update AI interaction tracing
 2026-06-06 20:00 | ai | Restored corrupted UTF-8 files from git, added data-output-auto rules to .editorconfig and .gitattributes, verified sender name policy compliance, updated session logs and AI interaction docs

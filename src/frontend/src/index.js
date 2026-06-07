@@ -1,7 +1,7 @@
 ﻿import sharedConfig from '../../../data-config/frontend_shared.json';
 import { getContentMeta, stripTrackingParams } from '../../shared/message-metadata.js';
 import { normalizeDuration } from '../../shared/duration-utils.js';
-import { parseAriaLabel, normalizeDateToIso } from '../../shared/aria-label-parser.js';
+import { parseAriaLabel, normalizeDateToIso, extractNameAfterBy, isValidSender } from '../../shared/aria-label-parser.js';
 import { buildSummary } from '../../shared/export-summary.js';
 import { formatExportHeader, formatLine, durationToMinutes } from '../../shared/export-formatter.js';
 import {
@@ -199,8 +199,31 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
     const label = el.getAttribute('aria-label') || '';
     const parsedLabel = parseAriaLabel(label);
     const rawDate = parsedLabel.date || '';
-    const sender = parsedLabel.sender || '';
+    let sender = parsedLabel.sender || '';
     const labelText = parsedLabel.message || '';
+
+    // DOM-based name fallback: if parser didn't find a sender,
+    // look for "by X" in child element aria-labels or img alt text.
+    if (!sender) {
+      const byEl = el.querySelector('[aria-label*="* by " i]');
+      if (byEl) {
+        const byLabel = byEl.getAttribute('aria-label');
+        const byName = extractNameAfterBy(byLabel);
+        if (byName && byName !== byLabel && isValidSender(byName)) {
+          sender = byName;
+        }
+      }
+      if (!sender) {
+        const imgEl = el.querySelector('img[alt]');
+        if (imgEl) {
+          const alt = imgEl.getAttribute('alt').trim();
+          const firstWord = alt.split(/\s+/)[0];
+          if (firstWord && isValidSender(firstWord)) {
+            sender = firstWord;
+          }
+        }
+      }
+    }
 
     const normalizedText = (labelText || el.innerText).replace(/\s+/g, ' ').trim();
     const normalizedLabel = label.replace(/\s+/g, ' ').trim().toLowerCase();

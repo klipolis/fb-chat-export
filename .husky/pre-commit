@@ -12,8 +12,10 @@ fi
 
 if [ "$STAGED_SRC" -gt 0 ] && [ "$STAGED_LOGS" -eq 0 ]; then
   echo ""
-  echo "⚠  Pre-commit: project-logs/ were not staged."
+  echo "❌  Pre-commit: project-logs/ were not staged."
   echo "   Add entries to project-logs/interaction-log.md and project-logs/activity-log.md."
+  echo "   This check is mandatory — commit blocked."
+  exit 1
 fi
 
 if [ "$STAGED_TODO" -gt 0 ]; then

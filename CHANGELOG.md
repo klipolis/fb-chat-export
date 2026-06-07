@@ -10,6 +10,10 @@ Changelog entries should describe active changes in direct present-tense stateme
 ## [Unreleased]
 
 ### Added
+- Browser export extracts sender name from "by X" patterns like "sent by John" in message labels
+- DOM-based name fallback in browser export uses child element aria-labels and img alt text
+- Date candidate validation rejects strings over 6 words or with unusual characters
+
 - Add cleanup countdown timer after download in browser export panel
 - Add data_raw.name and data_preview.name fields with alias mapping to JSON exports
 - Alias panel in browser export auto-populates with detected sender names after scan completes
@@ -35,6 +39,10 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Golden export summary files regenerated to match current server output
 
 ### Fixed
+- Aria-label parser extracts sender name after "by" in labels like "At 10:15 AM, sent by John: hello"
+- Date prefix detection truncates at " by " boundary to avoid treating "by" text as part of the date
+- Comma-iteration in aria-label parser skips date candidates with more than 6 words
+- Pre-commit hook blocks commits when source files change without staged AI interaction logs
 
 - Stale documentation references in RELEASING.md and skill files
 - Error message label in test-frontend-build.js

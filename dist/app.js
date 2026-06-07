@@ -218,7 +218,7 @@
       var SENDER_PATTERN_SOURCE = "\\p{L}[\\p{L} .'\\-_]{0,49}";
       var SENDER_RE = new RegExp(`^${SENDER_PATTERN_SOURCE}$`, "u");
       var SENDER_MAX_WORDS = 5;
-      function isValidSender(value) {
+      function isValidSender2(value) {
         if (!SENDER_RE.test(value)) return false;
         if (/\d/.test(value)) return false;
         return value.trim().split(/\s+/).length <= SENDER_MAX_WORDS;
@@ -227,7 +227,7 @@
         SENDER_PATTERN_SOURCE,
         SENDER_RE,
         SENDER_MAX_WORDS,
-        isValidSender
+        isValidSender: isValidSender2
       };
     }
   });
@@ -236,7 +236,7 @@
   var require_aria_label_parser = __commonJS({
     "src/shared/aria-label-parser.js"(exports, module) {
       "use strict";
-      var { isValidSender, SENDER_PATTERN_SOURCE } = require_sender_constants();
+      var { isValidSender: isValidSender2, SENDER_PATTERN_SOURCE } = require_sender_constants();
       function normalizeLabel(text) {
         return String(text || "").replace(/\s+/g, " ").trim();
       }
@@ -247,10 +247,20 @@
         const text = normalizeLabel(value);
         const firstWordMatch = text.match(SENDER_LAZY_RE);
         if (!firstWordMatch) return null;
-        const sender = normalizeLabel(firstWordMatch[1]);
+        let sender = normalizeLabel(firstWordMatch[1]);
         const message = normalizeLabel(firstWordMatch[2] || "");
-        if (!isValidSender(sender)) return null;
+        sender = extractNameAfterBy2(sender);
+        if (!isValidSender2(sender)) return null;
         return { sender, message };
+      }
+      function extractNameAfterBy2(text) {
+        const byIndex = text.lastIndexOf(" by ");
+        if (byIndex < 0) return text;
+        const candidate = text.slice(byIndex + 4).trim();
+        if (isValidSender2(candidate) && !/^(sent|message|by)$/i.test(candidate)) {
+          return candidate;
+        }
+        return text;
       }
       var sharedRelativeDateRules = [];
       try {
@@ -259,12 +269,20 @@
         console.warn("aria-label-parser: failed to load shared relative date rules", err);
         sharedRelativeDateRules = [];
       }
+      function isValidDateCandidate(text) {
+        if (!text) return false;
+        const words = text.trim().split(/\s+/);
+        if (words.length > 6) return false;
+        return /^[\p{L}\p{N}\s,\-:]+$/u.test(text.trim());
+      }
       function findValidDatePrefix(text, referenceDate) {
-        const parts = text.split(",").map((part) => part.trim()).filter(Boolean);
+        const byIdx = text.search(/\s+by\s+/i);
+        const searchText = byIdx >= 0 ? text.slice(0, byIdx) : text;
+        const parts = searchText.split(",").map((part) => part.trim()).filter(Boolean);
         let candidate = "";
         for (let i = 0; i < Math.min(parts.length, 3); i += 1) {
           candidate = candidate ? `${candidate}, ${parts[i]}` : parts[i];
-          if (normalizeDateToIso3(candidate, referenceDate)) return candidate;
+          if (isValidDateCandidate(candidate) && normalizeDateToIso3(candidate, referenceDate)) return candidate;
         }
         return null;
       }
@@ -358,24 +376,44 @@
             const maybeSender = tailParts[tailParts.length - 1];
             const maybeDate = tailParts.slice(0, -1).join(", ");
             const hasInlineSenderColon = tailParts.slice(1, -1).some((p) => SENDER_COLON_INLINE_RE.test(p));
-            if (!hasInlineSenderColon && isValidSender(maybeSender)) {
-              return {
-                date: maybeDate.trim(),
-                sender: maybeSender.trim(),
-                message: ""
-              };
+            if (!hasInlineSenderColon) {
+              const normalizedSender = extractNameAfterBy2(maybeSender.trim());
+              if (isValidSender2(normalizedSender)) {
+                return {
+                  date: maybeDate.trim(),
+                  sender: normalizedSender,
+                  message: ""
+                };
+              }
             }
           }
           if (tailParts.length >= 2) {
             const maybeDate = tailParts[0];
             const rest = tailParts.slice(1).join(", ");
             const inlineMatch = rest.match(SENDER_COLON_CAPTURE_RE);
-            if (inlineMatch && isValidSender(inlineMatch[1])) {
-              return {
-                date: maybeDate.trim(),
-                sender: inlineMatch[1].trim(),
-                message: inlineMatch[2].trim()
-              };
+            if (inlineMatch) {
+              const matchedSender = extractNameAfterBy2(inlineMatch[1].trim());
+              if (isValidSender2(matchedSender)) {
+                return {
+                  date: maybeDate.trim(),
+                  sender: matchedSender,
+                  message: inlineMatch[2].trim()
+                };
+              }
+            }
+            const byIndex = rest.lastIndexOf(" by ");
+            if (byIndex >= 0) {
+              const bySender = rest.slice(byIndex + 4).trim();
+              const colonIdx = bySender.indexOf(":");
+              const nameEnd = colonIdx >= 0 ? colonIdx : bySender.length;
+              const potentialBySender = bySender.slice(0, nameEnd).trim();
+              if (isValidSender2(potentialBySender)) {
+                return {
+                  date: maybeDate.trim(),
+                  sender: potentialBySender,
+                  message: colonIdx >= 0 ? bySender.slice(colonIdx + 1).trim() : ""
+                };
+              }
             }
             const senderAndMessage = splitSenderAndMessage(rest);
             if (senderAndMessage) {
@@ -402,16 +440,49 @@
         {
           const labelParts = label.split(",");
           for (let i = 1; i < labelParts.length; i++) {
-            const datePart = labelParts.slice(0, i).join(",").trim();
+            let datePart = labelParts.slice(0, i).join(",").trim();
             const senderRest = labelParts.slice(i).join(",").trim();
+            const byInDate = datePart.search(/\s+by\s+/i);
+            if (byInDate >= 0) datePart = datePart.slice(0, byInDate).trim();
+            if (!datePart) continue;
             const colonIdx = senderRest.indexOf(":");
             if (colonIdx < 0) continue;
-            const potentialSender = senderRest.slice(0, colonIdx).trim();
-            if (isValidSender(potentialSender)) {
+            if (!isValidDateCandidate(datePart)) continue;
+            const potentialSender = extractNameAfterBy2(senderRest.slice(0, colonIdx).trim());
+            if (isValidSender2(potentialSender)) {
               return {
                 date: datePart,
                 sender: potentialSender,
                 message: senderRest.slice(colonIdx + 1).trim()
+              };
+            }
+          }
+        }
+        {
+          const byMatch = label.match(/^At\s+(.+?),\s*(?:Message\s+)?sent\s+by\s+(\p{L}[\p{L} .'\-_]*?)\s*:\s*([\s\S]*)$/iu);
+          if (byMatch) {
+            const potentialSender = byMatch[2].trim();
+            if (isValidSender2(potentialSender)) {
+              return {
+                date: byMatch[1].trim(),
+                sender: potentialSender,
+                message: byMatch[3].trim()
+              };
+            }
+          }
+        }
+        {
+          const pos = label.search(/\bby\s+/i);
+          if (pos >= 0) {
+            const afterBy = label.slice(pos + 3).trim();
+            const colonIdx = afterBy.indexOf(":");
+            const nameEnd = colonIdx >= 0 ? colonIdx : afterBy.length;
+            const potentialSender = afterBy.slice(0, nameEnd).trim();
+            if (isValidSender2(potentialSender)) {
+              return {
+                date: label.slice(0, pos).trim(),
+                sender: potentialSender,
+                message: colonIdx >= 0 ? afterBy.slice(colonIdx + 1).trim() : ""
               };
             }
           }
@@ -451,7 +522,7 @@
         {
           const parts = label.split(":");
           const potentialSender = parts.pop().trim();
-          if (isValidSender(potentialSender)) {
+          if (isValidSender2(potentialSender)) {
             const datePart = parts.join(":").trim();
             if (normalizeDateToIso3(datePart) || findValidDatePrefix(datePart)) {
               return { date: datePart, sender: potentialSender, message: "" };
@@ -600,8 +671,10 @@
         normalizeDateToIso: normalizeDateToIso3,
         normalizeDateToIsoSafe,
         normalizeLabel,
-        isValidSender,
-        findValidDatePrefix
+        isValidSender: isValidSender2,
+        findValidDatePrefix,
+        extractNameAfterBy: extractNameAfterBy2,
+        isValidDateCandidate
       };
     }
   });
@@ -1978,8 +2051,28 @@ ${aliasLines}
       const label = el.getAttribute("aria-label") || "";
       const parsedLabel = (0, import_aria_label_parser2.parseAriaLabel)(label);
       const rawDate = parsedLabel.date || "";
-      const sender = parsedLabel.sender || "";
+      let sender = parsedLabel.sender || "";
       const labelText = parsedLabel.message || "";
+      if (!sender) {
+        const byEl = el.querySelector('[aria-label*="* by " i]');
+        if (byEl) {
+          const byLabel = byEl.getAttribute("aria-label");
+          const byName = (0, import_aria_label_parser2.extractNameAfterBy)(byLabel);
+          if (byName && byName !== byLabel && (0, import_aria_label_parser2.isValidSender)(byName)) {
+            sender = byName;
+          }
+        }
+        if (!sender) {
+          const imgEl = el.querySelector("img[alt]");
+          if (imgEl) {
+            const alt = imgEl.getAttribute("alt").trim();
+            const firstWord = alt.split(/\s+/)[0];
+            if (firstWord && (0, import_aria_label_parser2.isValidSender)(firstWord)) {
+              sender = firstWord;
+            }
+          }
+        }
+      }
       const normalizedText = (labelText || el.innerText).replace(/\s+/g, " ").trim();
       const normalizedLabel = label.replace(/\s+/g, " ").trim().toLowerCase();
       const timerEl = el.querySelector('[role="timer"]');

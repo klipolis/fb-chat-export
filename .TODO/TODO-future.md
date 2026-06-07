@@ -8,7 +8,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Test coverage
 
-- no tasks
+- T-285. Cache test results and re-run only tests whose source files have changed
 
 ## Documentation
 

@@ -117,7 +117,17 @@ tap.test('extractMessageEntrySender', (t) => {
     },
     {
       label: 'At 10:15 AM, Invalid Name With Four Words: test',
-      expectedSender: 'Invalid',
+      expectedSender: 'Invalid Name With Four Words',
+      expectedType: 'text',
+    },
+    {
+      label: 'At 10:15 AM, Alpha: test : test : test',
+      expectedSender: 'Alpha',
+      expectedType: 'text',
+    },
+    {
+      label: 'Enter, Message sent Saturday 4:36am by Alpha',
+      expectedSender: 'Alpha',
       expectedType: 'text',
     },
   ];
