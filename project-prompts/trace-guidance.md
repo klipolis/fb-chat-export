@@ -43,6 +43,10 @@ Add new entries at the top of the list (most recent first).
 
 `project-logs/activity-log.md` holds a reverse-chronological log of user requests, AI responses, and commits. Each entry is a standalone line: `date | (user) | <summary>`, `date | (ai) | <summary>`, or `date | (commit <hash>) | <subject>`. Update it when adding significant new sessions.
 
+## Pre-commit checklist
+
+Before running `git commit`, follow the Pre-Commit Checklist in `AGENTS.md` — it covers changelog, session logs, trace guidance, prompt files, reference docs, and TODO files. Run through every item; do not defer documentation to a later session.
+
 ## Post-interaction saves
 
 After an interaction completes, save the following to the AI interaction docs:

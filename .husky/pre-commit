@@ -1,0 +1,31 @@
+STAGED_SRC=$(git diff --cached --name-only --diff-filter=ACM | grep -cE '^(src/|tests/|scripts/)' || true)
+STAGED_CHANGELOG=$(git diff --cached --name-only --diff-filter=ACM | grep -c 'CHANGELOG.md' || true)
+STAGED_LOGS=$(git diff --cached --name-only --diff-filter=ACM | grep -c 'project-logs/' || true)
+STAGED_TODO=$(git diff --cached --name-only --diff-filter=ACM | grep -c '\.TODO/' || true)
+
+if [ "$STAGED_SRC" -gt 0 ] && [ "$STAGED_CHANGELOG" -eq 0 ]; then
+  echo ""
+  echo "⚠  Pre-commit: CHANGELOG.md was not staged."
+  echo "   If this change is user-facing, add an entry under ## [Unreleased]."
+fi
+
+if [ "$STAGED_SRC" -gt 0 ] && [ "$STAGED_LOGS" -eq 0 ]; then
+  echo ""
+  echo "⚠  Pre-commit: project-logs/ were not staged."
+  echo "   Add entries to project-logs/interaction-log.md and project-logs/activity-log.md."
+fi
+
+if [ "$STAGED_TODO" -gt 0 ]; then
+  echo "pnpm run lint:todos"
+  pnpm run lint:todos
+fi
+
+echo ""
+echo "✔  Pre-commit checklist:"
+echo "   [ ] CHANGELOG.md — entries under ## [Unreleased]"
+echo "   [ ] project-logs/interaction-log.md — session record"
+echo "   [ ] project-logs/activity-log.md — activity summary"
+echo "   [ ] project-prompts/ — updated if guidance changed"
+echo "   [ ] docs/AI-interaction/ — updated if durable change"
+echo "   [ ] .TODO/ — synced if tasks changed"
+echo ""

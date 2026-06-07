@@ -153,6 +153,17 @@ Rules:
 - Order: subject-verb-object. State what is true and why.
 - Prefer direct words over inflated phrasing.
 
+## Pre-Commit Checklist (AI agents must follow these)
+
+Before running `git commit`, verify all items below. If any file changed, update it first in the same session — never leave documentation, logging, or tracing for a follow-up.
+
+- **Changelog** — Add entries to `CHANGELOG.md` under `## [Unreleased]`. Use the correct section (`### Added`, `### Changed`, `### Fixed`, `### Removed`, `### Dev`). See Changelog Rules above.
+- **Session logs** — Add entries to both `project-logs/interaction-log.md` (detailed session record) and `project-logs/activity-log.md` (one-line activity summary).
+- **Trace guidance** — Follow `project-prompts/trace-guidance.md` post-interaction and post-close save procedure.
+- **Prompt files** — If guidance or procedure changed, update the relevant file in `project-prompts/`.
+- **Reference docs** — If the change is durable (not session-specific), update the corresponding reference doc in `docs/AI-interaction/`.
+- **TODO files** — Sync `.TODO/TODO-done.md`, `.TODO/TODO-next.md`, `.TODO/TODO-future.md`, or `.TODO/TODO-ignore.md` as needed. Run `pnpm lint:todos` after metadata changes.
+
 ## TODOs
 
 AI agents keep regular `.TODO/` queue files synced:

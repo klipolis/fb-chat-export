@@ -16,7 +16,11 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 
 2026-06-06 20:00 | user | review sender name policy, fix editorconfig CRLF warning, fix UTF-8 encoding for Hungarian text, update AI interaction tracing
 2026-06-06 20:00 | ai | Restored corrupted UTF-8 files from git, added data-output-auto rules to .editorconfig and .gitattributes, verified sender name policy compliance, updated session logs and AI interaction docs
-2026-06-06 20:00 | commit (pending) | fix: restore Hungarian text encoding, add data-output-auto line-ending rules
+2026-06-06 20:00 | commit edc53eb | feat: add alias panel auto-populate, group chat mode, fix line endings and UTF-8 encoding
+
+2026-06-07 14:00 | user | continue from last session, commit staged, find interrupted request (stash wip: before userscript fix)
+2026-06-07 14:00 | ai | Committed staged changes (Links section cleanup, panel refactor, cleanup timer, Unicode validation). Found stash "wip: before userscript fix" — a refactoring to consolidate summary logic into export-formatter.js and add export-config.js, which was largely superseded by subsequent commits. Reviewed all stash files against current codebase: no feature loss. Resolved conflicts, removed stale orphan files, dropped stash. Working tree clean.
+2026-06-07 14:00 | commit 36714a4 | refactor: remove Links section from TODO scripts, add cleanup countdown and Unicode alias validation
 
 2026-06-06 18:00 | user | fix full-name img alt not fully aliased, add frontend auto-populate alias panel, add group chat checkbox
 2026-06-06 18:00 | ai | Fixed aliasChatNames to replace entire alt text for full-name matches; added setDetectedNames method to createAliasRows; collected original sender names during browser scan and auto-populate alias panel post-scan; added group chat mode checkbox

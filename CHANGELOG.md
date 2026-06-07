@@ -10,6 +10,7 @@ Changelog entries should describe active changes in direct present-tense stateme
 ## [Unreleased]
 
 ### Added
+- Add cleanup countdown timer after download in browser export panel
 - Add data_raw.name and data_preview.name fields with alias mapping to JSON exports
 - Alias panel in browser export auto-populates with detected sender names after scan completes
 - Group chat mode checkbox in alias panel controls whether new names auto-populate during scan
@@ -23,6 +24,10 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Browser export filenames include the selected date range when filtering by date.
 - Server build generates a structured JSON summary variant for programmatic consumption.
 - Server build generates a raw-date variant that shows the original date label text alongside the normalized date.
+
+### Changed
+- Alias name validation accepts Unicode characters, 1–3 words, max 25 characters, no numbers
+- Sender pattern includes underscore and hyphen characters
 
 ### Fixed
 
@@ -85,6 +90,10 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Monolithic test file split into per-module test files.
 - Entry-line regex and payload extraction support the raw-date parenthetical format.
 - TXT export schema and validation cover the JSON summary and raw-date export variants.
+- Remove Links section validation from TODO management scripts
+- Extract createDetailsPanel into shared ui.js module
+- Husky pre-commit hook reminds to update changelog, session logs, prompt files, and TODO files
+- Pre-commit checklist in AGENTS.md for AI agents to follow before every commit
 
 ## v5.4.0 (2026-05-18)
 

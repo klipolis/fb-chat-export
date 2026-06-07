@@ -14,6 +14,10 @@ Do not modify existing entries below. Update `project-logs/interaction-log.md` a
 
 ---
 
+2026-06-07 14:00 | user | continue from last session, commit staged, find interrupted request (stash userscript fix)
+2026-06-07 14:00 | ai | Committed Links section cleanup / panel refactor (36714a4), popped stash "wip: before userscript fix", reviewed all stash files vs current codebase — no feature loss, stash superseded by evolution, resolved conflicts, removed orphaned files, dropped stash
+2026-06-07 14:00 | commit 36714a4 | refactor: remove Links section from TODO scripts, add cleanup countdown and Unicode alias validation
+
 2026-06-06 20:00 | user | review sender name policy, fix editorconfig CRLF warning, fix UTF-8 encoding for Hungarian text, update AI interaction tracing
 2026-06-06 20:00 | ai | Restored corrupted UTF-8 files from git, added data-output-auto rules to .editorconfig and .gitattributes, verified sender name policy compliance, updated session logs and AI interaction docs
 
