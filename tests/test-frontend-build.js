@@ -14,7 +14,7 @@ tap.test('frontendBuildDist', (t) => {
     cwd: baseDir,
     encoding: 'utf8',
   });
-  t.equal(buildResult.status, 0, `build.js failed: ${buildResult.stderr || buildResult.stdout}`);
+  t.equal(buildResult.status, 0, `build.cjs failed: ${buildResult.stderr || buildResult.stdout}`);
 
   const distPath = path.join(baseDir, 'dist', 'app.js');
   t.ok(fs.existsSync(distPath), 'dist/app.js exists after build');

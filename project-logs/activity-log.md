@@ -14,6 +14,10 @@ Do not modify existing entries below. Update `project-logs/interaction-log.md` a
 
 ---
 
+2026-06-07 15:00 | user | run lint + validation, audit 15 inconsistencies, fix them all, review export1.txt, improve name regex
+2026-06-07 15:00 | ai | Fixed 15 inconsistencies across docs/configs/tests, expanded sender validation (50 chars, 5 words), added date:sender pattern, skipped duplicate Enter labels in parser, updated all affected tests, rebuilt frontend bundle
+2026-06-07 15:00 | commit <hash> | fix: resolve 15 inconsistencies, expand sender validation, deduplicate parser nodes
+
 2026-06-07 14:00 | user | continue from last session, commit staged, find interrupted request (stash userscript fix)
 2026-06-07 14:00 | ai | Committed Links section cleanup / panel refactor (36714a4), popped stash "wip: before userscript fix", reviewed all stash files vs current codebase — no feature loss, stash superseded by evolution, resolved conflicts, removed orphaned files, dropped stash
 2026-06-07 14:00 | commit 36714a4 | refactor: remove Links section from TODO scripts, add cleanup countdown and Unicode alias validation

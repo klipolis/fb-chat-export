@@ -24,13 +24,13 @@ Unused: includeContent, includeLength
 Aliases:
   You : Youghurt
   Rob : Barnabas
-  any : XYZ
+  any : ABC
 
 ---
 
 Total Summary
 22 posts / 8 days
-~ 216 words
+~ 221 words
 ~ 3 text
 ~ 3 reaction
 ~ 4 link
@@ -42,19 +42,22 @@ Total Summary
 ~ 2 voice note
 ~ 2 missed call
 ~ 1 unsent
-~ 3 calls 00:49:20
+~ 4 calls 00:49:41
 
-XYZ Summary
-11 posts / 5 days
-~ 212 words
+ABC Summary
+15 posts / 6 days
+~ 217 words
 ~ 3 text
 ~ 1 reaction
 ~ 2 link
-~ 1 image
+~ 2 image
+~ 1 sticker
+~ 1 poll
 ~ 1 video call
+~ 1 voice note
 ~ 2 missed call
 ~ 1 unsent
-~ 1 calls 00:31:00
+~ 2 calls 00:31:21
 
 Youghurt Summary
 6 posts / 3 days

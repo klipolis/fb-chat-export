@@ -24,7 +24,7 @@ Unused: includeContent, includeLength
 Aliases:
   You : Youghurt
   Rob : Barnabas
-  any : XYZ
+  any : ABC
 
 ---
 
@@ -34,11 +34,11 @@ Total Summary
 ~ 20 images
 ~ 4 calls 00:49:41
 
-XYZ Summary
-11 posts / 5 days
-~ 6 text / 206 words
-~ 9 images
-~ 1 calls 00:31:00
+ABC Summary
+15 posts / 6 days
+~ 8 text / 211 words
+~ 12 images
+~ 2 calls 00:31:21
 
 Youghurt Summary
 6 posts / 3 days

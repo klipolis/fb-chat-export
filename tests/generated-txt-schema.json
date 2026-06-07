@@ -7,10 +7,12 @@
     "audio-call",
     "deleted",
     "image",
+    "link",
     "link-embed-no-text",
     "link-text",
     "link-video",
     "missed-audio-call",
+    "missed-call",
     "missed-video-call",
     "poll",
     "reaction-emoji",
@@ -19,12 +21,13 @@
     "text-image-replied",
     "text-replied",
     "text",
+    "unsent",
     "video-call",
     "voice-note"
   ],
   "patterns": {
     "entryLine": "^\\[\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}\\](?:\\s\\([^)]*\\))?\\s[^:]+:\\s[^/]+(?:\\s/\\s.*)?$",
-    "duration": "^\\d{2}:\\d{2}:\\d{2}$",
+    "duration": "\\d{2}:\\d{2}:\\d{2}",
     "totalSummaryTitle": "^Total Summary$",
     "totalLine": "^\\d+\\s+(?:message|messages|post|posts)\\s*/\\s*\\d+\\s+(?:day|days)$",
     "roughTextLine": "^~\\s+\\d+\\s+text\\s*/\\s*\\d+\\s+words$",
@@ -59,7 +62,7 @@
     {
       "fileName": "export-summary-detailed.txt",
       "includeContent": false,
-      "includeSummary": false,
+      "includeSummary": true,
       "includeLength": false,
       "skipBodyValidation": true
     },

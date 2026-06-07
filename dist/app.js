@@ -215,9 +215,9 @@
   var require_sender_constants = __commonJS({
     "src/shared/sender-constants.js"(exports, module) {
       "use strict";
-      var SENDER_PATTERN_SOURCE = "\\p{L}[\\p{L} .'\\-_]{0,24}";
+      var SENDER_PATTERN_SOURCE = "\\p{L}[\\p{L} .'\\-_]{0,49}";
       var SENDER_RE = new RegExp(`^${SENDER_PATTERN_SOURCE}$`, "u");
-      var SENDER_MAX_WORDS = 3;
+      var SENDER_MAX_WORDS = 5;
       function isValidSender(value) {
         if (!SENDER_RE.test(value)) return false;
         if (/\d/.test(value)) return false;
@@ -447,6 +447,16 @@
             sender: match[3].trim(),
             message: ""
           };
+        }
+        {
+          const parts = label.split(":");
+          const potentialSender = parts.pop().trim();
+          if (isValidSender(potentialSender)) {
+            const datePart = parts.join(":").trim();
+            if (normalizeDateToIso3(datePart) || findValidDatePrefix(datePart)) {
+              return { date: datePart, sender: potentialSender, message: "" };
+            }
+          }
         }
         const colonIndex = label.indexOf(":");
         return {
@@ -903,10 +913,12 @@
           "audio-call",
           "deleted",
           "image",
+          "link",
           "link-embed-no-text",
           "link-text",
           "link-video",
           "missed-audio-call",
+          "missed-call",
           "missed-video-call",
           "poll",
           "reaction-emoji",
@@ -915,6 +927,7 @@
           "text-image-replied",
           "text-replied",
           "text",
+          "unsent",
           "video-call",
           "voice-note"
         ],
@@ -955,7 +968,7 @@
           {
             fileName: "export-summary-detailed.txt",
             includeContent: false,
-            includeSummary: false,
+            includeSummary: true,
             includeLength: false,
             skipBodyValidation: true
           },

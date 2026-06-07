@@ -129,9 +129,12 @@ tap.test('isValidSender', (t) => {
   // accepted: three words
   t.ok(isValidSender('majd a vegen'), 'three words accepted');
   t.ok(isValidSender('John Paul Jones'), 'three words accepted');
-  // rejected: four or more words
-  t.notOk(isValidSender('A B C D'), 'four words rejected');
-  t.notOk(isValidSender('one two three four'), 'four words rejected');
+  // accepted: four words
+  t.ok(isValidSender('A B C D'), 'four words accepted');
+  t.ok(isValidSender('one two three four'), 'four words accepted');
+  // rejected: six or more words
+  t.notOk(isValidSender('A B C D E F'), 'six words rejected');
+  t.notOk(isValidSender('one two three four five six'), 'six words rejected');
   // rejected: contains digit
   t.notOk(isValidSender('Alice 2024'), 'name with digit rejected');
   t.notOk(isValidSender('R2D2'), 'name with digits rejected');
@@ -142,12 +145,13 @@ tap.test('isValidSender', (t) => {
   t.ok(isValidSender("O'Brien"), "apostrophe in name accepted");
   t.ok(isValidSender('St. Claire'), 'period in name accepted');
   t.ok(isValidSender('Jean-Claude van Damme'), 'hyphen and three words accepted');
-  // length: shorter than 50 chars
+  // length: up to 50 chars
   t.ok(isValidSender('Aaaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbb Cccccccccccccc'), '49 chars accepted');
-  t.notOk(isValidSender('Aaaaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbb Cccccccccccccc'), '50 chars rejected');
-  const longName = 'A very long threeword name that is way more than allowed';
-  t.ok(longName.length > 49, 'longName exceeds 49 chars');
-  t.notOk(isValidSender(longName), 'name longer than 49 chars rejected');
+  t.ok(isValidSender('Aaaaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbb Cccccccccccccc'), '50 chars accepted');
+  t.notOk(isValidSender('Aaaaaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbb Cccccccccccccc'), '51 chars rejected');
+  const longName = 'Aaaaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbbb Ccccccccccccccccc';
+  t.ok(longName.length > 50, 'longName exceeds 50 chars');
+  t.notOk(isValidSender(longName), 'name longer than 50 chars rejected');
   t.end();
 });
 

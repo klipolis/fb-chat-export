@@ -6,9 +6,7 @@ export default [
     ignores: [
       'node_modules/**',
       'dist/**',
-      'Data-output-html/**',
-      'Data-output-json/**',
-      'Data-output-txt/**',
+
       '**/*.log',
     ],
   },

@@ -167,7 +167,7 @@ function parseMessageNodes(html, fileName, exportDate, metaMap) {
     const ariaLabelMatch = attrs.match(/aria-label="([^"]+)"/i);
     const ariaLabel = ariaLabelMatch ? ariaLabelMatch[1] : '';
     const normalizedLabel = normalizeLabel(ariaLabel);
-    if (/^(?:message actions|open attachment)/i.test(normalizedLabel)) {
+    if (/^(?:message actions|open attachment|enter,)/i.test(normalizedLabel)) {
       continue;
     }
     const rawMeta = Object.assign({}, metaMap.get(normalizedLabel) || {});
@@ -341,10 +341,20 @@ if (require.main === module) {
   main();
 }
 
+function parseRawHtml(rawHtml, fileName) {
+  const metaMap = buildMessageMetaMap(rawHtml);
+  const exportDate = formatLocalDateTime();
+  const nodes = parseMessageNodes(rawHtml, fileName, exportDate, metaMap);
+  const uniqueNodes = [...new Map(nodes.map((node) => [node.data_preview.content, node])).values()];
+  return uniqueNodes;
+}
+
 module.exports = {
   runCreateNodes: (htmlFilesByFile, opts) => main(htmlFilesByFile, opts),
   parseMessageNodes,
+  parseRawHtml,
   buildAllMessageMetaMap,
+  buildMessageMetaMap,
   extractHtmlLocale,
   extractRawDuration,
 };

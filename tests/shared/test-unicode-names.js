@@ -1,5 +1,5 @@
 const tap = require('tap');
-const { extractAriaLabelData, isValidSender } = require('../../src/shared/aria-label-parser.js');
+const { parseAriaLabel, isValidSender } = require('../../src/shared/aria-label-parser.js');
 
 // ---------------------------------------------------------------------------
 // Unicode name recognition tests
@@ -24,12 +24,12 @@ tap.test('isValidSender Unicode recognition', (t) => {
   t.end();
 });
 
-tap.test('extractAriaLabelData Unicode sender extraction', (t) => {
+tap.test('parseAriaLabel Unicode sender extraction', (t) => {
   // Extract Unicode sender names from aria-label
-  const result1 = extractAriaLabelData('Wednesday, June 2, 2026 at 10:30:Ötten Bernő');
+  const result1 = parseAriaLabel('Wednesday, June 2, 2026 at 10:30:Ötten Bernő');
   t.equal(result1.sender, 'Ötten Bernő', 'Hungarian sender extracted correctly');
 
-  const result2 = extractAriaLabelData('Wednesday, June 2, 2026 at 10:30:François Müller');
+  const result2 = parseAriaLabel('Wednesday, June 2, 2026 at 10:30:François Müller');
   t.equal(result2.sender, 'François Müller', 'French/German sender extracted correctly');
 
   t.end();

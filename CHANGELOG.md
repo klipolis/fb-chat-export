@@ -28,9 +28,19 @@ Changelog entries should describe active changes in direct present-tense stateme
 ### Changed
 - Alias name validation accepts Unicode characters, 1–3 words, max 25 characters, no numbers
 - Sender pattern includes underscore and hyphen characters
+- Sender validation accepts up to 50 characters and 5 words
+- Aria-label parser handles `date:sender` format where the colon directly precedes the sender name
+- Server parser skips redundant `Enter, Message sent` aria labels to avoid duplicate export nodes
+- Export config and generated-txt-schema align on `includeSummary`, `duration` pattern, and `messageTypes` values
+- Golden export summary files regenerated to match current server output
 
 ### Fixed
 
+- Stale documentation references in RELEASING.md and skill files
+- Error message label in test-frontend-build.js
+- Stale eslint ignore entries
+- Dead `referenceDateFormat` config option in server data config
+- Test expectations in name-fields, word-count-consistency, and aria-label-parser tests
 - Export and preview durations display in strict `HH:MM:SS` three-part format (e.g. `00:18:00`) with zero-padded hours.
 - Preview dates from relative weekday labels (e.g. `Saturday 4:36am`) resolve to the correct calendar date.
 - Alias replacement skips generic lowercase labels when anonymizing sender names.

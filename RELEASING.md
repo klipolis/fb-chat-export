@@ -38,6 +38,6 @@
 
 ## Notes
 
-- The `@version` in the userscript header template is set automatically from `data-config/userscript/header.txt` by `src/frontend/build.js`.
+- The `@version` in the userscript header template is set automatically from `data-config/userscript/header.txt` by `src/frontend/build.cjs`.
 - Use `pnpm` (not `npm`) for all package operations — it is managed via Corepack.
 - Do not bump the version until all intended changes for the release are committed and passing tests.

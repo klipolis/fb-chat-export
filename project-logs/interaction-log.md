@@ -14,6 +14,10 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 
 ---
 
+2026-06-07 15:00 | user | run lint + validation, audit inconsistencies, then fix all 15 items
+2026-06-07 15:00 | ai | Ran lint/validation (passed). Conducted 4 parallel audits finding 15 inconsistencies. Fixed stale docs, eslint config, export-config schema, server config, test fixtures. Wrapped parseRawHtml with dedup. Regenerated 3 golden files. Improved sender regex (50 chars, 5 words). Added date:sender pattern to parseAriaLabel. Skipped redundant Enter aria labels in parseMessageNodes. Updated all affected tests. Rebuilt frontend bundle.
+2026-06-07 15:00 | commit <hash> | fix: resolve 15 inconsistencies, expand sender validation, deduplicate parser nodes
+
 2026-06-06 20:00 | user | review sender name policy, fix editorconfig CRLF warning, fix UTF-8 encoding for Hungarian text, update AI interaction tracing
 2026-06-06 20:00 | ai | Restored corrupted UTF-8 files from git, added data-output-auto rules to .editorconfig and .gitattributes, verified sender name policy compliance, updated session logs and AI interaction docs
 2026-06-06 20:00 | commit edc53eb | feat: add alias panel auto-populate, group chat mode, fix line endings and UTF-8 encoding

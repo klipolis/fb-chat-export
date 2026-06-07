@@ -246,6 +246,18 @@ function parseAriaLabel(ariaLabel) {
     };
   }
 
+  // Handle "date:sender" format where colon directly precedes sender (no space)
+  {
+    const parts = label.split(':');
+    const potentialSender = parts.pop().trim();
+    if (isValidSender(potentialSender)) {
+      const datePart = parts.join(':').trim();
+      if (normalizeDateToIso(datePart) || findValidDatePrefix(datePart)) {
+        return { date: datePart, sender: potentialSender, message: '' };
+      }
+    }
+  }
+
   const colonIndex = label.indexOf(':');
   return {
     date: null,

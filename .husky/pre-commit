@@ -2,6 +2,7 @@ STAGED_SRC=$(git diff --cached --name-only --diff-filter=ACM | grep -cE '^(src/|
 STAGED_CHANGELOG=$(git diff --cached --name-only --diff-filter=ACM | grep -c 'CHANGELOG.md' || true)
 STAGED_LOGS=$(git diff --cached --name-only --diff-filter=ACM | grep -c 'project-logs/' || true)
 STAGED_TODO=$(git diff --cached --name-only --diff-filter=ACM | grep -c '\.TODO/' || true)
+STAGED_DOCS=$(git diff --cached --name-only --diff-filter=ACM | grep -cE '^(docs/|README.md|CHANGELOG.md)' || true)
 
 if [ "$STAGED_SRC" -gt 0 ] && [ "$STAGED_CHANGELOG" -eq 0 ]; then
   echo ""
@@ -16,8 +17,14 @@ if [ "$STAGED_SRC" -gt 0 ] && [ "$STAGED_LOGS" -eq 0 ]; then
 fi
 
 if [ "$STAGED_TODO" -gt 0 ]; then
-  echo "pnpm run lint:todos"
-  pnpm run lint:todos
+  echo ""
+  echo "Running lint:todos for staged .TODO/ changes..."
+  pnpm run lint:todos || true
+fi
+
+if [ "$STAGED_DOCS" -gt 0 ]; then
+  echo ""
+  echo "⚠  Pre-commit: docs/ were modified — run pnpm run lint:docs before pushing."
 fi
 
 echo ""
@@ -26,6 +33,7 @@ echo "   [ ] CHANGELOG.md — entries under ## [Unreleased]"
 echo "   [ ] project-logs/interaction-log.md — session record"
 echo "   [ ] project-logs/activity-log.md — activity summary"
 echo "   [ ] project-prompts/ — updated if guidance changed"
+echo "   [ ] docs/ — updated and linted if durable change"
 echo "   [ ] docs/AI-interaction/ — updated if durable change"
 echo "   [ ] .TODO/ — synced if tasks changed"
 echo ""

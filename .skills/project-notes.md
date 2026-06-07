@@ -23,7 +23,7 @@
 - Use `aria-label` for deduplication and remove `data-message-id` references from helper locators and export logic.
 - Keep changelog updates consistent in `CHANGELOG.md`.
 - Store build-specific bundle versions via `BUILD_VERSION` and validate that generated `dist/app.js` versions are correct in CI.
-- Keep frontend build entry rooted at `src/frontend/build.js` with root handoff from `src/builds.js` and header injection from `src/platforms/build.js`.
+- Keep frontend build entry rooted at `src/frontend/build.cjs` with header injection from `src/platforms/build.js`.
 - Keep frontend completion notice minimal: show conversation name, date interval, and elapsed scan time.
 - Keep server and frontend summary generation reusing shared schema concepts from `tests/generated-txt-schema.json`.
 - Keep aliased self label as `Youghurt` across frontend and server export outputs.
