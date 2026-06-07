@@ -74,6 +74,22 @@ tap.test('createLinkAction fires onClick with click, prevents default', (t) => {
   t.end();
 });
 
+tap.test('createDetailsPanel returns panel, summary, arrow, title', (t) => {
+  const w = makeWindow();
+  const ui = loadUi(w);
+  const result = ui.createDetailsPanel('Export Chat');
+  t.ok(result.panel, 'has panel element');
+  t.ok(result.summary, 'has summary element');
+  t.ok(result.arrow, 'has arrow element');
+  t.ok(result.title, 'has title element');
+  t.equal(result.panel.tagName.toLowerCase(), 'details', 'panel is a details element');
+  t.equal(result.summary.tagName.toLowerCase(), 'summary', 'summary is a summary element');
+  t.equal(result.title.textContent, 'Export Chat', 'title has correct text');
+  t.equal(result.arrow.getAttribute('aria-hidden'), 'true', 'arrow has aria-hidden');
+  t.ok(result.panel.open, 'panel is open by default');
+  t.end();
+});
+
 tap.test('createButton renders with correct label and background', (t) => {
   const w = makeWindow();
   const ui = loadUi(w);

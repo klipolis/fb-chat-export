@@ -1,4 +1,4 @@
-const SENDER_PATTERN_SOURCE = '\\p{L}[\\p{L} .\'-]{0,48}';
+const SENDER_PATTERN_SOURCE = '\\p{L}[\\p{L} .\'\\-_]{0,24}';
 const SENDER_RE = new RegExp(`^${SENDER_PATTERN_SOURCE}$`, 'u');
 const SENDER_MAX_WORDS = 3;
 

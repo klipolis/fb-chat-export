@@ -7,8 +7,7 @@
     "ignore": "TODO-ignore.md",
     "future": "TODO-future.md"
   },
-  "linksHeader": "Links",
-  "taskIdPattern": "^T-\\d{2,}$",
+  "emptyCategoryLabel": "- no tasks",
   "categories": [
     "Build / CI",
     "Test coverage",
@@ -23,7 +22,7 @@
     "Cleanup",
     "Process"
   ],
-  "instructions": "Get the T-number from .todo/config before adding tasks. Assign a stable T-number to each task in TODO-next and keep that number unchanged when moving the task to TODO-done. Keep one task per bullet, use a Links section for related references, and store TODO metadata inside .todo. Write task descriptions as direct present-action statements and avoid retrospective phrasing such as 'now ...'. Group done tasks under one of the canonical categories. Append the short commit hash (7 chars) in parentheses at the end of each done task entry when a clear commit reference exists.",
+  "instructions": "Fetch the T-number from .todo/config.json before adding tasks. Assign a stable T-number to each task and keep it unchanged when moving between files. Keep one task per bullet, write descriptions as outcome-focused statements, and group tasks by canonical categories.",
   "suggestions": [
     "Keep TODO-next focused on important developer and end-user work.",
     "Use shared config under data-config/frontend_shared.json and data-config/server.json for the date/alias rule source.",

@@ -13,7 +13,6 @@ function fail(message) {
 
 const TODO_DIR = resolveRepoPath('.TODO');
 const TODO_FILES = ['TODO-next.md', 'TODO-done.md', 'TODO-ignore.md', 'TODO-future.md'];
-const CONFIG_LINK = '.todo/config.json';
 
 function readAndValidate(filePath) {
   try {
@@ -31,37 +30,6 @@ function validateHeader(lines, relPath) {
   }
 }
 
-function getOtherTodoFiles(fileName) {
-  return TODO_FILES.filter((f) => f !== fileName);
-}
-
-function validateLinksSection(lines, relPath, fileName) {
-  const linkIdx = lines.findIndex((l) => /^##\s+Links\s*$/.test(l));
-  if (linkIdx === -1) {
-    fail(`${relPath}: missing '## Links' section`);
-    return;
-  }
-  const sepIdx = lines.findIndex((l, i) => i > linkIdx && /^---+/.test(l));
-  if (sepIdx === -1) {
-    fail(`${relPath}: '## Links' section must be followed by a '---' separator`);
-    return;
-  }
-  const linkBlock = lines.slice(linkIdx + 1, sepIdx).filter((l) => l.trim()).join(' ');
-
-  const otherFiles = getOtherTodoFiles(fileName);
-  for (const other of otherFiles) {
-    const esc = other.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    if (!new RegExp(esc).test(linkBlock)) {
-      fail(`${relPath}: Links section should reference ${other}`);
-    }
-  }
-
-  const escCfg = CONFIG_LINK.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  if (!new RegExp(escCfg).test(linkBlock) && !/\.todo\/config\.json/.test(linkBlock)) {
-    fail(`${relPath}: Links section should reference .todo/config.json`);
-  }
-}
-
 function validateTaskFormat(lines, relPath) {
   const linePrefixRe = /^\s*[-*]\s+T\d{2,}\.\s+/;
   const boldRe = /^\*\*/;
@@ -76,14 +44,10 @@ function validateTaskFormat(lines, relPath) {
 }
 
 function validateSectionHeaders(lines, relPath) {
-  let pastLinks = false;
   for (let i = 0; i < lines.length; i++) {
-    if (/^---+/.test(lines[i])) { pastLinks = true; continue; }
-    if (!pastLinks) continue;
     const hMatch = lines[i].match(/^##\s+(.+)$/);
     if (!hMatch) continue;
     const name = hMatch[1].trim();
-    if (name === 'Links') continue;
     if (/[:;]$/.test(name)) {
       fail(`${relPath}:${i + 1} section header '${name}' should not end with punctuation`);
     }
@@ -102,7 +66,6 @@ function main() {
     if (!lines) continue;
 
     validateHeader(lines, relPath);
-    validateLinksSection(lines, relPath, file);
     validateTaskFormat(lines, relPath);
     if (file === 'TODO-next.md') {
       validateSectionHeaders(lines, relPath);

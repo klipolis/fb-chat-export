@@ -12,6 +12,7 @@ import {
   formatExportFileName,
 } from '../../shared/frontend-utils.mjs';
 import {
+  createDetailsPanel,
   createButton,
   createCheckboxToggle,
   createAliasRows,
@@ -23,22 +24,17 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
 (function () {
   'use strict';
 
-  const panel = document.createElement('details');
-  panel.style.cssText =
-    'position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 99999; background: #fff; border: 1px solid #ddd; border-radius: 0 0 10px 10px; font-family: sans-serif; font-size: 13px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); min-width: 420px; max-width: calc(100% - 40px);';
-  panel.open = localStorage.getItem('chatExportPanelOpen') !== 'false';
+  const cleanupPending = sessionStorage.getItem('cleanupPending');
+  if (cleanupPending === 'true') {
+    sessionStorage.removeItem('exportFrom');
+    sessionStorage.removeItem('exportTo');
+    sessionStorage.removeItem('exportFileName');
+    sessionStorage.removeItem('cleanupPending');
+  }
 
-  const panelSummary = document.createElement('summary');
-  panelSummary.style.cssText =
-    'cursor: pointer; padding: 6px 10px; font-size: 12px; color: #555; background: #fafafa; display: flex; align-items: center; gap: 6px; user-select: none;';
-  const panelArrow = document.createElement('span');
-  panelArrow.textContent = '▲';
-  panelArrow.setAttribute('aria-hidden', 'true');
-  panelArrow.style.cssText = 'font-size: 10px; color: #aaa;';
-  const panelTitle = document.createElement('span');
-  panelTitle.textContent = 'Export Chat';
-  panelSummary.appendChild(panelArrow);
-  panelSummary.appendChild(panelTitle);
+  const { panel, summary: panelSummary, arrow: panelArrow } = createDetailsPanel('Export Chat');
+  panel.open = localStorage.getItem('chatExportPanelOpen') !== 'false';
+  panelSummary.setAttribute('aria-expanded', String(panel.open));
 
   panel.addEventListener('toggle', () => {
     panelArrow.textContent = panel.open ? '▲' : '▼';
@@ -54,7 +50,6 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
       noticeMsg.textContent = 'Scan cancelled.';
     }
   });
-  panelSummary.setAttribute('aria-expanded', String(panel.open));
 
   const instructions = document.createElement('div');
   instructions.style.cssText =
@@ -76,9 +71,13 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
   saveAgainLink.href = '#';
   saveAgainLink.style.cssText = 'display: none; margin-left: 8px; font-size: 11px; color: #27ae60; vertical-align: middle;';
 
+  const cleanupLine = document.createElement('div');
+  cleanupLine.style.cssText = 'display: none; margin-top: 4px; font-size: 11px; color: #888;';
+
   notice.appendChild(noticeMsg);
   notice.appendChild(downloadBtn);
   notice.appendChild(saveAgainLink);
+  notice.appendChild(cleanupLine);
 
   // body: inputs + scan button
   const body = document.createElement('div');
@@ -108,6 +107,9 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
     'Optional custom name',
     sessionStorage.getItem('exportFileName') || ''
   );
+
+  const { wrap: startAtBottomWrap, input: startAtBottomChk } = createCheckboxToggle('Start at bottom');
+  startAtBottomChk.checked = true;
 
   const actionBtn = createButton('Scan Messages', '#0084ff');
 
@@ -146,6 +148,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
   leftCol.appendChild(fromWrap);
   leftCol.appendChild(toWrap);
   leftCol.appendChild(fileNameWrap);
+  leftCol.appendChild(startAtBottomWrap);
   leftCol.appendChild(actionBtn);
 
   rightCol.appendChild(includeCallsWrap);
@@ -163,7 +166,6 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
   body.appendChild(rightCol);
 
   panel.appendChild(panelSummary);
-  panel.appendChild(instructions);
   panel.appendChild(notice);
   panel.appendChild(body);
 
@@ -180,6 +182,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
   panel.appendChild(termsNote);
 
   document.body.appendChild(panel);
+  document.body.appendChild(instructions);
 
   function formatDate(raw) {
     const d = new Date(raw);
@@ -261,6 +264,8 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
   let scrollTimeout = null;
   let downloadHandler = null;
   let stopRequested = false;
+  let countdownInterval = null;
+  let cleanupCountdownInterval = null;
 
   function setScanState(state) {
     if (state === 'scanning') {
@@ -321,6 +326,8 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
       clearTimeout(downloadRevokeTimeout);
       downloadRevokeTimeout = null;
     }
+    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+    if (cleanupCountdownInterval) { clearInterval(cleanupCountdownInterval); cleanupCountdownInterval = null; }
     stopRequested = false;
     sessionStorage.setItem('exportFrom', fromInput.value.trim());
     sessionStorage.setItem('exportTo', toInput.value.trim());
@@ -424,6 +431,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
           isCall,
           isImage,
           callMinutes,
+          wordCount: isCall || isImage ? 0 : (text ? text.split(/\s+/).filter(Boolean).length : 0),
           line: finalLine,
           exportEntry: lineEntry,
         });
@@ -466,14 +474,16 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
       return;
     }
 
-    const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
-    if (toDate) {
-      const latestVisible = getLatestVisibleMessageDate();
-      if (latestVisible && latestVisible > toDate) {
+    if (startAtBottomChk.checked) {
+      const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+      if (toDate) {
+        const latestVisible = getLatestVisibleMessageDate();
+        if (latestVisible && latestVisible > toDate) {
+          scroller.scrollTop = maxScrollTop;
+        }
+      } else {
         scroller.scrollTop = maxScrollTop;
       }
-    } else {
-      scroller.scrollTop = maxScrollTop;
     }
 
     const scanStartedAt = Date.now();
@@ -496,7 +506,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
         ) {
           actionBtn.dataset.scanning = 'false';
 
-          if (aliasChk.checked) {
+          if (aliasChk.checked && groupChatChk.checked) {
             setDetectedNames(detectedSenders);
           }
 
@@ -550,37 +560,80 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
 
           function setupDownload(downloadUrl) {
             noticeMsg.textContent = `${doneLabel}: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
+
+            let downloadedOnce = false;
+            let cleanupCountdown = 180;
+
             function triggerDownload(url) {
               const a = document.createElement('a');
               a.href = url;
               a.download = fileName;
               a.click();
             }
+
+            function cleanupExport() {
+              if (downloadUrl && downloadUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(downloadUrl);
+              }
+              downloadUrl = null;
+              if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+              saveAgainLink.style.display = 'none';
+              downloadBtn.style.display = 'none';
+              cleanupLine.style.display = 'none';
+              noticeMsg.textContent = 'Ready.';
+              if (downloadHandler) downloadBtn.removeEventListener('click', downloadHandler);
+              downloadHandler = null;
+              setScanState('idle');
+            }
+
             downloadBtn.style.display = '';
             downloadBtn.removeAttribute('aria-disabled');
             downloadBtn.style.opacity = '';
             downloadBtn.style.cursor = '';
-            downloadBtn.textContent = 'Save';
+            downloadBtn.textContent = 'Download';
             saveAgainLink.style.display = 'none';
             saveAgainLink.onclick = null;
+            cleanupLine.style.display = '';
             if (downloadHandler) downloadBtn.removeEventListener('click', downloadHandler);
+
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+              cleanupCountdown--;
+              if (cleanupCountdown <= 0) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+                cleanupLine.textContent = 'Cleaning...';
+                setTimeout(cleanupExport, 800);
+              } else {
+                cleanupLine.textContent = `Cleanup in ${cleanupCountdown}s`;
+              }
+            }, 1000);
+
             downloadHandler = () => {
               if (downloadBtn.getAttribute('aria-disabled') === 'true') return;
               downloadBtn.setAttribute('aria-disabled', 'true');
               downloadBtn.style.opacity = '0.5';
               downloadBtn.style.cursor = 'not-allowed';
               downloadBtn.textContent = 'Downloaded';
-              saveAgainLink.style.display = '';
-              saveAgainLink.onclick = (e) => { e.preventDefault(); triggerDownload(downloadUrl); };
               triggerDownload(downloadUrl);
-              if (downloadUrl.startsWith('blob:')) {
-                if (downloadRevokeTimeout) clearTimeout(downloadRevokeTimeout);
-                downloadRevokeTimeout = setTimeout(() => {
-                  URL.revokeObjectURL(downloadUrl);
-                  downloadRevokeTimeout = null;
-                }, 60000);
+
+              if (!downloadedOnce) {
+                downloadedOnce = true;
+                if (cleanupCountdown > 70) cleanupCountdown = 70;
+              } else {
+                if (cleanupCountdown > 60) cleanupCountdown = 60;
               }
+
+              saveAgainLink.style.display = '';
+              saveAgainLink.textContent = 'Download again';
+              saveAgainLink.onclick = (e) => {
+                e.preventDefault();
+                triggerDownload(downloadUrl);
+                if (cleanupCountdown > 60) cleanupCountdown = 60;
+                saveAgainLink.textContent = 'Download again';
+              };
             };
+
             downloadBtn.addEventListener('click', downloadHandler);
             setScanState('idle');
           }

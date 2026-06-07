@@ -51,11 +51,6 @@ function parseTaskIds(fileText) {
   return ids;
 }
 
-function assertLinksSection(fileText, expectedHeader) {
-  const regex = new RegExp(`^##\\s+${expectedHeader.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'm');
-  return regex.test(fileText);
-}
-
 function normalizeTaskLine(line) {
   const match = line.match(/^([*-]\s+T-?\d+\.\s*)(.+)$/i);
   if (!match) return { line, changed: false };
@@ -86,23 +81,18 @@ function validateTaskLanguage(filePath, fileText) {
   return { text: lines.join('\n'), invalidLines };
 }
 
-function addLinksHeader(fileText, expectedHeader) {
-  const trimmed = fileText.replace(/\s+$/, '');
-  return `${trimmed}\n\n## ${expectedHeader}\n`;
-}
-
 (function main() {
   const config = readJson(configPath);
   if (!config) process.exit(1);
 
-  const requiredFields = ['currentTaskPrefix', 'nextTaskNumber', 'todoFiles', 'linksHeader'];
+  const requiredFields = ['currentTaskPrefix', 'nextTaskNumber', 'todoFiles'];
   for (const field of requiredFields) {
     if (!(field in config)) {
       failHard(`Missing required field in .todo/config.json: ${field}`);
     }
   }
 
-  const { currentTaskPrefix, nextTaskNumber, todoFiles, linksHeader, taskIdPattern } = config;
+  const { currentTaskPrefix, nextTaskNumber, todoFiles, taskIdPattern } = config;
   if (typeof currentTaskPrefix !== 'string' || currentTaskPrefix.length === 0) {
     failHard('currentTaskPrefix must be a non-empty string.');
   }
@@ -142,17 +132,6 @@ function addLinksHeader(fileText, expectedHeader) {
         updatedFiles.set(filePath, fileText);
       } else {
         fail(`Task descriptions in ${repoRelative(filePath)} should not start with 'now'. Fix lines: ${invalidLines.join(', ')}.`);
-      }
-    }
-
-    if (!assertLinksSection(fileText, linksHeader)) {
-      if (isFix) {
-        console.log(`Added missing '${linksHeader}' section header to ${repoRelative(filePath)}.`);
-        fileText = addLinksHeader(fileText, linksHeader);
-        updatedFiles.set(filePath, fileText);
-        didFix = true;
-      } else {
-        fail(`${repoRelative(filePath)} must include a '${linksHeader}' section header.`);
       }
     }
 

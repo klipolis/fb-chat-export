@@ -215,7 +215,7 @@
   var require_sender_constants = __commonJS({
     "src/shared/sender-constants.js"(exports, module) {
       "use strict";
-      var SENDER_PATTERN_SOURCE = "\\p{L}[\\p{L} .'-]{0,48}";
+      var SENDER_PATTERN_SOURCE = "\\p{L}[\\p{L} .'\\-_]{0,24}";
       var SENDER_RE = new RegExp(`^${SENDER_PATTERN_SOURCE}$`, "u");
       var SENDER_MAX_WORDS = 3;
       function isValidSender(value) {
@@ -1599,6 +1599,26 @@ ${aliasLines}
   }
 
   // src/frontend/src/ui.js
+  function createDetailsPanel(titleText) {
+    const panel = document.createElement("details");
+    panel.style.cssText = "position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 99999; background: #fff; border: 1px solid #ddd; border-radius: 0 0 10px 10px; font-family: sans-serif; font-size: 13px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); min-width: 420px; max-width: calc(100% - 40px); max-height: calc(100vh - 20px); overflow-y: auto;";
+    panel.open = true;
+    const summary = document.createElement("summary");
+    summary.style.cssText = "cursor: pointer; padding: 6px 10px; font-size: 12px; color: #555; background: #fafafa; display: flex; align-items: center; gap: 6px; user-select: none;";
+    const arrow = document.createElement("span");
+    arrow.textContent = "\u25B2";
+    arrow.setAttribute("aria-hidden", "true");
+    arrow.style.cssText = "font-size: 10px; color: #aaa;";
+    const title = document.createElement("span");
+    title.textContent = titleText;
+    summary.appendChild(arrow);
+    summary.appendChild(title);
+    panel.appendChild(summary);
+    panel.addEventListener("toggle", () => {
+      arrow.textContent = panel.open ? "\u25B2" : "\u25BC";
+    });
+    return { panel, summary, arrow, title };
+  }
   function createLabelInput(labelText, placeholder, value) {
     const wrap = document.createElement("div");
     wrap.style.cssText = "display: flex; align-items: center; gap: 6px;";
@@ -1662,9 +1682,11 @@ ${aliasLines}
     const validateName = (name) => {
       const cleaned = String(name || "").trim();
       if (!cleaned) return false;
+      if (cleaned.length > 25) return false;
+      if (/\d/.test(cleaned)) return false;
       const parts = cleaned.split(/\s+/);
-      if (parts.length > 2) return false;
-      return parts.every((part) => /^[A-Za-z][A-Za-z.'-]*$/.test(part));
+      if (parts.length > 3) return false;
+      return /^\p{L}[\p{L} .'\-_]{0,24}$/u.test(cleaned);
     };
     const createRow = (orig, alias, fixed) => {
       const row = document.createElement("div");
@@ -1689,7 +1711,7 @@ ${aliasLines}
         originalInput.style.borderColor = validOriginal ? "#ccc" : "red";
         aliasInput.style.borderColor = validAlias ? "#ccc" : "red";
         if (!valid) {
-          error.textContent = "Names must be 1-2 words, letters only, dot/apostrophe/hyphen allowed.";
+          error.textContent = "Names must be 1-3 words, max 25 chars, no numbers.";
           error.style.display = "block";
         } else {
           error.style.display = "none";
@@ -1805,19 +1827,16 @@ ${aliasLines}
   var import_alias_utils = __toESM(require_alias_utils(), 1);
   (function() {
     "use strict";
-    const panel = document.createElement("details");
-    panel.style.cssText = "position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 99999; background: #fff; border: 1px solid #ddd; border-radius: 0 0 10px 10px; font-family: sans-serif; font-size: 13px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); min-width: 420px; max-width: calc(100% - 40px);";
+    const cleanupPending = sessionStorage.getItem("cleanupPending");
+    if (cleanupPending === "true") {
+      sessionStorage.removeItem("exportFrom");
+      sessionStorage.removeItem("exportTo");
+      sessionStorage.removeItem("exportFileName");
+      sessionStorage.removeItem("cleanupPending");
+    }
+    const { panel, summary: panelSummary, arrow: panelArrow } = createDetailsPanel("Export Chat");
     panel.open = localStorage.getItem("chatExportPanelOpen") !== "false";
-    const panelSummary = document.createElement("summary");
-    panelSummary.style.cssText = "cursor: pointer; padding: 6px 10px; font-size: 12px; color: #555; background: #fafafa; display: flex; align-items: center; gap: 6px; user-select: none;";
-    const panelArrow = document.createElement("span");
-    panelArrow.textContent = "\u25B2";
-    panelArrow.setAttribute("aria-hidden", "true");
-    panelArrow.style.cssText = "font-size: 10px; color: #aaa;";
-    const panelTitle = document.createElement("span");
-    panelTitle.textContent = "Export Chat";
-    panelSummary.appendChild(panelArrow);
-    panelSummary.appendChild(panelTitle);
+    panelSummary.setAttribute("aria-expanded", String(panel.open));
     panel.addEventListener("toggle", () => {
       panelArrow.textContent = panel.open ? "\u25B2" : "\u25BC";
       panelSummary.setAttribute("aria-expanded", String(panel.open));
@@ -1832,7 +1851,6 @@ ${aliasLines}
         noticeMsg.textContent = "Scan cancelled.";
       }
     });
-    panelSummary.setAttribute("aria-expanded", String(panel.open));
     const instructions = document.createElement("div");
     instructions.style.cssText = "padding: 6px 10px; font-size: 11px; color: #666; background: #fafafa;";
     instructions.textContent = "Start at the bottom of the conversation";
@@ -1848,9 +1866,12 @@ ${aliasLines}
     saveAgainLink.textContent = "Save again";
     saveAgainLink.href = "#";
     saveAgainLink.style.cssText = "display: none; margin-left: 8px; font-size: 11px; color: #27ae60; vertical-align: middle;";
+    const cleanupLine = document.createElement("div");
+    cleanupLine.style.cssText = "display: none; margin-top: 4px; font-size: 11px; color: #888;";
     notice.appendChild(noticeMsg);
     notice.appendChild(downloadBtn);
     notice.appendChild(saveAgainLink);
+    notice.appendChild(cleanupLine);
     const body = document.createElement("div");
     body.style.cssText = "display: flex; gap: 10px; padding: 8px 10px; align-items: flex-end;";
     const leftCol = document.createElement("div");
@@ -1874,6 +1895,8 @@ ${aliasLines}
       "Optional custom name",
       sessionStorage.getItem("exportFileName") || ""
     );
+    const { wrap: startAtBottomWrap, input: startAtBottomChk } = createCheckboxToggle("Start at bottom");
+    startAtBottomChk.checked = true;
     const actionBtn = createButton("Scan Messages", "#0084ff");
     const rightCol = document.createElement("div");
     rightCol.style.cssText = "display: flex; flex-direction: column; gap: 8px; min-width: 160px; padding-left: 10px;";
@@ -1900,6 +1923,7 @@ ${aliasLines}
     leftCol.appendChild(fromWrap);
     leftCol.appendChild(toWrap);
     leftCol.appendChild(fileNameWrap);
+    leftCol.appendChild(startAtBottomWrap);
     leftCol.appendChild(actionBtn);
     rightCol.appendChild(includeCallsWrap);
     rightCol.appendChild(aliasWrap);
@@ -1912,7 +1936,6 @@ ${aliasLines}
     body.appendChild(leftCol);
     body.appendChild(rightCol);
     panel.appendChild(panelSummary);
-    panel.appendChild(instructions);
     panel.appendChild(notice);
     panel.appendChild(body);
     const termsNote = document.createElement("div");
@@ -1927,6 +1950,7 @@ ${aliasLines}
     termsNote.appendChild(termsLink);
     panel.appendChild(termsNote);
     document.body.appendChild(panel);
+    document.body.appendChild(instructions);
     function formatDate(raw) {
       const d = new Date(raw);
       if (isNaN(d)) return raw;
@@ -2000,6 +2024,8 @@ ${aliasLines}
     let scrollTimeout = null;
     let downloadHandler = null;
     let stopRequested = false;
+    let countdownInterval = null;
+    let cleanupCountdownInterval = null;
     function setScanState(state) {
       if (state === "scanning") {
         actionBtn.textContent = "Stop Scan";
@@ -2052,6 +2078,14 @@ ${aliasLines}
       if (downloadRevokeTimeout !== null) {
         clearTimeout(downloadRevokeTimeout);
         downloadRevokeTimeout = null;
+      }
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+      if (cleanupCountdownInterval) {
+        clearInterval(cleanupCountdownInterval);
+        cleanupCountdownInterval = null;
       }
       stopRequested = false;
       sessionStorage.setItem("exportFrom", fromInput.value.trim());
@@ -2133,6 +2167,7 @@ ${aliasLines}
             isCall,
             isImage,
             callMinutes,
+            wordCount: isCall || isImage ? 0 : text ? text.split(/\s+/).filter(Boolean).length : 0,
             line: finalLine,
             exportEntry: lineEntry
           });
@@ -2166,14 +2201,16 @@ ${aliasLines}
         setScanState("idle");
         return;
       }
-      const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
-      if (toDate) {
-        const latestVisible = getLatestVisibleMessageDate();
-        if (latestVisible && latestVisible > toDate) {
+      if (startAtBottomChk.checked) {
+        const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+        if (toDate) {
+          const latestVisible = getLatestVisibleMessageDate();
+          if (latestVisible && latestVisible > toDate) {
+            scroller.scrollTop = maxScrollTop;
+          }
+        } else {
           scroller.scrollTop = maxScrollTop;
         }
-      } else {
-        scroller.scrollTop = maxScrollTop;
       }
       const scanStartedAt = Date.now();
       let stableCount = 0;
@@ -2186,45 +2223,79 @@ ${aliasLines}
           if (stopRequested || reachedFromDate || scroller.scrollTop <= 0 && stableCount >= 3) {
             let setupDownload = function(downloadUrl) {
               noticeMsg.textContent = `${doneLabel}: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
+              let downloadedOnce = false;
+              let cleanupCountdown = 180;
               function triggerDownload(url) {
                 const a = document.createElement("a");
                 a.href = url;
                 a.download = fileName;
                 a.click();
               }
+              function cleanupExport() {
+                if (downloadUrl && downloadUrl.startsWith("blob:")) {
+                  URL.revokeObjectURL(downloadUrl);
+                }
+                downloadUrl = null;
+                if (countdownInterval) {
+                  clearInterval(countdownInterval);
+                  countdownInterval = null;
+                }
+                saveAgainLink.style.display = "none";
+                downloadBtn.style.display = "none";
+                cleanupLine.style.display = "none";
+                noticeMsg.textContent = "Ready.";
+                if (downloadHandler) downloadBtn.removeEventListener("click", downloadHandler);
+                downloadHandler = null;
+                setScanState("idle");
+              }
               downloadBtn.style.display = "";
               downloadBtn.removeAttribute("aria-disabled");
               downloadBtn.style.opacity = "";
               downloadBtn.style.cursor = "";
-              downloadBtn.textContent = "Save";
+              downloadBtn.textContent = "Download";
               saveAgainLink.style.display = "none";
               saveAgainLink.onclick = null;
+              cleanupLine.style.display = "";
               if (downloadHandler) downloadBtn.removeEventListener("click", downloadHandler);
+              if (countdownInterval) clearInterval(countdownInterval);
+              countdownInterval = setInterval(() => {
+                cleanupCountdown--;
+                if (cleanupCountdown <= 0) {
+                  clearInterval(countdownInterval);
+                  countdownInterval = null;
+                  cleanupLine.textContent = "Cleaning...";
+                  setTimeout(cleanupExport, 800);
+                } else {
+                  cleanupLine.textContent = `Cleanup in ${cleanupCountdown}s`;
+                }
+              }, 1e3);
               downloadHandler = () => {
                 if (downloadBtn.getAttribute("aria-disabled") === "true") return;
                 downloadBtn.setAttribute("aria-disabled", "true");
                 downloadBtn.style.opacity = "0.5";
                 downloadBtn.style.cursor = "not-allowed";
                 downloadBtn.textContent = "Downloaded";
+                triggerDownload(downloadUrl);
+                if (!downloadedOnce) {
+                  downloadedOnce = true;
+                  if (cleanupCountdown > 70) cleanupCountdown = 70;
+                } else {
+                  if (cleanupCountdown > 60) cleanupCountdown = 60;
+                }
                 saveAgainLink.style.display = "";
+                saveAgainLink.textContent = "Download again";
                 saveAgainLink.onclick = (e) => {
                   e.preventDefault();
                   triggerDownload(downloadUrl);
+                  if (cleanupCountdown > 60) cleanupCountdown = 60;
+                  saveAgainLink.textContent = "Download again";
                 };
-                triggerDownload(downloadUrl);
-                if (downloadUrl.startsWith("blob:")) {
-                  if (downloadRevokeTimeout) clearTimeout(downloadRevokeTimeout);
-                  downloadRevokeTimeout = setTimeout(() => {
-                    URL.revokeObjectURL(downloadUrl);
-                    downloadRevokeTimeout = null;
-                  }, 6e4);
-                }
               };
               downloadBtn.addEventListener("click", downloadHandler);
               setScanState("idle");
             };
             actionBtn.dataset.scanning = "false";
-            if (aliasChk.checked) {
+            if (aliasChk.checked && groupChatChk.checked) {
               setDetectedNames(detectedSenders);
             }
             const sortedEntries = Array.from(collected.values()).sort((a, b) => a.ts - b.ts);

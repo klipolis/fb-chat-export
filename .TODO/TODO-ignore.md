@@ -1,13 +1,52 @@
 # TODO — Won't implement (by design)
 
-## Links
+Process instructions: fetch T-number from `.todo/config.json` before adding tasks. One task per bullet. Group by canonical categories. Keep T-numbers stable when moving tasks.
 
-- [TODO-next.md](TODO-next.md)
-- [TODO-done.md](TODO-done.md)
-- [TODO-future.md](TODO-future.md)
-- [.todo/config.json](../.todo/config.json)
+## Build / CI
 
----
+- no tasks
+
+## Test coverage
+
+- no tasks
+
+## Documentation
+
+- no tasks
+
+## Refactoring
+
+- no tasks
+
+## Schema & config
+
+- no tasks
+
+## Export format
+
+- no tasks
+
+## Message type detection
+
+- no tasks
+
+## Content extraction
+
+- no tasks
+
+## Alias / Anonymisation
+
+- no tasks
+
+## Frontend
+
+- no tasks
+
+## Cleanup
+
+- no tasks
+
+## Process
 
 - T-112. **Additional reaction sample files** — The reaction detector already covers all common Facebook emoji reactions; adding a separate test file for every variant would grow the snapshot set without testing new logic.
 - T-113. **Like / reaction counts in summary** — Reactions are excluded from the text count by design. A separate reaction counter is not planned.

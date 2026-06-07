@@ -1,13 +1,6 @@
 # TODO - Completed tasks
 
-## Links
-
-- [TODO-next.md](TODO-next.md)
-- [TODO-ignore.md](TODO-ignore.md)
-- [TODO-future.md](TODO-future.md)
-- [.todo/config.json](../.todo/config.json)
-
----
+Process instructions: fetch T-number from `.todo/config.json` before adding tasks. One task per bullet. Group by canonical categories. Keep T-numbers stable when moving tasks.
 
 ## Build / CI
 
@@ -36,7 +29,7 @@
 - T-243. Added data-output-auto/build-cache.json to .gitignore — generated cache state that should not be tracked (252b531)
 - T-255. Added dist/app.js bundle syntax validation using `node --check` before release (cccf06a)
 
-## Prompts / Docs
+## Documentation
 
 - T-274. Moved hot AI prompt files from docs/AI-interaction/prompts-collection/ → project-prompts/ and session logs from docs/logs/ and docs/AI-interaction/ai-logs/ → project-logs/; created scripts/run-prompt.cjs and pnpm prompt command
 

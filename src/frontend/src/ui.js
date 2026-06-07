@@ -1,7 +1,7 @@
 export function createDetailsPanel(titleText) {
   const panel = document.createElement('details');
   panel.style.cssText =
-    'position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 99999; background: #fff; border: 1px solid #ddd; border-radius: 0 0 10px 10px; font-family: sans-serif; font-size: 13px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); min-width: 420px; max-width: calc(100% - 40px);';
+    'position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 99999; background: #fff; border: 1px solid #ddd; border-radius: 0 0 10px 10px; font-family: sans-serif; font-size: 13px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); min-width: 420px; max-width: calc(100% - 40px); max-height: calc(100vh - 20px); overflow-y: auto;';
   panel.open = true;
 
   const summary = document.createElement('summary');
@@ -10,6 +10,7 @@ export function createDetailsPanel(titleText) {
 
   const arrow = document.createElement('span');
   arrow.textContent = '▲';
+  arrow.setAttribute('aria-hidden', 'true');
   arrow.style.cssText = 'font-size: 10px; color: #aaa;';
 
   const title = document.createElement('span');
@@ -150,9 +151,11 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
   const validateName = (name) => {
     const cleaned = String(name || '').trim();
     if (!cleaned) return false;
+    if (cleaned.length > 25) return false;
+    if (/\d/.test(cleaned)) return false;
     const parts = cleaned.split(/\s+/);
-    if (parts.length > 2) return false;
-    return parts.every((part) => /^[A-Za-z][A-Za-z.'-]*$/.test(part));
+    if (parts.length > 3) return false;
+    return /^\p{L}[\p{L} .'\-_]{0,24}$/u.test(cleaned);
   };
 
   const createRow = (orig, alias, fixed) => {
@@ -182,7 +185,7 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
       originalInput.style.borderColor = validOriginal ? '#ccc' : 'red';
       aliasInput.style.borderColor = validAlias ? '#ccc' : 'red';
       if (!valid) {
-        error.textContent = 'Names must be 1-2 words, letters only, dot/apostrophe/hyphen allowed.';
+        error.textContent = 'Names must be 1-3 words, max 25 chars, no numbers.';
         error.style.display = 'block';
       } else {
         error.style.display = 'none';

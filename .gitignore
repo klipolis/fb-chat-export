@@ -1,3 +1,5 @@
+.real-result/
+
 # Dependencies
 node_modules/
 .pnpm/

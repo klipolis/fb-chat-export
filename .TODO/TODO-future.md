@@ -1,26 +1,51 @@
 # TODO — Future tasks
 
-## Links
-
-- [TODO-next.md](TODO-next.md)
-- [TODO-done.md](TODO-done.md)
-- [TODO-ignore.md](TODO-ignore.md)
-- [.todo/config.json](../.todo/config.json)
-
----
+Process instructions: fetch T-number from `.todo/config.json` before adding tasks. One task per bullet. Group by canonical categories. Keep T-numbers stable when moving tasks.
 
 ## Build / CI
 
-- *(No future Build / CI tasks currently identified)*
-
-## Stability
-
-- *(No future Stability tasks currently identified)*
-
-## Refactoring
-
-- *(No future Refactoring tasks currently identified)*
+- no tasks
 
 ## Test coverage
 
-- *(No future Test coverage tasks currently identified)*
+- no tasks
+
+## Documentation
+
+- no tasks
+
+## Refactoring
+
+- no tasks
+
+## Schema & config
+
+- no tasks
+
+## Export format
+
+- no tasks
+
+## Message type detection
+
+- no tasks
+
+## Content extraction
+
+- no tasks
+
+## Alias / Anonymisation
+
+- no tasks
+
+## Frontend
+
+- no tasks
+
+## Cleanup
+
+- no tasks
+
+## Process
+
+- no tasks

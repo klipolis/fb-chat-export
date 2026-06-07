@@ -36,7 +36,6 @@ function createTodoFixture(rootDir) {
       ignore: 'ignore.md',
       future: 'future.md',
     },
-    linksHeader: 'Links',
     taskIdPattern: '^T\\d{2,}$',
   });
 
@@ -120,10 +119,6 @@ tap.test('validation scripts are failsafe and self-healing', (t) => {
 
     const nextFile = fs.readFileSync(path.join(tempRoot, '.todo', 'next.md'), 'utf8');
     t.notMatch(nextFile, /now tidy sample/, 'invalid "now" prefix should be removed by self-heal');
-    t.match(nextFile, /## Links/, 'Links header should be added to next.md when missing');
-
-    const ignoreFile = fs.readFileSync(path.join(tempRoot, '.todo', 'ignore.md'), 'utf8');
-    t.match(ignoreFile, /## Links/, 'Links header should be added to ignore.md when missing');
 
     t.ok(result.stdout.includes('self-healed'), 'todo management script should report self-heal success');
     t.end();
