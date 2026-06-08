@@ -425,18 +425,6 @@
             }
           }
         }
-        match = label.match(/^At\s+(.+),\s*([^:]+):\s*([\s\S]*)$/i);
-        if (match) {
-          const dateValue = match[1].trim();
-          const normalizedDate = normalizeDateToIso3(dateValue);
-          if (normalizedDate || findValidDatePrefix(dateValue)) {
-            return {
-              date: dateValue,
-              sender: match[2].trim(),
-              message: match[3].trim()
-            };
-          }
-        }
         {
           const labelParts = label.split(",");
           for (let i = 1; i < labelParts.length; i++) {
@@ -444,6 +432,8 @@
             const senderRest = labelParts.slice(i).join(",").trim();
             const byInDate = datePart.search(/\s+by\s+/i);
             if (byInDate >= 0) datePart = datePart.slice(0, byInDate).trim();
+            if (!datePart) continue;
+            if (datePart.search(/^At\s+/i) === 0) datePart = datePart.slice(3).trim();
             if (!datePart) continue;
             const colonIdx = senderRest.indexOf(":");
             if (colonIdx < 0) continue;

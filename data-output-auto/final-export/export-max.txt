@@ -29,8 +29,8 @@ Aliases:
 ---
 
 Total Summary
-22 messages / 8 days
-~ 12 text / 221 words
+23 messages / 9 days
+~ 13 text / 246 words
 ~ 20 images
 ~ 4 calls 00:49:41
 
@@ -41,8 +41,8 @@ ABC Summary
 ~ 2 calls 00:31:21
 
 Youghurt Summary
-6 messages / 3 days
-~ 4 text / 4 words
+7 messages / 4 days
+~ 5 text / 29 words
 ~ 5 images
 ~ 1 calls 00:18:00
 
@@ -56,6 +56,7 @@ Barnabas Summary
 [2026-04-12 13:23] Youghurt: audio-call 00:18:00
 [2026-04-14 18:34] ABC: text-image-replied 6 words / Well i didn't know about this
 [2026-04-16 10:55] ABC: text-replied 39 words / I now realised what happened. It must have been related to reviewers I added at a later stage from when we wen through that, and maybe I was duplicating and editing a reviewer who had the cancellation option on
+[2026-05-07 07:09] Youghurt: text-2 25 words / Hosting limitations, Google Mail or Microsoft better, bust their limit 500 emails per day. Today's day reminders sent out this morning: 272 emails at ~4am.
 [2026-05-16 04:36] ABC: image
 [2026-05-19 22:25] Youghurt: reaction-emoji 1 words / 🥳
 [2026-05-20 19:51] ABC: image

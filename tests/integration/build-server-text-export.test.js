@@ -103,7 +103,7 @@ tap.test('buildServerTextExport', (t) => {
   const summaryDetailedTxt = fs.readFileSync(summaryDetailedPath, 'utf8');
 
   t.ok(/\n\d+\s+posts\s*\/\s*\d+\s+days\n/.test(summaryTxt), 'Summary TXT should use posts for total summary');
-  t.ok(/\nXYZ Summary\n\d+\s+post(?:s)?\s*\/\s*\d+\s+days\n/.test(summaryTxt), 'Summary TXT should use post/posts for XYZ Summary');
+  t.ok(/\nABC Summary\n\d+\s+post(?:s)?\s*\/\s*\d+\s+days\n/.test(summaryTxt), 'Summary TXT should use post/posts for ABC Summary');
   t.ok(/\nYoughurt Summary\n\d+\s+post(?:s)?\s*\/\s*\d+\s+days\n/.test(summaryTxt), 'Summary TXT should use post/posts for Youghurt Summary');
 
   const uniqueDays = new Set(
@@ -126,11 +126,11 @@ tap.test('buildServerTextExport', (t) => {
   t.ok(/\n~\s+\d+\s+text\s*\/\s*\d+\s+words\n/.test(contentMax), 'export-max summary should include combined rough text/words totals');
   t.ok(/\n~\s+\d+\s+images\n/.test(contentMax), 'export-max summary should include rough image totals');
   t.ok(/\n~\s+\d+\s+calls\s+\d{2}:\d{2}:\d{2}\n/.test(contentMax), 'export-max summary should include rough call totals');
-  t.ok(/\nXYZ Summary\n/.test(contentMax), 'export-max summary should include XYZ Summary section');
+  t.ok(/\nABC Summary\n/.test(contentMax), 'export-max summary should include ABC Summary section');
   t.ok(/\nYoughurt Summary\n/.test(contentMax), 'export-max summary should include Youghurt Summary section');
   t.ok(
-    /\nXYZ Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text\s*\/\s*\d+\s+words\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d{2}:\d{2}:\d{2}\n/.test(contentMax),
-    'XYZ Summary should mirror total summary list style'
+    /\nABC Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text\s*\/\s*\d+\s+words\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d{2}:\d{2}:\d{2}\n/.test(contentMax),
+    'ABC Summary should mirror total summary list style'
   );
   t.ok(
     /\nYoughurt Summary\n\d+\s+(?:message|messages)\s*\/\s*\d+\s+(?:day|days)\n~\s+\d+\s+text\s*\/\s*\d+\s+words\n~\s+\d+\s+images\n~\s+\d+\s+calls\s+\d{2}:\d{2}:\d{2}\n/.test(contentMax),
@@ -237,8 +237,8 @@ tap.test('buildServerTextExport', (t) => {
     t.notOk(/[\r\n]/.test(line), `export-minimal line ${idx + 1} should be single-line text`);
   });
 
-  t.ok(bodyLinesOn.some((line) => line.includes('XYZ')), 'export-max export should contain aliased sender names');
-  t.ok(bodyLinesOff.some((line) => line.includes('XYZ')), 'export-minimal export should contain aliased sender names');
+  t.ok(bodyLinesOn.some((line) => line.includes('ABC')), 'export-max export should contain aliased sender names');
+  t.ok(bodyLinesOff.some((line) => line.includes('ABC')), 'export-minimal export should contain aliased sender names');
   t.notOk(bodyLinesOn.some((line) => line.includes('Rob')), 'export-max body should not contain raw sender names');
   t.notOk(bodyLinesOff.some((line) => line.includes('Rob')), 'export-minimal body should not contain raw sender names');
 
@@ -254,6 +254,15 @@ tap.test('buildServerTextExport', (t) => {
   // reactions: specific emoji characters appear in export-max output
   t.ok(bodyLinesOn.some((line) => line.includes('🥳')), 'reaction-emoji 🥳 appears in export-max TXT output');
   t.ok(bodyLinesOn.some((line) => line.includes('👍')), 'reaction 👍 appears in export-max TXT output');
+
+  // text-2: full message in aria-label, colon in message body
+  const text2Line = bodyLinesOn.find((l) => l.includes('text-2'));
+  t.ok(text2Line, 'export-max body includes text-2 line');
+  t.ok(text2Line.includes('[2026-05-07 07:09]'), 'text-2 line has correct date');
+  t.ok(text2Line.includes('Youghurt:'), 'text-2 line has aliased sender');
+  t.ok(text2Line.includes('25 words'), 'text-2 line shows 25 words');
+  t.ok(text2Line.includes('morning: 272'), 'text-2 line preserves colon in message body');
+  t.ok(text2Line.includes('emails at ~4am.'), 'text-2 line contains full message text');
 
   t.end();
 });

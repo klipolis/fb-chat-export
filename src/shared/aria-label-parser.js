@@ -224,20 +224,9 @@ function parseAriaLabel(ariaLabel) {
     }
   }
 
-  match = label.match(/^At\s+(.+),\s*([^:]+):\s*([\s\S]*)$/i);
-  if (match) {
-    const dateValue = match[1].trim();
-    const normalizedDate = normalizeDateToIso(dateValue);
-    if (normalizedDate || findValidDatePrefix(dateValue)) {
-      return {
-        date: dateValue,
-        sender: match[2].trim(),
-        message: match[3].trim(),
-      };
-    }
-  }
-
   // Iterate through each comma position to find the first valid date/sender boundary.
+  // Must run before the greedy regex below — the regex without sender validation
+  // can match the last colon in message text instead of the sender colon.
   // This handles formats like "Month DD, YYYY, H:MM AM, Sender: message" where the
   // lazy-quantifier approach would pick the wrong split (e.g. sender="2026, 7").
   {
@@ -248,6 +237,9 @@ function parseAriaLabel(ariaLabel) {
       // Truncate date at " by " if present — date could end before " by "
       const byInDate = datePart.search(/\s+by\s+/i);
       if (byInDate >= 0) datePart = datePart.slice(0, byInDate).trim();
+      if (!datePart) continue;
+      // Strip "At " prefix from date if present — it is metadata, not part of the date
+      if (datePart.search(/^At\s+/i) === 0) datePart = datePart.slice(3).trim();
       if (!datePart) continue;
       const colonIdx = senderRest.indexOf(':');
       if (colonIdx < 0) continue;

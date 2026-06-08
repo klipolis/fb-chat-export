@@ -14,6 +14,10 @@ Do not modify existing entries below. Update `project-logs/interaction-log.md` a
 
 ---
 
+2026-06-08 12:00 | user | test verify the export output, implement tests
+2026-06-08 12:00 | ai | Verified text-2 export output; updated golden snapshots; wrote unit + integration tests; fixed XYZ→ABC alias in integration test
+2026-06-08 12:00 | commit <staging> | test: verify export integrity with golden snapshots and text-2 fixture
+
 2026-06-08 12:00 | user | review what we did, fix call type detection ("quick call?" classified as voice-note)
 2026-06-08 12:00 | ai | Fixed plain "call" validation (≤2 words, letters only, no numbers) before voice-note classification; reordered video-call rule before link rule in message-rules.js; rebuilt frontend bundle
 

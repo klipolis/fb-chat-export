@@ -194,3 +194,57 @@ tap.test('scanToExportIntegration', (t) => {
 
   t.end();
 });
+
+// ---------------------------------------------------------------------------
+// text2FullMessageInLabel — extractMessageEntry with full message in aria-label
+// ---------------------------------------------------------------------------
+
+tap.test('text2FullMessageInLabel', (t) => {
+  const refDate = '2026.05.22 00:00';
+  const label =
+    'At May 7, 2026, 7:09 AM, You: Hosting limitations, Google Mail or Microsoft better, bust their limit 500 emails per day. Today\'s day reminders sent out this morning: 272 emails at ~4am.';
+  const dom = new JSDOM(`<div aria-roledescription="message" aria-label="${label}">Hosting limitations</div>`);
+  const entry = extractMessageEntry(
+    dom.window.document.querySelector('[aria-roledescription="message"]'),
+    'text-2.html',
+    refDate
+  );
+
+  t.equal(entry.sender, 'Youghurt', 'sender is aliased to Youghurt');
+  t.equal(entry.dateText, '2026-05-07 07:09', 'date is normalized to ISO-friendly format');
+  t.equal(entry.semanticType, 'text', 'type is text');
+  t.equal(entry.contentLength, '25 words', 'word count is 25');
+  t.ok(entry.content.startsWith('Hosting limitations'), 'content starts with the message text');
+  t.ok(entry.content.includes('morning: 272 emails'), 'content preserves colon inside message');
+  t.ok(entry.content.endsWith('emails at ~4am.'), 'content preserves full message text');
+  t.equal(entry.fileType, 'text-2', 'fileType is text-2 from filename');
+
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// text2FullPipeline — buildEntriesFromDocument with full text-2.html fixture
+// ---------------------------------------------------------------------------
+
+tap.test('text2FullPipeline', (t) => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'data-input-test', 'text-2.html'), 'utf8');
+  const dom = new JSDOM(html);
+  const entries = buildEntriesFromDocument(dom.window.document, 'text-2.html', referenceDate);
+
+  t.equal(entries.length, 1, 'text-2.html produces 1 deduplicated entry');
+
+  const entry = entries[0];
+  t.equal(entry.sender, 'Youghurt', 'sender is Youghurt');
+  t.equal(entry.semanticType, 'text', 'type is text');
+  t.equal(entry.contentLength, '25 words', 'word count is 25');
+  t.equal(entry.dateText, '2026-05-07 07:09', 'date is correct');
+  t.ok(entry.content.includes('morning: 272'), 'content preserves colon in message body');
+
+  const formattedLine = formatLine(entry, { includeContent: true, includeLength: true });
+  t.ok(formattedLine.startsWith('[2026-05-07 07:09] Youghurt: text-2 25 words /'), 'formatted line starts correctly');
+  t.ok(formattedLine.includes('morning: 272 emails'), 'formatted line preserves colon in message');
+
+  t.end();
+});

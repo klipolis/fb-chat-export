@@ -14,10 +14,15 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 
 ---
 
+2026-06-08 12:00 | user | test verify the export output, implement tests
+2026-06-08 12:00 | ai | Verified text-2 export output correct. Updated golden snapshots. Fixed pre-existing XYZ→ABC alias ref in integration test. Wrote text-2 unit tests (extractMessageEntry + full pipeline) and integration assertions. Restored accidental constants.js change.
+2026-06-08 12:00 | user | build and test, then commit all changes
+2026-06-08 12:00 | ai | Built, ran tests (all pass), updated session logs, committed.
+
 2026-06-08 12:00 | user | what did we do so far?
 2026-06-08 12:00 | ai | Anchored context summary, identified call type issue ("a quick call?" classified as voice-note). Fixed getContentMeta callMatch to validate plain "call" (≤2 words, letters only, no numbers) before classifying as voice-note. Fixed video-call rule positioning in message-rules.js (before link rule) so "video call" in aria-labels correctly matches video-call type. Rebuilt frontend bundle.
 2026-06-08 12:00 | user | continue
-2026-06-08 12:00 | ai | Updated CHANGELOG, session logs.
+2026-06-08 12:00 | ai | Reviewed export1.txt, identified text-2 parsing bug (greedy regex matched last colon instead of sender colon). Replaced greedy regex with comma-iteration that validates both date and sender. Added "At " prefix stripping. Rebuilt frontend bundle. Updated CHANGELOG, session logs.
 
 2026-06-07 20:00 | user | review updated export1.txt — names still failing, add more name/date finding rules
 2026-06-07 20:00 | ai | Added extractNameAfterBy helper for "by X" name extraction from labels. Added DOM-based name fallback (by X in child aria-labels, img alt text). Added isValidDateCandidate (max 6 words, only letters/digits/spaces/commas/colons/dashes). Updated findValidDatePrefix to truncate at " by ". Applied date validation to comma-iteration. Rebuilt frontend bundle. Updated pre-commit hook to enforce project-logs.

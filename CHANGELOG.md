@@ -45,6 +45,13 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Pre-commit hook blocks commits when source files change without staged AI interaction logs
 - Call detection no longer classifies user-typed sentences containing the word "call" as voice notes
 - Video call messages are correctly detected when the aria-label contains "video call"
+- Aria-label parser correctly extracts sender from labels where the message text contains a colon before the sender colon
+- Aria-label parser comma-iteration strips "At " prefix from the date part
+
+### Dev
+- Golden snapshot files updated to include text-2 fixture output
+- Export integration test verifies text-2 line date, sender, word count, and colon-preserved message body
+- Unit tests added for text-2 extractMessageEntry and full pipeline with text-2.html fixture
 
 - Stale documentation references in RELEASING.md and skill files
 - Error message label in test-frontend-build.js
