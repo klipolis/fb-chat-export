@@ -26,7 +26,7 @@ function findMatchingClosingTag(html, tag, fromIndex) {
   openRe.lastIndex = fromIndex;
   closeRe.lastIndex = fromIndex;
 
-  let depth = 1;
+  let depth = 0;
   let nextOpen = openRe.exec(html);
   let nextClose = closeRe.exec(html);
 
@@ -35,6 +35,12 @@ function findMatchingClosingTag(html, tag, fromIndex) {
       depth += 1;
       openRe.lastIndex = nextOpen.index + nextOpen[0].length;
       nextOpen = openRe.exec(html);
+      continue;
+    }
+
+    if (depth === 0) {
+      closeRe.lastIndex = nextClose.index + nextClose[0].length;
+      nextClose = closeRe.exec(html);
       continue;
     }
 

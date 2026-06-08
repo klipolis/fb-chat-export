@@ -1,41 +1,10 @@
-const { isValidSender, SENDER_PATTERN_SOURCE } = require('./sender-constants');
-
-function normalizeLabel(text) {
-  return String(text || '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-const SENDER_LAZY_RE = new RegExp(`^(${SENDER_PATTERN_SOURCE}?)(?:\\s+([\\s\\S]*))?$`, 'u');
-const SENDER_COLON_INLINE_RE = new RegExp(`^${SENDER_PATTERN_SOURCE}:\\s`, 'u');
-const SENDER_COLON_CAPTURE_RE = new RegExp(`^(${SENDER_PATTERN_SOURCE}):\\s*([\\s\\S]*)$`, 'u');
-
-function splitSenderAndMessage(value) {
-  const text = normalizeLabel(value);
-  const firstWordMatch = text.match(SENDER_LAZY_RE);
-  if (!firstWordMatch) return null;
-  let sender = normalizeLabel(firstWordMatch[1]);
-  const message = normalizeLabel(firstWordMatch[2] || '');
-  sender = extractNameAfterBy(sender);
-  if (!isValidSender(sender)) return null;
-  return { sender, message };
-}
-
-// Extracts the name after "by" if the string contains " by [Name]".
-// Returns the cleaned name or the original string.
-function extractNameAfterBy(text) {
-  const byIndex = text.lastIndexOf(' by ');
-  if (byIndex < 0) return text;
-  const candidate = text.slice(byIndex + 4).trim();
-  if (isValidSender(candidate) && !/^(sent|message|by)$/i.test(candidate)) {
-    return candidate;
-  }
-  return text;
+function _normalizeLabel(text) {
+  return require('./core').normalizeLabel(text);
 }
 
 let sharedRelativeDateRules = [];
 try {
-  sharedRelativeDateRules = require('../../data-config/frontend_shared.json').relativeDateRules || [];
+  sharedRelativeDateRules = require('../../../data-config/frontend_shared.json').relativeDateRules || [];
 } catch (err) {
   console.warn('aria-label-parser: failed to load shared relative date rules', err);
   sharedRelativeDateRules = [];
@@ -45,12 +14,10 @@ function isValidDateCandidate(text) {
   if (!text) return false;
   const words = text.trim().split(/\s+/);
   if (words.length > 6) return false;
-  // Reject text with unusual characters — only letters, digits, spaces, commas, colons, dashes allowed
   return /^[\p{L}\p{N}\s,\-:]+$/u.test(text.trim());
 }
 
 function findValidDatePrefix(text, referenceDate) {
-  // If " by " appears in text, try up to the first " by " as date
   const byIdx = text.search(/\s+by\s+/i);
   const searchText = byIdx >= 0 ? text.slice(0, byIdx) : text;
   const parts = searchText
@@ -133,218 +100,6 @@ function normalizeSharedRelativeDate(text, referenceDate) {
   return null;
 }
 
-function parseAriaLabel(ariaLabel) {
-  const label = normalizeLabel(ariaLabel).replace(/\s*,\s*/g, ', ');
-  let match;
-
-  match = label.match(/^At\s+(.+?),\s*([\p{L}]+(?:\s+[\p{L}]+){0,2})\s+[-–—]\s*([\s\S]*)$/iu);
-  if (match) {
-    let sender = match[2].trim();
-    let message = match[3].trim();
-    // Handle labels like "Alpha Yep — ..." where "Yep" belongs to message text.
-    const conversationalToken = sender.match(/\s(Yep|Yes|No|Ok|Okay)$/i);
-    if (conversationalToken) {
-      sender = sender.slice(0, -conversationalToken[0].length).trim();
-      message = `${conversationalToken[1]} - ${message}`;
-    }
-    return {
-      date: match[1].trim(),
-      sender,
-      message,
-    };
-  }
-
-  const atPrefix = label.match(/^At\s+([\s\S]*)$/i);
-  if (atPrefix) {
-    const tailParts = atPrefix[1]
-      .split(',')
-      .map((part) => part.trim())
-      .filter(Boolean);
-
-    if (tailParts.length >= 3) {
-      const maybeSender = tailParts[tailParts.length - 1];
-      const maybeDate = tailParts.slice(0, -1).join(', ');
-      // Skip last-part-as-sender when a middle part looks like "Sender: message"
-      // (the real sender is inline; the last part is trailing context, e.g. conversation name).
-      const hasInlineSenderColon = tailParts
-        .slice(1, -1)
-        .some((p) => SENDER_COLON_INLINE_RE.test(p));
-      if (!hasInlineSenderColon) {
-        const normalizedSender = extractNameAfterBy(maybeSender.trim());
-        if (isValidSender(normalizedSender)) {
-          return {
-            date: maybeDate.trim(),
-            sender: normalizedSender,
-            message: '',
-          };
-        }
-      }
-    }
-
-    if (tailParts.length >= 2) {
-      const maybeDate = tailParts[0];
-      const rest = tailParts.slice(1).join(', ');
-      // Handle inline "Sender: message" colon format that splitSenderAndMessage cannot parse.
-      const inlineMatch = rest.match(SENDER_COLON_CAPTURE_RE);
-      if (inlineMatch) {
-        const matchedSender = extractNameAfterBy(inlineMatch[1].trim());
-        if (isValidSender(matchedSender)) {
-          return {
-            date: maybeDate.trim(),
-            sender: matchedSender,
-            message: inlineMatch[2].trim(),
-          };
-        }
-      }
-      // "by X" fallback: extract name after " by " from the rest text
-      // checked before splitSenderAndMessage because "by" signals the sender
-      const byIndex = rest.lastIndexOf(' by ');
-      if (byIndex >= 0) {
-        const bySender = rest.slice(byIndex + 4).trim();
-        const colonIdx = bySender.indexOf(':');
-        const nameEnd = colonIdx >= 0 ? colonIdx : bySender.length;
-        const potentialBySender = bySender.slice(0, nameEnd).trim();
-        if (isValidSender(potentialBySender)) {
-          return {
-            date: maybeDate.trim(),
-            sender: potentialBySender,
-            message: colonIdx >= 0 ? bySender.slice(colonIdx + 1).trim() : '',
-          };
-        }
-      }
-
-      const senderAndMessage = splitSenderAndMessage(rest);
-      if (senderAndMessage) {
-        return {
-          date: maybeDate.trim(),
-          sender: senderAndMessage.sender,
-          message: senderAndMessage.message,
-        };
-      }
-    }
-  }
-
-  // Iterate through each comma position to find the first valid date/sender boundary.
-  // Must run before the greedy regex below — the regex without sender validation
-  // can match the last colon in message text instead of the sender colon.
-  // This handles formats like "Month DD, YYYY, H:MM AM, Sender: message" where the
-  // lazy-quantifier approach would pick the wrong split (e.g. sender="2026, 7").
-  {
-    const labelParts = label.split(',');
-    for (let i = 1; i < labelParts.length; i++) {
-      let datePart = labelParts.slice(0, i).join(',').trim();
-      const senderRest = labelParts.slice(i).join(',').trim();
-      // Truncate date at " by " if present — date could end before " by "
-      const byInDate = datePart.search(/\s+by\s+/i);
-      if (byInDate >= 0) datePart = datePart.slice(0, byInDate).trim();
-      if (!datePart) continue;
-      // Strip "At " prefix from date if present — it is metadata, not part of the date
-      if (datePart.search(/^At\s+/i) === 0) datePart = datePart.slice(3).trim();
-      if (!datePart) continue;
-      const colonIdx = senderRest.indexOf(':');
-      if (colonIdx < 0) continue;
-      if (!isValidDateCandidate(datePart)) continue;
-      const potentialSender = extractNameAfterBy(senderRest.slice(0, colonIdx).trim());
-      if (isValidSender(potentialSender)) {
-        return {
-          date: datePart,
-          sender: potentialSender,
-          message: senderRest.slice(colonIdx + 1).trim(),
-        };
-      }
-    }
-  }
-
-  // General "by X" pattern — extract sender name after "by"
-  // Handles: "At [date], [Message] sent by [Name]: message"
-  {
-    const byMatch = label.match(/^At\s+(.+?),\s*(?:Message\s+)?sent\s+by\s+(\p{L}[\p{L} .'\-_]*?)\s*:\s*([\s\S]*)$/iu);
-    if (byMatch) {
-      const potentialSender = byMatch[2].trim();
-      if (isValidSender(potentialSender)) {
-        return {
-          date: byMatch[1].trim(),
-          sender: potentialSender,
-          message: byMatch[3].trim(),
-        };
-      }
-    }
-  }
-
-  // Fallback: extract any name after " by " in the remaining part of the label
-  // This catches unusual phrasing where sender is preceded by "by"
-  {
-    const pos = label.search(/\bby\s+/i);
-    if (pos >= 0) {
-      const afterBy = label.slice(pos + 3).trim();
-      const colonIdx = afterBy.indexOf(':');
-      const nameEnd = colonIdx >= 0 ? colonIdx : afterBy.length;
-      const potentialSender = afterBy.slice(0, nameEnd).trim();
-      if (isValidSender(potentialSender)) {
-        return {
-          date: label.slice(0, pos).trim(),
-          sender: potentialSender,
-          message: colonIdx >= 0 ? afterBy.slice(colonIdx + 1).trim() : '',
-        };
-      }
-    }
-  }
-
-  match = label.match(/^Enter,\s*([^:]+?)\s+sent\s+(.+?)\s+by\s+([^:]+):\s*([\s\S]*)$/i);
-  if (match) {
-    return {
-      date: match[2].trim(),
-      sender: match[3].trim(),
-      message: match[4].trim(),
-    };
-  }
-
-  match = label.match(/^At\s+(.+),\s*([^:]+)$/i);
-  if (match) {
-    const senderAndMessage = splitSenderAndMessage(match[2]);
-    if (senderAndMessage) {
-      return {
-        date: match[1].trim(),
-        sender: senderAndMessage.sender,
-        message: senderAndMessage.message,
-      };
-    }
-    return {
-      date: match[1].trim(),
-      sender: match[2].trim(),
-      message: '',
-    };
-  }
-
-  match = label.match(/^Enter,\s*([^:]+?)\s+sent\s+(.+?)\s+by\s+([^:]+)$/i);
-  if (match) {
-    return {
-      date: match[2].trim(),
-      sender: match[3].trim(),
-      message: '',
-    };
-  }
-
-  // Handle "date:sender" format where colon directly precedes sender (no space)
-  {
-    const parts = label.split(':');
-    const potentialSender = parts.pop().trim();
-    if (isValidSender(potentialSender)) {
-      const datePart = parts.join(':').trim();
-      if (normalizeDateToIso(datePart) || findValidDatePrefix(datePart)) {
-        return { date: datePart, sender: potentialSender, message: '' };
-      }
-    }
-  }
-
-  const colonIndex = label.indexOf(':');
-  return {
-    date: null,
-    sender: null,
-    message: colonIndex >= 0 ? label.slice(colonIndex + 1).trim() : label,
-  };
-}
-
 function parseReferenceDate(value) {
   if (value instanceof Date) return new Date(value.getTime());
   if (typeof value === 'string') {
@@ -368,7 +123,7 @@ function parseReferenceDate(value) {
 
 function normalizeDateToSimple(dateString, referenceDate = new Date()) {
   if (!dateString) return null;
-  let text = normalizeLabel(dateString).replace(/^At\s+/i, '');
+  let text = _normalizeLabel(dateString).replace(/^At\s+/i, '');
   const parsed = Date.parse(text);
   if (!isNaN(parsed)) {
     const date = new Date(parsed);
@@ -487,14 +242,10 @@ function normalizeDateToIsoSafe(dateString, referenceDate, sourceLabel) {
 }
 
 module.exports = {
-  parseAriaLabel,
   parseReferenceDate,
   normalizeDateToSimple,
   normalizeDateToIso,
   normalizeDateToIsoSafe,
-  normalizeLabel,
-  isValidSender,
   findValidDatePrefix,
-  extractNameAfterBy,
   isValidDateCandidate,
 };

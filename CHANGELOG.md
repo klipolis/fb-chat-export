@@ -51,6 +51,14 @@ Changelog entries should describe active changes in direct present-tense stateme
 ### Added
 - Browser export panel wraps long status line and places download button on its own row
 - Browser export caches scan results in-memory for instant reuse on same-chat re-scans
+- Browser export adds copy-to-clipboard button, progress bar, preview pane, and scan ETA
+- Browser export persists alias mappings to localStorage across sessions
+- Browser export supports case-insensitive alias matching
+- Browser export starts scan on Escape key press to stop
+- Browser export provides auto-scan option that starts on panel open
+- Server build generates a full per-message JSON export variant
+- Troubleshooting guide for browser export in docs/user-guide/
+- Developer guide for adding new message types in docs/developer-guide/
 
 ### Changed
 - Browser export cleanup triggers only on new scan start instead of auto-countdown
@@ -62,6 +70,12 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Golden snapshot files updated to include text-2 fixture output
 - Export integration test checks text-2 date, sender, word count, and message body containing colons
 - Unit tests added for text-2 extractMessageEntry and full pipeline with text-2.html fixture
+- Aria-label parser refactored into sub-modules (core, date-utils, sender-utils, link-utils)
+- Unit tests added for string-utils.js (escapeRegExp, replaceWholeWord)
+- Unit tests added for html-utils.js (findMatchingClosingTag, cleanXClasses)
+- Unit tests added for extractMessageParts in browser export
+- Unit tests added for browser export cache (canReuseCached, computeAliasHash)
+- Full per-message JSON export module (src/shared/export-json.js)
 
 - Stale documentation references in RELEASING.md and skill files
 - Error message label in test-frontend-build.js

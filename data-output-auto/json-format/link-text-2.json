@@ -5,14 +5,14 @@
   "data_raw": {
     "date": "10:15 AM",
     "name": "Youghurt",
-    "content": "https://www.facebook.com/share/v/17hnQQBm6h/",
+    "content": null,
     "duration": "00:12:00",
     "length": null
   },
   "data_preview": {
     "date": "2026.06.08 10:15",
     "name": "Youghurt",
-    "content": "https://www.facebook.com/share/v/17hnQQBm6h/",
+    "content": "link",
     "duration": null,
     "length": null
   }

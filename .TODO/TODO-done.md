@@ -35,6 +35,10 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Test coverage
 
+- T-292. Add tests for browser export caching (canReuseCached, alias-only, narrower-date reuse)
+- T-293. Add unit tests for extractMessageParts in browser export
+- T-294. Add unit tests for string-utils.js (escapeRegExp, replaceWholeWord)
+- T-295. Add unit tests for html-utils.js (findMatchingClosingTag, cleanXClasses)
 - T-281. Add test for parallel worker pool termination — verify `pool.terminate()` rejects the promise immediately
 - T-273. Add test for worker pool error isolation — verify one failing worker doesn't hang the pool
 - T-66. Unit tests added for file-name and label-rule priority in type detection (a5f5d7f)
@@ -85,6 +89,8 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Documentation
 
+- T-296. Create user-facing troubleshooting guide for browser export (docs/user-guide/troubleshooting.md)
+- T-297. Add developer guide section on adding a new message type end-to-end (docs/developer-guide/adding-a-new-message-type.md)
 - T-275. Add developer guide section for worker pool architecture, error isolation, and graceful shutdown
 - T-102. Export format docs added to README (9ad105b)
 - T-124. TXT export header format, option state, and alias map documented in user guide (5727dfb)
@@ -119,6 +125,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Refactoring
 
+- T-299. Split aria-label-parser.js into focused sub-modules (core, date-utils, sender-utils, link-utils) for independent testability and maintainability
 - T-280. Remove unused re-exports from message-metadata.js — consumers import normalizeDuration and chooseRule directly from their canonical modules
 - T-270. Consolidate duplicate try-catch for normalizeDateToIso in export-text.js and export-formatter.js into a shared helper normalizeDateToIsoSafe
 - T-271. Extract worker pool logic from processFilesInParallel into reusable src/shared/worker-pool.js helper
@@ -164,6 +171,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-129. Updated sender name validation to allow three-word names up to 49 characters (5727dfb)
 - T-159. Added export-raw-date.txt variant including raw aria-label date text in parentheses alongside normalized date (d8bec65)
 - T-176. Wired selected date range into browser export filename (d8bec65)
+- T-300. Added full per-message JSON export variant (export-json-full) with all message fields as structured data for programmatic consumption
 
 ## Message type detection
 
@@ -213,6 +221,14 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-284. Group chat mode checkbox in alias panel controls auto-population behavior
 - T-286. Wrap the scan-finished result line for long output and move the download button onto its own line
 - T-291. Cache export data (messages + metadata) in browser local storage so re-scans of same chat reuse cached DOM data without re-scraping; invalidate when dates expand
+- T-301. Persist alias mappings to localStorage so they survive page reloads
+- T-302. Add case-insensitive alias matching checkbox in the browser panel
+- T-303. Add copy-to-clipboard button alongside the download button
+- T-304. Add progress bar indicator during scan
+- T-305. Add preview pane showing first 20 lines after scan completes
+- T-306. Add Escape key to stop an active scan
+- T-307. Show estimated time remaining during scan based on scroll rate
+- T-308. Add auto-scan checkbox option that starts scan on panel open
 
 - T-68. Date parser accepts slash-separated date formats (a87ec74)
 - T-69. Scan completion displays elapsed time (a87ec74)

@@ -232,27 +232,11 @@
     }
   });
 
-  // src/shared/aria-label-parser.js
-  var require_aria_label_parser = __commonJS({
-    "src/shared/aria-label-parser.js"(exports, module) {
+  // src/shared/aria-label-parser/sender-utils.js
+  var require_sender_utils = __commonJS({
+    "src/shared/aria-label-parser/sender-utils.js"(exports, module) {
       "use strict";
-      var { isValidSender: isValidSender2, SENDER_PATTERN_SOURCE } = require_sender_constants();
-      function normalizeLabel(text) {
-        return String(text || "").replace(/\s+/g, " ").trim();
-      }
-      var SENDER_LAZY_RE = new RegExp(`^(${SENDER_PATTERN_SOURCE}?)(?:\\s+([\\s\\S]*))?$`, "u");
-      var SENDER_COLON_INLINE_RE = new RegExp(`^${SENDER_PATTERN_SOURCE}:\\s`, "u");
-      var SENDER_COLON_CAPTURE_RE = new RegExp(`^(${SENDER_PATTERN_SOURCE}):\\s*([\\s\\S]*)$`, "u");
-      function splitSenderAndMessage(value) {
-        const text = normalizeLabel(value);
-        const firstWordMatch = text.match(SENDER_LAZY_RE);
-        if (!firstWordMatch) return null;
-        let sender = normalizeLabel(firstWordMatch[1]);
-        const message = normalizeLabel(firstWordMatch[2] || "");
-        sender = extractNameAfterBy2(sender);
-        if (!isValidSender2(sender)) return null;
-        return { sender, message };
-      }
+      var { isValidSender: isValidSender2 } = require_sender_constants();
       function extractNameAfterBy2(text) {
         const byIndex = text.lastIndexOf(" by ");
         if (byIndex < 0) return text;
@@ -261,6 +245,20 @@
           return candidate;
         }
         return text;
+      }
+      module.exports = {
+        extractNameAfterBy: extractNameAfterBy2,
+        isValidSender: isValidSender2
+      };
+    }
+  });
+
+  // src/shared/aria-label-parser/date-utils.js
+  var require_date_utils = __commonJS({
+    "src/shared/aria-label-parser/date-utils.js"(exports, module) {
+      "use strict";
+      function _normalizeLabel(text) {
+        return require_core().normalizeLabel(text);
       }
       var sharedRelativeDateRules = [];
       try {
@@ -350,6 +348,168 @@
           return `${year}.${month}.${day} ${hours}:${minutes}`;
         }
         return null;
+      }
+      function parseReferenceDate(value) {
+        if (value instanceof Date) return new Date(value.getTime());
+        if (typeof value === "string") {
+          const match = value.match(/^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})$/);
+          if (match) {
+            return new Date(
+              Number(match[1]),
+              Number(match[2]) - 1,
+              Number(match[3]),
+              Number(match[4]),
+              Number(match[5]),
+              0,
+              0
+            );
+          }
+          const parsed = new Date(value);
+          if (!Number.isNaN(parsed.getTime())) return parsed;
+        }
+        return /* @__PURE__ */ new Date();
+      }
+      function normalizeDateToSimple(dateString, referenceDate = /* @__PURE__ */ new Date()) {
+        if (!dateString) return null;
+        let text = _normalizeLabel(dateString).replace(/^At\s+/i, "");
+        const parsed = Date.parse(text);
+        if (!isNaN(parsed)) {
+          const date = new Date(parsed);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          const hours = String(date.getHours()).padStart(2, "0");
+          const minutes = String(date.getMinutes()).padStart(2, "0");
+          return `${year}.${month}.${day} ${hours}:${minutes}`;
+        }
+        const sharedNormalized = normalizeSharedRelativeDate(text, referenceDate);
+        if (sharedNormalized) return sharedNormalized;
+        const now = parseReferenceDate(referenceDate);
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const relativeMatch = text.match(/^(today|yesterday)(?:\s+at\s+)?(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+        if (relativeMatch) {
+          const [, when, hourPart, minute, meridiem] = relativeMatch;
+          const date = new Date(today);
+          if (when.toLowerCase() === "yesterday") date.setDate(date.getDate() - 1);
+          let hour = Number(hourPart);
+          if (meridiem) {
+            if (meridiem.toLowerCase() === "pm" && hour < 12) hour += 12;
+            if (meridiem.toLowerCase() === "am" && hour === 12) hour = 0;
+          }
+          date.setHours(hour, Number(minute), 0, 0);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          const hours = String(date.getHours()).padStart(2, "0");
+          return `${year}.${month}.${day} ${hours}:${minute}`;
+        }
+        const dayOfWeekMatch = text.match(
+          /^(sunday|monday|tuesday|wednesday|thursday|friday|saturday)(?:\s+(\d{1,2}):(\d{2})\s*(am|pm)?)?$/i
+        );
+        if (dayOfWeekMatch) {
+          const [, dayName, hourPart = "0", minute = "00", meridiem] = dayOfWeekMatch;
+          const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+          const targetDow = days.indexOf(dayName.toLowerCase());
+          const diff = (today.getDay() - targetDow + 7) % 7;
+          const date = new Date(today);
+          date.setDate(date.getDate() - diff);
+          let hour = Number(hourPart);
+          if (meridiem) {
+            if (meridiem.toLowerCase() === "pm" && hour < 12) hour += 12;
+            if (meridiem.toLowerCase() === "am" && hour === 12) hour = 0;
+          }
+          date.setHours(hour, Number(minute), 0, 0);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          const hours = String(date.getHours()).padStart(2, "0");
+          return `${year}.${month}.${day} ${hours}:${minute}`;
+        }
+        const timeOnlyMatch = text.match(/^(?:at\s*)?(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+        if (timeOnlyMatch) {
+          const [, hourPart, minute, meridiem] = timeOnlyMatch;
+          const date = new Date(today);
+          let hour = Number(hourPart);
+          if (meridiem) {
+            if (meridiem.toLowerCase() === "pm" && hour < 12) hour += 12;
+            if (meridiem.toLowerCase() === "am" && hour === 12) hour = 0;
+          }
+          date.setHours(hour, Number(minute), 0, 0);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          const hours = String(date.getHours()).padStart(2, "0");
+          return `${year}.${month}.${day} ${hours}:${minute}`;
+        }
+        const fullMatch = text.match(
+          /^([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4}),\s*(\d{1,2}):(\d{2})\s*(am|pm)?$/i
+        );
+        if (fullMatch) {
+          const [, monthName, day, year, hourPart, minute, meridiem] = fullMatch;
+          let hour = Number(hourPart);
+          if (meridiem) {
+            if (meridiem.toLowerCase() === "pm" && hour < 12) hour += 12;
+            if (meridiem.toLowerCase() === "am" && hour === 12) hour = 0;
+          }
+          const monthIndex = (/* @__PURE__ */ new Date(`${monthName} 1, ${year}`)).getMonth() + 1;
+          return `${year}.${String(monthIndex).padStart(2, "0")}.${String(day).padStart(2, "0")} ${String(hour).padStart(2, "0")}:${minute}`;
+        }
+        return text;
+      }
+      function normalizeDateToIso3(dateString, referenceDate) {
+        if (!dateString) return null;
+        const normalized = normalizeDateToSimple(dateString, referenceDate);
+        if (!normalized) return null;
+        const [dayPart, timePart] = normalized.split(" ");
+        if (!dayPart || !timePart) return null;
+        const [year, month, day] = dayPart.split(".").map(Number);
+        const [hour, minute] = timePart.split(":").map(Number);
+        if (![year, month, day, hour, minute].every(Number.isFinite)) return null;
+        const date = new Date(year, month - 1, day, hour, minute, 0, 0);
+        if (isNaN(date.getTime())) return null;
+        return date.toISOString();
+      }
+      function normalizeDateToIsoSafe(dateString, referenceDate, sourceLabel) {
+        try {
+          return normalizeDateToIso3(dateString, referenceDate) || dateString;
+        } catch (err) {
+          console.warn(`${sourceLabel}: normalizeDateToIso failed for`, dateString, err);
+          return dateString;
+        }
+      }
+      module.exports = {
+        parseReferenceDate,
+        normalizeDateToSimple,
+        normalizeDateToIso: normalizeDateToIso3,
+        normalizeDateToIsoSafe,
+        findValidDatePrefix,
+        isValidDateCandidate
+      };
+    }
+  });
+
+  // src/shared/aria-label-parser/core.js
+  var require_core = __commonJS({
+    "src/shared/aria-label-parser/core.js"(exports, module) {
+      "use strict";
+      var { isValidSender: isValidSender2, SENDER_PATTERN_SOURCE } = require_sender_constants();
+      var { extractNameAfterBy: extractNameAfterBy2 } = require_sender_utils();
+      var { findValidDatePrefix, normalizeDateToIso: normalizeDateToIso3, isValidDateCandidate } = require_date_utils();
+      function normalizeLabel(text) {
+        return String(text || "").replace(/\s+/g, " ").trim();
+      }
+      var SENDER_LAZY_RE = new RegExp(`^(${SENDER_PATTERN_SOURCE}?)(?:\\s+([\\s\\S]*))?$`, "u");
+      var SENDER_COLON_INLINE_RE = new RegExp(`^${SENDER_PATTERN_SOURCE}:\\s`, "u");
+      var SENDER_COLON_CAPTURE_RE = new RegExp(`^(${SENDER_PATTERN_SOURCE}):\\s*([\\s\\S]*)$`, "u");
+      function splitSenderAndMessage(value) {
+        const text = normalizeLabel(value);
+        const firstWordMatch = text.match(SENDER_LAZY_RE);
+        if (!firstWordMatch) return null;
+        let sender = normalizeLabel(firstWordMatch[1]);
+        const message = normalizeLabel(firstWordMatch[2] || "");
+        sender = extractNameAfterBy2(sender);
+        if (!isValidSender2(sender)) return null;
+        return { sender, message };
       }
       function parseAriaLabel2(ariaLabel) {
         const label = normalizeLabel(ariaLabel).replace(/\s*,\s*/g, ", ");
@@ -526,134 +686,27 @@
           message: colonIndex >= 0 ? label.slice(colonIndex + 1).trim() : label
         };
       }
-      function parseReferenceDate(value) {
-        if (value instanceof Date) return new Date(value.getTime());
-        if (typeof value === "string") {
-          const match = value.match(/^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})$/);
-          if (match) {
-            return new Date(
-              Number(match[1]),
-              Number(match[2]) - 1,
-              Number(match[3]),
-              Number(match[4]),
-              Number(match[5]),
-              0,
-              0
-            );
-          }
-          const parsed = new Date(value);
-          if (!Number.isNaN(parsed.getTime())) return parsed;
-        }
-        return /* @__PURE__ */ new Date();
-      }
-      function normalizeDateToSimple(dateString, referenceDate = /* @__PURE__ */ new Date()) {
-        if (!dateString) return null;
-        let text = normalizeLabel(dateString).replace(/^At\s+/i, "");
-        const parsed = Date.parse(text);
-        if (!isNaN(parsed)) {
-          const date = new Date(parsed);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, "0");
-          const day = String(date.getDate()).padStart(2, "0");
-          const hours = String(date.getHours()).padStart(2, "0");
-          const minutes = String(date.getMinutes()).padStart(2, "0");
-          return `${year}.${month}.${day} ${hours}:${minutes}`;
-        }
-        const sharedNormalized = normalizeSharedRelativeDate(text, referenceDate);
-        if (sharedNormalized) return sharedNormalized;
-        const now = parseReferenceDate(referenceDate);
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const relativeMatch = text.match(/^(today|yesterday)(?:\s+at\s+)?(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
-        if (relativeMatch) {
-          const [, when, hourPart, minute, meridiem] = relativeMatch;
-          const date = new Date(today);
-          if (when.toLowerCase() === "yesterday") date.setDate(date.getDate() - 1);
-          let hour = Number(hourPart);
-          if (meridiem) {
-            if (meridiem.toLowerCase() === "pm" && hour < 12) hour += 12;
-            if (meridiem.toLowerCase() === "am" && hour === 12) hour = 0;
-          }
-          date.setHours(hour, Number(minute), 0, 0);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, "0");
-          const day = String(date.getDate()).padStart(2, "0");
-          const hours = String(date.getHours()).padStart(2, "0");
-          return `${year}.${month}.${day} ${hours}:${minute}`;
-        }
-        const dayOfWeekMatch = text.match(
-          /^(sunday|monday|tuesday|wednesday|thursday|friday|saturday)(?:\s+(\d{1,2}):(\d{2})\s*(am|pm)?)?$/i
-        );
-        if (dayOfWeekMatch) {
-          const [, dayName, hourPart = "0", minute = "00", meridiem] = dayOfWeekMatch;
-          const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-          const targetDow = days.indexOf(dayName.toLowerCase());
-          const diff = (today.getDay() - targetDow + 7) % 7;
-          const date = new Date(today);
-          date.setDate(date.getDate() - diff);
-          let hour = Number(hourPart);
-          if (meridiem) {
-            if (meridiem.toLowerCase() === "pm" && hour < 12) hour += 12;
-            if (meridiem.toLowerCase() === "am" && hour === 12) hour = 0;
-          }
-          date.setHours(hour, Number(minute), 0, 0);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, "0");
-          const day = String(date.getDate()).padStart(2, "0");
-          const hours = String(date.getHours()).padStart(2, "0");
-          return `${year}.${month}.${day} ${hours}:${minute}`;
-        }
-        const timeOnlyMatch = text.match(/^(?:at\s*)?(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
-        if (timeOnlyMatch) {
-          const [, hourPart, minute, meridiem] = timeOnlyMatch;
-          const date = new Date(today);
-          let hour = Number(hourPart);
-          if (meridiem) {
-            if (meridiem.toLowerCase() === "pm" && hour < 12) hour += 12;
-            if (meridiem.toLowerCase() === "am" && hour === 12) hour = 0;
-          }
-          date.setHours(hour, Number(minute), 0, 0);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, "0");
-          const day = String(date.getDate()).padStart(2, "0");
-          const hours = String(date.getHours()).padStart(2, "0");
-          return `${year}.${month}.${day} ${hours}:${minute}`;
-        }
-        const fullMatch = text.match(
-          /^([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4}),\s*(\d{1,2}):(\d{2})\s*(am|pm)?$/i
-        );
-        if (fullMatch) {
-          const [, monthName, day, year, hourPart, minute, meridiem] = fullMatch;
-          let hour = Number(hourPart);
-          if (meridiem) {
-            if (meridiem.toLowerCase() === "pm" && hour < 12) hour += 12;
-            if (meridiem.toLowerCase() === "am" && hour === 12) hour = 0;
-          }
-          const monthIndex = (/* @__PURE__ */ new Date(`${monthName} 1, ${year}`)).getMonth() + 1;
-          return `${year}.${String(monthIndex).padStart(2, "0")}.${String(day).padStart(2, "0")} ${String(hour).padStart(2, "0")}:${minute}`;
-        }
-        return text;
-      }
-      function normalizeDateToIso3(dateString, referenceDate) {
-        if (!dateString) return null;
-        const normalized = normalizeDateToSimple(dateString, referenceDate);
-        if (!normalized) return null;
-        const [dayPart, timePart] = normalized.split(" ");
-        if (!dayPart || !timePart) return null;
-        const [year, month, day] = dayPart.split(".").map(Number);
-        const [hour, minute] = timePart.split(":").map(Number);
-        if (![year, month, day, hour, minute].every(Number.isFinite)) return null;
-        const date = new Date(year, month - 1, day, hour, minute, 0, 0);
-        if (isNaN(date.getTime())) return null;
-        return date.toISOString();
-      }
-      function normalizeDateToIsoSafe(dateString, referenceDate, sourceLabel) {
-        try {
-          return normalizeDateToIso3(dateString, referenceDate) || dateString;
-        } catch (err) {
-          console.warn(`${sourceLabel}: normalizeDateToIso failed for`, dateString, err);
-          return dateString;
-        }
-      }
+      module.exports = {
+        normalizeLabel,
+        parseAriaLabel: parseAriaLabel2
+      };
+    }
+  });
+
+  // src/shared/aria-label-parser/index.js
+  var require_aria_label_parser = __commonJS({
+    "src/shared/aria-label-parser/index.js"(exports, module) {
+      "use strict";
+      var { normalizeLabel, parseAriaLabel: parseAriaLabel2 } = require_core();
+      var {
+        parseReferenceDate,
+        normalizeDateToSimple,
+        normalizeDateToIso: normalizeDateToIso3,
+        normalizeDateToIsoSafe,
+        findValidDatePrefix,
+        isValidDateCandidate
+      } = require_date_utils();
+      var { extractNameAfterBy: extractNameAfterBy2, isValidSender: isValidSender2 } = require_sender_utils();
       module.exports = {
         parseAriaLabel: parseAriaLabel2,
         parseReferenceDate,
@@ -1051,6 +1104,12 @@
             includeContent: true,
             includeSummary: true,
             includeRawDate: true
+          },
+          {
+            fileName: "export-json-full.json",
+            includeSummary: true,
+            includeContent: true,
+            content: "json"
           }
         ]
       };
@@ -1948,14 +2007,24 @@ ${aliasLines}
     noticeActions.style.cssText = "margin-top: 4px;";
     const downloadBtn = createButton("Download .txt", "#27ae60");
     downloadBtn.style.cssText += " display: none; margin-right: 8px; vertical-align: middle;";
+    const copyBtn = createButton("Copy", "#555");
+    copyBtn.title = "Copy export text to clipboard";
+    copyBtn.style.cssText += " display: none; margin-right: 8px; vertical-align: middle;";
     const saveAgainLink = document.createElement("a");
     saveAgainLink.textContent = "Save again";
     saveAgainLink.href = "#";
     saveAgainLink.style.cssText = "display: none; font-size: 11px; color: #27ae60; vertical-align: middle;";
     noticeActions.appendChild(downloadBtn);
+    noticeActions.appendChild(copyBtn);
     noticeActions.appendChild(saveAgainLink);
     notice.appendChild(noticeStatus);
     notice.appendChild(noticeActions);
+    const progressBar = document.createElement("progress");
+    progressBar.style.cssText = "width: 100%; height: 4px; margin-top: 4px; border-radius: 2px;";
+    progressBar.max = 100;
+    progressBar.value = 0;
+    progressBar.style.display = "none";
+    notice.appendChild(progressBar);
     const body = document.createElement("div");
     body.style.cssText = "display: flex; gap: 10px; padding: 8px 10px; align-items: flex-end;";
     const leftCol = document.createElement("div");
@@ -1985,12 +2054,23 @@ ${aliasLines}
     const rightCol = document.createElement("div");
     rightCol.style.cssText = "display: flex; flex-direction: column; gap: 8px; min-width: 160px; padding-left: 10px;";
     const { wrap: includeCallsWrap, input: includeCallsChk } = createCheckboxToggle("Calls");
-    const aliasDefaults = import_frontend_shared.default.aliasNames || { You: "Youghurt", any: "Alpha" };
+    const builtinAliases = import_frontend_shared.default.aliasNames || { You: "Youghurt", any: "Alpha" };
+    let persistedAliases = {};
+    try {
+      const p = JSON.parse(localStorage.getItem("chatExportAliases") || "{}");
+      if (typeof p === "object" && !Array.isArray(p)) persistedAliases = p;
+    } catch (_) {
+    }
+    const aliasDefaults = { ...builtinAliases, ...persistedAliases };
     const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk } = createAliasRows(aliasDefaults);
     const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle("Summary");
     const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle("Content");
     const { wrap: rawLinkWrap, input: rawLinkChk } = createCheckboxToggle("Raw link");
     const { wrap: lengthWrap, input: lengthChk } = createCheckboxToggle("Length");
+    const { wrap: caseInsensitiveWrap, input: caseInsensitiveChk } = createCheckboxToggle("A-i");
+    caseInsensitiveChk.title = "Case-insensitive alias matching";
+    const { wrap: autoScanWrap, input: autoScanChk } = createCheckboxToggle("Auto");
+    autoScanChk.title = "Auto-start scan when panel opens";
     function setAllChecked(state) {
       includeCallsChk.checked = state;
       aliasChk.checked = state;
@@ -2015,6 +2095,8 @@ ${aliasLines}
     rightCol.appendChild(includeContentWrap);
     rightCol.appendChild(rawLinkWrap);
     rightCol.appendChild(lengthWrap);
+    rightCol.appendChild(caseInsensitiveWrap);
+    rightCol.appendChild(autoScanWrap);
     rightCol.appendChild(selectAllLink);
     setAllChecked(true);
     body.appendChild(leftCol);
@@ -2022,6 +2104,12 @@ ${aliasLines}
     panel.appendChild(panelSummary);
     panel.appendChild(notice);
     panel.appendChild(body);
+    const previewWrap = document.createElement("div");
+    previewWrap.style.cssText = "display: none; padding: 4px 10px 8px;";
+    const previewEl = document.createElement("pre");
+    previewEl.style.cssText = "max-height: 160px; overflow-y: auto; font-size: 11px; line-height: 1.4; background: #f5f5f5; padding: 6px 8px; margin: 0; border-radius: 4px; border: 1px solid #e0e0e0; white-space: pre-wrap; word-break: break-all;";
+    previewWrap.appendChild(previewEl);
+    panel.appendChild(previewWrap);
     const termsNote = document.createElement("div");
     termsNote.style.cssText = "padding: 6px 10px 10px; font-size: 11px; color: #777;";
     const termsLabel = document.createTextNode("Terms: ");
@@ -2138,8 +2226,11 @@ ${aliasLines}
         downloadCleanup = null;
       }
       downloadBtn.style.display = "none";
+      copyBtn.style.display = "none";
       saveAgainLink.style.display = "none";
       saveAgainLink.onclick = null;
+      previewWrap.style.display = "none";
+      progressBar.style.display = "none";
       setScanState("idle");
     }
     function triggerDownload(url, fileName) {
@@ -2155,10 +2246,12 @@ ${aliasLines}
       downloadBtn.style.opacity = "";
       downloadBtn.style.cursor = "";
       downloadBtn.textContent = "Download";
+      copyBtn.style.display = "";
+      copyBtn.onclick = null;
       saveAgainLink.style.display = "none";
       saveAgainLink.onclick = null;
       if (downloadHandler) downloadBtn.removeEventListener("click", downloadHandler);
-      downloadCleanup = { url: downloadUrl, fileName: info.fileName };
+      downloadCleanup = { url: downloadUrl, fileName: info.fileName, text: info.exportText };
       downloadHandler = () => {
         if (downloadBtn.getAttribute("aria-disabled") === "true") return;
         triggerDownload(downloadUrl, info.fileName);
@@ -2172,8 +2265,36 @@ ${aliasLines}
           triggerDownload(downloadUrl, info.fileName);
         };
       };
+      copyBtn.onclick = () => {
+        if (!downloadCleanup) return;
+        navigator.clipboard.writeText(downloadCleanup.text).then(() => {
+          copyBtn.textContent = "Copied";
+          setTimeout(() => {
+            copyBtn.textContent = "Copy";
+          }, 2e3);
+        }).catch(() => {
+          copyBtn.textContent = "Failed";
+          setTimeout(() => {
+            copyBtn.textContent = "Copy";
+          }, 2e3);
+        });
+      };
+      if (info.messages.length > 0) {
+        previewEl.textContent = info.messages.slice(0, 20).join("");
+        previewWrap.style.display = "";
+      }
       downloadBtn.addEventListener("click", downloadHandler);
       setScanState("idle");
+    }
+    function lookupAlias(sender, aliasMap) {
+      if (!caseInsensitiveChk.checked) {
+        return aliasMap[sender] || aliasMap[sender.toLowerCase()] || aliasMap[sender.toUpperCase()] || aliasMap.any || sender;
+      }
+      const lower = String(sender).toLowerCase();
+      for (const key of Object.keys(aliasMap)) {
+        if (key.toLowerCase() === lower) return aliasMap[key];
+      }
+      return aliasMap.any || sender;
     }
     function computeAliasHash(aliasMap) {
       const sorted = Object.keys(aliasMap).sort().map((k) => `${k}:${aliasMap[k]}`).join("|");
@@ -2213,6 +2334,11 @@ ${aliasLines}
         fromInput.disabled = toInput.disabled = false;
       }
     }
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && actionBtn.dataset.scanning === "true") {
+        stopRequested = true;
+      }
+    });
     actionBtn.addEventListener("click", () => {
       if (actionBtn.dataset.scanning === "true") {
         stopRequested = true;
@@ -2277,7 +2403,7 @@ ${aliasLines}
           });
           summaryText = (0, import_export_summary.buildSummary)(cached.rawEntries, { useMessageLabel: true });
           messages = cached.rawEntries.map((e) => {
-            const aliasedSender = aliasChk.checked ? aliasMap[e.rawSender] || aliasMap.any || e.rawSender : e.rawSender;
+            const aliasedSender = aliasChk.checked ? lookupAlias(e.rawSender, aliasMap) : e.rawSender;
             const aliasedContent = aliasChk.checked ? (0, import_alias_utils.applyAliasToText)(e.text, aliasMap, e.rawSender) : e.text;
             const lineEntry = {
               fileType: e.displayType,
@@ -2324,7 +2450,7 @@ ${aliasLines}
           }));
           summaryText = (0, import_export_summary.buildSummary)(displayEntries, { useMessageLabel: true });
           messages = filtered.map((e) => {
-            const aliasedSender = aliasChk.checked ? aliasMap[e.rawSender] || aliasMap.any || e.rawSender : e.rawSender;
+            const aliasedSender = aliasChk.checked ? lookupAlias(e.rawSender, aliasMap) : e.rawSender;
             const aliasedContent = aliasChk.checked ? (0, import_alias_utils.applyAliasToText)(e.text, aliasMap, e.rawSender) : e.text;
             const lineEntry = {
               fileType: e.displayType,
@@ -2347,9 +2473,11 @@ ${aliasLines}
         const cacheFileName = customFileName || formatExportFileName(void 0, { fromDate: fromVal, toDate: toVal });
         const blob = new Blob([headerText + summaryText + messages.join("")], { type: "text/plain" });
         const downloadUrl = URL.createObjectURL(blob);
+        localStorage.setItem("chatExportAliases", JSON.stringify(aliasChk.checked ? getAliasMap() : {}));
         setupDownload(downloadUrl, {
           doneLabel: "Done",
           messages,
+          exportText: headerText + summaryText + messages.join(""),
           personName,
           fromLabel: cacheFromLabel,
           toLabel: cacheToLabel,
@@ -2396,8 +2524,7 @@ ${aliasLines}
           const authorLabel = (() => {
             if (!aliasChk.checked) return sender;
             const aliasMap3 = getAliasMap();
-            const normalizedSender = String(sender).trim();
-            return aliasMap3[normalizedSender] || aliasMap3[normalizedSender.toLowerCase()] || aliasMap3[normalizedSender.toUpperCase()] || aliasMap3.any || sender;
+            return lookupAlias(sender, aliasMap3);
           })();
           const callMinutes = (0, import_export_formatter.durationToMinutes)(duration);
           if (!includeCallsChk.checked && isCall) return;
@@ -2489,7 +2616,17 @@ ${aliasLines}
           collectVisible();
           const elapsedSec = Math.round((Date.now() - scanStartedAt) / 1e3);
           const scrollPct = scroller.scrollHeight > 0 ? Math.round((1 - scroller.scrollTop / scroller.scrollHeight) * 100) : 0;
-          noticeMsg.textContent = `Scanning... ${collected.size} collected (${elapsedSec}s, ~${scrollPct}% back).`;
+          let eta = "";
+          if (scrollPct > 0 && collected.size > 5 && elapsedSec > 2) {
+            const rate = collected.size / elapsedSec;
+            const estimateTotal = Math.round(collected.size / (scrollPct / 100));
+            const remaining = Math.max(0, estimateTotal - collected.size);
+            const remainingSec = rate > 0 ? Math.round(remaining / rate) : 0;
+            if (remainingSec > 0) eta = `, ~${remainingSec}s left`;
+          }
+          progressBar.style.display = "";
+          progressBar.value = scrollPct;
+          noticeMsg.textContent = `Scanning... ${collected.size} collected (${elapsedSec}s, ~${scrollPct}% back${eta}).`;
           if (stopRequested || reachedFromDate || scroller.scrollTop <= 0 && stableCount >= 3) {
             actionBtn.dataset.scanning = "false";
             if (aliasChk.checked && groupChatChk.checked) {
@@ -2567,9 +2704,11 @@ ${aliasLines}
               messages
             };
             try {
+              localStorage.setItem("chatExportAliases", JSON.stringify(aliasChk.checked ? getAliasMap() : {}));
               setupDownload(URL.createObjectURL(blob), {
                 doneLabel,
                 messages,
+                exportText: headerText + summaryText + messages.join(""),
                 personName: displayPersonName,
                 fromLabel,
                 toLabel,
@@ -2581,6 +2720,7 @@ ${aliasLines}
               reader.onload = (e) => setupDownload(e.target.result, {
                 doneLabel,
                 messages,
+                exportText: headerText + summaryText + messages.join(""),
                 personName: displayPersonName,
                 fromLabel,
                 toLabel,
@@ -2612,5 +2752,10 @@ ${aliasLines}
       }
       scanStep();
     });
+    if (autoScanChk.checked) {
+      setTimeout(() => {
+        actionBtn.click();
+      }, 100);
+    }
   })();
 })();

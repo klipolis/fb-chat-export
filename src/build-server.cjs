@@ -15,6 +15,7 @@ const {
   formatSummarySection,
 } = require('./shared/export-text');
 const { buildSummaryJson } = require('./shared/export-summary');
+const { buildFullJsonExport } = require('./shared/export-json');
 const { chooseRule } = require('./shared/rules');
 const { resolveRepoPath } = require('./shared/app-config');
 const schemaConfig = require('./shared/export-config.json');
@@ -211,13 +212,21 @@ function writeTextExports(files, cleanedHtmlByFile, referenceDate) {
   const summaryJsonPath = path.join(exportDir, 'export-summary-json.txt');
   const summaryJsonText = buildSummaryJson(sortedEntries, { fixedParticipants: participants });
   const rawDatePath = path.join(exportDir, 'export-raw-date.txt');
+
+  const fullJsonPath = path.join(exportDir, 'export-json-full.json');
+  const fullJsonText = buildFullJsonExport(sortedEntries, {
+    conversation: 'Chat Export',
+    fixedParticipants: participants,
+  });
+
   fs.writeFileSync(onPath, contentOn, 'utf8');
   fs.writeFileSync(offPath, contentOff, 'utf8');
   fs.writeFileSync(summaryCombinedPath, summaryCombined, 'utf8');
   fs.writeFileSync(summaryDetailedPath, summaryDetailed, 'utf8');
   fs.writeFileSync(summaryJsonPath, summaryJsonText, 'utf8');
   fs.writeFileSync(rawDatePath, rawDateText, 'utf8');
-  return [onPath, offPath, summaryCombinedPath, summaryDetailedPath, summaryJsonPath, rawDatePath];
+  fs.writeFileSync(fullJsonPath, fullJsonText, 'utf8');
+  return [onPath, offPath, summaryCombinedPath, summaryDetailedPath, summaryJsonPath, rawDatePath, fullJsonPath];
 }
 
 function validateGeneratedJson() {

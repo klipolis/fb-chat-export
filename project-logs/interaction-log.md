@@ -14,6 +14,30 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 
 ---
 
+2026-06-08 17:00 | user | add mor meaningful todo-next.md tasks
+2026-06-08 17:00 | ai | Wrote 17 tasks (T-292 to T-308) across 7 categories covering test coverage, documentation, refactoring, export format, aliases, and frontend features. Committed.
+
+2026-06-08 17:00 | commit 4a0cb63 | feat: implement 16 of 17 TODO-next tasks - frontend features, tests, refactor, JSON export, docs
+2026-06-08 17:00 | user | do them all
+2026-06-08 17:00 | ai | Implemented 16 of 17 tasks:
+  - T-292: Browser cache tests (canReuseCached, computeAliasHash) — 12/12 pass
+  - T-293: ExtractMessageParts tests — 23/23 pass
+  - T-294: String-utils tests (escapeRegExp, replaceWholeWord) — 33/33 pass
+  - T-295: Html-utils tests (findMatchingClosingTag, cleanXClasses) — 47/47 pass
+  - T-296: Troubleshooting guide (docs/user-guide/troubleshooting.md)
+  - T-297: Developer guide for adding message types (docs/developer-guide/adding-a-new-message-type.md)
+  - T-299: Split aria-label-parser.js into 4 sub-modules (core, date-utils, sender-utils, link-utils) — 94/94 tests pass
+  - T-300: Full per-message JSON export (src/shared/export-json.js, builds into final-export/)
+  - T-301: Alias persistence in localStorage (saves after scan, restores on page load)
+  - T-302: Case-insensitive alias matching checkbox in panel
+  - T-303: Copy-to-clipboard button alongside download
+  - T-304: Progress bar during scan
+  - T-305: Preview pane showing first 20 lines after scan
+  - T-306: Escape key stops active scan
+  - T-307: Estimated time remaining during scan
+  - T-308: Auto-scan panel open checkbox option
+  T-298 (CSS extraction) skipped — high-risk refactor best done in a focused session.
+
 2026-06-08 12:00 | user | test verify the export output, implement tests
 2026-06-08 12:00 | ai | Verified text-2 export output correct. Updated golden snapshots. Fixed pre-existing XYZ→ABC alias ref in integration test. Wrote text-2 unit tests (extractMessageEntry + full pipeline) and integration assertions. Restored accidental constants.js change.
 2026-06-08 12:00 | user | build and test, then commit all changes

@@ -1,7 +1,7 @@
 ﻿import sharedConfig from '../../../data-config/frontend_shared.json';
 import { getContentMeta, stripTrackingParams } from '../../shared/message-metadata.js';
 import { normalizeDuration } from '../../shared/duration-utils.js';
-import { parseAriaLabel, normalizeDateToIso, extractNameAfterBy, isValidSender } from '../../shared/aria-label-parser.js';
+import { parseAriaLabel, normalizeDateToIso, extractNameAfterBy, isValidSender } from '../../shared/aria-label-parser/index.js';
 import { buildSummary } from '../../shared/export-summary.js';
 import { formatExportHeader, formatLine, durationToMinutes } from '../../shared/export-formatter.js';
 import {
@@ -73,16 +73,28 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
   const downloadBtn = createButton('Download .txt', '#27ae60');
   downloadBtn.style.cssText += ' display: none; margin-right: 8px; vertical-align: middle;';
 
+  const copyBtn = createButton('Copy', '#555');
+  copyBtn.title = 'Copy export text to clipboard';
+  copyBtn.style.cssText += ' display: none; margin-right: 8px; vertical-align: middle;';
+
   const saveAgainLink = document.createElement('a');
   saveAgainLink.textContent = 'Save again';
   saveAgainLink.href = '#';
   saveAgainLink.style.cssText = 'display: none; font-size: 11px; color: #27ae60; vertical-align: middle;';
 
   noticeActions.appendChild(downloadBtn);
+  noticeActions.appendChild(copyBtn);
   noticeActions.appendChild(saveAgainLink);
 
   notice.appendChild(noticeStatus);
   notice.appendChild(noticeActions);
+
+  const progressBar = document.createElement('progress');
+  progressBar.style.cssText = 'width: 100%; height: 4px; margin-top: 4px; border-radius: 2px;';
+  progressBar.max = 100;
+  progressBar.value = 0;
+  progressBar.style.display = 'none';
+  notice.appendChild(progressBar);
 
   // body: inputs + scan button
   const body = document.createElement('div');
@@ -123,12 +135,19 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
     'display: flex; flex-direction: column; gap: 8px; min-width: 160px; padding-left: 10px;';
 
   const { wrap: includeCallsWrap, input: includeCallsChk } = createCheckboxToggle('Calls');
-  const aliasDefaults = sharedConfig.aliasNames || { You: 'Youghurt', any: 'Alpha' };
+  const builtinAliases = sharedConfig.aliasNames || { You: 'Youghurt', any: 'Alpha' };
+  let persistedAliases = {};
+  try { const p = JSON.parse(localStorage.getItem('chatExportAliases') || '{}'); if (typeof p === 'object' && !Array.isArray(p)) persistedAliases = p; } catch (_) { /* ignore */ }
+  const aliasDefaults = { ...builtinAliases, ...persistedAliases };
   const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk } = createAliasRows(aliasDefaults);
   const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle('Summary');
   const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle('Content');
   const { wrap: rawLinkWrap, input: rawLinkChk } = createCheckboxToggle('Raw link');
   const { wrap: lengthWrap, input: lengthChk } = createCheckboxToggle('Length');
+  const { wrap: caseInsensitiveWrap, input: caseInsensitiveChk } = createCheckboxToggle('A-i');
+  caseInsensitiveChk.title = 'Case-insensitive alias matching';
+  const { wrap: autoScanWrap, input: autoScanChk } = createCheckboxToggle('Auto');
+  autoScanChk.title = 'Auto-start scan when panel opens';
   function setAllChecked(state) {
     includeCallsChk.checked = state;
     aliasChk.checked = state;
@@ -162,6 +181,8 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
   rightCol.appendChild(includeContentWrap);
   rightCol.appendChild(rawLinkWrap);
   rightCol.appendChild(lengthWrap);
+  rightCol.appendChild(caseInsensitiveWrap);
+  rightCol.appendChild(autoScanWrap);
   rightCol.appendChild(selectAllLink);
 
   // Start with full-info mode selected by default.
@@ -173,6 +194,13 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
   panel.appendChild(panelSummary);
   panel.appendChild(notice);
   panel.appendChild(body);
+
+  const previewWrap = document.createElement('div');
+  previewWrap.style.cssText = 'display: none; padding: 4px 10px 8px;';
+  const previewEl = document.createElement('pre');
+  previewEl.style.cssText = 'max-height: 160px; overflow-y: auto; font-size: 11px; line-height: 1.4; background: #f5f5f5; padding: 6px 8px; margin: 0; border-radius: 4px; border: 1px solid #e0e0e0; white-space: pre-wrap; word-break: break-all;';
+  previewWrap.appendChild(previewEl);
+  panel.appendChild(previewWrap);
 
   const termsNote = document.createElement('div');
   termsNote.style.cssText = 'padding: 6px 10px 10px; font-size: 11px; color: #777;';
@@ -304,8 +332,11 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
       downloadCleanup = null;
     }
     downloadBtn.style.display = 'none';
+    copyBtn.style.display = 'none';
     saveAgainLink.style.display = 'none';
     saveAgainLink.onclick = null;
+    previewWrap.style.display = 'none';
+    progressBar.style.display = 'none';
     setScanState('idle');
   }
 
@@ -324,11 +355,13 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
     downloadBtn.style.opacity = '';
     downloadBtn.style.cursor = '';
     downloadBtn.textContent = 'Download';
+    copyBtn.style.display = '';
+    copyBtn.onclick = null;
     saveAgainLink.style.display = 'none';
     saveAgainLink.onclick = null;
     if (downloadHandler) downloadBtn.removeEventListener('click', downloadHandler);
 
-    downloadCleanup = { url: downloadUrl, fileName: info.fileName };
+    downloadCleanup = { url: downloadUrl, fileName: info.fileName, text: info.exportText };
 
     downloadHandler = () => {
       if (downloadBtn.getAttribute('aria-disabled') === 'true') return;
@@ -344,8 +377,35 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
       };
     };
 
+    copyBtn.onclick = () => {
+      if (!downloadCleanup) return;
+      navigator.clipboard.writeText(downloadCleanup.text).then(() => {
+        copyBtn.textContent = 'Copied';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+      }).catch(() => {
+        copyBtn.textContent = 'Failed';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+      });
+    };
+
+    if (info.messages.length > 0) {
+      previewEl.textContent = info.messages.slice(0, 20).join('');
+      previewWrap.style.display = '';
+    }
+
     downloadBtn.addEventListener('click', downloadHandler);
     setScanState('idle');
+  }
+
+  function lookupAlias(sender, aliasMap) {
+    if (!caseInsensitiveChk.checked) {
+      return aliasMap[sender] || aliasMap[sender.toLowerCase()] || aliasMap[sender.toUpperCase()] || aliasMap.any || sender;
+    }
+    const lower = String(sender).toLowerCase();
+    for (const key of Object.keys(aliasMap)) {
+      if (key.toLowerCase() === lower) return aliasMap[key];
+    }
+    return aliasMap.any || sender;
   }
 
   function computeAliasHash(aliasMap) {
@@ -388,6 +448,12 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
       fromInput.disabled = toInput.disabled = false;
     }
   }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && actionBtn.dataset.scanning === 'true') {
+      stopRequested = true;
+    }
+  });
 
   actionBtn.addEventListener('click', () => {
     if (actionBtn.dataset.scanning === 'true') {
@@ -463,7 +529,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
         summaryText = buildSummary(cached.rawEntries, { useMessageLabel: true });
         messages = cached.rawEntries.map((e) => {
           const aliasedSender = aliasChk.checked
-            ? (aliasMap[e.rawSender] || aliasMap.any || e.rawSender)
+            ? lookupAlias(e.rawSender, aliasMap)
             : e.rawSender;
           const aliasedContent = aliasChk.checked
             ? applyAliasToText(e.text, aliasMap, e.rawSender)
@@ -505,7 +571,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
         summaryText = buildSummary(displayEntries, { useMessageLabel: true });
         messages = filtered.map((e) => {
           const aliasedSender = aliasChk.checked
-            ? (aliasMap[e.rawSender] || aliasMap.any || e.rawSender)
+            ? lookupAlias(e.rawSender, aliasMap)
             : e.rawSender;
           const aliasedContent = aliasChk.checked
             ? applyAliasToText(e.text, aliasMap, e.rawSender)
@@ -533,9 +599,11 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
 
       const blob = new Blob([headerText + summaryText + messages.join('')], { type: 'text/plain' });
       const downloadUrl = URL.createObjectURL(blob);
+      localStorage.setItem('chatExportAliases', JSON.stringify(aliasChk.checked ? getAliasMap() : {}));
       setupDownload(downloadUrl, {
         doneLabel: 'Done',
         messages,
+        exportText: headerText + summaryText + messages.join(''),
         personName,
         fromLabel: cacheFromLabel,
         toLabel: cacheToLabel,
@@ -588,14 +656,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
         const authorLabel = (() => {
           if (!aliasChk.checked) return sender;
           const aliasMap = getAliasMap();
-          const normalizedSender = String(sender).trim();
-          return (
-            aliasMap[normalizedSender] ||
-            aliasMap[normalizedSender.toLowerCase()] ||
-            aliasMap[normalizedSender.toUpperCase()] ||
-            aliasMap.any ||
-            sender
-          );
+          return lookupAlias(sender, aliasMap);
         })();
         const callMinutes = durationToMinutes(duration);
 
@@ -713,7 +774,17 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
         const scrollPct = scroller.scrollHeight > 0
           ? Math.round((1 - scroller.scrollTop / scroller.scrollHeight) * 100)
           : 0;
-        noticeMsg.textContent = `Scanning... ${collected.size} collected (${elapsedSec}s, ~${scrollPct}% back).`;
+        let eta = '';
+        if (scrollPct > 0 && collected.size > 5 && elapsedSec > 2) {
+          const rate = collected.size / elapsedSec;
+          const estimateTotal = Math.round(collected.size / (scrollPct / 100));
+          const remaining = Math.max(0, estimateTotal - collected.size);
+          const remainingSec = rate > 0 ? Math.round(remaining / rate) : 0;
+          if (remainingSec > 0) eta = `, ~${remainingSec}s left`;
+        }
+        progressBar.style.display = '';
+        progressBar.value = scrollPct;
+        noticeMsg.textContent = `Scanning... ${collected.size} collected (${elapsedSec}s, ~${scrollPct}% back${eta}).`;
 
         if (
           stopRequested ||
@@ -808,9 +879,11 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
           };
 
           try {
+            localStorage.setItem('chatExportAliases', JSON.stringify(aliasChk.checked ? getAliasMap() : {}));
             setupDownload(URL.createObjectURL(blob), {
               doneLabel,
               messages,
+              exportText: headerText + summaryText + messages.join(''),
               personName: displayPersonName,
               fromLabel,
               toLabel,
@@ -822,6 +895,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
             reader.onload = (e) => setupDownload(e.target.result, {
               doneLabel,
               messages,
+              exportText: headerText + summaryText + messages.join(''),
               personName: displayPersonName,
               fromLabel,
               toLabel,
@@ -855,4 +929,8 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
 
     scanStep();
   });
+
+  if (autoScanChk.checked) {
+    setTimeout(() => { actionBtn.click(); }, 100);
+  }
 })();

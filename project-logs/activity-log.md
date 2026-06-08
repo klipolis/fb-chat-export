@@ -14,6 +14,10 @@ Do not modify existing entries below. Update `project-logs/interaction-log.md` a
 
 ---
 
+2026-06-08 17:00 | user | Implement all TODO-next tasks (T-292 to T-308)
+2026-06-08 17:00 | ai | 16 of 17 tasks done. 8 frontend features (alias persistence, case-insensitive matching, Escape stop, copy-to-clipboard, progress bar, preview, ETA, auto-scan), 4 test files, aria-label-parser split into sub-modules, full JSON export, 2 dev docs. T-298 (CSS extraction) skipped.
+2026-06-08 17:00 | commit 4a0cb63 | feat: implement 16 of 17 TODO-next tasks - frontend features, tests, refactor, JSON export, docs
+
 2026-06-08 12:00 | user | test verify the export output, implement tests
 2026-06-08 12:00 | ai | Verified text-2 export output; updated golden snapshots; wrote unit + integration tests; fixed XYZ→ABC alias in integration test
 2026-06-08 12:00 | commit 78d87c3 | test: verify export output with golden snapshots and text-2 fixture tests

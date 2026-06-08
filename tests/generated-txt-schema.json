@@ -77,6 +77,12 @@
       "includeContent": true,
       "includeSummary": true,
       "includeRawDate": true
+    },
+    {
+      "fileName": "export-json-full.json",
+      "includeSummary": true,
+      "includeContent": true,
+      "content": "json"
     }
   ]
 }

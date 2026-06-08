@@ -1,7 +1,10 @@
 const tap = require('tap');
-const { stripAttributes, normalizeTagStrings } = require(
-  '../src/shared/html-utils'
-);
+const {
+  stripAttributes,
+  normalizeTagStrings,
+  findMatchingClosingTag,
+  cleanXClasses,
+} = require('../src/shared/html-utils');
 
 // ---------------------------------------------------------------------------
 // stripAttributes(tag, attrs)
@@ -203,6 +206,104 @@ tap.test('normalizeTagStrings', (t) => {
     normalizeTagStrings('a < b > c'),
     'a < b > c',
     'non-tag angle brackets are unchanged'
+  );
+
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// findMatchingClosingTag(html, tag, fromIndex)
+// ---------------------------------------------------------------------------
+
+tap.test('findMatchingClosingTag', (t) => {
+  t.equal(
+    findMatchingClosingTag('<div><span>text</span></div>', 'div', 0),
+    22,
+    'finds matching closing div tag after an opening div tag'
+  );
+  t.equal(
+    findMatchingClosingTag('<div><div>inner</div>outer</div>', 'div', 0),
+    26,
+    'handles nested tags — finds correct closing tag for outer div'
+  );
+  t.equal(
+    findMatchingClosingTag('<div>no close', 'div', 0),
+    -1,
+    'returns -1 when no matching closing tag exists'
+  );
+  t.equal(
+    findMatchingClosingTag('<span>text</span>', 'div', 0),
+    -1,
+    'returns -1 when tag is not found at all'
+  );
+  t.equal(
+    findMatchingClosingTag('<div><br /><br /></div>', 'div', 0),
+    17,
+    'self-closing tags are not mistaken for opening tags'
+  );
+  t.equal(
+    findMatchingClosingTag('<div>first</div><div>second</div>', 'div', 15),
+    27,
+    'works from a specific fromIndex offset'
+  );
+  t.equal(
+    findMatchingClosingTag('<p>hello</p>', 'p', 0),
+    8,
+    'works with p tag'
+  );
+  t.equal(
+    findMatchingClosingTag('<span>a<span>b</span>c</span>', 'span', 0),
+    22,
+    'works with nested span tags'
+  );
+
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// cleanXClasses(html)
+// ---------------------------------------------------------------------------
+
+tap.test('cleanXClasses', (t) => {
+  t.equal(
+    cleanXClasses('<div style="color:red">text</div>'),
+    '<div>text</div>',
+    'removes style attributes entirely'
+  );
+  t.equal(
+    cleanXClasses('<div class="x-foo">text</div>'),
+    '<div>text</div>',
+    'removes classes starting with x prefix'
+  );
+  t.equal(
+    cleanXClasses('<div class="foo">text</div>'),
+    '<div class="foo">text</div>',
+    'keeps non-x classes'
+  );
+  t.equal(
+    cleanXClasses('<div class="x-foo foo bar">text</div>'),
+    '<div class="foo bar">text</div>',
+    'keeps non-x classes and removes x-classes among multiple'
+  );
+  t.equal(
+    cleanXClasses('<div class="">text</div>'),
+    '<div>text</div>',
+    'removes empty class attribute'
+  );
+  t.equal(
+    cleanXClasses('<div>text</div>'),
+    '<div>text</div>',
+    'returns unchanged when no classes present'
+  );
+  t.equal(
+    cleanXClasses('<div style="">text</div>'),
+    '<div>text</div>',
+    'removes empty style attribute'
+  );
+  t.equal(
+    cleanXClasses('<p class="x-a">a</p><p class="b">b</p>'),
+    '<p>a</p><p class="b">b</p>',
+    'handles multiple tags — removes x-classes, keeps non-x-classes'
   );
 
   t.end();

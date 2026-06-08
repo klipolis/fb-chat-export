@@ -1,5 +1,5 @@
 const tap = require('tap');
-const { parseAriaLabel, isValidSender } = require('../../src/shared/aria-label-parser.js');
+const { parseAriaLabel, isValidSender } = require('../../src/shared/aria-label-parser');
 
 // ---------------------------------------------------------------------------
 // Unicode name recognition tests

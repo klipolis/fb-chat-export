@@ -1,4 +1,4 @@
-import { normalizeDateToIso } from './aria-label-parser.js';
+import { normalizeDateToIso } from './aria-label-parser/index.js';
 
 export function parseLocalDate(str) {
   if (!str) return NaN;
