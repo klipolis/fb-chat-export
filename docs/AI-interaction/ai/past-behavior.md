@@ -17,3 +17,9 @@ The assistant should learn from that style and focus on precise, project-specifi
 - assuming the user's intent beyond what was stated
 
 This document makes those past lessons explicit so the assistant can behave more predictably in future work.
+
+## Current behavior rules
+
+- aria-label parsing now handles comma-inside-date labels (for example text-3.html) by validating the sender before returning from the `At` regex branches.
+- New test fixtures (`text-3.html`, `image-4.html`) are added alongside the existing `data-input-test/` set and regenerated outputs are validated with `pnpm build:server` and `pnpm build:frontend`.
+- Pre-commit requires both `CHANGELOG.md` and `project-logs/interaction-log.md` / `project-logs/activity-log.md` updates when source or fixture changes are staged.

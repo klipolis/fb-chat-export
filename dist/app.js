@@ -521,6 +521,17 @@
       function parseAriaLabel2(ariaLabel) {
         const label = normalizeLabel(ariaLabel).replace(/\s*,\s*/g, ", ");
         let match;
+        match = label.match(/^At\s+(.+?),\s*([\p{L}]+(?:\s+[\p{L}]+){0,2})\s*[:–—]\s*([\s\S]*)$/iu);
+        if (match) {
+          const candidateSender = match[2].trim();
+          if (isValidSender3(candidateSender)) {
+            return {
+              date: match[1].trim(),
+              sender: candidateSender,
+              message: match[3].trim()
+            };
+          }
+        }
         match = label.match(/^At\s+(.+?),\s*([\p{L}]+(?:\s+[\p{L}]+){0,2})\s+[-–—]\s*([\s\S]*)$/iu);
         if (match) {
           let sender = match[2].trim();
@@ -2698,12 +2709,22 @@ ${aliasLines}
       }
       return String(hash);
     }
-    function setScanState(state) {
+    function setScanState(state, opts = {}) {
       if (state === "scanning") {
         actionBtn.textContent = "Stop Scan";
         actionBtn.style.background = "#e74c3c";
         actionBtn.dataset.scanning = "true";
         fromInput.disabled = toInput.disabled = true;
+        if (opts.restoreRange === true) {
+          const restored = restoreExportFromLocalhost();
+          if (restored && restored.fileName) {
+            const match = /(?<from>\d{4}-\d{2}-\d{2}|[A-Za-z]{3,}\s+\d{1,2}[a-z]{0,2}\s+\d{4}|Apr\s+\d{1,2}\s+\d{4}|April\s+\d{1,2}\s+\d{4})\s*[-–]\s*(?<to>\d{4}-\d{2}-\d{2}|[A-Za-z]{3,}\s+\d{1,2}[a-z]{0,2}\s+\d{4}|Apr\s+\d{1,2}\s+\d{4}|April\s+\d{1,2}\s+\d{4})/i.exec(restored.fileName);
+            if (match && match.groups) {
+              fromInput.value = match.groups.from || fromInput.value;
+              toInput.value = match.groups.to || toInput.value;
+            }
+          }
+        }
       } else {
         actionBtn.textContent = "Scan Messages";
         actionBtn.style.background = "#0084ff";

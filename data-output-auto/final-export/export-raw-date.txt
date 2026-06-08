@@ -21,21 +21,21 @@ Aliases:
 ---
 
 Total Summary
-23 messages / 9 days
-~ 13 text / 246 words
-~ 20 images
+25 messages / 11 days
+~ 14 text / 294 words
+~ 21 images
 ~ 4 calls 00:49:41
 
 ABC Summary
 15 messages / 6 days
-~ 8 text / 211 words
+~ 8 text / 209 words
 ~ 12 images
 ~ 2 calls 00:31:21
 
 Youghurt Summary
-7 messages / 4 days
-~ 5 text / 29 words
-~ 5 images
+9 messages / 6 days
+~ 6 text / 79 words
+~ 6 images
 ~ 1 calls 00:18:00
 
 Barnabas Summary
@@ -46,16 +46,18 @@ Barnabas Summary
 
 ---
 [2026-04-12 13:23] (April 12, 2026, 1:23 PM) Youghurt: audio-call 00:18:00
+[2026-04-13 17:45] (April 13, 2026, 5:45 PM) Youghurt: image
 > Replied to: Original image
 [2026-04-14 18:34] (April 14, 2026, 6:34 PM) ABC: text-image-replied 6 words / Well i didn't know about this
 > Replied to: I looked into, see screenshot, I added an option to the list to bulk upd…
 [2026-04-16 10:55] (April 16, 2026, 10:55 AM) ABC: text-replied 39 words / I now realised what happened. It must have been related to reviewers I added at a later stage from when we wen through that, and maybe I was duplicating and editing a reviewer who had the cancellation option on
+[2026-04-19 10:18] (April 19, 2026, 10:18 AM) Youghurt: text-3 50 words / 1. Old fixed email design + all emails had the same logo header - role/description not there + reviewer booking time there 2. New email editor - logo header have to add to all emails + role/description is in tha table, not under name - reviewer booking time not there
 > Replied to: When you can we should turn this feature off, as my emails get blocked a…
 [2026-05-07 07:09] (May 7, 2026, 7:09 AM) Youghurt: text-2 25 words / Hosting limitations, Google Mail or Microsoft better, bust their limit 500 emails per day. Today's day reminders sent out this morning: 272 emails at ~4am.
 [2026-05-16 04:36] (Saturday 4:36am) ABC: image
 [2026-05-19 22:25] (Tuesday 10:25pm) Youghurt: reaction-emoji 1 words / 🥳
 [2026-05-20 19:51] (Wednesday 7:51pm) ABC: image
-[2026-05-20 19:51] (Wednesday 7:51pm) ABC: link-text 152 words / https://www.scan.co.uk/ Yep - that’s the *Sennheiser IE 100 PRO In-Ear Monitoring* headphones, in Red. *Current UK prices for the wired version:* - *From £73.00* new — that’s the cheapest across 9 stores right now - *Typical range*: £73 - £100 depending on retailer and colour - *Scan.co.uk*: £79.00 for Black, £82.00 for Clear - *Thomann UK*: £85.00 for Clear - *idealo shows*: New from £73.00, refurbished from £26.38 - *Red version specifically*: Around £100.13 on idealo d8b549da157ec2c6e04e *Note*: There’s also a _Wireless_ version that costs more — from £84.70 to £90.35+. The box in your photo is the wired model. 13cc462b Prices change fast and stock varies by colour, but £73-£85 is the going rate for new wired IE 100 PROs in the UK as of now. Red tends to be slightly pricier than Black/Clear at some retailers. Want me to check a specific store like Amazon UK or Argos for you?
+[2026-05-20 19:51] (Wednesday 7:51pm) ABC: link-text 150 words / https://www.scan.co.uk/ that’s the *Sennheiser IE 100 PRO In-Ear Monitoring* headphones, in Red. *Current UK prices for the wired version:* - *From £73.00* new — that’s the cheapest across 9 stores right now - *Typical range*: £73 - £100 depending on retailer and colour - *Scan.co.uk*: £79.00 for Black, £82.00 for Clear - *Thomann UK*: £85.00 for Clear - *idealo shows*: New from £73.00, refurbished from £26.38 - *Red version specifically*: Around £100.13 on idealo d8b549da157ec2c6e04e *Note*: There’s also a _Wireless_ version that costs more — from £84.70 to £90.35+. The box in your photo is the wired model. 13cc462b Prices change fast and stock varies by colour, but £73-£85 is the going rate for new wired IE 100 PROs in the UK as of now. Red tends to be slightly pricier than Black/Clear at some retailers. Want me to check a specific store like Amazon UK or Argos for you?
 [2026-05-20 19:52] (Wednesday 7:52pm) Barnabas: voice-note 00:00:20
 [2026-05-20 19:54] (Wednesday 7:54pm) ABC: deleted
 [2026-05-21 17:34] (Thursday 5:34pm) ABC: missed-call-audio

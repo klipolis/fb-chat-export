@@ -90,6 +90,7 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Video call messages are correctly detected when the aria-label contains "video call"
 - Aria-label parser correctly extracts sender from labels where the message text contains a colon before the sender colon
 - Aria-label parser comma-iteration strips "At " prefix from the date part
+- Browser export removes "Replied to" text from normalized message bodies in collated exports
 
 ### Removed
 - Browser export auto-cleanup countdown for undownloaded exports (overnight scans common)

@@ -1,12 +1,12 @@
 {
   "total": {
     "title": "Total Summary",
-    "messages": 23,
+    "messages": 25,
     "days": 1,
     "rough": {
-      "text": 20,
+      "text": 22,
       "words": 0,
-      "images": 20,
+      "images": 21,
       "calls": 2,
       "callSeconds": 0
     }
@@ -28,12 +28,12 @@
     {
       "title": "Youghurt Summary",
       "name": "Youghurt",
-      "messages": 7,
+      "messages": 9,
       "days": 1,
       "rough": {
-        "text": 6,
+        "text": 8,
         "words": 0,
-        "images": 5,
+        "images": 6,
         "calls": 1,
         "callSeconds": 0
       }

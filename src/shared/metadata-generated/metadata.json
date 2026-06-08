@@ -1,5 +1,5 @@
 {
-  "file_count": 23,
+  "file_count": 25,
   "files": [
     "animated-gif.json",
     "audio-call.json",
@@ -7,6 +7,7 @@
     "deleted.json",
     "image-2.json",
     "image-3.json",
+    "image-4.json",
     "image.json",
     "link-embed-no-text.json",
     "link-text-2.json",
@@ -19,6 +20,7 @@
     "reaction.json",
     "sticker.json",
     "text-2.json",
+    "text-3.json",
     "text-image-replied.json",
     "text-replied.json",
     "text.json",

@@ -97,6 +97,21 @@ tap.test('parseAriaLabelTrailingConversationName', (t) => {
   t.end();
 });
 
+tap.test('parseAriaLabelCalendarDateWithAtPrefix', (t) => {
+  // Same comma-in-date shape as the no-prefix block, but with the required "At " prefix.
+  const r1 = parseAriaLabel('At May 7, 2026, 7:09 AM, You: Hosting limitations, Google Mail or Microsoft better');
+  t.equal(r1.date, 'May 7, 2026, 7:09 AM', 'Calendar date with commas and At prefix preserved');
+  t.equal(r1.sender, 'You', 'Sender correctly extracted after comma-in-date with At prefix');
+  t.equal(r1.message, 'Hosting limitations, Google Mail or Microsoft better', 'Message with commas preserved');
+
+  const r2 = parseAriaLabel('At April 29, 2026, 11:45 AM, Miti: And also, another customer writes:Hello');
+  t.equal(r2.date, 'April 29, 2026, 11:45 AM');
+  t.equal(r2.sender, 'Miti');
+  t.ok(r2.message.startsWith('And also'), 'Message extracted correctly');
+
+  t.end();
+});
+
 tap.test('parseAriaLabelCalendarDateNoPrefix', (t) => {
   // Full calendar date without "At " prefix (e.g. from Messenger locale that omits "At")
   const r1 = parseAriaLabel('May 7, 2026, 7:09 AM, You: Hosting limitations, Google Mail or Microsoft better');
@@ -104,14 +119,14 @@ tap.test('parseAriaLabelCalendarDateNoPrefix', (t) => {
   t.equal(r1.sender, 'You', 'Sender correctly extracted when date has multiple commas');
   t.equal(r1.message, 'Hosting limitations, Google Mail or Microsoft better', 'Message with commas preserved');
 
-  const r2 = parseAriaLabel('April 29, 2026, 11:45 AM, Mimi: And also, another customer writes:Hello');
+  const r2 = parseAriaLabel('April 29, 2026, 11:45 AM, Miti: And also, another customer writes:Hello');
   t.equal(r2.date, 'April 29, 2026, 11:45 AM');
-  t.equal(r2.sender, 'Mimi');
+  t.equal(r2.sender, 'Miti');
   t.ok(r2.message.startsWith('And also'), 'Message extracted correctly');
 
-  const r3 = parseAriaLabel('May 5, 2026, 7:48 PM, Mimi: Also wanted to ask you one thing');
+  const r3 = parseAriaLabel('May 5, 2026, 7:48 PM, Miti: Also wanted to ask you one thing');
   t.equal(r3.date, 'May 5, 2026, 7:48 PM');
-  t.equal(r3.sender, 'Mimi');
+  t.equal(r3.sender, 'Miti');
 
   t.end();
 });

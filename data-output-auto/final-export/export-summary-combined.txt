@@ -21,21 +21,21 @@ Aliases:
 ---
 
 Total Summary
-23 posts / 9 days
-~ 13 text / 246 words
-~ 20 images
+25 posts / 11 days
+~ 14 text / 294 words
+~ 21 images
 ~ 4 calls 00:49:41
 
 ABC Summary
 15 posts / 6 days
-~ 8 text / 211 words
+~ 8 text / 209 words
 ~ 12 images
 ~ 2 calls 00:31:21
 
 Youghurt Summary
-7 posts / 4 days
-~ 5 text / 29 words
-~ 5 images
+9 posts / 6 days
+~ 6 text / 79 words
+~ 6 images
 ~ 1 calls 00:18:00
 
 Barnabas Summary

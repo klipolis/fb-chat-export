@@ -212,6 +212,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 ## Content extraction
 
 - T-318. Extract quoted reply text separately from main message content — Facebook Messenger includes the replied-to message as a DOM block; separate it from the current message (ba17fd1)
+- T-373. Preserve quoted "Replied to" message text inside `repliedTo` for browser exports — disable stripping so the quoted text is preserved in message content
 - T-94. Parser handles sender names that include trailing conversation name (e5b3a35)
 - T-95. Sender validator rejects names with more than two words (e5b3a35) [overridden by T-129]
 - T-96. Parser helper functions exported for testing (e5b3a35)
@@ -261,6 +262,8 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-306. Add Escape key to stop an active scan
 - T-307. Show estimated time remaining during scan based on scroll rate
 - T-308. Add auto-scan checkbox option that starts scan on panel open
+- T-374. Add a visible "Clear cache" button to the browser export panel so users can invalidate the export cache without clearing all browser storage (f6cb2a8)
+- T-375. Restore the previous scan's date range when resuming scan on an older range instead of staying stuck on the previous input (f6cb2a8)
 
 - T-334. Add a visual cache-hit indicator (colored dot or badge) next to the status bar — lets users know the export was reused without parsing the text message (ef2887c)
 - T-335. Persist exportOptions (includeContent, includeLength, aliasChk, messageTypeFilter) in sessionStorage alongside the date range — restoring a session restores every visual preference (ef2887c)
@@ -307,6 +310,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-366. Move case-insensitive alias checkbox from option column into alias panel — groups matching controls with alias configuration
 - T-368. Remove auto-scan checkbox and auto-trigger from browser export panel — users always start scans explicitly
 - T-336. Add a configurable cache TTL for browser export entries (default 24 hours) — prevents overnight scans from serving stale exports when the chat has changed (ef2887c)
+- T-376. Cache scanned messages in localStorage so overnight or away-from-desk scans can resume without restarting from scratch (f6cb2a8)
 
 ## Process
 

@@ -1,0 +1,19 @@
+{
+  "html_locale": null,
+  "title": "text",
+  "type": "text",
+  "data_raw": {
+    "date": "April 19, 2026, 10:18 AM",
+    "name": "Youghurt",
+    "content": "1. Old fixed email design + all emails had the same logo header - role/description not there + reviewer booking time there 2. New email editor - logo header have to add to all emails + role/description is in tha table, not under name - reviewer booking time not there",
+    "duration": null,
+    "length": "50 words"
+  },
+  "data_preview": {
+    "date": "2026.04.19 10:18",
+    "name": "Youghurt",
+    "content": "1. Old fixed email design + all emails had the same logo header - role/description not there + reviewer booking time there 2. New email editor - logo header have to add to all emails + role/description is in tha table, not under name - reviewer booking time not there",
+    "duration": null,
+    "length": "50 words"
+  }
+}

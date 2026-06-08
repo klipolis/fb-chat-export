@@ -27,6 +27,18 @@ function parseAriaLabel(ariaLabel) {
   const label = normalizeLabel(ariaLabel).replace(/\s*,\s*/g, ', ');
   let match;
 
+  match = label.match(/^At\s+(.+?),\s*([\p{L}]+(?:\s+[\p{L}]+){0,2})\s*[:–—]\s*([\s\S]*)$/iu);
+  if (match) {
+    const candidateSender = match[2].trim();
+    if (isValidSender(candidateSender)) {
+      return {
+        date: match[1].trim(),
+        sender: candidateSender,
+        message: match[3].trim(),
+      };
+    }
+  }
+
   match = label.match(/^At\s+(.+?),\s*([\p{L}]+(?:\s+[\p{L}]+){0,2})\s+[-–—]\s*([\s\S]*)$/iu);
   if (match) {
     let sender = match[2].trim();

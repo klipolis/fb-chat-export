@@ -1,5 +1,5 @@
 {
-  "exportDate": "2026-06-08T16:26:49.741Z",
+  "exportDate": "2026-06-08T17:31:17.043Z",
   "exportOptions": {
     "includeContent": true,
     "includeLength": true,
@@ -9,7 +9,7 @@
     "lazyLoad": false
   },
   "conversation": "Chat Export",
-  "messageCount": 23,
+  "messageCount": 25,
   "participants": [
     "ABC",
     "Youghurt",
@@ -25,6 +25,20 @@
       "durationSeconds": 1080,
       "isCall": true,
       "isImage": false,
+      "contentLength": 10,
+      "wordCount": 0,
+      "repliedTo": null,
+      "repliedType": null
+    },
+    {
+      "date": "2026-04-13 17:45",
+      "sender": "Youghurt",
+      "type": "image",
+      "text": "image sent",
+      "duration": "",
+      "durationSeconds": 0,
+      "isCall": false,
+      "isImage": true,
       "contentLength": 10,
       "wordCount": 0,
       "repliedTo": null,
@@ -57,6 +71,20 @@
       "wordCount": 39,
       "repliedTo": "I looked into, see screenshot, I added an option to the list to bulk upd…",
       "repliedType": "text"
+    },
+    {
+      "date": "2026-04-19 10:18",
+      "sender": "Youghurt",
+      "type": "text",
+      "text": "1. Old fixed email design + all emails had the same logo header - role/description not there + reviewer booking time there 2. New email editor - logo header have to add to all emails + role/description is in tha table, not under name - reviewer booking time not there",
+      "duration": "",
+      "durationSeconds": 0,
+      "isCall": false,
+      "isImage": false,
+      "contentLength": 267,
+      "wordCount": 50,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-07 07:09",
@@ -118,13 +146,13 @@
       "date": "2026-05-20 19:51",
       "sender": "ABC",
       "type": "link",
-      "text": "https://www.scan.co.uk/ Yep - that’s the *Sennheiser IE 100 PRO In-Ear Monitoring* headphones, in Red. *Current UK prices for the wired version:* - *From £73.00* new — that’s the cheapest across 9 stores right now - *Typical range*: £73 - £100 depending on retailer and colour - *Scan.co.uk*: £79.00 for Black, £82.00 for Clear - *Thomann UK*: £85.00 for Clear - *idealo shows*: New from £73.00, refurbished from £26.38 - *Red version specifically*: Around £100.13 on idealo d8b549da157ec2c6e04e *Note*: There’s also a _Wireless_ version that costs more — from £84.70 to £90.35+. The box in your photo is the wired model. 13cc462b Prices change fast and stock varies by colour, but £73-£85 is the going rate for new wired IE 100 PROs in the UK as of now. Red tends to be slightly pricier than Black/Clear at some retailers. Want me to check a specific store like Amazon UK or Argos for you?",
+      "text": "https://www.scan.co.uk/ that’s the *Sennheiser IE 100 PRO In-Ear Monitoring* headphones, in Red. *Current UK prices for the wired version:* - *From £73.00* new — that’s the cheapest across 9 stores right now - *Typical range*: £73 - £100 depending on retailer and colour - *Scan.co.uk*: £79.00 for Black, £82.00 for Clear - *Thomann UK*: £85.00 for Clear - *idealo shows*: New from £73.00, refurbished from £26.38 - *Red version specifically*: Around £100.13 on idealo d8b549da157ec2c6e04e *Note*: There’s also a _Wireless_ version that costs more — from £84.70 to £90.35+. The box in your photo is the wired model. 13cc462b Prices change fast and stock varies by colour, but £73-£85 is the going rate for new wired IE 100 PROs in the UK as of now. Red tends to be slightly pricier than Black/Clear at some retailers. Want me to check a specific store like Amazon UK or Argos for you?",
       "duration": "",
       "durationSeconds": 0,
       "isCall": false,
       "isImage": false,
-      "contentLength": 890,
-      "wordCount": 152,
+      "contentLength": 884,
+      "wordCount": 150,
       "repliedTo": null,
       "repliedType": null
     },
