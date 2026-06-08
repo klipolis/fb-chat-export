@@ -294,7 +294,7 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
   wrap.appendChild(addButton);
   wrap.appendChild(groupChatWrap);
 
-  return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk };
+  return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk, addRow };
 }
 
 export function createLinkAction(labelText, onClick) {

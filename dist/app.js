@@ -1032,21 +1032,12 @@
         method: "server",
         messageTypes: [
           "audio-call",
-          "deleted",
           "image",
           "link",
-          "link-embed-no-text",
-          "link-text",
-          "link-video",
-          "missed-audio-call",
           "missed-call",
-          "missed-video-call",
           "poll",
-          "reaction-emoji",
           "reaction",
           "sticker",
-          "text-image-replied",
-          "text-replied",
           "text",
           "unsent",
           "video-call",
@@ -1589,11 +1580,13 @@ ${aliasLines}
         const rawDatePart = includeRawDate && entry.rawDate ? ` (${entry.rawDate})` : "";
         const base = `[${dateText}]${rawDatePart} ${sender}: ${parts.join(" ")}`;
         const shouldShowTextContent = includeContent && CONTENT_TYPES.has(entry.semanticType) && entry.content;
+        const replyPrefix = entry.repliedTo ? `> Replied to: ${entry.repliedTo}
+` : "";
         if (shouldShowTextContent) {
-          return `${base} / ${entry.content}
+          return `${replyPrefix}${base} / ${entry.content}
 `;
         }
-        return `${base}
+        return `${replyPrefix}${base}
 `;
       }
       function buildEntryFromEntry(entry) {
@@ -1943,7 +1936,7 @@ ${aliasLines}
     wrap.appendChild(rows);
     wrap.appendChild(addButton);
     wrap.appendChild(groupChatWrap);
-    return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk };
+    return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk, addRow };
   }
   function createLinkAction(labelText, onClick) {
     const link = document.createElement("a");
@@ -2062,7 +2055,7 @@ ${aliasLines}
     } catch (_) {
     }
     const aliasDefaults = { ...builtinAliases, ...persistedAliases };
-    const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk } = createAliasRows(aliasDefaults);
+    const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk, addRow: addAliasRow } = createAliasRows(aliasDefaults);
     const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle("Summary");
     const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle("Content");
     const { wrap: rawLinkWrap, input: rawLinkChk } = createCheckboxToggle("Raw link");
@@ -2091,6 +2084,56 @@ ${aliasLines}
     leftCol.appendChild(actionBtn);
     rightCol.appendChild(includeCallsWrap);
     rightCol.appendChild(aliasWrap);
+    const aliasActions = document.createElement("div");
+    aliasActions.style.cssText = "display: flex; gap: 8px; padding-left: 22px;";
+    const exportAliasLink = createLinkAction("Export aliases", () => {
+      const map = getAliasMap();
+      const jsonStr = JSON.stringify(map, null, 2);
+      const url = URL.createObjectURL(new Blob([jsonStr], { type: "application/json" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "aliases.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+    const importAliasLink = createLinkAction("Import aliases", () => {
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = ".json";
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const data = JSON.parse(ev.target.result);
+            if (typeof data !== "object" || Array.isArray(data)) throw new Error("Invalid format");
+            Array.from(aliasWrap.querySelectorAll(".alias-row")).forEach((row) => {
+              const inputs = row.querySelectorAll('input[type="text"]');
+              if (inputs.length >= 2 && !inputs[0].disabled) {
+                row.remove();
+              }
+            });
+            Object.entries(data).forEach(([orig, alias]) => {
+              const exists = Array.from(aliasWrap.querySelectorAll(".alias-row")).some((row) => {
+                const inputs = row.querySelectorAll('input[type="text"]');
+                return inputs.length >= 2 && inputs[0].value.trim() === orig;
+              });
+              if (!exists) {
+                addAliasRow(orig, alias, false);
+              }
+            });
+          } catch (err) {
+            noticeMsg.textContent = "Invalid aliases file.";
+          }
+        };
+        reader.readAsText(file);
+      });
+      fileInput.click();
+    });
+    aliasActions.appendChild(exportAliasLink);
+    aliasActions.appendChild(importAliasLink);
+    aliasWrap.appendChild(aliasActions);
     rightCol.appendChild(summaryWrap);
     rightCol.appendChild(includeContentWrap);
     rightCol.appendChild(rawLinkWrap);
@@ -2098,6 +2141,25 @@ ${aliasLines}
     rightCol.appendChild(caseInsensitiveWrap);
     rightCol.appendChild(autoScanWrap);
     rightCol.appendChild(selectAllLink);
+    const typeFilterTypes = ["text", "link", "image", "reaction", "audio-call", "video-call", "voice-note", "sticker", "poll"];
+    const typeFilterState = {};
+    const typeFilterDetails = document.createElement("details");
+    typeFilterDetails.style.cssText = "font-size: 12px;";
+    const typeFilterSummary = document.createElement("summary");
+    typeFilterSummary.textContent = "Filter types";
+    typeFilterSummary.style.cssText = "cursor: pointer; color: #555; font-size: 12px;";
+    typeFilterDetails.appendChild(typeFilterSummary);
+    typeFilterTypes.forEach((type) => {
+      const { wrap, input } = createCheckboxToggle(type);
+      input.checked = true;
+      typeFilterState[type] = true;
+      input.addEventListener("change", () => {
+        typeFilterState[type] = input.checked;
+      });
+      wrap.style.paddingLeft = "14px";
+      typeFilterDetails.appendChild(wrap);
+    });
+    rightCol.insertBefore(typeFilterDetails, rightCol.firstChild);
     setAllChecked(true);
     body.appendChild(leftCol);
     body.appendChild(rightCol);
@@ -2159,6 +2221,24 @@ ${aliasLines}
           }
         }
       }
+      let repliedTo = null;
+      let repliedType = null;
+      const replyHeader = el.querySelector("h3 span");
+      const isReply = replyHeader && /\breplied to\b/i.test(replyHeader.textContent);
+      if (isReply) {
+        const quotedEl = el.querySelector('[aria-label="Go to replied message"]');
+        if (quotedEl) {
+          const imgInQuote = quotedEl.querySelector("img");
+          if (imgInQuote) {
+            repliedType = "image";
+            repliedTo = imgInQuote.getAttribute("alt") || "[image]";
+          } else {
+            repliedType = "text";
+            const textSpan = quotedEl.querySelector('span[dir="auto"]');
+            repliedTo = textSpan ? textSpan.textContent.replace(/\s+/g, " ").trim() : null;
+          }
+        }
+      }
       const normalizedText = (labelText || el.innerText).replace(/\s+/g, " ").trim();
       const normalizedLabel = label.replace(/\s+/g, " ").trim().toLowerCase();
       const timerEl = el.querySelector('[role="timer"]');
@@ -2188,7 +2268,9 @@ ${aliasLines}
         isCall: contentMeta.isCall,
         isImage: contentMeta.isImage,
         duration: contentMeta.duration,
-        contentLength: contentMeta.contentLength
+        contentLength: contentMeta.contentLength,
+        repliedTo,
+        repliedType
       };
     }
     fromInput.addEventListener("input", () => {
@@ -2511,7 +2593,9 @@ ${aliasLines}
             isCall,
             isImage,
             duration,
-            contentLength
+            contentLength,
+            repliedTo,
+            repliedType
           } = extractMessageParts(el);
           if (!rawDate || !sender) return;
           detectedSenders.add(sender);
@@ -2528,6 +2612,8 @@ ${aliasLines}
           })();
           const callMinutes = (0, import_export_formatter.durationToMinutes)(duration);
           if (!includeCallsChk.checked && isCall) return;
+          const typeFiltered = type ? String(type).toLowerCase() : "";
+          if (typeFiltered && typeFilterState[typeFiltered] === false) return;
           if (fromDate && !isNaN(msgDate) && msgDate < fromDate) {
             reachedFromDate = true;
             return;
@@ -2548,7 +2634,9 @@ ${aliasLines}
             sender: authorLabel,
             duration,
             content: aliasedContent,
-            contentLength
+            contentLength,
+            repliedTo,
+            repliedType
           };
           const finalLine = (0, import_export_formatter.formatLine)(lineEntry, {
             includeContent: includeContentChk.checked,
@@ -2566,7 +2654,9 @@ ${aliasLines}
             callMinutes,
             wordCount: isCall || isImage ? 0 : text ? text.split(/\s+/).filter(Boolean).length : 0,
             line: finalLine,
-            exportEntry: lineEntry
+            exportEntry: lineEntry,
+            repliedTo,
+            repliedType
           });
         });
       }
@@ -2616,17 +2706,21 @@ ${aliasLines}
           collectVisible();
           const elapsedSec = Math.round((Date.now() - scanStartedAt) / 1e3);
           const scrollPct = scroller.scrollHeight > 0 ? Math.round((1 - scroller.scrollTop / scroller.scrollHeight) * 100) : 0;
-          let eta = "";
-          if (scrollPct > 0 && collected.size > 5 && elapsedSec > 2) {
-            const rate = collected.size / elapsedSec;
-            const estimateTotal = Math.round(collected.size / (scrollPct / 100));
-            const remaining = Math.max(0, estimateTotal - collected.size);
-            const remainingSec = rate > 0 ? Math.round(remaining / rate) : 0;
-            if (remainingSec > 0) eta = `, ~${remainingSec}s left`;
-          }
           progressBar.style.display = "";
           progressBar.value = scrollPct;
-          noticeMsg.textContent = `Scanning... ${collected.size} collected (${elapsedSec}s, ~${scrollPct}% back${eta}).`;
+          if (scrollPct > 5) {
+            const estimateTotal = Math.round(collected.size / (scrollPct / 100));
+            let eta = "";
+            if (collected.size > 5 && elapsedSec > 2) {
+              const rate = collected.size / elapsedSec;
+              const remaining = Math.max(0, estimateTotal - collected.size);
+              const remainingSec = rate > 0 ? Math.round(remaining / rate) : 0;
+              if (remainingSec > 0) eta = `, ~${remainingSec}s left`;
+            }
+            noticeMsg.textContent = `Scanning... ${collected.size} / ~${estimateTotal} messages (${elapsedSec}s, ~${scrollPct}% back${eta})`;
+          } else {
+            noticeMsg.textContent = `Scanning... ${collected.size} collected (${elapsedSec}s)`;
+          }
           if (stopRequested || reachedFromDate || scroller.scrollTop <= 0 && stableCount >= 3) {
             actionBtn.dataset.scanning = "false";
             if (aliasChk.checked && groupChatChk.checked) {
@@ -2699,7 +2793,9 @@ ${aliasLines}
                 isCall: e.isCall,
                 isImage: e.isImage,
                 callMinutes: e.callMinutes,
-                wordCount: e.wordCount
+                wordCount: e.wordCount,
+                repliedTo: e.repliedTo,
+                repliedType: e.repliedType
               })),
               messages
             };

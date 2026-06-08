@@ -30,6 +30,26 @@ function extractMessageEntry(el, fileName, referenceDate, aliasMap = {}) {
   const normalizedText = normalizeLabel(labelText || el.textContent || '');
   const normalizedLabel = normalizeLabel(ariaLabel).toLowerCase();
   const timerEl = el.querySelector('[role="timer"]');
+
+  // Detect replied-to message
+  let repliedTo = null;
+  let repliedType = null;
+  const replyHeader = el.querySelector('h3 span');
+  const isReply = replyHeader && /\breplied to\b/i.test(replyHeader.textContent);
+  if (isReply) {
+    const quotedEl = el.querySelector('[aria-label="Go to replied message"]');
+    if (quotedEl) {
+      const imgInQuote = quotedEl.querySelector('img');
+      if (imgInQuote) {
+        repliedType = 'image';
+        repliedTo = imgInQuote.getAttribute('alt') || '[image]';
+      } else {
+        repliedType = 'text';
+        const textSpan = quotedEl.querySelector('span[dir="auto"]');
+        repliedTo = textSpan ? normalizeLabel(textSpan.textContent) : null;
+      }
+    }
+  }
   const linkEl = el.querySelector('a[href]');
   const imageEls = Array.from(el.querySelectorAll('img'));
   const imageCount = imageEls.reduce((count, img) => {
@@ -90,6 +110,8 @@ function extractMessageEntry(el, fileName, referenceDate, aliasMap = {}) {
     contentLength: contentMeta.contentLength,
     imageCount: contentMeta.imageCount,
     words: contentMeta.words,
+    repliedTo,
+    repliedType,
   };
 }
 

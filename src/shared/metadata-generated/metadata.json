@@ -1,6 +1,28 @@
 {
-  "file_count": 1,
+  "file_count": 23,
   "files": [
-    "text.json"
+    "animated-gif.json",
+    "audio-call.json",
+    "call-video.json",
+    "deleted.json",
+    "image-2.json",
+    "image-3.json",
+    "image.json",
+    "link-embed-no-text.json",
+    "link-text-2.json",
+    "link-text.json",
+    "link-video.json",
+    "missed-call-audio.json",
+    "missed-call-video.json",
+    "poll.json",
+    "reaction-emoji.json",
+    "reaction.json",
+    "sticker.json",
+    "text-2.json",
+    "text-image-replied.json",
+    "text-replied.json",
+    "text.json",
+    "voice-note-2.json",
+    "voice-note.json"
   ]
 }

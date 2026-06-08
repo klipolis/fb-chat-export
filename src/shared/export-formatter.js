@@ -64,10 +64,11 @@ function formatLine(entry, options = {}) {
   const base = `[${dateText}]${rawDatePart} ${sender}: ${parts.join(' ')}`;
   const shouldShowTextContent =
     includeContent && CONTENT_TYPES.has(entry.semanticType) && entry.content;
+  const replyPrefix = entry.repliedTo ? `> Replied to: ${entry.repliedTo}\n` : '';
   if (shouldShowTextContent) {
-    return `${base} / ${entry.content}\n`;
+    return `${replyPrefix}${base} / ${entry.content}\n`;
   }
-  return `${base}\n`;
+  return `${replyPrefix}${base}\n`;
 }
 
 function buildEntryFromEntry(entry) {

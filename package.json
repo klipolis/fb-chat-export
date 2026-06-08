@@ -16,7 +16,6 @@
     "build:ci:server": "cross-env CI=true pnpm run build:server",
     "build:clean": "node src/build-clean.cjs",
     "build:frontend": "node src/frontend/build.cjs",
-    "build:preview": "node src/server/build-preview.js",
     "build:raw": "cross-env BUILD_RAW=true node src/build-server.cjs",
     "build:raw-clean": "node src/build-raw-clean.cjs",
     "build:server": "node src/build-server.cjs",

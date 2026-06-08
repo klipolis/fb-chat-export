@@ -242,6 +242,66 @@ tap.test('textContentLengthUsesWordCount', (t) => {
 // chooseRuleAllEntries
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// extractMessageEntry - replied message extraction
+// ---------------------------------------------------------------------------
+
+tap.test('extractMessageEntry replied text', (t) => {
+  const { JSDOM } = require('jsdom');
+  const { extractMessageEntry } = require('../src/shared/export-text');
+
+  const html = `<div aria-label="At April 16, 2026, 10:55 AM, Alpha: Reply text" aria-roledescription="message">
+    <h3><span>Alpha replied to you</span></h3>
+    <div aria-label="Go to replied message" role="button" tabindex="-1">
+      <div><span dir="auto"><div><div>Original quoted text</div></div></span></div>
+    </div>
+    <span dir="auto"><div>Reply text</div></span>
+  </div>`;
+  const doc = new JSDOM(html).window.document;
+  const el = doc.querySelector('[aria-roledescription="message"]');
+  const entry = extractMessageEntry(el, 'text-replied.html', '2026.04.16 12:00');
+  t.equal(entry.semanticType, 'text', 'replied message type is text');
+  t.equal(entry.repliedTo, 'Original quoted text', 'repliedTo extracts quoted text');
+  t.equal(entry.repliedType, 'text', 'repliedType is text');
+  t.end();
+});
+
+tap.test('extractMessageEntry replied image', (t) => {
+  const { JSDOM } = require('jsdom');
+  const { extractMessageEntry } = require('../src/shared/export-text');
+
+  const html = `<div aria-label="At April 14, 2026, 6:34 PM, Alpha: Reply text" aria-roledescription="message">
+    <h3><span>Alpha replied to you</span></h3>
+    <div aria-label="Go to replied message" role="button" tabindex="-1">
+      <div><img alt="Original image" src="blob:test"></div>
+    </div>
+    <span dir="auto"><div>Reply text</div></span>
+  </div>`;
+  const doc = new JSDOM(html).window.document;
+  const el = doc.querySelector('[aria-roledescription="message"]');
+  const entry = extractMessageEntry(el, 'text-image-replied.html', '2026.04.14 18:34');
+  t.equal(entry.semanticType, 'text', 'image-replied message type is text');
+  t.equal(entry.repliedTo, 'Original image', 'repliedTo extracts img alt text');
+  t.equal(entry.repliedType, 'image', 'repliedType is image');
+  t.end();
+});
+
+tap.test('extractMessageEntry non-reply has null fields', (t) => {
+  const { JSDOM } = require('jsdom');
+  const { extractMessageEntry } = require('../src/shared/export-text');
+
+  const html = `<div aria-label="At April 14, 2026, 6:34 PM, Alpha: Normal message" aria-roledescription="message">
+    <span dir="auto"><div>Normal message</div></span>
+  </div>`;
+  const doc = new JSDOM(html).window.document;
+  const el = doc.querySelector('[aria-roledescription="message"]');
+  const entry = extractMessageEntry(el, 'text.html', '2026.04.14 18:34');
+  t.equal(entry.semanticType, 'text', 'non-reply message type is text');
+  t.equal(entry.repliedTo, null, 'non-reply repliedTo is null');
+  t.equal(entry.repliedType, null, 'non-reply repliedType is null');
+  t.end();
+});
+
 tap.test('chooseRuleAllEntries', (t) => {
   const cases = [
     { file: 'deleted.html', label: '', expected: 'unsent' },

@@ -14,6 +14,9 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 
 ---
 
+2026-06-08 20:00 | user | what we did so far + do all remaining tasks
+2026-06-08 20:00 | ai | Created and fulfilled 15 new tasks via 4 parallel agents: JSON export improvements (durationSeconds field, schema validation, integration test), cache architecture guide, CHANGELOG section consolidation, Room/Marketplace type investigation, audit+remove stale files, frontend features (alias import/export JSON, message-type filter dropdown, scan progress fraction, unit tests), and reply text extraction from DOM. Committed.
+
 2026-06-08 17:00 | user | add mor meaningful todo-next.md tasks
 2026-06-08 17:00 | ai | Wrote 17 tasks (T-292 to T-308) across 7 categories covering test coverage, documentation, refactoring, export format, aliases, and frontend features. Committed.
 

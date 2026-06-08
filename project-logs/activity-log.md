@@ -14,6 +14,9 @@ Do not modify existing entries below. Update `project-logs/interaction-log.md` a
 
 ---
 
+2026-06-08 20:00 | user | Create and implement T-310 to T-324 tasks
+2026-06-08 20:00 | ai | Added 15 new tasks (T-310 to T-324). Implemented all via parallel agents: JSON export improvements (durationSeconds, schema validation, build server options), cache architecture guide, CHANGELOG dedup, Room/Marketplace type investigation, aliases import/export JSON, message-type filter dropdown, scan progress fraction, 72 frontend tests, reply text extraction from DOM, audit+remove stale files.
+
 2026-06-08 17:00 | user | Implement all TODO-next tasks (T-292 to T-308)
 2026-06-08 17:00 | ai | 16 of 17 tasks done. 8 frontend features (alias persistence, case-insensitive matching, Escape stop, copy-to-clipboard, progress bar, preview, ETA, auto-scan), 4 test files, aria-label-parser split into sub-modules, full JSON export, 2 dev docs. T-298 (CSS extraction) skipped.
 2026-06-08 17:00 | commit 4a0cb63 | feat: implement 16 of 17 TODO-next tasks - frontend features, tests, refactor, JSON export, docs

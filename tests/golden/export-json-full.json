@@ -1,5 +1,5 @@
 {
-  "exportDate": "2026-06-08T11:57:39.514Z",
+  "exportDate": "2026-06-08T12:31:09.101Z",
   "conversation": "Chat Export",
   "messageCount": 23,
   "participants": [
@@ -14,10 +14,13 @@
       "type": "audio-call",
       "text": "audio call",
       "duration": "00:18:00",
+      "durationSeconds": 1080,
       "isCall": true,
       "isImage": false,
       "contentLength": 10,
-      "wordCount": 0
+      "wordCount": 0,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-04-14 18:34",
@@ -25,10 +28,13 @@
       "type": "text",
       "text": "Well i didn't know about this",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": false,
       "contentLength": 29,
-      "wordCount": 6
+      "wordCount": 6,
+      "repliedTo": "Original image",
+      "repliedType": "image"
     },
     {
       "date": "2026-04-16 10:55",
@@ -36,10 +42,13 @@
       "type": "text",
       "text": "I now realised what happened. It must have been related to reviewers I added at a later stage from when we wen through that, and maybe I was duplicating and editing a reviewer who had the cancellation option on",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": false,
       "contentLength": 210,
-      "wordCount": 39
+      "wordCount": 39,
+      "repliedTo": "I looked into, see screenshot, I added an option to the list to bulk upd…",
+      "repliedType": "text"
     },
     {
       "date": "2026-05-07 07:09",
@@ -47,10 +56,13 @@
       "type": "text",
       "text": "Hosting limitations, Google Mail or Microsoft better, bust their limit 500 emails per day. Today's day reminders sent out this morning: 272 emails at ~4am.",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": false,
       "contentLength": 155,
-      "wordCount": 25
+      "wordCount": 25,
+      "repliedTo": "When you can we should turn this feature off, as my emails get blocked a…",
+      "repliedType": "text"
     },
     {
       "date": "2026-05-16 04:36",
@@ -58,10 +70,13 @@
       "type": "image",
       "text": "image sent",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": true,
       "contentLength": 10,
-      "wordCount": 0
+      "wordCount": 0,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-19 22:25",
@@ -69,10 +84,13 @@
       "type": "reaction",
       "text": "🥳",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": false,
       "contentLength": 2,
-      "wordCount": 1
+      "wordCount": 1,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-20 19:51",
@@ -80,10 +98,13 @@
       "type": "image",
       "text": "image sent",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": true,
       "contentLength": 10,
-      "wordCount": 0
+      "wordCount": 0,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-20 19:51",
@@ -91,10 +112,13 @@
       "type": "link",
       "text": "https://www.scan.co.uk/ Yep - that’s the *Sennheiser IE 100 PRO In-Ear Monitoring* headphones, in Red. *Current UK prices for the wired version:* - *From £73.00* new — that’s the cheapest across 9 stores right now - *Typical range*: £73 - £100 depending on retailer and colour - *Scan.co.uk*: £79.00 for Black, £82.00 for Clear - *Thomann UK*: £85.00 for Clear - *idealo shows*: New from £73.00, refurbished from £26.38 - *Red version specifically*: Around £100.13 on idealo d8b549da157ec2c6e04e *Note*: There’s also a _Wireless_ version that costs more — from £84.70 to £90.35+. The box in your photo is the wired model. 13cc462b Prices change fast and stock varies by colour, but £73-£85 is the going rate for new wired IE 100 PROs in the UK as of now. Red tends to be slightly pricier than Black/Clear at some retailers. Want me to check a specific store like Amazon UK or Argos for you?",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": false,
       "contentLength": 890,
-      "wordCount": 152
+      "wordCount": 152,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-20 19:52",
@@ -102,10 +126,13 @@
       "type": "voice-note",
       "text": "0:20",
       "duration": "00:00:20",
+      "durationSeconds": 20,
       "isCall": true,
       "isImage": false,
       "contentLength": 4,
-      "wordCount": 0
+      "wordCount": 0,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-20 19:54",
@@ -113,10 +140,13 @@
       "type": "unsent",
       "text": "message unsent",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": false,
       "contentLength": 14,
-      "wordCount": 2
+      "wordCount": 2,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-21 17:34",
@@ -124,10 +154,13 @@
       "type": "missed-call",
       "text": "missed call",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": true,
       "isImage": false,
       "contentLength": 11,
-      "wordCount": 2
+      "wordCount": 2,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-22 00:26",
@@ -135,10 +168,13 @@
       "type": "text",
       "text": "Do you have that photo and a link?",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": false,
       "contentLength": 34,
-      "wordCount": 8
+      "wordCount": 8,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-22 10:15",
@@ -146,10 +182,13 @@
       "type": "link",
       "text": "https://www.facebook.com/share/v/17hnQQBm6h/",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": false,
       "contentLength": 44,
-      "wordCount": 1
+      "wordCount": 1,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-22 10:45",
@@ -157,10 +196,13 @@
       "type": "sticker",
       "text": "",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": false,
       "contentLength": 0,
-      "wordCount": 0
+      "wordCount": 0,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-22 11:14",
@@ -168,10 +210,13 @@
       "type": "video-call",
       "text": "video call",
       "duration": "00:31:00",
+      "durationSeconds": 1860,
       "isCall": true,
       "isImage": false,
       "contentLength": 10,
-      "wordCount": 0
+      "wordCount": 0,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-22 11:15",
@@ -179,10 +224,13 @@
       "type": "missed-call",
       "text": "missed call",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": true,
       "isImage": false,
       "contentLength": 11,
-      "wordCount": 2
+      "wordCount": 2,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-22 11:16",
@@ -190,10 +238,13 @@
       "type": "reaction",
       "text": "👍",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": false,
       "contentLength": 2,
-      "wordCount": 1
+      "wordCount": 1,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-22 11:57",
@@ -201,10 +252,13 @@
       "type": "link",
       "text": "https://youtube.com/shorts/IKS2vNOcZ7A?si=ly12c89dzPEHyhll",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": false,
       "contentLength": 58,
-      "wordCount": 1
+      "wordCount": 1,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-22 12:00",
@@ -212,10 +266,13 @@
       "type": "voice-note",
       "text": "0:21",
       "duration": "00:00:21",
+      "durationSeconds": 21,
       "isCall": true,
       "isImage": false,
       "contentLength": 4,
-      "wordCount": 0
+      "wordCount": 0,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-22 13:51",
@@ -223,10 +280,13 @@
       "type": "link",
       "text": "https://www.google.com/maps/search/?api=1&query=Hall%20Mead%20Nursery%2C%20Nazeing%20Road%20Waltham%20Abbey%20England%20EN9%202EU%20United%20Kingdom",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": false,
       "contentLength": 148,
-      "wordCount": 1
+      "wordCount": 1,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-22 14:18",
@@ -234,10 +294,13 @@
       "type": "reaction",
       "text": "",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": false,
       "contentLength": 0,
-      "wordCount": 0
+      "wordCount": 0,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-22 16:02",
@@ -245,10 +308,13 @@
       "type": "poll",
       "text": "Poll: Where should we eat?",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": false,
       "contentLength": 26,
-      "wordCount": 5
+      "wordCount": 5,
+      "repliedTo": null,
+      "repliedType": null
     },
     {
       "date": "2026-05-22 20:59",
@@ -256,10 +322,13 @@
       "type": "image",
       "text": "image sent",
       "duration": "",
+      "durationSeconds": 0,
       "isCall": false,
       "isImage": true,
       "contentLength": 10,
-      "wordCount": 0
+      "wordCount": 0,
+      "repliedTo": null,
+      "repliedType": null
     }
   ]
 }

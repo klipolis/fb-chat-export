@@ -116,8 +116,8 @@ function getBaseSemanticTypes(fileNames) {
   // Map filename stems whose chooseRule type differs from the schema name
   const schemaAlias = {
     'call-video': 'video-call',
-    'missed-call-audio': 'missed-audio-call',
-    'missed-call-video': 'missed-video-call',
+    'missed-call-audio': 'missed-call',
+    'missed-call-video': 'missed-call',
   };
 
   fileNames.forEach((fileName) => {

@@ -10,15 +10,23 @@ Changelog entries should describe active changes in direct present-tense stateme
 ## [Unreleased]
 
 ### Added
+- Browser export can import and export alias mappings as JSON files
+- Browser export filters messages by type (text, image, link, reaction, call, voice-note, sticker, poll)
+- Browser export shows estimated total message count and ETA during scan
+- Browser export extracts replied-to message text from quoted reply blocks
+- JSON export includes `durationSeconds` numeric field for calls
+- Server build accepts `--duration` and `--skipFail` options
+- Integration test validates JSON export output against generated schema
+- Cache architecture developer guide in docs/developer-guide/
+- Frontend unit tests for type filtering, progress display, and alias import/export
+
 - Browser export extracts sender name from "by X" patterns like "sent by John" in message labels
 - DOM-based name fallback in browser export uses child element aria-labels and img alt text
 - Date candidate validation rejects strings over 6 words or with unusual characters
-
 - Add cleanup countdown timer after download in browser export panel
 - Add data_raw.name and data_preview.name fields with alias mapping to JSON exports
 - Alias panel in browser export auto-populates with detected sender names after scan completes
 - Group chat mode checkbox in alias panel controls whether new names auto-populate during scan
-
 - Partial rebuild processes only changed input files and removes stale output for deleted files.
 - Parallel worker pool processes HTML optimization across all available CPU cores.
 - `pnpm run release` automates version bumps and changelog heading updates. Supports patch, minor, and major override arguments; defaults to minor when new features are present.
@@ -28,27 +36,6 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Browser export filenames include the selected date range when filtering by date.
 - Server build generates a structured JSON summary variant for programmatic consumption.
 - Server build generates a raw-date variant that shows the original date label text alongside the normalized date.
-
-### Changed
-- Alias name validation accepts Unicode characters, 1–3 words, max 25 characters, no numbers
-- Sender pattern includes underscore and hyphen characters
-- Sender validation accepts up to 50 characters and 5 words
-- Aria-label parser handles `date:sender` format where the colon directly precedes the sender name
-- Server parser skips redundant `Enter, Message sent` aria labels to avoid duplicate export nodes
-- Export config and generated-txt-schema align on `includeSummary`, `duration` pattern, and `messageTypes` values
-- Golden export summary files regenerated to match current server output
-
-### Fixed
-- Aria-label parser extracts sender name after "by" in labels like "At 10:15 AM, sent by John: hello"
-- Date prefix detection truncates at " by " boundary to avoid treating "by" text as part of the date
-- Comma-iteration in aria-label parser skips date candidates with more than 6 words
-- Pre-commit hook blocks commits when source files change without staged AI interaction logs
-- Call detection no longer classifies user-typed sentences containing the word "call" as voice notes
-- Video call messages are correctly detected when the aria-label contains "video call"
-- Aria-label parser correctly extracts sender from labels where the message text contains a colon before the sender colon
-- Aria-label parser comma-iteration strips "At " prefix from the date part
-
-### Added
 - Browser export panel wraps long status line and places download button on its own row
 - Browser export caches scan results in-memory for instant reuse on same-chat re-scans
 - Browser export adds copy-to-clipboard button, progress bar, preview pane, and scan ETA
@@ -61,7 +48,29 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Developer guide for adding new message types in docs/developer-guide/
 
 ### Changed
+- Alias name validation accepts Unicode characters, 1–3 words, max 25 characters, no numbers
+- Sender pattern includes underscore and hyphen characters
+- Sender validation accepts up to 50 characters and 5 words
+- Aria-label parser handles `date:sender` format where the colon directly precedes the sender name
+- Server parser skips redundant `Enter, Message sent` aria labels to avoid duplicate export nodes
+- Export config and generated-txt-schema align on `includeSummary`, `duration` pattern, and `messageTypes` values
+- Golden export summary files regenerated to match current server output
 - Browser export cleanup triggers only on new scan start instead of auto-countdown
+- Updated alias configuration so a single source defines runtime replacements and removes duplicate metadata.
+- Reorganises the JSON preview schema with top-level fields and separate raw and preview sections.
+- Reaction messages produce null content in both raw and preview data.
+- `video-link` is a new message type for video platform URLs, using the URL as content.
+- The voice-note message type uses the name `voice-note` across all rule, preview, and export paths.
+
+### Fixed
+- Aria-label parser extracts sender name after "by" in labels like "At 10:15 AM, sent by John: hello"
+- Date prefix detection truncates at " by " boundary to avoid treating "by" text as part of the date
+- Comma-iteration in aria-label parser skips date candidates with more than 6 words
+- Pre-commit hook blocks commits when source files change without staged AI interaction logs
+- Call detection no longer classifies user-typed sentences containing the word "call" as voice notes
+- Video call messages are correctly detected when the aria-label contains "video call"
+- Aria-label parser correctly extracts sender from labels where the message text contains a colon before the sender colon
+- Aria-label parser comma-iteration strips "At " prefix from the date part
 
 ### Removed
 - Browser export auto-cleanup countdown for undownloaded exports (overnight scans common)
@@ -76,40 +85,6 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Unit tests added for extractMessageParts in browser export
 - Unit tests added for browser export cache (canReuseCached, computeAliasHash)
 - Full per-message JSON export module (src/shared/export-json.js)
-
-- Stale documentation references in RELEASING.md and skill files
-- Error message label in test-frontend-build.js
-- Stale eslint ignore entries
-- Dead `referenceDateFormat` config option in server data config
-- Test expectations in name-fields, word-count-consistency, and aria-label-parser tests
-- Export and preview durations display in strict `HH:MM:SS` three-part format (e.g. `00:18:00`) with zero-padded hours.
-- Preview dates from relative weekday labels (e.g. `Saturday 4:36am`) resolve to the correct calendar date.
-- Alias replacement skips generic lowercase labels when anonymizing sender names.
-- Full-name profile images in chat messages have their alt text replaced entirely with the alias instead of only the first name.
-- The summary validator accepts any number of participant sections.
-- Summary title patterns are dynamic.
-- Message type rules include reaction and video-link variants; duration matching uses strict `HH:MM:SS`.
-- Summary text count correctly handles entries that carry multiple images.
-- Total summary covers every participant.
-- Body content length uses word count for all message types.
-- Link-video export uses the full URL.
-- Server TXT export header lists link-video as a recognised message type.
-- Text messages classify correctly as text, not voice, in the browser scan.
-- Link detection in the browser export triggers on URL patterns only.
-
-### Changed
-
-- Updated alias configuration so a single source defines runtime replacements and removes duplicate metadata.
-- Build and lint script ordering cleaned; added a todos validation command.
-- Sticker and animated gif messages are not counted as images in the summary; they count toward the text total alongside reactions.
-- Reaction messages using an emoji image classify as `reaction` type.
-- Reorganises the JSON preview schema with top-level fields and separate raw and preview sections.
-- Reaction messages produce null content in both raw and preview data.
-- `video-link` is a new message type for video platform URLs, using the URL as content.
-- The voice-note message type uses the name `voice-note` across all rule, preview, and export paths.
-
-### Dev
-
 - Build falls back to sequential alias+optimize when worker_threads is unavailable.
 - Developer guide documents incremental build, partial rebuild, cache manifest, and parallel worker pool architecture.
 - AI-interaction guidance tracks worker error propagation and cache staleness patterns.

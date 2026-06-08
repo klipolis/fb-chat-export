@@ -319,3 +319,43 @@ tap.test('textExportDurationNormalization', (t) => {
 
   t.end();
 });
+
+// ---------------------------------------------------------------------------
+// exportJsonFull
+// ---------------------------------------------------------------------------
+
+tap.test('exportJsonFull', (t) => {
+  const build = runServerBuildOnce();
+  t.equal(build.status, 0, `build-server failed: ${build.stderr || build.stdout}`);
+
+  const jsonPath = path.join(txtDir, 'export-json-full.json');
+  t.ok(fs.existsSync(jsonPath), 'export-json-full.json should exist');
+
+  const raw = fs.readFileSync(jsonPath, 'utf8');
+  let data;
+  try { data = JSON.parse(raw); } catch (e) { t.fail('export-json-full.json should be valid JSON'); }
+
+  t.ok(data, 'Parsed JSON should be truthy');
+  t.type(data.exportDate, 'string', 'exportDate should be a string');
+  t.type(data.conversation, 'string', 'conversation should be a string');
+  t.type(data.messageCount, 'number', 'messageCount should be a number');
+  t.ok(Array.isArray(data.participants), 'participants should be an array');
+  t.ok(Array.isArray(data.messages), 'messages should be an array');
+  t.equal(data.messageCount, data.messages.length, 'messageCount should match messages.length');
+
+  if (data.messages.length > 0) {
+    const first = data.messages[0];
+    t.type(first.date, 'string', 'first message date should be a string');
+    t.type(first.sender, 'string', 'first message sender should be a string');
+    t.type(first.type, 'string', 'first message type should be a string');
+    t.type(first.text, 'string', 'first message text should be a string');
+    t.type(first.duration, 'string', 'first message duration should be a string');
+    t.type(first.durationSeconds, 'number', 'first message durationSeconds should be a number');
+    t.type(first.isCall, 'boolean', 'first message isCall should be a boolean');
+    t.type(first.isImage, 'boolean', 'first message isImage should be a boolean');
+    t.type(first.contentLength, 'number', 'first message contentLength should be a number');
+    t.type(first.wordCount, 'number', 'first message wordCount should be a number');
+  }
+
+  t.end();
+});

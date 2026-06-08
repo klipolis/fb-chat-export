@@ -1,5 +1,13 @@
 const { CALL_TYPES, TIMED_CALL_TYPES } = require('./constants');
 
+function parseDurationToSeconds(duration) {
+  if (!duration) return 0;
+  const parts = duration.split(':').map(Number);
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  return 0;
+}
+
 function buildFullJsonExport(entries = [], options = {}) {
   const conversation = options.conversation || 'Chat Export';
   const participants = options.fixedParticipants || [];
@@ -14,17 +22,21 @@ function buildFullJsonExport(entries = [], options = {}) {
     const textWords = contentText
       ? contentText.split(/\s+/).filter(Boolean).length
       : 0;
+    const rawDuration = entry.duration || '';
 
     return {
       date: entry.dateText || '',
       sender: entry.sender || 'Unknown',
       type: semanticType,
       text: contentText,
-      duration: entry.duration || '',
+      duration: rawDuration,
+      durationSeconds: parseDurationToSeconds(rawDuration),
       isCall: CALL_TYPES.includes(semanticType),
       isImage: semanticType === 'image',
       contentLength: contentText.length,
       wordCount: isTimedCall || semanticType === 'image' ? 0 : (entry.words || textWords),
+      repliedTo: entry.repliedTo || null,
+      repliedType: entry.repliedType || null,
     };
   });
 

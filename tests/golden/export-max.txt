@@ -1,19 +1,11 @@
 Method: server
 Message types:
 - audio-call
-- deleted
 - image
-- link-embed-no-text
-- link-text
-- link-video
-- missed-audio-call
-- missed-video-call
+- missed-call
 - poll
-- reaction-emoji
 - reaction
 - sticker
-- text-image-replied
-- text-replied
 - text
 - video-call
 - voice-note
@@ -54,8 +46,11 @@ Barnabas Summary
 
 ---
 [2026-04-12 13:23] Youghurt: audio-call 00:18:00
+> Replied to: Original image
 [2026-04-14 18:34] ABC: text-image-replied 6 words / Well i didn't know about this
+> Replied to: I looked into, see screenshot, I added an option to the list to bulk upd…
 [2026-04-16 10:55] ABC: text-replied 39 words / I now realised what happened. It must have been related to reviewers I added at a later stage from when we wen through that, and maybe I was duplicating and editing a reviewer who had the cancellation option on
+> Replied to: When you can we should turn this feature off, as my emails get blocked a…
 [2026-05-07 07:09] Youghurt: text-2 25 words / Hosting limitations, Google Mail or Microsoft better, bust their limit 500 emails per day. Today's day reminders sent out this morning: 272 emails at ~4am.
 [2026-05-16 04:36] ABC: image
 [2026-05-19 22:25] Youghurt: reaction-emoji 1 words / 🥳

@@ -5,21 +5,12 @@
   "method": "server",
   "messageTypes": [
     "audio-call",
-    "deleted",
     "image",
     "link",
-    "link-embed-no-text",
-    "link-text",
-    "link-video",
-    "missed-audio-call",
     "missed-call",
-    "missed-video-call",
     "poll",
-    "reaction-emoji",
     "reaction",
     "sticker",
-    "text-image-replied",
-    "text-replied",
     "text",
     "unsent",
     "video-call",
@@ -82,7 +73,38 @@
       "fileName": "export-json-full.json",
       "includeSummary": true,
       "includeContent": true,
-      "content": "json"
+      "content": "json",
+      "jsonSchema": {
+        "type": "object",
+        "required": ["exportDate", "conversation", "messageCount", "participants", "messages"],
+        "properties": {
+          "exportDate": { "type": "string", "format": "date-time" },
+          "conversation": { "type": "string" },
+          "messageCount": { "type": "number" },
+          "participants": { "type": "array", "items": { "type": "string" } },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["date", "sender", "type", "text", "duration", "durationSeconds", "isCall", "isImage", "contentLength", "wordCount"],
+              "properties": {
+                "date": { "type": "string" },
+                "sender": { "type": "string" },
+                "type": { "type": "string" },
+                "text": { "type": "string" },
+                "duration": { "type": "string" },
+                "durationSeconds": { "type": "number" },
+                "isCall": { "type": "boolean" },
+                "isImage": { "type": "boolean" },
+                "contentLength": { "type": "number" },
+                "wordCount": { "type": "number" },
+                "repliedTo": { "type": ["string", "null"] },
+                "repliedType": { "type": ["string", "null"] }
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }
