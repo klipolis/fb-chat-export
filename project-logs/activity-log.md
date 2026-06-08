@@ -16,6 +16,8 @@ Do not modify existing entries below. Update `project-logs/interaction-log.md` a
 
 2026-06-08 23:00 | user | continue with all todo-next tasks
 2026-06-08 23:00 | ai | Completed T-298 — full CSS extraction with new classes, 19 style→class conversions, 18 display toggles consolidated
+2026-06-08 17:30 | user | apply changes
+2026-06-08 17:30 | ai | Applied the staged TODO/source changes and recorded changelog entry for the latest refactor.
 
 2026-06-08 22:30 | user | continue all next tasks
 2026-06-08 22:30 | ai | Implemented 14 TODO tasks: lazy-load textbox, collapsed buttons, label consolidation, summary in panel, preview aliases, auto-detect sender, persist CI toggle, CSS classes, 3 test suites, lazyLoad schema flag, README section

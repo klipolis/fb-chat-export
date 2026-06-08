@@ -16,6 +16,8 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 
 2026-06-08 23:00 | user | continue with all todo-next tasks
 2026-06-08 23:00 | ai | Completed final remaining task T-298 (CSS extraction): added 5 new CSS classes, converted 19 style.cssText→className across ui.js/index.js, converted 18 style.display toggles to classList pe-hidden. TODO-next now empty. Committed.
+2026-06-08 17:30 | user | apply changes
+2026-06-08 17:30 | ai | Added CHANGELOG entry for the completed CSS extraction refactor and prepared commit for the current staged TODO/source changes.
 
 2026-06-08 22:30 | user | continue all next tasks
 2026-06-08 22:30 | ai | Audited 30 TODO-next tasks — 16 already implemented (moved to TODO-done). Dispatched 3 parallel agents for remaining 14 tasks: frontend main (lazy-load textbox, collapsed buttons, label consolidation, summary in panel), frontend features (preview aliases, auto-detect sender, persist CI toggle, CSS classes), and tests+schema+docs (3 test suites, lazyLoad flag, README). All 187 tests pass. Committed.

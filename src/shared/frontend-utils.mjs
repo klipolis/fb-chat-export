@@ -1,4 +1,4 @@
-import { normalizeDateToIso } from './aria-label-parser/index.js';
+import { normalizeDateToIso, isValidSender } from './aria-label-parser/index.js';
 
 export function parseLocalDate(str) {
   if (!str) return NaN;
@@ -51,6 +51,37 @@ export function getDisplayPersonName() {
     .replace(/\s{2,}/g, ' ')
     .trim();
   return withoutYou || 'chat';
+}
+
+export function detectCurrentUserName() {
+  const candidates = [];
+
+  const profileImg = document.querySelector('[data-pagelet="LeftSidebar"] img[alt], [role="navigation"] img[alt], [aria-label*="Profile" i] img[alt], [aria-label*="Account" i] img[alt]');
+  if (profileImg) {
+    const alt = (profileImg.getAttribute('alt') || '').trim();
+    if (alt && isValidSender(alt)) candidates.push(alt);
+  }
+
+  const profileEl = document.querySelector('[aria-label*="Profile" i]');
+  if (profileEl) {
+    const label = profileEl.getAttribute('aria-label') || '';
+    const cleaned = label.replace(/^(your\s+)?profile\s*/i, '').trim();
+    if (cleaned && isValidSender(cleaned) && cleaned.toLowerCase() !== 'you') candidates.push(cleaned);
+  }
+
+  const pagelet = document.querySelector('[data-pagelet*="Profile" i]');
+  if (pagelet) {
+    const text = pagelet.textContent.trim();
+    if (text && isValidSender(text)) candidates.push(text);
+  }
+
+  const sidebarImgs = document.querySelectorAll('[role="navigation"] img[alt], [data-pagelet="LeftSidebar"] img[alt]');
+  sidebarImgs.forEach((img) => {
+    const alt = (img.getAttribute('alt') || '').trim();
+    if (alt && isValidSender(alt) && !candidates.includes(alt)) candidates.push(alt);
+  });
+
+  return candidates.find((name) => name.toLowerCase() !== 'you') || null;
 }
 
 export function formatExportFileName(mode, { fromDate, toDate } = {}) {

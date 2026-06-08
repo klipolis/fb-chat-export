@@ -106,8 +106,20 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
   cacheIndicator.style.cssText = 'display:inline-block; width:12px; height:12px; border-radius:50%; background:gray; margin-left:8px; vertical-align:middle;';
   cacheIndicator.title = 'Served from cache';
   cacheIndicator.style.display = 'none';
-  noticeStatus.appendChild(noticeMsg);
   noticeStatus.appendChild(cacheIndicator);
+
+  const cacheClearBtn = document.createElement('button');
+  cacheClearBtn.textContent = 'Clear cache';
+  cacheClearBtn.className = 'pe-hidden';
+  cacheClearBtn.style.cssText = 'margin-left:6px;font-size:11px;color:#c0392b;background:transparent;border:none;cursor:pointer;';
+    cacheClearBtn.addEventListener('click', () => {
+    exportCache = null;
+    try { localStorage.removeItem('chatExportLocalhostBackup'); } catch (_) { /* noop */ }
+    cleanupExport();
+    setCacheIndicator(false);
+    noticeMsg.textContent = 'Cache cleared.';
+  });
+  noticeStatus.appendChild(cacheClearBtn);
 
   function setCacheIndicator(hit) {
     cacheIndicator.style.display = hit ? 'inline-block' : 'none';
@@ -554,6 +566,40 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
 
   let exportCache = null;
   let downloadCleanup = null;
+  let localhostBackup = null;
+
+  function cacheExportOnLocalhost(info) {
+    try {
+      localhostBackup = {
+        timestamp: Date.now(),
+        exportText: info.exportText || '',
+        fileName: info.fileName || '',
+        headerText: info.headerText || '',
+        summaryText: info.summaryText || '',
+        messages: info.messages || [],
+      };
+      localStorage.setItem('chatExportLocalhostBackup', JSON.stringify(localhostBackup));
+    } catch (_) {
+      localhostBackup = null;
+    }
+  }
+
+  function restoreExportFromLocalhost() {
+    try {
+      const raw = localStorage.getItem('chatExportLocalhostBackup');
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed.exportText !== 'string') return null;
+      return parsed;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function clearLocalhostBackup() {
+    localhostBackup = null;
+    try { localStorage.removeItem('chatExportLocalhostBackup'); } catch (e) { /* noop */ }
+  }
 
   function cleanupExport() {
     if (downloadCleanup) {
@@ -659,12 +705,22 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
     return String(hash);
   }
 
-  function setScanState(state) {
+  function setScanState(state, opts = {}) {
     if (state === 'scanning') {
       actionBtn.textContent = 'Stop Scan';
       actionBtn.style.background = '#e74c3c';
       actionBtn.dataset.scanning = 'true';
       fromInput.disabled = toInput.disabled = true;
+      if (opts.restoreRange === true) {
+        const restored = restoreExportFromLocalhost();
+        if (restored && restored.fileName) {
+          const match = /(?<from>\d{4}-\d{2}-\d{2}|[A-Za-z]{3,}\s+\d{1,2}[a-z]{0,2}\s+\d{4}|Apr\s+\d{1,2}\s+\d{4}|April\s+\d{1,2}\s+\d{4})\s*[-–]\s*(?<to>\d{4}-\d{2}-\d{2}|[A-Za-z]{3,}\s+\d{1,2}[a-z]{0,2}\s+\d{4}|Apr\s+\d{1,2}\s+\d{4}|April\s+\d{1,2}\s+\d{4})/i.exec(restored.fileName);
+          if (match && match.groups) {
+            fromInput.value = match.groups.from || fromInput.value;
+            toInput.value = match.groups.to || toInput.value;
+          }
+        }
+      }
     } else {
       actionBtn.textContent = 'Scan Messages';
       actionBtn.style.background = '#0084ff';

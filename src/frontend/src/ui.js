@@ -106,7 +106,7 @@ export function createCheckboxToggleWithInput(labelText, selfValue, otherValue) 
   return { wrap, input, textInput, textInput2 };
 }
 
-export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' }) {
+export function createAliasRows(initialRows = { You: 'you', any: 'Alpha' }) {
   const wrap = document.createElement('div');
   wrap.className = 'pe-flex-col';
 
@@ -252,7 +252,7 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
     return valid;
   };
 
-  const setDetectedNames = (names) => {
+  const setDetectedNames = (names, defaultAliases = {}) => {
     const nameSet = new Set(Array.from(names).map((n) => String(n).trim()).filter(Boolean));
     const existingRows = Array.from(rows.querySelectorAll('.alias-row'));
 
@@ -272,7 +272,7 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
         return inputs.length >= 2 && inputs[0].value.trim() === name;
       });
       if (!found) {
-        addRow(name, '', false);
+        addRow(name, defaultAliases[name] || '', false);
       }
     });
   };

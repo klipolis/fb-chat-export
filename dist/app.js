@@ -225,7 +225,7 @@
       var SENDER_PATTERN_SOURCE = "\\p{L}[\\p{L} .'\\-_]{0,49}";
       var SENDER_RE = new RegExp(`^${SENDER_PATTERN_SOURCE}$`, "u");
       var SENDER_MAX_WORDS = 5;
-      function isValidSender2(value) {
+      function isValidSender3(value) {
         if (!SENDER_RE.test(value)) return false;
         if (/\d/.test(value)) return false;
         return value.trim().split(/\s+/).length <= SENDER_MAX_WORDS;
@@ -234,7 +234,7 @@
         SENDER_PATTERN_SOURCE,
         SENDER_RE,
         SENDER_MAX_WORDS,
-        isValidSender: isValidSender2
+        isValidSender: isValidSender3
       };
     }
   });
@@ -243,19 +243,19 @@
   var require_sender_utils = __commonJS({
     "src/shared/aria-label-parser/sender-utils.js"(exports, module) {
       "use strict";
-      var { isValidSender: isValidSender2 } = require_sender_constants();
+      var { isValidSender: isValidSender3 } = require_sender_constants();
       function extractNameAfterBy2(text) {
         const byIndex = text.lastIndexOf(" by ");
         if (byIndex < 0) return text;
         const candidate = text.slice(byIndex + 4).trim();
-        if (isValidSender2(candidate) && !/^(sent|message|by)$/i.test(candidate)) {
+        if (isValidSender3(candidate) && !/^(sent|message|by)$/i.test(candidate)) {
           return candidate;
         }
         return text;
       }
       module.exports = {
         extractNameAfterBy: extractNameAfterBy2,
-        isValidSender: isValidSender2
+        isValidSender: isValidSender3
       };
     }
   });
@@ -499,7 +499,7 @@
   var require_core = __commonJS({
     "src/shared/aria-label-parser/core.js"(exports, module) {
       "use strict";
-      var { isValidSender: isValidSender2, SENDER_PATTERN_SOURCE } = require_sender_constants();
+      var { isValidSender: isValidSender3, SENDER_PATTERN_SOURCE } = require_sender_constants();
       var { extractNameAfterBy: extractNameAfterBy2 } = require_sender_utils();
       var { findValidDatePrefix, normalizeDateToIso: normalizeDateToIso3, isValidDateCandidate } = require_date_utils();
       function normalizeLabel(text) {
@@ -515,7 +515,7 @@
         let sender = normalizeLabel(firstWordMatch[1]);
         const message = normalizeLabel(firstWordMatch[2] || "");
         sender = extractNameAfterBy2(sender);
-        if (!isValidSender2(sender)) return null;
+        if (!isValidSender3(sender)) return null;
         return { sender, message };
       }
       function parseAriaLabel2(ariaLabel) {
@@ -545,7 +545,7 @@
             const hasInlineSenderColon = tailParts.slice(1, -1).some((p) => SENDER_COLON_INLINE_RE.test(p));
             if (!hasInlineSenderColon) {
               const normalizedSender = extractNameAfterBy2(maybeSender.trim());
-              if (isValidSender2(normalizedSender)) {
+              if (isValidSender3(normalizedSender)) {
                 return {
                   date: maybeDate.trim(),
                   sender: normalizedSender,
@@ -560,7 +560,7 @@
             const inlineMatch = rest.match(SENDER_COLON_CAPTURE_RE);
             if (inlineMatch) {
               const matchedSender = extractNameAfterBy2(inlineMatch[1].trim());
-              if (isValidSender2(matchedSender)) {
+              if (isValidSender3(matchedSender)) {
                 return {
                   date: maybeDate.trim(),
                   sender: matchedSender,
@@ -574,7 +574,7 @@
               const colonIdx = bySender.indexOf(":");
               const nameEnd = colonIdx >= 0 ? colonIdx : bySender.length;
               const potentialBySender = bySender.slice(0, nameEnd).trim();
-              if (isValidSender2(potentialBySender)) {
+              if (isValidSender3(potentialBySender)) {
                 return {
                   date: maybeDate.trim(),
                   sender: potentialBySender,
@@ -606,7 +606,7 @@
             if (colonIdx < 0) continue;
             if (!isValidDateCandidate(datePart)) continue;
             const potentialSender = extractNameAfterBy2(senderRest.slice(0, colonIdx).trim());
-            if (isValidSender2(potentialSender)) {
+            if (isValidSender3(potentialSender)) {
               return {
                 date: datePart,
                 sender: potentialSender,
@@ -619,7 +619,7 @@
           const byMatch = label.match(/^At\s+(.+?),\s*(?:Message\s+)?sent\s+by\s+(\p{L}[\p{L} .'\-_]*?)\s*:\s*([\s\S]*)$/iu);
           if (byMatch) {
             const potentialSender = byMatch[2].trim();
-            if (isValidSender2(potentialSender)) {
+            if (isValidSender3(potentialSender)) {
               return {
                 date: byMatch[1].trim(),
                 sender: potentialSender,
@@ -635,7 +635,7 @@
             const colonIdx = afterBy.indexOf(":");
             const nameEnd = colonIdx >= 0 ? colonIdx : afterBy.length;
             const potentialSender = afterBy.slice(0, nameEnd).trim();
-            if (isValidSender2(potentialSender)) {
+            if (isValidSender3(potentialSender)) {
               return {
                 date: label.slice(0, pos).trim(),
                 sender: potentialSender,
@@ -679,7 +679,7 @@
         {
           const parts = label.split(":");
           const potentialSender = parts.pop().trim();
-          if (isValidSender2(potentialSender)) {
+          if (isValidSender3(potentialSender)) {
             const datePart = parts.join(":").trim();
             if (normalizeDateToIso3(datePart) || findValidDatePrefix(datePart)) {
               return { date: datePart, sender: potentialSender, message: "" };
@@ -713,7 +713,7 @@
         findValidDatePrefix,
         isValidDateCandidate
       } = require_date_utils();
-      var { extractNameAfterBy: extractNameAfterBy2, isValidSender: isValidSender2 } = require_sender_utils();
+      var { extractNameAfterBy: extractNameAfterBy2, isValidSender: isValidSender3 } = require_sender_utils();
       module.exports = {
         parseAriaLabel: parseAriaLabel2,
         parseReferenceDate,
@@ -721,7 +721,7 @@
         normalizeDateToIso: normalizeDateToIso3,
         normalizeDateToIsoSafe,
         normalizeLabel,
-        isValidSender: isValidSender2,
+        isValidSender: isValidSender3,
         findValidDatePrefix,
         extractNameAfterBy: extractNameAfterBy2,
         isValidDateCandidate
@@ -1863,7 +1863,7 @@ ${aliasLines}
     wrap.appendChild(text);
     return { wrap, input };
   }
-  function createAliasRows(initialRows = { You: "Youghurt", any: "Alpha" }) {
+  function createAliasRows(initialRows = { You: "you", any: "Alpha" }) {
     const wrap = document.createElement("div");
     wrap.className = "pe-flex-col";
     const collisionWarning = document.createElement("div");
@@ -1983,7 +1983,7 @@ ${aliasLines}
       });
       return valid;
     };
-    const setDetectedNames = (names) => {
+    const setDetectedNames = (names, defaultAliases = {}) => {
       const nameSet = new Set(Array.from(names).map((n) => String(n).trim()).filter(Boolean));
       const existingRows = Array.from(rows.querySelectorAll(".alias-row"));
       existingRows.forEach((row) => {
@@ -2001,7 +2001,7 @@ ${aliasLines}
           return inputs.length >= 2 && inputs[0].value.trim() === name;
         });
         if (!found) {
-          addRow(name, "", false);
+          addRow(name, defaultAliases[name] || "", false);
         }
       });
     };
@@ -2151,8 +2151,22 @@ ${aliasLines}
     cacheIndicator.style.cssText = "display:inline-block; width:12px; height:12px; border-radius:50%; background:gray; margin-left:8px; vertical-align:middle;";
     cacheIndicator.title = "Served from cache";
     cacheIndicator.style.display = "none";
-    noticeStatus.appendChild(noticeMsg);
     noticeStatus.appendChild(cacheIndicator);
+    const cacheClearBtn = document.createElement("button");
+    cacheClearBtn.textContent = "Clear cache";
+    cacheClearBtn.className = "pe-hidden";
+    cacheClearBtn.style.cssText = "margin-left:6px;font-size:11px;color:#c0392b;background:transparent;border:none;cursor:pointer;";
+    cacheClearBtn.addEventListener("click", () => {
+      exportCache = null;
+      try {
+        localStorage.removeItem("chatExportLocalhostBackup");
+      } catch (_) {
+      }
+      cleanupExport();
+      setCacheIndicator(false);
+      noticeMsg.textContent = "Cache cleared.";
+    });
+    noticeStatus.appendChild(cacheClearBtn);
     function setCacheIndicator(hit) {
       cacheIndicator.style.display = hit ? "inline-block" : "none";
       cacheIndicator.style.background = hit ? "#27ae60" : "gray";
@@ -2553,6 +2567,40 @@ ${aliasLines}
     let stopRequested = false;
     let exportCache = null;
     let downloadCleanup = null;
+    let localhostBackup = null;
+    function cacheExportOnLocalhost(info) {
+      try {
+        localhostBackup = {
+          timestamp: Date.now(),
+          exportText: info.exportText || "",
+          fileName: info.fileName || "",
+          headerText: info.headerText || "",
+          summaryText: info.summaryText || "",
+          messages: info.messages || []
+        };
+        localStorage.setItem("chatExportLocalhostBackup", JSON.stringify(localhostBackup));
+      } catch (_) {
+        localhostBackup = null;
+      }
+    }
+    function restoreExportFromLocalhost() {
+      try {
+        const raw = localStorage.getItem("chatExportLocalhostBackup");
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed.exportText !== "string") return null;
+        return parsed;
+      } catch (_) {
+        return null;
+      }
+    }
+    function clearLocalhostBackup() {
+      localhostBackup = null;
+      try {
+        localStorage.removeItem("chatExportLocalhostBackup");
+      } catch (e) {
+      }
+    }
     function cleanupExport() {
       if (downloadCleanup) {
         if (downloadCleanup.url && downloadCleanup.url.startsWith("blob:")) {
