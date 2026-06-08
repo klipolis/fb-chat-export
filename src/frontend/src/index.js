@@ -25,6 +25,22 @@ import { applyAliasToText, detectAliasCollisions } from '../../shared/alias-util
 import { stripVariantSelectors } from '../../shared/string-utils.js';
 
 (function () {
+  const style = document.createElement('style');
+  style.textContent = `
+.pe-hdr { font-size:12px;color:#555;background:#fafafa;padding:6px 10px; }
+.pe-label { color:#555;font-size:12px; }
+.pe-label-dull { color:#777;font-size:12px; }
+.pe-input { border:1px solid #ccc;border-radius:4px;padding:4px 8px;font-size:12px;outline:none; }
+.pe-input-sm { width:100px; }
+.pe-btn { color:#fff;border:none;padding:6px 12px;border-radius:5px;font-size:12px;cursor:pointer; }
+.pe-link { color:#0084ff;text-decoration:underline;font-size:12px;cursor:pointer; }
+.pe-chk { cursor:pointer; }
+.pe-chk-label { display:flex;align-items:center;gap:6px;color:#555;font-size:12px;cursor:pointer; }
+.pe-flex-row { display:flex;align-items:center;gap:6px; }
+.pe-flex-row-4 { display:flex;align-items:center;gap:4px; }
+.pe-flex-col { display:flex;flex-direction:column;gap:6px; }
+`;
+  document.head.appendChild(style);
   'use strict';
 
   const cleanupPending = sessionStorage.getItem('cleanupPending');
@@ -115,7 +131,7 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
 
   // left column: stacked inputs
   const leftCol = document.createElement('div');
-  leftCol.style.cssText = 'display: flex; flex-direction: column; gap: 6px;';
+  leftCol.className = 'pe-flex-col';
 
   const { wrap: fromWrap, input: fromInput } = createLabelInput(
     'From:',
@@ -152,15 +168,11 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
   let persistedAliases = {};
   try { const p = JSON.parse(localStorage.getItem('chatExportAliases') || '{}'); if (typeof p === 'object' && !Array.isArray(p)) persistedAliases = p; } catch (_) { /* ignore */ }
   const aliasDefaults = { ...builtinAliases, ...persistedAliases };
-  const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk, addRow: addAliasRow, showCollisions } = createAliasRows(aliasDefaults);
+  const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk, addRow: addAliasRow, showCollisions, caseInsensitiveChk } = createAliasRows(aliasDefaults);
   const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle('Summary');
   const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle('Content');
   const { wrap: rawLinkWrap, input: rawLinkChk } = createCheckboxToggle('Raw link');
   const { wrap: lengthWrap, input: lengthChk } = createCheckboxToggle('Length');
-  const { wrap: caseInsensitiveWrap, input: caseInsensitiveChk } = createCheckboxToggle('A-i');
-  caseInsensitiveChk.title = 'Case-insensitive alias matching';
-  const { wrap: autoScanWrap, input: autoScanChk } = createCheckboxToggle('Auto');
-  autoScanChk.title = 'Auto-start scan when panel opens';
   function setAllChecked(state) {
     includeCallsChk.checked = state;
     aliasChk.checked = state;
@@ -244,8 +256,6 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
   rightCol.appendChild(includeContentWrap);
   rightCol.appendChild(rawLinkWrap);
   rightCol.appendChild(lengthWrap);
-  rightCol.appendChild(caseInsensitiveWrap);
-  rightCol.appendChild(autoScanWrap);
   rightCol.appendChild(selectAllLink);
 
   // Message type filter
@@ -1075,7 +1085,4 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
     scanStep();
   });
 
-  if (autoScanChk.checked) {
-    setTimeout(() => { actionBtn.click(); }, 100);
-  }
 })();

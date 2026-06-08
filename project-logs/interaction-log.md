@@ -14,6 +14,9 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 
 ---
 
+2026-06-08 21:45 | user | Remove autoscan, move case-insensitive checkbox, minimise CSS, more TODO tasks
+2026-06-08 21:45 | ai | Removed autoscan option and auto-trigger from frontend, moved case-insensitive toggle into alias panel with wiring, replaced common inline style patterns with shared (pe-*) CSS classes, added meaningful TODO-next tasks (T-369 to T-371) for alias persistence and CSS consolidation. Updated changelog, TODO-done, TODO-ignore, config. Committed.
+
 2026-06-08 21:30 | user | continue with next tasks
 2026-06-08 21:30 | ai | Implemented all 13 pending tasks (T-325 to T-337) via 4 parallel agents: cache tests + reuseMode constants, schema/export format changes, frontend features (cache-hit indicator, persist options, TTL), pinned-location type, emoji variant stripping, alias collision warning, pre-commit hook, cache append doc. Fixed html-utils.js bug from previous session, updated test fixture for reply prefix. Committed.
 

@@ -29,7 +29,7 @@ export function createDetailsPanel(titleText) {
 
 export function createLabelInput(labelText, placeholder, value) {
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'display: flex; align-items: center; gap: 6px;';
+  wrap.className = 'pe-flex-row';
 
   const inputId = `lbl-${labelText.replace(/\s+/g, '-').toLowerCase()}-${Math.random().toString(36).slice(2, 7)}`;
 
@@ -43,8 +43,7 @@ export function createLabelInput(labelText, placeholder, value) {
   input.id = inputId;
   input.placeholder = placeholder;
   input.value = value;
-  input.style.cssText =
-    'border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; font-size: 12px; width: 100px; outline: none;';
+  input.className = 'pe-input pe-input-sm';
 
   wrap.appendChild(label);
   wrap.appendChild(input);
@@ -53,13 +52,12 @@ export function createLabelInput(labelText, placeholder, value) {
 
 export function createCheckboxToggle(labelText) {
   const wrap = document.createElement('label');
-  wrap.style.cssText =
-    'display: flex; align-items: center; gap: 6px; color: #555; font-size: 12px; cursor: pointer;';
+  wrap.className = 'pe-chk-label';
 
   const input = document.createElement('input');
   input.type = 'checkbox';
   input.checked = false;
-  input.style.cssText = 'cursor: pointer;';
+  input.className = 'pe-chk';
 
   const text = document.createElement('span');
   text.textContent = labelText;
@@ -81,7 +79,7 @@ export function createCheckboxToggleWithInput(labelText, selfValue, otherValue) 
   const input = document.createElement('input');
   input.type = 'checkbox';
   input.checked = false;
-  input.style.cssText = 'cursor: pointer;';
+  input.className = 'pe-chk';
 
   const text = document.createElement('span');
   text.textContent = labelText;
@@ -111,7 +109,7 @@ export function createCheckboxToggleWithInput(labelText, selfValue, otherValue) 
 
 export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' }) {
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'display: flex; flex-direction: column; gap: 6px;';
+  wrap.className = 'pe-flex-col';
 
   const collisionWarning = document.createElement('div');
   collisionWarning.style.cssText = 'display: none; padding: 4px 8px; font-size: 11px; color: #b8860b; background: #fffbe6; border: 1px solid #e6d88a; border-radius: 4px;';
@@ -124,7 +122,7 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
   const checkbox = document.createElement('input');
   checkbox.type = 'checkbox';
   checkbox.checked = false;
-  checkbox.style.cssText = 'cursor: pointer;';
+  checkbox.className = 'pe-chk';
 
   const label = document.createElement('span');
   label.textContent = 'Alias';
@@ -165,8 +163,7 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
 
   const createRow = (orig, alias, fixed) => {
     const row = document.createElement('div');
-    row.style.cssText = 'display: flex; align-items: center; gap: 4px;';
-    row.className = 'alias-row';
+    row.className = 'pe-flex-row-4 alias-row';
 
     const originalInput = makeTextInput(orig, 'Original sender name', fixed);
     const aliasInput = makeTextInput(alias, 'Alias name', false);
@@ -288,16 +285,30 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
   const groupChatChk = document.createElement('input');
   groupChatChk.type = 'checkbox';
   groupChatChk.checked = false;
-  groupChatChk.style.cssText = 'cursor: pointer;';
+  groupChatChk.className = 'pe-chk';
   const groupChatLabel = document.createElement('span');
   groupChatLabel.textContent = 'Group chat';
   groupChatWrap.appendChild(groupChatChk);
   groupChatWrap.appendChild(groupChatLabel);
 
+  const caseInsensitiveWrap = document.createElement('label');
+  caseInsensitiveWrap.className = 'pe-flex-row';
+  caseInsensitiveWrap.style.cssText = 'color:#888;font-size:11px;cursor:pointer;padding-left:22px;margin-top:4px;';
+  caseInsensitiveWrap.title = 'Case-insensitive alias matching';
+  const caseInsensitiveChk = document.createElement('input');
+  caseInsensitiveChk.type = 'checkbox';
+  caseInsensitiveChk.checked = false;
+  caseInsensitiveChk.className = 'pe-chk';
+  const ciLabel = document.createElement('span');
+  ciLabel.textContent = 'A-i';
+  caseInsensitiveWrap.appendChild(caseInsensitiveChk);
+  caseInsensitiveWrap.appendChild(ciLabel);
+
   wrap.appendChild(header);
   wrap.appendChild(rows);
   wrap.appendChild(addButton);
   wrap.appendChild(groupChatWrap);
+  wrap.appendChild(caseInsensitiveWrap);
 
   const showCollisions = (collisions) => {
     if (!collisions || collisions.length === 0) {
@@ -308,15 +319,14 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
     collisionWarning.style.display = 'block';
   };
 
-  return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk, addRow, showCollisions };
+  return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk, addRow, showCollisions, caseInsensitiveChk };
 }
 
 export function createLinkAction(labelText, onClick) {
   const link = document.createElement('a');
   link.href = '#';
   link.textContent = labelText;
-  link.style.cssText =
-    'color: #0084ff; text-decoration: underline; font-size: 12px; cursor: pointer;';
+  link.className = 'pe-link';
   link.addEventListener('click', (event) => {
     event.preventDefault();
     onClick(event);

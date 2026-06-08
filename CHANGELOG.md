@@ -19,7 +19,7 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Cache invalidation and narrow-date filtering unit tests (browser-cache.js)
 - Pinned-location message type classification
 - Alias collision detection warns when distinct names map to the same alias
-- Emoji variant selectors excluded from word counts but preserved in export content
+- Exclude emoji variant selectors from word counts, keep them in export content
 
 - Browser export can import and export alias mappings as JSON files
 - Browser export filters messages by type (text, image, link, reaction, call, voice-note, sticker, poll)

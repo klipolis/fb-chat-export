@@ -40,7 +40,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Frontend
 
-- no tasks
+- T-365. **Auto-scan on panel open** — the `autoScanChk` checkbox and auto-trigger (`setTimeout(() => actionBtn.click(), 100)`) have been removed from the browser export panel. The auto-scan feature launched the export scan immediately when the panel opened, which interfered with manual setup (choosing dates, aliases, filters). Users now always start a scan explicitly via the scan button.
 
 ## Cleanup
 

@@ -146,7 +146,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-219. Created shared constants module with message type arrays used by export formatter and summary modules (0d01301)
 - T-220. Consolidated duration normalization into src/shared/duration-utils.js, removed duplicate definitions from four files (0d01301)
 - T-221. Moved stripAttributes and normalizeTagStrings from optimize-html.js into src/shared/html-utils.js (0d01301)
-- T-265. Consolidated shared error handling patterns — created src/shared/error-utils.js with fatal() function, replaced 11 console.error+process.exit occurrences across 3 files
+- T-367. Replace common inline style patterns (flex-box, label, input, button, link, checkbox) with shared CSS classes — reduces ~50 style.cssText assignments across ui.js and index.js
 
 ## Schema & config
 
@@ -272,6 +272,8 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-198. Renamed server-side formatExportFileName in export-text.js to formatServerExportFileName (3e31f9d)
 - T-287. Trigger cleanup when a new chat scan starts
 - T-290. Do not auto-cleanup exports that have not been downloaded, because overnight scans are common
+- T-366. Move case-insensitive alias checkbox from option column into alias panel — groups matching controls with alias configuration
+- T-368. Remove auto-scan checkbox and auto-trigger from browser export panel — users always start scans explicitly
 
 ## Process
 

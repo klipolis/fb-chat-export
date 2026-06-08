@@ -14,6 +14,9 @@ Do not modify existing entries below. Update `project-logs/interaction-log.md` a
 
 ---
 
+2026-06-08 21:45 | user | Remove autoscan, move case-insensitive checkbox, minimise CSS, more TODO tasks
+2026-06-08 21:45 | ai | Removed autoscan, moved case-insensitive toggle into alias panel, replaced inline CSS with shared classes, added TODO tasks
+
 2026-06-08 21:30 | user | Implement T-325 to T-337 pending tasks
 2026-06-08 21:30 | ai | All 13 tasks implemented via 4 parallel agents: cache tests (narrower + invalidation), reuseMode constants, schema nullable fields + exportOptions snapshot, frontend (cache-hit dot, sessionStorage persist, TTL), pinned-location type rule, emoji variant stripping, alias collision warning, pre-commit lint:docs guard, cache append doc. Fixed html-utils.js findMatchingClosingTag bug, updated reply test fixture.
 

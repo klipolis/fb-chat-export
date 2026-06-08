@@ -1832,7 +1832,7 @@ ${aliasLines}
   }
   function createLabelInput(labelText, placeholder, value) {
     const wrap = document.createElement("div");
-    wrap.style.cssText = "display: flex; align-items: center; gap: 6px;";
+    wrap.className = "pe-flex-row";
     const inputId = `lbl-${labelText.replace(/\s+/g, "-").toLowerCase()}-${Math.random().toString(36).slice(2, 7)}`;
     const label = document.createElement("label");
     label.textContent = labelText;
@@ -1843,18 +1843,18 @@ ${aliasLines}
     input.id = inputId;
     input.placeholder = placeholder;
     input.value = value;
-    input.style.cssText = "border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; font-size: 12px; width: 100px; outline: none;";
+    input.className = "pe-input pe-input-sm";
     wrap.appendChild(label);
     wrap.appendChild(input);
     return { wrap, input };
   }
   function createCheckboxToggle(labelText) {
     const wrap = document.createElement("label");
-    wrap.style.cssText = "display: flex; align-items: center; gap: 6px; color: #555; font-size: 12px; cursor: pointer;";
+    wrap.className = "pe-chk-label";
     const input = document.createElement("input");
     input.type = "checkbox";
     input.checked = false;
-    input.style.cssText = "cursor: pointer;";
+    input.className = "pe-chk";
     const text = document.createElement("span");
     text.textContent = labelText;
     wrap.appendChild(input);
@@ -1863,7 +1863,7 @@ ${aliasLines}
   }
   function createAliasRows(initialRows = { You: "Youghurt", any: "Alpha" }) {
     const wrap = document.createElement("div");
-    wrap.style.cssText = "display: flex; flex-direction: column; gap: 6px;";
+    wrap.className = "pe-flex-col";
     const collisionWarning = document.createElement("div");
     collisionWarning.style.cssText = "display: none; padding: 4px 8px; font-size: 11px; color: #b8860b; background: #fffbe6; border: 1px solid #e6d88a; border-radius: 4px;";
     collisionWarning.setAttribute("role", "alert");
@@ -1873,7 +1873,7 @@ ${aliasLines}
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.checked = false;
-    checkbox.style.cssText = "cursor: pointer;";
+    checkbox.className = "pe-chk";
     const label = document.createElement("span");
     label.textContent = "Alias";
     header.appendChild(checkbox);
@@ -1905,8 +1905,7 @@ ${aliasLines}
     };
     const createRow = (orig, alias, fixed) => {
       const row = document.createElement("div");
-      row.style.cssText = "display: flex; align-items: center; gap: 4px;";
-      row.className = "alias-row";
+      row.className = "pe-flex-row-4 alias-row";
       const originalInput = makeTextInput(orig, "Original sender name", fixed);
       const aliasInput = makeTextInput(alias, "Alias name", false);
       const error = document.createElement("span");
@@ -2009,15 +2008,28 @@ ${aliasLines}
     const groupChatChk = document.createElement("input");
     groupChatChk.type = "checkbox";
     groupChatChk.checked = false;
-    groupChatChk.style.cssText = "cursor: pointer;";
+    groupChatChk.className = "pe-chk";
     const groupChatLabel = document.createElement("span");
     groupChatLabel.textContent = "Group chat";
     groupChatWrap.appendChild(groupChatChk);
     groupChatWrap.appendChild(groupChatLabel);
+    const caseInsensitiveWrap = document.createElement("label");
+    caseInsensitiveWrap.className = "pe-flex-row";
+    caseInsensitiveWrap.style.cssText = "color:#888;font-size:11px;cursor:pointer;padding-left:22px;margin-top:4px;";
+    caseInsensitiveWrap.title = "Case-insensitive alias matching";
+    const caseInsensitiveChk = document.createElement("input");
+    caseInsensitiveChk.type = "checkbox";
+    caseInsensitiveChk.checked = false;
+    caseInsensitiveChk.className = "pe-chk";
+    const ciLabel = document.createElement("span");
+    ciLabel.textContent = "A-i";
+    caseInsensitiveWrap.appendChild(caseInsensitiveChk);
+    caseInsensitiveWrap.appendChild(ciLabel);
     wrap.appendChild(header);
     wrap.appendChild(rows);
     wrap.appendChild(addButton);
     wrap.appendChild(groupChatWrap);
+    wrap.appendChild(caseInsensitiveWrap);
     const showCollisions = (collisions) => {
       if (!collisions || collisions.length === 0) {
         collisionWarning.style.display = "none";
@@ -2026,13 +2038,13 @@ ${aliasLines}
       collisionWarning.textContent = "\u26A0 Alias collision: " + collisions.map((c) => `"${c.alias}" maps to ${c.originals}`).join("; ");
       collisionWarning.style.display = "block";
     };
-    return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk, addRow, showCollisions };
+    return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk, addRow, showCollisions, caseInsensitiveChk };
   }
   function createLinkAction(labelText, onClick) {
     const link = document.createElement("a");
     link.href = "#";
     link.textContent = labelText;
-    link.style.cssText = "color: #0084ff; text-decoration: underline; font-size: 12px; cursor: pointer;";
+    link.className = "pe-link";
     link.addEventListener("click", (event) => {
       event.preventDefault();
       onClick(event);
@@ -2050,6 +2062,22 @@ ${aliasLines}
   var import_alias_utils = __toESM(require_alias_utils(), 1);
   var import_string_utils = __toESM(require_string_utils(), 1);
   (function() {
+    const style = document.createElement("style");
+    style.textContent = `
+.pe-hdr { font-size:12px;color:#555;background:#fafafa;padding:6px 10px; }
+.pe-label { color:#555;font-size:12px; }
+.pe-label-dull { color:#777;font-size:12px; }
+.pe-input { border:1px solid #ccc;border-radius:4px;padding:4px 8px;font-size:12px;outline:none; }
+.pe-input-sm { width:100px; }
+.pe-btn { color:#fff;border:none;padding:6px 12px;border-radius:5px;font-size:12px;cursor:pointer; }
+.pe-link { color:#0084ff;text-decoration:underline;font-size:12px;cursor:pointer; }
+.pe-chk { cursor:pointer; }
+.pe-chk-label { display:flex;align-items:center;gap:6px;color:#555;font-size:12px;cursor:pointer; }
+.pe-flex-row { display:flex;align-items:center;gap:6px; }
+.pe-flex-row-4 { display:flex;align-items:center;gap:4px; }
+.pe-flex-col { display:flex;flex-direction:column;gap:6px; }
+`;
+    document.head.appendChild(style);
     "use strict";
     const cleanupPending = sessionStorage.getItem("cleanupPending");
     if (cleanupPending === "true") {
@@ -2121,7 +2149,7 @@ ${aliasLines}
     const body = document.createElement("div");
     body.style.cssText = "display: flex; gap: 10px; padding: 8px 10px; align-items: flex-end;";
     const leftCol = document.createElement("div");
-    leftCol.style.cssText = "display: flex; flex-direction: column; gap: 6px;";
+    leftCol.className = "pe-flex-col";
     const { wrap: fromWrap, input: fromInput } = createLabelInput(
       "From:",
       "YYYY-MM-DD",
@@ -2155,15 +2183,11 @@ ${aliasLines}
     } catch (_) {
     }
     const aliasDefaults = { ...builtinAliases, ...persistedAliases };
-    const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk, addRow: addAliasRow, showCollisions } = createAliasRows(aliasDefaults);
+    const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk, addRow: addAliasRow, showCollisions, caseInsensitiveChk } = createAliasRows(aliasDefaults);
     const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle("Summary");
     const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle("Content");
     const { wrap: rawLinkWrap, input: rawLinkChk } = createCheckboxToggle("Raw link");
     const { wrap: lengthWrap, input: lengthChk } = createCheckboxToggle("Length");
-    const { wrap: caseInsensitiveWrap, input: caseInsensitiveChk } = createCheckboxToggle("A-i");
-    caseInsensitiveChk.title = "Case-insensitive alias matching";
-    const { wrap: autoScanWrap, input: autoScanChk } = createCheckboxToggle("Auto");
-    autoScanChk.title = "Auto-start scan when panel opens";
     function setAllChecked(state) {
       includeCallsChk.checked = state;
       aliasChk.checked = state;
@@ -2238,8 +2262,6 @@ ${aliasLines}
     rightCol.appendChild(includeContentWrap);
     rightCol.appendChild(rawLinkWrap);
     rightCol.appendChild(lengthWrap);
-    rightCol.appendChild(caseInsensitiveWrap);
-    rightCol.appendChild(autoScanWrap);
     rightCol.appendChild(selectAllLink);
     const typeFilterTypes = ["text", "link", "pinned-location", "image", "reaction", "audio-call", "video-call", "voice-note", "sticker", "poll"];
     const typeFilterState = {};
@@ -2968,10 +2990,5 @@ ${aliasLines}
       }
       scanStep();
     });
-    if (autoScanChk.checked) {
-      setTimeout(() => {
-        actionBtn.click();
-      }, 100);
-    }
   })();
 })();
