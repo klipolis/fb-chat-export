@@ -1815,7 +1815,8 @@ ${aliasLines}
     panel.style.cssText = "position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 99999; background: #fff; border: 1px solid #ddd; border-radius: 0 0 10px 10px; font-family: sans-serif; font-size: 13px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); min-width: 420px; max-width: calc(100% - 40px); max-height: calc(100vh - 20px); overflow-y: auto;";
     panel.open = true;
     const summary = document.createElement("summary");
-    summary.style.cssText = "cursor: pointer; padding: 6px 10px; font-size: 12px; color: #555; background: #fafafa; display: flex; align-items: center; gap: 6px; user-select: none;";
+    summary.className = "pe-hdr";
+    summary.style.cssText = "cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none;";
     const arrow = document.createElement("span");
     arrow.textContent = "\u25B2";
     arrow.setAttribute("aria-hidden", "true");
@@ -1837,7 +1838,8 @@ ${aliasLines}
     const label = document.createElement("label");
     label.textContent = labelText;
     label.htmlFor = inputId;
-    label.style.cssText = "color: #777; font-size: 12px; width: 32px;";
+    label.className = "pe-label-dull";
+    label.style.width = "32px";
     const input = document.createElement("input");
     input.type = "text";
     input.id = inputId;
@@ -2004,8 +2006,8 @@ ${aliasLines}
       });
     };
     const groupChatWrap = document.createElement("label");
-    groupChatWrap.className = "pe-flex-row";
-    groupChatWrap.style.cssText = "color:#888;font-size:11px;cursor:pointer;padding-left:22px;margin-top:4px;";
+    groupChatWrap.className = "pe-flex-row pe-group-label";
+    groupChatWrap.style.marginTop = "4px";
     groupChatWrap.title = "When checked, new names detected during scan are added as alias rows";
     const groupChatChk = document.createElement("input");
     groupChatChk.type = "checkbox";
@@ -2016,8 +2018,8 @@ ${aliasLines}
     groupChatWrap.appendChild(groupChatChk);
     groupChatWrap.appendChild(groupChatLabel);
     const caseInsensitiveWrap = document.createElement("label");
-    caseInsensitiveWrap.className = "pe-flex-row";
-    caseInsensitiveWrap.style.cssText = "color:#888;font-size:11px;cursor:pointer;padding-left:22px;margin-top:4px;";
+    caseInsensitiveWrap.className = "pe-flex-row pe-group-label";
+    caseInsensitiveWrap.style.marginTop = "4px";
     caseInsensitiveWrap.title = "Case-insensitive alias matching";
     const caseInsensitiveChk = document.createElement("input");
     caseInsensitiveChk.type = "checkbox";
@@ -2068,7 +2070,8 @@ ${aliasLines}
   function createButton(labelText, backgroundColor) {
     const button = document.createElement("button");
     button.textContent = labelText;
-    button.style.cssText = `color: #fff; border: none; padding: 6px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; background: ${backgroundColor};`;
+    button.className = "pe-btn";
+    button.style.background = backgroundColor;
     return button;
   }
 
@@ -2090,6 +2093,11 @@ ${aliasLines}
 .pe-flex-row { display:flex;align-items:center;gap:6px; }
 .pe-flex-row-4 { display:flex;align-items:center;gap:4px; }
 .pe-flex-col { display:flex;flex-direction:column;gap:6px; }
+.pe-panel-body { display:flex;gap:10px;padding:8px 10px;align-items:flex-end; }
+.pe-flex-gap8 { display:flex;gap:8px; }
+.pe-group-label { color:#888;font-size:11px;cursor:pointer;padding-left:22px; }
+.pe-text-muted { font-size:11px;color:#777; }
+.pe-hidden { display:none; }
 `;
     document.head.appendChild(style);
     "use strict";
@@ -2152,14 +2160,19 @@ ${aliasLines}
     const noticeActions = document.createElement("div");
     noticeActions.style.cssText = "margin-top: 4px;";
     const downloadBtn = createButton(getDownloadLabel("initial"), "#27ae60");
-    downloadBtn.style.cssText += " display: none; margin-right: 8px; vertical-align: middle;";
+    downloadBtn.style.marginRight = "8px";
+    downloadBtn.style.verticalAlign = "middle";
+    downloadBtn.classList.add("pe-hidden");
     const copyBtn = createButton("Copy", "#555");
     copyBtn.title = "Copy export text to clipboard";
-    copyBtn.style.cssText += " display: none; margin-right: 8px; vertical-align: middle;";
+    copyBtn.style.marginRight = "8px";
+    copyBtn.style.verticalAlign = "middle";
+    copyBtn.classList.add("pe-hidden");
     const saveAgainLink = document.createElement("a");
     saveAgainLink.textContent = getDownloadLabel("again");
     saveAgainLink.href = "#";
-    saveAgainLink.style.cssText = "display: none; font-size: 11px; color: #27ae60; vertical-align: middle;";
+    saveAgainLink.className = "pe-hidden";
+    saveAgainLink.style.cssText = "font-size:11px;color:#27ae60;vertical-align:middle;";
     noticeActions.appendChild(downloadBtn);
     noticeActions.appendChild(copyBtn);
     noticeActions.appendChild(saveAgainLink);
@@ -2169,10 +2182,10 @@ ${aliasLines}
     progressBar.style.cssText = "width: 100%; height: 4px; margin-top: 4px; border-radius: 2px;";
     progressBar.max = 100;
     progressBar.value = 0;
-    progressBar.style.display = "none";
+    progressBar.classList.add("pe-hidden");
     notice.appendChild(progressBar);
     const body = document.createElement("div");
-    body.style.cssText = "display: flex; gap: 10px; padding: 8px 10px; align-items: flex-end;";
+    body.className = "pe-panel-body";
     const leftCol = document.createElement("div");
     leftCol.className = "pe-flex-col";
     const { wrap: fromWrap, input: fromInput } = createLabelInput(
@@ -2198,7 +2211,8 @@ ${aliasLines}
     startAtBottomChk.checked = true;
     const actionBtn = createButton("Scan Messages", "#0084ff");
     const rightCol = document.createElement("div");
-    rightCol.style.cssText = "display: flex; flex-direction: column; gap: 8px; min-width: 160px; padding-left: 10px;";
+    rightCol.className = "pe-flex-col";
+    rightCol.style.cssText = "gap:8px;min-width:160px;padding-left:10px;";
     const { wrap: includeCallsWrap, input: includeCallsChk } = createCheckboxToggle("Calls");
     const builtinAliases = import_frontend_shared.default.aliasNames || { You: "Youghurt", any: "Alpha" };
     let persistedAliases = {};
@@ -2243,7 +2257,8 @@ ${aliasLines}
     rightCol.appendChild(includeCallsWrap);
     rightCol.appendChild(aliasWrap);
     const aliasActions = document.createElement("div");
-    aliasActions.style.cssText = "display: flex; gap: 8px; padding-left: 22px;";
+    aliasActions.className = "pe-flex-gap8";
+    aliasActions.style.cssText = "padding-left:22px;";
     const exportAliasLink = createLinkAction("Export aliases", () => {
       const map = getAliasMap();
       const jsonStr = JSON.stringify(map, null, 2);
@@ -2292,7 +2307,7 @@ ${aliasLines}
     const aliasPreviewLink = createLinkAction("Preview aliases", () => {
       if (!exportCache || !exportCache.rawEntries || exportCache.rawEntries.length === 0) {
         aliasPreviewEl.textContent = "Scan first \u2014 no messages available.";
-        aliasPreviewWrap.style.display = "";
+        aliasPreviewWrap.classList.remove("pe-hidden");
         return;
       }
       const aliasMap = getAliasMap();
@@ -2303,13 +2318,14 @@ ${aliasLines}
         return `[${entry.rawSender}] \u2192 [${aliasedSender}]: ${truncated}`;
       });
       aliasPreviewEl.textContent = lines.join("\n");
-      aliasPreviewWrap.style.display = "";
+      aliasPreviewWrap.classList.remove("pe-hidden");
     });
     aliasActions.appendChild(exportAliasLink);
     aliasActions.appendChild(importAliasLink);
     aliasActions.appendChild(aliasPreviewLink);
     const aliasPreviewWrap = document.createElement("div");
-    aliasPreviewWrap.style.cssText = "display: none; margin-top: 6px; border: 1px solid #e0e0e0; border-radius: 4px; padding: 6px 8px; font-size: 11px; line-height: 1.4; background: #fafafa;";
+    aliasPreviewWrap.className = "pe-hidden";
+    aliasPreviewWrap.style.cssText = "margin-top:6px;border:1px solid #e0e0e0;border-radius:4px;padding:6px 8px;font-size:11px;line-height:1.4;background:#fafafa;";
     const aliasPreviewEl = document.createElement("pre");
     aliasPreviewEl.style.cssText = "margin: 0; white-space: pre-wrap; word-break: break-all;";
     aliasPreviewWrap.appendChild(aliasPreviewEl);
@@ -2322,10 +2338,11 @@ ${aliasLines}
     const typeFilterTypes = ["text", "link", "pinned-location", "image", "reaction", "audio-call", "video-call", "voice-note", "sticker", "poll"];
     const typeFilterState = {};
     const typeFilterDetails = document.createElement("details");
-    typeFilterDetails.style.cssText = "font-size: 12px;";
+    typeFilterDetails.className = "pe-label";
     const typeFilterSummary = document.createElement("summary");
     typeFilterSummary.textContent = "Filter types";
-    typeFilterSummary.style.cssText = "cursor: pointer; color: #555; font-size: 12px;";
+    typeFilterSummary.className = "pe-label";
+    typeFilterSummary.style.cursor = "pointer";
     typeFilterDetails.appendChild(typeFilterSummary);
     typeFilterTypes.forEach((type) => {
       const { wrap, input } = createCheckboxToggle(type);
@@ -2376,7 +2393,8 @@ ${aliasLines}
     panel.appendChild(notice);
     panel.appendChild(body);
     const previewWrap = document.createElement("div");
-    previewWrap.style.cssText = "display: none; padding: 4px 10px 8px;";
+    previewWrap.className = "pe-hidden";
+    previewWrap.style.cssText = "padding:4px 10px 8px;";
     const previewEl = document.createElement("pre");
     previewEl.style.cssText = "max-height: 160px; overflow-y: auto; font-size: 11px; line-height: 1.4; background: #f5f5f5; padding: 6px 8px; margin: 0; border-radius: 4px; border: 1px solid #e0e0e0; white-space: pre-wrap; word-break: break-all;";
     previewWrap.appendChild(previewEl);
@@ -2396,18 +2414,19 @@ ${aliasLines}
           }
           previewEl.textContent = content;
         }
-        previewWrap.style.display = "";
+        previewWrap.classList.remove("pe-hidden");
         previewToggleLink.textContent = "Hide preview";
       } else {
-        previewWrap.style.display = "none";
+        previewWrap.classList.add("pe-hidden");
         previewToggleLink.textContent = "Show preview";
       }
     });
-    previewToggleLink.style.display = "none";
-    previewToggleLink.style.cssText += " padding: 4px 10px; font-size: 12px;";
+    previewToggleLink.classList.add("pe-hidden");
+    previewToggleLink.style.padding = "4px 10px";
     panel.insertBefore(previewToggleLink, previewWrap);
     const termsNote = document.createElement("div");
-    termsNote.style.cssText = "padding: 6px 10px 10px; font-size: 11px; color: #777;";
+    termsNote.className = "pe-text-muted";
+    termsNote.style.cssText = "padding:6px 10px 10px;";
     const termsLabel = document.createTextNode("Terms: ");
     const termsLink = document.createElement("a");
     termsLink.href = "https://github.com/klipolis/fb-chat-export/blob/main/docs/user-guide/terms-and-conditions.md";
@@ -2541,16 +2560,16 @@ ${aliasLines}
         }
         downloadCleanup = null;
       }
-      downloadBtn.style.display = "none";
-      copyBtn.style.display = "none";
-      saveAgainLink.style.display = "none";
+      downloadBtn.classList.add("pe-hidden");
+      copyBtn.classList.add("pe-hidden");
+      saveAgainLink.classList.add("pe-hidden");
       saveAgainLink.onclick = null;
-      previewWrap.style.display = "none";
+      previewWrap.classList.add("pe-hidden");
       previewContentData = null;
       previewExpanded = false;
-      previewToggleLink.style.display = "none";
+      previewToggleLink.classList.add("pe-hidden");
       previewToggleLink.textContent = "Show preview";
-      progressBar.style.display = "none";
+      progressBar.classList.add("pe-hidden");
       setScanState("idle");
     }
     function triggerDownload(url, fileName) {
@@ -2561,14 +2580,14 @@ ${aliasLines}
     }
     function setupDownload(downloadUrl, info) {
       noticeMsg.textContent = `${info.doneLabel}: ${info.messages.length} messages | ${info.personName} | ${info.fromLabel} - ${info.toLabel} | ${info.elapsed}`;
-      downloadBtn.style.display = "";
+      downloadBtn.classList.remove("pe-hidden");
       downloadBtn.removeAttribute("aria-disabled");
       downloadBtn.style.opacity = "";
       downloadBtn.style.cursor = "";
       downloadBtn.textContent = getDownloadLabel("ready");
-      copyBtn.style.display = "";
+      copyBtn.classList.remove("pe-hidden");
       copyBtn.onclick = null;
-      saveAgainLink.style.display = "none";
+      saveAgainLink.classList.add("pe-hidden");
       saveAgainLink.onclick = null;
       if (downloadHandler) downloadBtn.removeEventListener("click", downloadHandler);
       downloadCleanup = { url: downloadUrl, fileName: info.fileName, text: info.exportText };
@@ -2579,7 +2598,7 @@ ${aliasLines}
         downloadBtn.style.opacity = "0.5";
         downloadBtn.style.cursor = "not-allowed";
         downloadBtn.textContent = getDownloadLabel("saved");
-        saveAgainLink.style.display = "";
+        saveAgainLink.classList.remove("pe-hidden");
         saveAgainLink.onclick = (e) => {
           e.preventDefault();
           triggerDownload(downloadUrl, info.fileName);
@@ -2605,8 +2624,8 @@ ${aliasLines}
         messages: info.messages
       };
       if (info.messages.length > 0) {
-        previewToggleLink.style.display = "";
-        previewWrap.style.display = "none";
+        previewToggleLink.classList.remove("pe-hidden");
+        previewWrap.classList.add("pe-hidden");
       }
       downloadBtn.addEventListener("click", downloadHandler);
       setScanState("idle");
@@ -2799,8 +2818,8 @@ ${aliasLines}
         return;
       }
       setScanState("scanning");
-      downloadBtn.style.display = "none";
-      saveAgainLink.style.display = "none";
+      downloadBtn.classList.add("pe-hidden");
+      saveAgainLink.classList.add("pe-hidden");
       noticeMsg.textContent = "Scanning: 0";
       const collected = /* @__PURE__ */ new Map();
       const detectedSenders = /* @__PURE__ */ new Set();
@@ -2936,7 +2955,7 @@ ${aliasLines}
           collectVisible();
           const elapsedSec = Math.round((Date.now() - scanStartedAt) / 1e3);
           const scrollPct = scroller.scrollHeight > 0 ? Math.round((1 - scroller.scrollTop / scroller.scrollHeight) * 100) : 0;
-          progressBar.style.display = "";
+          progressBar.classList.remove("pe-hidden");
           progressBar.value = scrollPct;
           if (scrollPct > 5) {
             const estimateTotal = Math.round(collected.size / (scrollPct / 100));
@@ -2975,8 +2994,8 @@ ${aliasLines}
             const messages = sortedEntries.map((e) => e.line);
             if (messages.length === 0) {
               noticeMsg.textContent = "No messages found.";
-              downloadBtn.style.display = "none";
-              saveAgainLink.style.display = "none";
+              downloadBtn.classList.add("pe-hidden");
+              saveAgainLink.classList.add("pe-hidden");
               setScanState("idle");
               return;
             }

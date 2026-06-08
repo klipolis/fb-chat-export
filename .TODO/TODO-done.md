@@ -31,6 +31,9 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-255. Added dist/app.js bundle syntax validation using `node --check` before release (cccf06a)
 - T-325. Add unit test for reuseMode 'narrower' date filtering — verify earlier messages are excluded and later messages are included when shrinking the date range (ef2887c)
 - T-326. Add test for cache invalidation when dates expand beyond the cached window — verifies reuse is rejected and a full rescan is triggered (ef2887c)
+- T-349. Add test for lazy-loaded export textbox — verify memory usage stays flat during scan and content is only rendered on expand (2699b44)
+- T-350. Add test for collapsed-panel button visibility — verify Copy and Download buttons remain accessible without expanding the textbox (2699b44)
+- T-370. Add integration test for case-insensitive alias matching — verifies lookupAlias matches case variants (John, john, JOHN) when toggle is active and falls through when off (2699b44)
 
 ## Documentation
 
@@ -100,6 +103,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-275. Add developer guide section for worker pool architecture, error isolation, and graceful shutdown
 - T-102. Export format docs added to README (9ad105b)
 - T-327. Document the incremental append cleanup strategy — when existing cache entries are preserved and new messages are appended instead of rebuilding from scratch (ef2887c)
+- T-351. Add a README section for browser-export keyboard shortcuts and collapsed-panel workflow — users currently have no guidance on the new UI state (2699b44)
 - T-124. TXT export header format, option state, and alias map documented in user guide (5727dfb)
 - T-125. Developer docs reviewed for shared config and server config (5727dfb)
 - T-128. Documented message type classification and data validation rules in developer guide (5727dfb)
@@ -152,6 +156,9 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-221. Moved stripAttributes and normalizeTagStrings from optimize-html.js into src/shared/html-utils.js (0d01301)
 - T-367. Replace common inline style patterns (flex-box, label, input, button, link, checkbox) with shared CSS classes — reduces ~50 style.cssText assignments across ui.js and index.js
 - T-328. Extract reuseMode string constants ('exact', 'alias-only', 'narrower') into a shared constants module — eliminates duplicated string literals in index.js and any future reuse-site (ef2887c)
+- T-352. Consolidate the three download button label variants ("Download .txt", "Download .txt file", "Save again") into a single formatter function — prevents label drift across click handlers (2699b44)
+- T-371. Replace remaining inline font-size/color style patterns with pe-label/pe-label-dull classes in ui.js createAliasRows — completes the CSS consolidation (2699b44)
+- T-298. Extract all inline CSS from frontend/src/index.js and ui.js into a single injected stylesheet — ~1200 lines of hardcoded element.style.cssText currently mixed with logic, making visual changes risky
 
 ## Schema & config
 
@@ -186,6 +193,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-176. Wired selected date range into browser export filename (d8bec65)
 - T-300. Added full per-message JSON export variant (export-json-full) with all message fields as structured data for programmatic consumption
 - T-330. Add an export-options snapshot block to export-json-full so consumers can see which flags produced the output without parsing the request URL (ef2887c)
+- T-353. Add a `lazyLoad` metadata flag to the export-json-full schema — signals that the text content streamed on demand rather than embedded at generation time (2699b44)
 
 ## Message type detection
 
@@ -234,6 +242,8 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-282. Full-name img alt text replaced entirely with alias instead of only the first name
 - T-288. Reuse the previous export when rescanning the same chat without date changes; alias-only changes reuse the cached export, no DOM re-scan needed
 - T-333. Warn when two aliases map to the same output name — silent collisions in applyAliasToText collapse distinct senders into one identity without user awareness (ef2887c)
+- T-354. Add a "Preview aliases" toggle that shows the first 5 aliased messages live before export — lets users verify alias mapping correctness without running a full export (2699b44)
+- T-369. Persist case-insensitive alias toggle state in localStorage alongside other alias options — prevents checkbox reset when panel reopens mid-session (2699b44)
 
 ## Frontend
 
@@ -256,6 +266,13 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-335. Persist exportOptions (includeContent, includeLength, aliasChk, messageTypeFilter) in sessionStorage alongside the date range — restoring a session restores every visual preference (ef2887c)
 - T-355. Add tooltip or aria-label to the Copy button showing "Copy text result" — matches the download label style and clarifies clipboard action (ef2887c)
 - T-356. Add aria-expanded and aria-controls to the export textbox toggle so screen readers announce the collapsed/expanded state (ef2887c)
+
+- T-345. Collapse the export textbox by default and lazy-load its content only when the user expands it — avoids holding the full export text in memory during scan (2699b44)
+- T-346. Keep the Copy and Download buttons visible in collapsed panel mode — users can action the export without expanding the textbox (2699b44)
+- T-347. Change the download button label to "Download .txt file" — clarifies the export format at the point of action (2699b44)
+- T-357. Announce lazy-load completion in the status bar ("Export ready. Tap to expand.") so assistive tech users know content is available without opening the textbox (2699b44)
+- T-358. Include the export summary and heading inside the panel textbox, matching the structure of the downloaded .txt file — users currently see only the message body in the preview (2699b44)
+- T-359. Auto-detect the user's real sender name during scan and map it to the `you` alias even when no custom alias is configured — sender lines and message content should show `you` instead of the raw real name without manual setup (2699b44)
 
 - T-68. Date parser accepts slash-separated date formats (a87ec74)
 - T-69. Scan completion displays elapsed time (a87ec74)
