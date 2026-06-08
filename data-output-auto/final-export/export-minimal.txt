@@ -1,0 +1,48 @@
+Method: server
+Message types:
+- audio-call
+- image
+- missed-call
+- poll
+- reaction
+- sticker
+- text
+- video-call
+- voice-note
+
+Options: includeLength
+Unused: includeContent, includeSummary
+
+Aliases:
+  You : Youghurt
+  Rob : Barnabas
+  any : ABC
+
+---
+
+[2026-04-12 13:23] Youghurt: audio-call 00:18:00
+> Replied to: Original image
+[2026-04-14 18:34] ABC: text-image-replied 6 words
+> Replied to: I looked into, see screenshot, I added an option to the list to bulk upd…
+[2026-04-16 10:55] ABC: text-replied 39 words
+> Replied to: When you can we should turn this feature off, as my emails get blocked a…
+[2026-05-07 07:09] Youghurt: text-2 25 words
+[2026-05-16 04:36] ABC: image
+[2026-05-19 22:25] Youghurt: reaction-emoji 1 words
+[2026-05-20 19:51] ABC: image
+[2026-05-20 19:51] ABC: link-text 152 words
+[2026-05-20 19:52] Barnabas: voice-note 00:00:20
+[2026-05-20 19:54] ABC: deleted
+[2026-05-21 17:34] ABC: missed-call-audio
+[2026-05-22 00:26] ABC: text 8 words
+[2026-05-22 10:15] Youghurt: link-text-2
+[2026-05-22 10:45] ABC: sticker
+[2026-05-22 11:14] ABC: call-video 00:31:00
+[2026-05-22 11:15] ABC: missed-call-video
+[2026-05-22 11:16] Youghurt: reaction 1 words
+[2026-05-22 11:57] Youghurt: link-video
+[2026-05-22 12:00] ABC: voice-note-2 00:00:21
+[2026-05-22 13:51] ABC: link-embed-no-text
+[2026-05-22 14:18] ABC: animated-gif
+[2026-05-22 16:02] ABC: poll 5 words
+[2026-05-22 20:59] Youghurt: image

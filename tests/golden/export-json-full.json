@@ -1,5 +1,12 @@
 {
   "exportDate": "2026-06-08T12:31:09.101Z",
+  "exportOptions": {
+    "includeContent": true,
+    "includeLength": true,
+    "includeSummary": true,
+    "includeParticipants": true,
+    "includeMessageCount": true
+  },
   "conversation": "Chat Export",
   "messageCount": 23,
   "participants": [

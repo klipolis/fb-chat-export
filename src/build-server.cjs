@@ -214,9 +214,12 @@ function writeTextExports(files, cleanedHtmlByFile, referenceDate) {
   const rawDatePath = path.join(exportDir, 'export-raw-date.txt');
 
   const fullJsonPath = path.join(exportDir, 'export-json-full.json');
+  const jsonExportCfg = schemaConfig.exports.find((e) => e.fileName === 'export-json-full.json') || {};
   const fullJsonText = buildFullJsonExport(sortedEntries, {
     conversation: 'Chat Export',
     fixedParticipants: participants,
+    includeContent: jsonExportCfg.includeContent,
+    includeSummary: jsonExportCfg.includeSummary,
   });
 
   fs.writeFileSync(onPath, contentOn, 'utf8');

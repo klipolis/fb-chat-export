@@ -1,6 +1,7 @@
 const { messageRules, chooseRule } = require('./rules');
 const { parseAriaLabel, normalizeDateToSimple, normalizeLabel } = require('./aria-label-parser');
 const { normalizeDuration } = require('./duration-utils');
+const { stripVariantSelectors } = require('./string-utils');
 
 let sharedFrontendConfig;
 try {
@@ -276,7 +277,7 @@ function getContentMeta({
   const linkHasTextContent =
     type === 'link' && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
   const shouldOmitLength = noLengthTypes.has(type) || (type === 'link' && !linkHasTextContent);
-  const wordCount = shouldOmitLength || contentText == null ? undefined : (contentText.match(/\S+/g) || []).length;
+  const wordCount = shouldOmitLength || contentText == null ? undefined : (stripVariantSelectors(contentText).match(/\S+/g) || []).length;
   const contentLength = shouldOmitLength || contentText == null ? undefined : `${wordCount} words`;
 
   return {

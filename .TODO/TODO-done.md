@@ -35,6 +35,8 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Test coverage
 
+- T-310. Add unit tests for the 8 new frontend features (alias persistence, case-insensitive matching, copy-to-clipboard, progress bar, preview, Escape stop, ETA, auto-scan) (ba17fd1)
+- T-311. Add integration test for the export-json-full variant — verify structured JSON output matches expected schema fields (ba17fd1)
 - T-292. Add tests for browser export caching (canReuseCached, alias-only, narrower-date reuse)
 - T-293. Add unit tests for extractMessageParts in browser export
 - T-294. Add unit tests for string-utils.js (escapeRegExp, replaceWholeWord)
@@ -89,6 +91,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Documentation
 
+- T-312. Add developer guide section documenting the browser export cache architecture (exact, alias-only, narrower-date reuse modes with code flow diagrams) (ba17fd1)
 - T-296. Create user-facing troubleshooting guide for browser export (docs/user-guide/troubleshooting.md)
 - T-297. Add developer guide section on adding a new message type end-to-end (docs/developer-guide/adding-a-new-message-type.md)
 - T-275. Add developer guide section for worker pool architecture, error isolation, and graceful shutdown
@@ -125,6 +128,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Refactoring
 
+- T-313. Consolidate duplicate CHANGELOG sections — multiple `### Added`, `### Changed`, and `### Fixed` sections exist under `[Unreleased]`; merge into single sections per type (ba17fd1)
 - T-299. Split aria-label-parser.js into focused sub-modules (core, date-utils, sender-utils, link-utils) for independent testability and maintainability
 - T-280. Remove unused re-exports from message-metadata.js — consumers import normalizeDuration and chooseRule directly from their canonical modules
 - T-270. Consolidate duplicate try-catch for normalizeDateToIso in export-text.js and export-formatter.js into a shared helper normalizeDateToIsoSafe
@@ -146,6 +150,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Schema & config
 
+- T-314. Add JSON schema validation for the export-json-full variant — ensure every message has required fields (date, sender, type, text, isCall, isImage, wordCount) (ba17fd1)
 - T-56. JSON preview schema reorganised with top-level fields and separate raw/preview sections (27da1bb)
 - T-63. Alias config centralised as the single runtime source (a490a14)
 - T-119. Consolidated shared runtime config for browser alias mappings and date rules (92dedf7)
@@ -159,6 +164,8 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Export format
 
+- T-315. Add per-message duration field to export-json-full — include call duration as a numeric seconds value alongside the string duration (ba17fd1)
+- T-316. Add includeParticipants and includeMessageCount options to export-json-full header — control participant list and count appearance (ba17fd1)
 - T-47. Generate summaries for all participants, not just the two most active (990decb)
 - T-48. Non-duration types count as text in the summary (990decb)
 - T-49. Sticker and GIF treated as reaction - image-like content excluded from image count (990decb)
@@ -175,6 +182,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Message type detection
 
+- T-317. Investigate and add detection for Facebook Messenger Room call types and Marketplace message types — these may produce new aria-label formats not covered under existing parser rules (ba17fd1)
 - T-50. Classify text messages correctly instead of misreading them as voice-note in browser scan (27da1bb)
 - T-51. Voice-note type aligned between filename and export content (3e31f9d)
 - T-52. Fix call duration extraction for timers in HH:MM format in frontend summary (2911db4)
@@ -187,6 +195,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Content extraction
 
+- T-318. Extract quoted reply text separately from main message content — Facebook Messenger includes the replied-to message as a DOM block; separate it from the current message (ba17fd1)
 - T-94. Parser handles sender names that include trailing conversation name (e5b3a35)
 - T-95. Sender validator rejects names with more than two words (e5b3a35) [overridden by T-129]
 - T-96. Parser helper functions exported for testing (e5b3a35)
@@ -197,6 +206,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Alias / Anonymisation
 
+- T-319. Add alias import/export as JSON in the browser panel — users can save and load alias maps instead of re-entering names each session (ba17fd1)
 - T-44. Build-server name detection runs a two-pass approach: scan all chat files to auto-detect a name, then apply aliases (9ad105b)
 - T-45. Raw HTML write-back is opt-in with a dedicated build flag; default build preserves originals (9ad105b)
 - T-46. Multi-person explicit name map supports sender-to-pseudonym pairs and a fallback for unmatched names (9ad105b)
@@ -217,6 +227,8 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Frontend
 
+- T-320. Add message-type filter dropdown to the browser export panel — exclude specific types (reactions, calls, images) from export (ba17fd1)
+- T-321. Show scan progress as a fraction (e.g. "342 / 1500 messages") instead of just the collected count (ba17fd1)
 - T-283. Browser export auto-populates alias panel with detected sender names after scan completes
 - T-284. Group chat mode checkbox in alias panel controls auto-population behavior
 - T-286. Wrap the scan-finished result line for long output and move the download button onto its own line
@@ -247,6 +259,8 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Cleanup
 
+- T-322. Audit export-config.json and generated-txt-schema.json for message types that chooseRule never produces — remove unused types (ba17fd1)
+- T-323. Remove deprecated `build-preview.js` script — preview JSON already generated by main server build pipeline (ba17fd1)
 - T-145, T-148, T-151. Stripped unreachable message-type references that chooseRule never produces (3adbbed)
 - T-242. Removed _debug_build.cjs and _speed.cjs from version control — debug utilities that belonged in .gitignore
 - T-179. Removed unused beautify-optimized-html.js, rules/selectors.js, and rules/classes.json (3adbbed)
@@ -261,6 +275,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Process
 
+- T-324. Add graceful commit-msg fallback when commitlint is not in PATH — husky's commit-msg hook fails silently without clear warning (ba17fd1)
 - T-160. Add process note at top of TODO-next explaining T-numbered task conventions, grouping, and tool-agnostic wording (c4b59ce)
 - T-161. Review .todo/config.json and TODO files for task-numbering consistency; standardised T- prefix across all files (5972a43)
 - T-162. Add contributor note in docs/AI-interaction explaining changelog and task entries focus on outcomes, not implementation (c4b59ce)

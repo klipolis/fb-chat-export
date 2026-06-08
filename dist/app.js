@@ -119,6 +119,13 @@
           ],
           matchLabel: /\bvideo call\b/i
         },
+        {
+          type: "pinned-location",
+          prefixes: [
+            "pinned-location"
+          ],
+          matchLabel: /\bpinned location\b/i
+        },
         //
         // LINK (merged with video-link)
         //
@@ -130,7 +137,7 @@
             "link-video",
             "video-link"
           ],
-          matchLabel: /(?:open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location|\b(?:youtube|youtu\.be|vimeo|dailymotion|tiktok|instagram|twitter|x\.com|twitch|fb\.watch|facebook\.com\/.*(?:video|watch|reel)|video|watch|reel|shorts)\b)/i
+          matchLabel: /(?:open attachment|href|https?:\/\/|open link|view link|download|attachment|\b(?:youtube|youtu\.be|vimeo|dailymotion|tiktok|instagram|twitter|x\.com|twitch|fb\.watch|facebook\.com\/.*(?:video|watch|reel)|video|watch|reel|shorts)\b)/i
         },
         {
           type: "voice-note",
@@ -800,6 +807,31 @@
     }
   });
 
+  // src/shared/string-utils.js
+  var require_string_utils = __commonJS({
+    "src/shared/string-utils.js"(exports, module) {
+      "use strict";
+      function escapeRegExp(value) {
+        return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      }
+      function replaceWholeWord(text, name, replacement) {
+        const escaped = escapeRegExp(name);
+        const pattern = new RegExp(`(^|[^\\p{L}])${escaped}(?=[^\\p{L}]|$)`, "giu");
+        return String(text || "").replace(pattern, (match, prefix) => {
+          const originalWord = match.slice(prefix.length);
+          if (name.toLowerCase() === "you" && originalWord === "you") {
+            return match;
+          }
+          return `${prefix}${replacement}`;
+        });
+      }
+      function stripVariantSelectors2(text) {
+        return String(text || "").replace(/\uFE0F/g, "").replace(/[\u{1F3FB}-\u{1F3FF}]/gu, "");
+      }
+      module.exports = { escapeRegExp, replaceWholeWord, stripVariantSelectors: stripVariantSelectors2 };
+    }
+  });
+
   // src/shared/message-metadata.js
   var require_message_metadata = __commonJS({
     "src/shared/message-metadata.js"(exports, module) {
@@ -807,6 +839,7 @@
       var { messageRules, chooseRule } = require_rules();
       var { parseAriaLabel: parseAriaLabel2, normalizeDateToSimple, normalizeLabel } = require_aria_label_parser();
       var { normalizeDuration: normalizeDuration2 } = require_duration_utils();
+      var { stripVariantSelectors: stripVariantSelectors2 } = require_string_utils();
       var sharedFrontendConfig;
       try {
         sharedFrontendConfig = require_frontend_shared() || {};
@@ -1003,7 +1036,7 @@
         const duration = timedTypes.has(type) ? rawDuration : null;
         const linkHasTextContent = type === "link" && (isLinkTextFile || isLinkTextLikeLive) && Boolean(normalizedText) && !linkOnlyText;
         const shouldOmitLength = noLengthTypes.has(type) || type === "link" && !linkHasTextContent;
-        const wordCount = shouldOmitLength || contentText == null ? void 0 : (contentText.match(/\S+/g) || []).length;
+        const wordCount = shouldOmitLength || contentText == null ? void 0 : (stripVariantSelectors2(contentText).match(/\S+/g) || []).length;
         const contentLength = shouldOmitLength || contentText == null ? void 0 : `${wordCount} words`;
         return {
           type,
@@ -1115,11 +1148,17 @@
       var MISSED_CALL_TYPES = ["missed-call", "missed-audio-call", "missed-video-call"];
       var CALL_TYPES = [...TIMED_CALL_TYPES, ...MISSED_CALL_TYPES];
       var CONTENT_TYPES = /* @__PURE__ */ new Set(["text", "link", "reaction"]);
+      var REUSE_EXACT2 = "exact";
+      var REUSE_ALIAS_ONLY2 = "alias-only";
+      var REUSE_NARROWER2 = "narrower";
       module.exports = {
         TIMED_CALL_TYPES,
         MISSED_CALL_TYPES,
         CALL_TYPES,
-        CONTENT_TYPES
+        CONTENT_TYPES,
+        REUSE_EXACT: REUSE_EXACT2,
+        REUSE_ALIAS_ONLY: REUSE_ALIAS_ONLY2,
+        REUSE_NARROWER: REUSE_NARROWER2
       };
     }
   });
@@ -1519,6 +1558,7 @@
       var { normalizeDateToIsoSafe } = require_aria_label_parser();
       var { buildSummary: buildSummary2, buildDetailedSummary, buildSummaryData } = require_export_summary();
       var { TIMED_CALL_TYPES, CALL_TYPES, CONTENT_TYPES } = require_constants();
+      var { stripVariantSelectors: stripVariantSelectors2 } = require_string_utils();
       function formatExportHeader2({ method, messageTypes, exportOptions = {}, aliasMap = {} }) {
         const types = messageTypes.map((type) => `- ${type}`).join("\n");
         const optionKeys = Object.keys(exportOptions).sort();
@@ -1593,7 +1633,7 @@ ${aliasLines}
         const semanticType = String(entry.semanticType || entry.fileType || "").toLowerCase();
         const isTimedCall = TIMED_CALL_TYPES.includes(semanticType);
         const contentText = String(entry.content || "").trim();
-        const textWords = contentText ? contentText.split(/\s+/).filter(Boolean).length : 0;
+        const textWords = contentText ? stripVariantSelectors2(contentText).split(/\s+/).filter(Boolean).length : 0;
         const callSeconds = isTimedCall ? durationToSeconds(entry.duration) : 0;
         return {
           sender: entry.sender,
@@ -1632,25 +1672,43 @@ ${aliasLines}
     }
   });
 
-  // src/shared/string-utils.js
-  var require_string_utils = __commonJS({
-    "src/shared/string-utils.js"(exports, module) {
+  // src/shared/cache-utils.js
+  var require_cache_utils = __commonJS({
+    "src/shared/cache-utils.js"(exports, module) {
       "use strict";
-      function escapeRegExp(value) {
-        return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      var { REUSE_EXACT: REUSE_EXACT2, REUSE_ALIAS_ONLY: REUSE_ALIAS_ONLY2, REUSE_NARROWER: REUSE_NARROWER2 } = require_constants();
+      var CACHE_TTL_MS = 24 * 60 * 60 * 1e3;
+      function canReuseCached2(cached, personName, fromVal, toVal, aliasHash, parseDate) {
+        if (!cached || cached.personName !== personName) return null;
+        if (cached.timestamp && Date.now() - cached.timestamp > CACHE_TTL_MS) return null;
+        const sameDates = cached.fromDate === fromVal && cached.toDate === toVal;
+        const sameAliases = cached.aliasHash === aliasHash;
+        if (sameDates && sameAliases) return REUSE_EXACT2;
+        if (sameDates) return REUSE_ALIAS_ONLY2;
+        const fromDate = fromVal ? parseDate(fromVal) : null;
+        const toDate = toVal ? parseDate(toVal) : null;
+        const cachedFrom = cached.fromDate ? parseDate(cached.fromDate) : null;
+        const cachedTo = cached.toDate ? parseDate(cached.toDate) : null;
+        if (cachedFrom && cachedTo && fromDate && toDate) {
+          if (fromDate >= cachedFrom && toDate <= cachedTo) return REUSE_NARROWER2;
+        }
+        return null;
       }
-      function replaceWholeWord(text, name, replacement) {
-        const escaped = escapeRegExp(name);
-        const pattern = new RegExp(`(^|[^\\p{L}])${escaped}(?=[^\\p{L}]|$)`, "giu");
-        return String(text || "").replace(pattern, (match, prefix) => {
-          const originalWord = match.slice(prefix.length);
-          if (name.toLowerCase() === "you" && originalWord === "you") {
-            return match;
-          }
-          return `${prefix}${replacement}`;
+      function filterEntriesByDateRange2(entries, fromVal, toVal, parseDate) {
+        const fromDateParsed = fromVal ? parseDate(fromVal) : null;
+        const toDateParsed = toVal ? (() => {
+          const d = parseDate(toVal);
+          if (!isNaN(d)) d.setHours(23, 59, 59);
+          return d;
+        })() : null;
+        return entries.filter((e) => {
+          if (!e.ts) return false;
+          if (fromDateParsed && e.ts < fromDateParsed.getTime()) return false;
+          if (toDateParsed && e.ts > toDateParsed.getTime()) return false;
+          return true;
         });
       }
-      module.exports = { escapeRegExp, replaceWholeWord };
+      module.exports = { canReuseCached: canReuseCached2, filterEntriesByDateRange: filterEntriesByDateRange2 };
     }
   });
 
@@ -1670,8 +1728,24 @@ ${aliasLines}
         }
         return result;
       }
+      function detectAliasCollisions2(aliasMap) {
+        const reverseMap = {};
+        const collisions = [];
+        for (const [original, alias] of Object.entries(aliasMap || {})) {
+          if (!original || !alias) continue;
+          if (!reverseMap[alias]) reverseMap[alias] = [];
+          reverseMap[alias].push(original);
+        }
+        for (const [alias, originals] of Object.entries(reverseMap)) {
+          if (originals.length > 1) {
+            collisions.push({ alias, originals: originals.map((o) => `"${o}"`).join(", ") });
+          }
+        }
+        return collisions;
+      }
       module.exports = {
-        applyAliasToText: applyAliasToText2
+        applyAliasToText: applyAliasToText2,
+        detectAliasCollisions: detectAliasCollisions2
       };
     }
   });
@@ -1731,6 +1805,10 @@ ${aliasLines}
     return `chat-export-${shortName}.txt`;
   }
 
+  // src/frontend/src/index.js
+  var import_constants = __toESM(require_constants(), 1);
+  var import_cache_utils = __toESM(require_cache_utils(), 1);
+
   // src/frontend/src/ui.js
   function createDetailsPanel(titleText) {
     const panel = document.createElement("details");
@@ -1786,6 +1864,10 @@ ${aliasLines}
   function createAliasRows(initialRows = { You: "Youghurt", any: "Alpha" }) {
     const wrap = document.createElement("div");
     wrap.style.cssText = "display: flex; flex-direction: column; gap: 6px;";
+    const collisionWarning = document.createElement("div");
+    collisionWarning.style.cssText = "display: none; padding: 4px 8px; font-size: 11px; color: #b8860b; background: #fffbe6; border: 1px solid #e6d88a; border-radius: 4px;";
+    collisionWarning.setAttribute("role", "alert");
+    wrap.appendChild(collisionWarning);
     const header = document.createElement("div");
     header.style.cssText = "display: flex; align-items: center; gap: 6px; color: #555; font-size: 12px;";
     const checkbox = document.createElement("input");
@@ -1936,7 +2018,15 @@ ${aliasLines}
     wrap.appendChild(rows);
     wrap.appendChild(addButton);
     wrap.appendChild(groupChatWrap);
-    return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk, addRow };
+    const showCollisions = (collisions) => {
+      if (!collisions || collisions.length === 0) {
+        collisionWarning.style.display = "none";
+        return;
+      }
+      collisionWarning.textContent = "\u26A0 Alias collision: " + collisions.map((c) => `"${c.alias}" maps to ${c.originals}`).join("; ");
+      collisionWarning.style.display = "block";
+    };
+    return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk, addRow, showCollisions };
   }
   function createLinkAction(labelText, onClick) {
     const link = document.createElement("a");
@@ -1958,6 +2048,7 @@ ${aliasLines}
 
   // src/frontend/src/index.js
   var import_alias_utils = __toESM(require_alias_utils(), 1);
+  var import_string_utils = __toESM(require_string_utils(), 1);
   (function() {
     "use strict";
     const cleanupPending = sessionStorage.getItem("cleanupPending");
@@ -1995,7 +2086,16 @@ ${aliasLines}
     noticeStatus.style.cssText = "word-break: break-word;";
     const noticeMsg = document.createElement("span");
     noticeMsg.textContent = "Ready.";
+    const cacheIndicator = document.createElement("span");
+    cacheIndicator.style.cssText = "display:inline-block; width:12px; height:12px; border-radius:50%; background:gray; margin-left:8px; vertical-align:middle;";
+    cacheIndicator.title = "Served from cache";
+    cacheIndicator.style.display = "none";
     noticeStatus.appendChild(noticeMsg);
+    noticeStatus.appendChild(cacheIndicator);
+    function setCacheIndicator(hit) {
+      cacheIndicator.style.display = hit ? "inline-block" : "none";
+      cacheIndicator.style.background = hit ? "#27ae60" : "gray";
+    }
     const noticeActions = document.createElement("div");
     noticeActions.style.cssText = "margin-top: 4px;";
     const downloadBtn = createButton("Download .txt", "#27ae60");
@@ -2055,7 +2155,7 @@ ${aliasLines}
     } catch (_) {
     }
     const aliasDefaults = { ...builtinAliases, ...persistedAliases };
-    const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk, addRow: addAliasRow } = createAliasRows(aliasDefaults);
+    const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk, addRow: addAliasRow, showCollisions } = createAliasRows(aliasDefaults);
     const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle("Summary");
     const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle("Content");
     const { wrap: rawLinkWrap, input: rawLinkChk } = createCheckboxToggle("Raw link");
@@ -2141,7 +2241,7 @@ ${aliasLines}
     rightCol.appendChild(caseInsensitiveWrap);
     rightCol.appendChild(autoScanWrap);
     rightCol.appendChild(selectAllLink);
-    const typeFilterTypes = ["text", "link", "image", "reaction", "audio-call", "video-call", "voice-note", "sticker", "poll"];
+    const typeFilterTypes = ["text", "link", "pinned-location", "image", "reaction", "audio-call", "video-call", "voice-note", "sticker", "poll"];
     const typeFilterState = {};
     const typeFilterDetails = document.createElement("details");
     typeFilterDetails.style.cssText = "font-size: 12px;";
@@ -2161,6 +2261,37 @@ ${aliasLines}
     });
     rightCol.insertBefore(typeFilterDetails, rightCol.firstChild);
     setAllChecked(true);
+    try {
+      const saved = JSON.parse(sessionStorage.getItem("photoMeetExportOptions"));
+      if (saved) {
+        if (typeof saved.includeContent === "boolean") {
+          includeContentChk.checked = saved.includeContent;
+          includeContentChk.dispatchEvent(new Event("change"));
+        }
+        if (typeof saved.includeLength === "boolean") lengthChk.checked = saved.includeLength;
+        if (typeof saved.alias === "boolean") {
+          aliasChk.checked = saved.alias;
+          aliasChk.dispatchEvent(new Event("change"));
+        }
+        if (saved.messageTypeFilter && typeof saved.messageTypeFilter === "object") {
+          Object.keys(saved.messageTypeFilter).forEach((type) => {
+            if (Object.prototype.hasOwnProperty.call(typeFilterState, type)) {
+              typeFilterState[type] = saved.messageTypeFilter[type];
+            }
+          });
+          typeFilterDetails.querySelectorAll('input[type="checkbox"]').forEach((chk) => {
+            const label = chk.closest("label");
+            if (label) {
+              const textSpan = label.querySelector("span");
+              if (textSpan && Object.prototype.hasOwnProperty.call(typeFilterState, textSpan.textContent)) {
+                chk.checked = typeFilterState[textSpan.textContent];
+              }
+            }
+          });
+        }
+      }
+    } catch (_) {
+    }
     body.appendChild(leftCol);
     body.appendChild(rightCol);
     panel.appendChild(panelSummary);
@@ -2322,7 +2453,7 @@ ${aliasLines}
       a.click();
     }
     function setupDownload(downloadUrl, info) {
-      noticeStatus.textContent = `${info.doneLabel}: ${info.messages.length} messages | ${info.personName} | ${info.fromLabel} - ${info.toLabel} | ${info.elapsed}`;
+      noticeMsg.textContent = `${info.doneLabel}: ${info.messages.length} messages | ${info.personName} | ${info.fromLabel} - ${info.toLabel} | ${info.elapsed}`;
       downloadBtn.style.display = "";
       downloadBtn.removeAttribute("aria-disabled");
       downloadBtn.style.opacity = "";
@@ -2388,21 +2519,6 @@ ${aliasLines}
       }
       return String(hash);
     }
-    function canReuseCached(cached, personName, fromVal, toVal, aliasHash) {
-      if (!cached || cached.personName !== personName) return null;
-      const sameDates = cached.fromDate === fromVal && cached.toDate === toVal;
-      const sameAliases = cached.aliasHash === aliasHash;
-      if (sameDates && sameAliases) return "exact";
-      if (sameDates) return "alias-only";
-      const fromDate = fromVal ? parseLocalDate(fromVal) : null;
-      const toDate = toVal ? parseLocalDate(toVal) : null;
-      const cachedFrom = cached.fromDate ? parseLocalDate(cached.fromDate) : null;
-      const cachedTo = cached.toDate ? parseLocalDate(cached.toDate) : null;
-      if (cachedFrom && cachedTo && fromDate && toDate) {
-        if (fromDate >= cachedFrom && toDate <= cachedTo) return "narrower";
-      }
-      return null;
-    }
     function setScanState(state) {
       if (state === "scanning") {
         actionBtn.textContent = "Stop Scan";
@@ -2458,11 +2574,15 @@ ${aliasLines}
       }
       fromInput.style.borderColor = toInput.style.borderColor = "#ccc";
       cleanupExport();
+      setCacheIndicator(false);
       const personName = getDisplayPersonName();
       const fromVal = fromInput.value.trim();
       const toVal = toInput.value.trim();
       const aliasMap = aliasChk.checked ? getAliasMap() : {};
       const aliasHash = computeAliasHash(aliasMap);
+      if (aliasChk.checked) {
+        showCollisions((0, import_alias_utils.detectAliasCollisions)(aliasMap));
+      }
       if (downloadRevokeTimeout !== null) {
         clearTimeout(downloadRevokeTimeout);
         downloadRevokeTimeout = null;
@@ -2470,13 +2590,19 @@ ${aliasLines}
       stopRequested = false;
       sessionStorage.setItem("exportFrom", fromVal);
       sessionStorage.setItem("exportTo", toVal);
-      const reuseMode = canReuseCached(exportCache, personName, fromVal, toVal, aliasHash);
+      sessionStorage.setItem("photoMeetExportOptions", JSON.stringify({
+        includeContent: includeContentChk.checked,
+        includeLength: lengthChk.checked,
+        alias: aliasChk.checked,
+        messageTypeFilter: typeFilterState
+      }));
+      const reuseMode = (0, import_cache_utils.canReuseCached)(exportCache, personName, fromVal, toVal, aliasHash, parseLocalDate);
       if (reuseMode) {
         const cached = exportCache;
         let headerText = cached.headerText;
         let summaryText = cached.summaryText;
         let messages = cached.messages;
-        if (reuseMode === "alias-only") {
+        if (reuseMode === import_constants.REUSE_ALIAS_ONLY) {
           headerText = (0, import_export_formatter.formatExportHeader)({
             method: "browser",
             messageTypes: cached.messageTypes,
@@ -2501,19 +2627,8 @@ ${aliasLines}
               includeLength: lengthChk.checked
             });
           });
-        } else if (reuseMode === "narrower") {
-          const fromDateParsed = fromVal ? parseLocalDate(fromVal) : null;
-          const toDateParsed = toVal ? (() => {
-            const d = parseLocalDate(toVal);
-            if (!isNaN(d)) d.setHours(23, 59, 59);
-            return d;
-          })() : null;
-          const filtered = cached.rawEntries.filter((e) => {
-            if (!e.ts) return false;
-            if (fromDateParsed && e.ts < fromDateParsed.getTime()) return false;
-            if (toDateParsed && e.ts > toDateParsed.getTime()) return false;
-            return true;
-          });
+        } else if (reuseMode === import_constants.REUSE_NARROWER) {
+          const filtered = (0, import_cache_utils.filterEntriesByDateRange)(cached.rawEntries, fromVal, toVal, parseLocalDate);
           headerText = (0, import_export_formatter.formatExportHeader)({
             method: "browser",
             messageTypes: cached.messageTypes,
@@ -2566,6 +2681,7 @@ ${aliasLines}
           elapsed: cacheElapsed,
           fileName: cacheFileName
         });
+        setCacheIndicator(true);
         return;
       }
       setScanState("scanning");
@@ -2652,7 +2768,7 @@ ${aliasLines}
             isCall,
             isImage,
             callMinutes,
-            wordCount: isCall || isImage ? 0 : text ? text.split(/\s+/).filter(Boolean).length : 0,
+            wordCount: isCall || isImage ? 0 : text ? (0, import_string_utils.stripVariantSelectors)(text).split(/\s+/).filter(Boolean).length : 0,
             line: finalLine,
             exportEntry: lineEntry,
             repliedTo,
@@ -2726,6 +2842,9 @@ ${aliasLines}
             if (aliasChk.checked && groupChatChk.checked) {
               setDetectedNames(detectedSenders);
             }
+            if (aliasChk.checked) {
+              showCollisions((0, import_alias_utils.detectAliasCollisions)(getAliasMap()));
+            }
             const sortedEntries = Array.from(collected.values()).sort((a, b) => a.ts - b.ts);
             const messages = sortedEntries.map((e) => e.line);
             if (messages.length === 0) {
@@ -2766,6 +2885,7 @@ ${aliasLines}
             });
             const doneLabel = stopRequested ? "Stopped" : "Done";
             exportCache = {
+              timestamp: Date.now(),
               personName: displayPersonName,
               fromDate: fromInput.value.trim(),
               toDate: toInput.value.trim(),

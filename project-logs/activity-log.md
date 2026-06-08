@@ -14,6 +14,9 @@ Do not modify existing entries below. Update `project-logs/interaction-log.md` a
 
 ---
 
+2026-06-08 21:30 | user | Implement T-325 to T-337 pending tasks
+2026-06-08 21:30 | ai | All 13 tasks implemented via 4 parallel agents: cache tests (narrower + invalidation), reuseMode constants, schema nullable fields + exportOptions snapshot, frontend (cache-hit dot, sessionStorage persist, TTL), pinned-location type rule, emoji variant stripping, alias collision warning, pre-commit lint:docs guard, cache append doc. Fixed html-utils.js findMatchingClosingTag bug, updated reply test fixture.
+
 2026-06-08 20:00 | user | Create and implement T-310 to T-324 tasks
 2026-06-08 20:00 | ai | Added 15 new tasks (T-310 to T-324). Implemented all via parallel agents: JSON export improvements (durationSeconds, schema validation, build server options), cache architecture guide, CHANGELOG dedup, Room/Marketplace type investigation, aliases import/export JSON, message-type filter dropdown, scan progress fraction, 72 frontend tests, reply text extraction from DOM, audit+remove stale files.
 

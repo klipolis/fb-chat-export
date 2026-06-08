@@ -243,7 +243,8 @@ tap.test('text2FullPipeline', (t) => {
   t.ok(entry.content.includes('morning: 272'), 'content preserves colon in message body');
 
   const formattedLine = formatLine(entry, { includeContent: true, includeLength: true });
-  t.ok(formattedLine.startsWith('[2026-05-07 07:09] Youghurt: text-2 25 words /'), 'formatted line starts correctly');
+  t.ok(formattedLine.startsWith('> Replied to:'), 'formatted line has reply prefix');
+  t.ok(formattedLine.includes('[2026-05-07 07:09] Youghurt: text-2 25 words /'), 'formatted line starts correctly');
   t.ok(formattedLine.includes('morning: 272 emails'), 'formatted line preserves colon in message');
 
   t.end();

@@ -2,6 +2,7 @@ const path = require('path');
 const { getContentMeta } = require('./message-metadata');
 const { normalizeDuration } = require('./duration-utils');
 const { normalizeExportSender } = require('./utils');
+const { detectAliasCollisions } = require('./alias-utils');
 const { parseAriaLabel, normalizeDateToIsoSafe, normalizeLabel } = require('./aria-label-parser');
 const {
   formatExportHeader,
@@ -116,6 +117,13 @@ function extractMessageEntry(el, fileName, referenceDate, aliasMap = {}) {
 }
 
 function buildEntriesFromDocument(document, fileName, referenceDate, aliasMap = {}) {
+  if (Object.keys(aliasMap).length > 0) {
+    const collisions = detectAliasCollisions(aliasMap);
+    for (const c of collisions) {
+      console.warn(`[export-text] Alias collision: "${c.alias}" maps to multiple originals (${c.originals})`);
+    }
+  }
+
   const entries = [];
   document.querySelectorAll('[aria-roledescription="message"]').forEach((el) => {
     const entry = extractMessageEntry(el, fileName, referenceDate, aliasMap);

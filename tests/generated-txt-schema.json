@@ -76,9 +76,21 @@
       "content": "json",
       "jsonSchema": {
         "type": "object",
-        "required": ["exportDate", "conversation", "messageCount", "participants", "messages"],
+        "required": ["exportDate", "exportOptions", "conversation", "messageCount", "participants", "messages"],
         "properties": {
           "exportDate": { "type": "string", "format": "date-time" },
+          "exportOptions": {
+            "type": "object",
+            "description": "Snapshot of export options used to generate this output",
+            "required": ["includeContent", "includeLength", "includeSummary", "includeParticipants", "includeMessageCount"],
+            "properties": {
+              "includeContent": { "type": "boolean" },
+              "includeLength": { "type": "boolean" },
+              "includeSummary": { "type": "boolean" },
+              "includeParticipants": { "type": "boolean" },
+              "includeMessageCount": { "type": "boolean" }
+            }
+          },
           "conversation": { "type": "string" },
           "messageCount": { "type": "number" },
           "participants": { "type": "array", "items": { "type": "string" } },
@@ -91,12 +103,12 @@
                 "date": { "type": "string" },
                 "sender": { "type": "string" },
                 "type": { "type": "string" },
-                "text": { "type": "string" },
+                "text": { "type": ["string", "null"], "description": "null when includeContent is disabled" },
                 "duration": { "type": "string" },
                 "durationSeconds": { "type": "number" },
                 "isCall": { "type": "boolean" },
                 "isImage": { "type": "boolean" },
-                "contentLength": { "type": "number" },
+                "contentLength": { "type": ["number", "null"], "description": "null when includeLength is disabled" },
                 "wordCount": { "type": "number" },
                 "repliedTo": { "type": ["string", "null"] },
                 "repliedType": { "type": ["string", "null"] }

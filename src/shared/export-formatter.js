@@ -2,6 +2,7 @@ const { normalizeDuration, durationToMinutes, durationToSeconds } = require('./d
 const { normalizeDateToIsoSafe } = require('./aria-label-parser');
 const { buildSummary, buildDetailedSummary, buildSummaryData } = require('./export-summary');
 const { TIMED_CALL_TYPES, CALL_TYPES, CONTENT_TYPES } = require('./constants');
+const { stripVariantSelectors } = require('./string-utils');
 
 function formatExportHeader({ method, messageTypes, exportOptions = {}, aliasMap = {} }) {
   const types = messageTypes.map((type) => `- ${type}`).join('\n');
@@ -76,7 +77,7 @@ function buildEntryFromEntry(entry) {
   const isTimedCall = TIMED_CALL_TYPES.includes(semanticType);
   const contentText = String(entry.content || '').trim();
   const textWords = contentText
-    ? contentText.split(/\s+/).filter(Boolean).length
+    ? stripVariantSelectors(contentText).split(/\s+/).filter(Boolean).length
     : 0;
   const callSeconds = isTimedCall ? durationToSeconds(entry.duration) : 0;
   return {

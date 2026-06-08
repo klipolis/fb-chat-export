@@ -10,6 +10,17 @@ Changelog entries should describe active changes in direct present-tense stateme
 ## [Unreleased]
 
 ### Added
+- Browser export shows green dot indicator when export is served from cache
+- Browser export persists all options (content, length, alias, type filter) across sessions
+- Browser export rejects stale cache entries older than 24 hours
+- JSON export records export options snapshot in metadata
+- JSON export nullable content/length fields when respective options are disabled
+- Cache append strategy developer guide in docs/developer-guide/
+- Cache invalidation and narrow-date filtering unit tests (browser-cache.js)
+- Pinned-location message type classification
+- Alias collision detection warns when distinct names map to the same alias
+- Emoji variant selectors excluded from word counts but preserved in export content
+
 - Browser export can import and export alias mappings as JSON files
 - Browser export filters messages by type (text, image, link, reaction, call, voice-note, sticker, poll)
 - Browser export shows estimated total message count and ETA during scan

@@ -1,0 +1,70 @@
+Method: server
+Message types:
+- audio-call
+- image
+- missed-call
+- poll
+- reaction
+- sticker
+- text
+- video-call
+- voice-note
+
+Options: includeSummary
+Unused: includeContent, includeLength
+
+Aliases:
+  You : Youghurt
+  Rob : Barnabas
+  any : ABC
+
+---
+
+Total Summary
+23 posts / 9 days
+~ 246 words
+~ 4 text
+~ 3 reaction
+~ 4 link
+~ 3 image
+~ 1 sticker
+~ 1 poll
+~ 1 audio call
+~ 1 video call
+~ 2 voice note
+~ 2 missed call
+~ 1 unsent
+~ 4 calls 00:49:41
+
+ABC Summary
+15 posts / 6 days
+~ 217 words
+~ 3 text
+~ 1 reaction
+~ 2 link
+~ 2 image
+~ 1 sticker
+~ 1 poll
+~ 1 video call
+~ 1 voice note
+~ 2 missed call
+~ 1 unsent
+~ 2 calls 00:31:21
+
+Youghurt Summary
+7 posts / 4 days
+~ 29 words
+~ 1 text
+~ 2 reaction
+~ 2 link
+~ 1 image
+~ 1 audio call
+~ 1 calls 00:18:00
+
+Barnabas Summary
+1 post / 1 days
+~ 0 words
+~ 1 voice note
+~ 1 calls 00:00:20
+
+---

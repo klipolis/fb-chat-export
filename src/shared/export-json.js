@@ -1,4 +1,5 @@
 const { CALL_TYPES, TIMED_CALL_TYPES } = require('./constants');
+const { stripVariantSelectors } = require('./string-utils');
 
 function parseDurationToSeconds(duration) {
   if (!duration) return 0;
@@ -11,6 +12,11 @@ function parseDurationToSeconds(duration) {
 function buildFullJsonExport(entries = [], options = {}) {
   const conversation = options.conversation || 'Chat Export';
   const participants = options.fixedParticipants || [];
+  const includeContent = options.includeContent !== false;
+  const includeLength = options.includeLength !== false;
+  const includeSummary = options.includeSummary !== false;
+  const includeParticipants = options.includeParticipants !== false;
+  const includeMessageCount = options.includeMessageCount !== false;
   const participantNames = participants.length
     ? participants
     : [...new Set(entries.map((e) => e.sender).filter(Boolean))];
@@ -20,7 +26,7 @@ function buildFullJsonExport(entries = [], options = {}) {
     const isTimedCall = TIMED_CALL_TYPES.includes(semanticType);
     const contentText = String(entry.content || '').trim();
     const textWords = contentText
-      ? contentText.split(/\s+/).filter(Boolean).length
+      ? stripVariantSelectors(contentText).split(/\s+/).filter(Boolean).length
       : 0;
     const rawDuration = entry.duration || '';
 
@@ -28,12 +34,12 @@ function buildFullJsonExport(entries = [], options = {}) {
       date: entry.dateText || '',
       sender: entry.sender || 'Unknown',
       type: semanticType,
-      text: contentText,
+      text: includeContent ? contentText : null,
       duration: rawDuration,
       durationSeconds: parseDurationToSeconds(rawDuration),
       isCall: CALL_TYPES.includes(semanticType),
       isImage: semanticType === 'image',
-      contentLength: contentText.length,
+      contentLength: includeLength ? contentText.length : null,
       wordCount: isTimedCall || semanticType === 'image' ? 0 : (entry.words || textWords),
       repliedTo: entry.repliedTo || null,
       repliedType: entry.repliedType || null,
@@ -42,6 +48,13 @@ function buildFullJsonExport(entries = [], options = {}) {
 
   const result = {
     exportDate: new Date().toISOString(),
+    exportOptions: {
+      includeContent,
+      includeLength,
+      includeSummary,
+      includeParticipants,
+      includeMessageCount,
+    },
     conversation,
     messageCount: messages.length,
     participants: participantNames,

@@ -113,6 +113,11 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
   const wrap = document.createElement('div');
   wrap.style.cssText = 'display: flex; flex-direction: column; gap: 6px;';
 
+  const collisionWarning = document.createElement('div');
+  collisionWarning.style.cssText = 'display: none; padding: 4px 8px; font-size: 11px; color: #b8860b; background: #fffbe6; border: 1px solid #e6d88a; border-radius: 4px;';
+  collisionWarning.setAttribute('role', 'alert');
+  wrap.appendChild(collisionWarning);
+
   const header = document.createElement('div');
   header.style.cssText = 'display: flex; align-items: center; gap: 6px; color: #555; font-size: 12px;';
 
@@ -294,7 +299,16 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
   wrap.appendChild(addButton);
   wrap.appendChild(groupChatWrap);
 
-  return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk, addRow };
+  const showCollisions = (collisions) => {
+    if (!collisions || collisions.length === 0) {
+      collisionWarning.style.display = 'none';
+      return;
+    }
+    collisionWarning.textContent = '⚠ Alias collision: ' + collisions.map((c) => `"${c.alias}" maps to ${c.originals}`).join('; ');
+    collisionWarning.style.display = 'block';
+  };
+
+  return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk, addRow, showCollisions };
 }
 
 export function createLinkAction(labelText, onClick) {

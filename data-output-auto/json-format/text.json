@@ -1,0 +1,19 @@
+{
+  "html_locale": null,
+  "title": "text",
+  "type": "text",
+  "data_raw": {
+    "date": "12:26 AM",
+    "name": "ABC",
+    "content": "Do you have that photo and a link?",
+    "duration": null,
+    "length": "8 words"
+  },
+  "data_preview": {
+    "date": "2026.06.08 00:26",
+    "name": "ABC",
+    "content": "Do you have that photo and a link?",
+    "duration": null,
+    "length": "8 words"
+  }
+}

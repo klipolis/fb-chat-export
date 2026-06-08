@@ -1,0 +1,55 @@
+{
+  "total": {
+    "title": "Total Summary",
+    "messages": 23,
+    "days": 1,
+    "rough": {
+      "text": 20,
+      "words": 0,
+      "images": 20,
+      "calls": 2,
+      "callSeconds": 0
+    }
+  },
+  "participants": [
+    {
+      "title": "ABC Summary",
+      "name": "ABC",
+      "messages": 15,
+      "days": 1,
+      "rough": {
+        "text": 14,
+        "words": 0,
+        "images": 14,
+        "calls": 0,
+        "callSeconds": 0
+      }
+    },
+    {
+      "title": "Youghurt Summary",
+      "name": "Youghurt",
+      "messages": 7,
+      "days": 1,
+      "rough": {
+        "text": 6,
+        "words": 0,
+        "images": 5,
+        "calls": 1,
+        "callSeconds": 0
+      }
+    },
+    {
+      "title": "Barnabas Summary",
+      "name": "Barnabas",
+      "messages": 1,
+      "days": 1,
+      "rough": {
+        "text": 0,
+        "words": 0,
+        "images": 0,
+        "calls": 1,
+        "callSeconds": 0
+      }
+    }
+  ]
+}

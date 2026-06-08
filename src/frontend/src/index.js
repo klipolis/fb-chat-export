@@ -11,6 +11,8 @@ import {
   sanitizeFileNamePart,
   formatExportFileName,
 } from '../../shared/frontend-utils.mjs';
+import { REUSE_EXACT, REUSE_ALIAS_ONLY, REUSE_NARROWER } from '../../shared/constants.js';
+import { canReuseCached, filterEntriesByDateRange } from '../../shared/cache-utils.js';
 import {
   createDetailsPanel,
   createButton,
@@ -19,7 +21,8 @@ import {
   createLabelInput,
   createLinkAction,
 } from './ui.js';
-import { applyAliasToText } from '../../shared/alias-utils.js';
+import { applyAliasToText, detectAliasCollisions } from '../../shared/alias-utils.js';
+import { stripVariantSelectors } from '../../shared/string-utils.js';
 
 (function () {
   'use strict';
@@ -65,7 +68,17 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
   noticeStatus.style.cssText = 'word-break: break-word;';
   const noticeMsg = document.createElement('span');
   noticeMsg.textContent = 'Ready.';
+  const cacheIndicator = document.createElement('span');
+  cacheIndicator.style.cssText = 'display:inline-block; width:12px; height:12px; border-radius:50%; background:gray; margin-left:8px; vertical-align:middle;';
+  cacheIndicator.title = 'Served from cache';
+  cacheIndicator.style.display = 'none';
   noticeStatus.appendChild(noticeMsg);
+  noticeStatus.appendChild(cacheIndicator);
+
+  function setCacheIndicator(hit) {
+    cacheIndicator.style.display = hit ? 'inline-block' : 'none';
+    cacheIndicator.style.background = hit ? '#27ae60' : 'gray';
+  }
 
   const noticeActions = document.createElement('div');
   noticeActions.style.cssText = 'margin-top: 4px;';
@@ -139,7 +152,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
   let persistedAliases = {};
   try { const p = JSON.parse(localStorage.getItem('chatExportAliases') || '{}'); if (typeof p === 'object' && !Array.isArray(p)) persistedAliases = p; } catch (_) { /* ignore */ }
   const aliasDefaults = { ...builtinAliases, ...persistedAliases };
-  const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk, addRow: addAliasRow } = createAliasRows(aliasDefaults);
+  const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk, addRow: addAliasRow, showCollisions } = createAliasRows(aliasDefaults);
   const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle('Summary');
   const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle('Content');
   const { wrap: rawLinkWrap, input: rawLinkChk } = createCheckboxToggle('Raw link');
@@ -236,7 +249,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
   rightCol.appendChild(selectAllLink);
 
   // Message type filter
-  const typeFilterTypes = ['text', 'link', 'image', 'reaction', 'audio-call', 'video-call', 'voice-note', 'sticker', 'poll'];
+  const typeFilterTypes = ['text', 'link', 'pinned-location', 'image', 'reaction', 'audio-call', 'video-call', 'voice-note', 'sticker', 'poll'];
   const typeFilterState = {};
   const typeFilterDetails = document.createElement('details');
   typeFilterDetails.style.cssText = 'font-size: 12px;';
@@ -258,6 +271,37 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
 
   // Start with full-info mode selected by default.
   setAllChecked(true);
+
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('photoMeetExportOptions'));
+    if (saved) {
+      if (typeof saved.includeContent === 'boolean') {
+        includeContentChk.checked = saved.includeContent;
+        includeContentChk.dispatchEvent(new Event('change'));
+      }
+      if (typeof saved.includeLength === 'boolean') lengthChk.checked = saved.includeLength;
+      if (typeof saved.alias === 'boolean') {
+        aliasChk.checked = saved.alias;
+        aliasChk.dispatchEvent(new Event('change'));
+      }
+      if (saved.messageTypeFilter && typeof saved.messageTypeFilter === 'object') {
+        Object.keys(saved.messageTypeFilter).forEach((type) => {
+          if (Object.prototype.hasOwnProperty.call(typeFilterState, type)) {
+            typeFilterState[type] = saved.messageTypeFilter[type];
+          }
+        });
+        typeFilterDetails.querySelectorAll('input[type="checkbox"]').forEach((chk) => {
+          const label = chk.closest('label');
+          if (label) {
+            const textSpan = label.querySelector('span');
+            if (textSpan && Object.prototype.hasOwnProperty.call(typeFilterState, textSpan.textContent)) {
+              chk.checked = typeFilterState[textSpan.textContent];
+            }
+          }
+        });
+      }
+    }
+  } catch (_) { /* ignore */ }
 
   body.appendChild(leftCol);
   body.appendChild(rightCol);
@@ -441,7 +485,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
   }
 
   function setupDownload(downloadUrl, info) {
-    noticeStatus.textContent = `${info.doneLabel}: ${info.messages.length} messages | ${info.personName} | ${info.fromLabel} - ${info.toLabel} | ${info.elapsed}`;
+    noticeMsg.textContent = `${info.doneLabel}: ${info.messages.length} messages | ${info.personName} | ${info.fromLabel} - ${info.toLabel} | ${info.elapsed}`;
 
     downloadBtn.style.display = '';
     downloadBtn.removeAttribute('aria-disabled');
@@ -512,22 +556,6 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
     return String(hash);
   }
 
-  function canReuseCached(cached, personName, fromVal, toVal, aliasHash) {
-    if (!cached || cached.personName !== personName) return null;
-    const sameDates = cached.fromDate === fromVal && cached.toDate === toVal;
-    const sameAliases = cached.aliasHash === aliasHash;
-    if (sameDates && sameAliases) return 'exact';
-    if (sameDates) return 'alias-only';
-    const fromDate = fromVal ? parseLocalDate(fromVal) : null;
-    const toDate = toVal ? parseLocalDate(toVal) : null;
-    const cachedFrom = cached.fromDate ? parseLocalDate(cached.fromDate) : null;
-    const cachedTo = cached.toDate ? parseLocalDate(cached.toDate) : null;
-    if (cachedFrom && cachedTo && fromDate && toDate) {
-      if (fromDate >= cachedFrom && toDate <= cachedTo) return 'narrower';
-    }
-    return null;
-  }
-
   function setScanState(state) {
     if (state === 'scanning') {
       actionBtn.textContent = 'Stop Scan';
@@ -590,12 +618,17 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
     fromInput.style.borderColor = toInput.style.borderColor = '#ccc';
 
     cleanupExport();
+    setCacheIndicator(false);
 
     const personName = getDisplayPersonName();
     const fromVal = fromInput.value.trim();
     const toVal = toInput.value.trim();
     const aliasMap = aliasChk.checked ? getAliasMap() : {};
     const aliasHash = computeAliasHash(aliasMap);
+
+    if (aliasChk.checked) {
+      showCollisions(detectAliasCollisions(aliasMap));
+    }
 
     if (downloadRevokeTimeout !== null) {
       clearTimeout(downloadRevokeTimeout);
@@ -604,15 +637,21 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
     stopRequested = false;
     sessionStorage.setItem('exportFrom', fromVal);
     sessionStorage.setItem('exportTo', toVal);
+    sessionStorage.setItem('photoMeetExportOptions', JSON.stringify({
+      includeContent: includeContentChk.checked,
+      includeLength: lengthChk.checked,
+      alias: aliasChk.checked,
+      messageTypeFilter: typeFilterState,
+    }));
 
-    const reuseMode = canReuseCached(exportCache, personName, fromVal, toVal, aliasHash);
+    const reuseMode = canReuseCached(exportCache, personName, fromVal, toVal, aliasHash, parseLocalDate);
     if (reuseMode) {
       const cached = exportCache;
       let headerText = cached.headerText;
       let summaryText = cached.summaryText;
       let messages = cached.messages;
 
-      if (reuseMode === 'alias-only') {
+      if (reuseMode === REUSE_ALIAS_ONLY) {
         headerText = formatExportHeader({
           method: 'browser',
           messageTypes: cached.messageTypes,
@@ -641,15 +680,8 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
             includeLength: lengthChk.checked,
           });
         });
-      } else if (reuseMode === 'narrower') {
-        const fromDateParsed = fromVal ? parseLocalDate(fromVal) : null;
-        const toDateParsed = toVal ? (() => { const d = parseLocalDate(toVal); if (!isNaN(d)) d.setHours(23, 59, 59); return d; })() : null;
-        const filtered = cached.rawEntries.filter((e) => {
-          if (!e.ts) return false;
-          if (fromDateParsed && e.ts < fromDateParsed.getTime()) return false;
-          if (toDateParsed && e.ts > toDateParsed.getTime()) return false;
-          return true;
-        });
+      } else if (reuseMode === REUSE_NARROWER) {
+        const filtered = filterEntriesByDateRange(cached.rawEntries, fromVal, toVal, parseLocalDate);
         headerText = formatExportHeader({
           method: 'browser',
           messageTypes: cached.messageTypes,
@@ -703,6 +735,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
         elapsed: cacheElapsed,
         fileName: cacheFileName,
       });
+      setCacheIndicator(true);
       return;
     }
 
@@ -807,7 +840,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
           isCall,
           isImage,
           callMinutes,
-          wordCount: isCall || isImage ? 0 : (text ? text.split(/\s+/).filter(Boolean).length : 0),
+          wordCount: isCall || isImage ? 0 : (text ? stripVariantSelectors(text).split(/\s+/).filter(Boolean).length : 0),
           line: finalLine,
           exportEntry: lineEntry,
           repliedTo,
@@ -902,6 +935,10 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
             setDetectedNames(detectedSenders);
           }
 
+          if (aliasChk.checked) {
+            showCollisions(detectAliasCollisions(getAliasMap()));
+          }
+
           const sortedEntries = Array.from(collected.values()).sort((a, b) => a.ts - b.ts);
           const messages = sortedEntries.map((e) => e.line);
 
@@ -951,6 +988,7 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
           const doneLabel = stopRequested ? 'Stopped' : 'Done';
 
           exportCache = {
+            timestamp: Date.now(),
             personName: displayPersonName,
             fromDate: fromInput.value.trim(),
             toDate: toInput.value.trim(),

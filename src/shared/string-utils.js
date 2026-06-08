@@ -14,4 +14,8 @@ function replaceWholeWord(text, name, replacement) {
   });
 }
 
-module.exports = { escapeRegExp, replaceWholeWord };
+function stripVariantSelectors(text) {
+  return String(text || '').replace(/\uFE0F/g, '').replace(/[\u{1F3FB}-\u{1F3FF}]/gu, '');
+}
+
+module.exports = { escapeRegExp, replaceWholeWord, stripVariantSelectors };

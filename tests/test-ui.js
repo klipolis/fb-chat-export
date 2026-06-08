@@ -230,3 +230,121 @@ tap.test('T-310c: alias round-trip - special characters survive', (t) => {
   t.equal(parsed["O'Brien"], 'OB');
   t.end();
 });
+
+const { REUSE_EXACT, REUSE_ALIAS_ONLY, REUSE_NARROWER } = require('../src/shared/constants');
+const { canReuseCached, filterEntriesByDateRange } = require('../src/shared/cache-utils');
+
+function parseLocalDate(str) {
+  if (!str) return NaN;
+  const s = str.trim();
+  const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (iso) return new Date(+iso[1], +iso[2] - 1, +iso[3]);
+  return NaN;
+}
+
+function ts(y, m, d) {
+  return new Date(y, m - 1, d).getTime();
+}
+
+// T-325: Narrow date range filtering
+tap.test('T-325: narrow range excludes messages before new start date', (t) => {
+  const entries = [
+    { ts: ts(2026, 1, 15) },
+    { ts: ts(2026, 2, 15) },
+    { ts: ts(2026, 3, 15) },
+  ];
+  const result = filterEntriesByDateRange(entries, '2026-02-15', '2026-03-31', parseLocalDate);
+  t.equal(result.length, 2);
+  t.equal(result[0].ts, ts(2026, 2, 15));
+  t.equal(result[1].ts, ts(2026, 3, 15));
+  t.end();
+});
+
+tap.test('T-325: narrow range excludes messages after new end date', (t) => {
+  const entries = [
+    { ts: ts(2026, 1, 15) },
+    { ts: ts(2026, 2, 15) },
+    { ts: ts(2026, 3, 15) },
+  ];
+  const result = filterEntriesByDateRange(entries, '2026-01-01', '2026-02-15', parseLocalDate);
+  t.equal(result.length, 2);
+  t.equal(result[0].ts, ts(2026, 1, 15));
+  t.equal(result[1].ts, ts(2026, 2, 15));
+  t.end();
+});
+
+tap.test('T-325: narrow range keeps messages within new range', (t) => {
+  const entries = [
+    { ts: ts(2026, 1, 15) },
+    { ts: ts(2026, 2, 15) },
+    { ts: ts(2026, 3, 15) },
+  ];
+  const result = filterEntriesByDateRange(entries, '2026-02-01', '2026-02-28', parseLocalDate);
+  t.equal(result.length, 1);
+  t.equal(result[0].ts, ts(2026, 2, 15));
+  t.end();
+});
+
+tap.test('T-325: same start date, earlier end date (excludes after end)', (t) => {
+  const entries = [
+    { ts: ts(2026, 1, 15) },
+    { ts: ts(2026, 2, 15) },
+    { ts: ts(2026, 3, 15) },
+  ];
+  const result = filterEntriesByDateRange(entries, '2026-01-01', '2026-02-15', parseLocalDate);
+  t.equal(result.length, 2);
+  t.equal(result[0].ts, ts(2026, 1, 15));
+  t.equal(result[1].ts, ts(2026, 2, 15));
+  t.end();
+});
+
+tap.test('T-325: later start date, same end date (excludes before start)', (t) => {
+  const entries = [
+    { ts: ts(2026, 1, 15) },
+    { ts: ts(2026, 2, 15) },
+    { ts: ts(2026, 3, 15) },
+  ];
+  const result = filterEntriesByDateRange(entries, '2026-02-01', '2026-03-31', parseLocalDate);
+  t.equal(result.length, 2);
+  t.equal(result[0].ts, ts(2026, 2, 15));
+  t.equal(result[1].ts, ts(2026, 3, 15));
+  t.end();
+});
+
+// T-326: Cache invalidation on date range expansion
+const cachedState = {
+  personName: 'Alice',
+  fromDate: '2026-02-01',
+  toDate: '2026-03-31',
+  aliasHash: 'abc123',
+};
+
+tap.test('T-326: expand start date backward invalidates cache', (t) => {
+  const result = canReuseCached(cachedState, 'Alice', '2026-01-01', '2026-03-31', 'abc123', parseLocalDate);
+  t.equal(result, null);
+  t.end();
+});
+
+tap.test('T-326: expand end date forward invalidates cache', (t) => {
+  const result = canReuseCached(cachedState, 'Alice', '2026-02-01', '2026-04-30', 'abc123', parseLocalDate);
+  t.equal(result, null);
+  t.end();
+});
+
+tap.test('T-326: expand both directions invalidates cache', (t) => {
+  const result = canReuseCached(cachedState, 'Alice', '2026-01-01', '2026-04-30', 'abc123', parseLocalDate);
+  t.equal(result, null);
+  t.end();
+});
+
+tap.test('T-326: same range keeps cache valid (exact)', (t) => {
+  const result = canReuseCached(cachedState, 'Alice', '2026-02-01', '2026-03-31', 'abc123', parseLocalDate);
+  t.equal(result, REUSE_EXACT);
+  t.end();
+});
+
+tap.test('T-326: subset range keeps cache valid (narrower)', (t) => {
+  const result = canReuseCached(cachedState, 'Alice', '2026-02-15', '2026-03-15', 'abc123', parseLocalDate);
+  t.equal(result, REUSE_NARROWER);
+  t.end();
+});

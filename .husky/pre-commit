@@ -2,7 +2,6 @@ STAGED_SRC=$(git diff --cached --name-only --diff-filter=ACM | grep -cE '^(src/|
 STAGED_CHANGELOG=$(git diff --cached --name-only --diff-filter=ACM | grep -c 'CHANGELOG.md' || true)
 STAGED_LOGS=$(git diff --cached --name-only --diff-filter=ACM | grep -c 'project-logs/' || true)
 STAGED_TODO=$(git diff --cached --name-only --diff-filter=ACM | grep -c '\.TODO/' || true)
-STAGED_DOCS=$(git diff --cached --name-only --diff-filter=ACM | grep -cE '^(docs/|README.md|CHANGELOG.md)' || true)
 
 if [ "$STAGED_SRC" -gt 0 ] && [ "$STAGED_CHANGELOG" -eq 0 ]; then
   echo ""
@@ -24,9 +23,10 @@ if [ "$STAGED_TODO" -gt 0 ]; then
   pnpm run lint:todos || true
 fi
 
-if [ "$STAGED_DOCS" -gt 0 ]; then
+if git diff --cached --name-only | grep -q "^docs/"; then
   echo ""
-  echo "⚠  Pre-commit: docs/ were modified — run pnpm run lint:docs before pushing."
+  echo "⚠  Running lint:docs for staged docs/ changes..."
+  pnpm run lint:docs || true
 fi
 
 echo ""
