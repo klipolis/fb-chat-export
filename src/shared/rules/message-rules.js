@@ -39,6 +39,15 @@ const rules = [
     matchLabel: /\bimage\b|\bphoto\b|\bpicture\b/i,
   },
 
+  {
+    type: 'video-call',
+    prefixes: [
+      'video-call',
+      'call-video'
+    ],
+    matchLabel: /\bvideo call\b/i,
+  },
+
   //
   // LINK (merged with video-link)
   //
@@ -52,15 +61,6 @@ const rules = [
     ],
     matchLabel:
       /(?:open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location|\b(?:youtube|youtu\.be|vimeo|dailymotion|tiktok|instagram|twitter|x\.com|twitch|fb\.watch|facebook\.com\/.*(?:video|watch|reel)|video|watch|reel|shorts)\b)/i,
-  },
-
-  {
-    type: 'video-call',
-    prefixes: [
-      'video-call',
-      'call-video'
-    ],
-    matchLabel: /\bvideo call\b/i,
   },
 
   {

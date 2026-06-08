@@ -111,6 +111,14 @@
           ],
           matchLabel: /\bimage\b|\bphoto\b|\bpicture\b/i
         },
+        {
+          type: "video-call",
+          prefixes: [
+            "video-call",
+            "call-video"
+          ],
+          matchLabel: /\bvideo call\b/i
+        },
         //
         // LINK (merged with video-link)
         //
@@ -123,14 +131,6 @@
             "video-link"
           ],
           matchLabel: /(?:open attachment|href|https?:\/\/|open link|view link|download|attachment|pinned location|\b(?:youtube|youtu\.be|vimeo|dailymotion|tiktok|instagram|twitter|x\.com|twitch|fb\.watch|facebook\.com\/.*(?:video|watch|reel)|video|watch|reel|shorts)\b)/i
-        },
-        {
-          type: "video-call",
-          prefixes: [
-            "video-call",
-            "call-video"
-          ],
-          matchLabel: /\bvideo call\b/i
         },
         {
           type: "voice-note",
@@ -903,7 +903,12 @@
             } else if (/audio/.test(callText)) {
               type = "audio-call";
             } else {
-              type = "voice-note";
+              const trimmed = normalizeLabel(normalizedText);
+              const words = trimmed ? trimmed.split(/\s+/) : [];
+              const isValid = words.length <= 2 && /^[a-zA-Z\s]+$/.test(trimmed);
+              if (isValid || timerText) {
+                type = "voice-note";
+              }
             }
           } else if (explicitLink) {
             type = "link";

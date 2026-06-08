@@ -43,6 +43,8 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Date prefix detection truncates at " by " boundary to avoid treating "by" text as part of the date
 - Comma-iteration in aria-label parser skips date candidates with more than 6 words
 - Pre-commit hook blocks commits when source files change without staged AI interaction logs
+- Call detection no longer classifies user-typed sentences containing the word "call" as voice notes
+- Video call messages are correctly detected when the aria-label contains "video call"
 
 - Stale documentation references in RELEASING.md and skill files
 - Error message label in test-frontend-build.js

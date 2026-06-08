@@ -211,7 +211,15 @@ function getContentMeta({
       } else if (/audio/.test(callText)) {
         type = 'audio-call';
       } else {
-        type = 'voice-note';
+        // Plain "call" without prefix — only voice-note if text is short,
+        // no special chars, no numbers (validation prevents user-typed
+        // sentences like "a quick call?" from being misclassified).
+        const trimmed = normalizeLabel(normalizedText);
+        const words = trimmed ? trimmed.split(/\s+/) : [];
+        const isValid = words.length <= 2 && /^[a-zA-Z\s]+$/.test(trimmed);
+        if (isValid || timerText) {
+          type = 'voice-note';
+        }
       }
     } else if (explicitLink) {
       type = 'link';

@@ -14,8 +14,12 @@ Do not modify existing entries below. Update `project-logs/interaction-log.md` a
 
 ---
 
+2026-06-08 12:00 | user | review what we did, fix call type detection ("quick call?" classified as voice-note)
+2026-06-08 12:00 | ai | Fixed plain "call" validation (≤2 words, letters only, no numbers) before voice-note classification; reordered video-call rule before link rule in message-rules.js; rebuilt frontend bundle
+
 2026-06-07 20:00 | user | add more name/date finding rules for export label parsing
 2026-06-07 20:00 | ai | Added extractNameAfterBy for "by X" patterns, isValidDateCandidate (max 6 words), DOM-based name fallback, updated pre-commit hook, rebuilt frontend bundle, lint passes
+2026-06-07 20:00 | commit ce7beb1 | fix: extract sender name from by X patterns, validate date candidates, enforce AI logs in pre-commit
 
 2026-06-07 15:00 | user | run lint + validation, audit 15 inconsistencies, fix them all, review export1.txt, improve name regex
 2026-06-07 15:00 | ai | Fixed 15 inconsistencies across docs/configs/tests, expanded sender validation (50 chars, 5 words), added date:sender pattern, skipped duplicate Enter labels in parser, updated all affected tests, rebuilt frontend bundle
