@@ -88,7 +88,7 @@ pnpm run prompt:<name>  # show a specific prompt's content (e.g. prompt:trace-gu
 - Respect `.gitignore` before reading source.
 - Never read `dist/`, `.git/`, or `node_modules/`.
 - Update `project-prompts/` (hot AI prompt files) after every prompt or guidance change.
-- Update `docs/AI-interaction/` (reference docs) after every durable AI instruction change, including user guidance,
+- Update `docs/AI-interaction/` (reference docs) after every AI interaction then update user guidance,
   AI-agent guidance, prompt style, text-language rules, and bookkeeping guidance.
 
 ## AI Behavior

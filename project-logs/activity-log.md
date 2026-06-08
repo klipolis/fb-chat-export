@@ -16,7 +16,7 @@ Do not modify existing entries below. Update `project-logs/interaction-log.md` a
 
 2026-06-08 12:00 | user | test verify the export output, implement tests
 2026-06-08 12:00 | ai | Verified text-2 export output; updated golden snapshots; wrote unit + integration tests; fixed XYZ→ABC alias in integration test
-2026-06-08 12:00 | commit <staging> | test: verify export integrity with golden snapshots and text-2 fixture
+2026-06-08 12:00 | commit 78d87c3 | test: verify export output with golden snapshots and text-2 fixture tests
 
 2026-06-08 12:00 | user | review what we did, fix call type detection ("quick call?" classified as voice-note)
 2026-06-08 12:00 | ai | Fixed plain "call" validation (≤2 words, letters only, no numbers) before voice-note classification; reordered video-call rule before link rule in message-rules.js; rebuilt frontend bundle
@@ -178,6 +178,8 @@ Do not modify existing entries below. Update `project-logs/interaction-log.md` a
 2026-05-20 23:21 | commit 828ac67 | fix: summary counts
 2026-05-20 23:10 | ai | Corrected per-participant message and image counts in summary output
 
+2026-06-08 17:00 | commit 4255a73 | feat: browser export cache, alias-only reuse, date-shrink reuse, UI layout, smart cleanup
+2026-06-08 17:00 | ai | Implemented browser export cache with alias-only and date-shrink reuse, restructured notice UI, removed auto-cleanup countdown, added cleanup on new scan
 2026-05-19 22:00 | user | Calendar date parsing without "At" prefix, more message types
 2026-05-21 15:25 | commit b9d89bc | fix: duration, date, multi sender
 2026-05-19 22:46 | commit 990decb | multi-person summary, reactions

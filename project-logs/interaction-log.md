@@ -152,6 +152,9 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 2026-05-23 11:00 | ai | Restructured test directory, organized dataset, optimized TODO management
 2026-05-23 11:00 | commit 5f3d235 | chore: optimise tasks, todo management
 2026-05-23 11:00 | commit f491034 | chore: structure folder, tests, todo, dataset
+2026-06-08 17:00 | user | Implement all pending frontend tasks
+2026-06-08 17:00 | ai | Restructured notice UI (T-286), removed auto-cleanup countdown (T-290), cleanup triggers on new scan (T-287), added in-memory export cache with exact/alias-only/narrower reuse (T-288/T-289/T-291). Refactored setupDownload to outer scope, added rawEntries and rawSender to cache. Rebuilt dist/app.js v5.4.0.
+2026-06-08 17:00 | commit 4255a73 | feat: browser export cache, alias-only reuse, date-shrink reuse, UI layout, smart cleanup
 2026-05-22 23:00 | user | Full test coverage, link and summary, multi-person names
 2026-06-22 23:00 | ai | Added comprehensive test coverage, link extraction, multi-person name handling, summary word count
 2026-05-22 23:00 | commit 3c60120 | feat: summary text words count

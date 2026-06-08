@@ -148,6 +148,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-127. Self-healing lint fix script confirmed available (b0d576e)
 - T-177. Added export-summary-combined.txt and export-summary-detailed.txt to export-config.json and generated-txt-schema.json (b70ad2f)
 - T-178. Fixed roughWordsLine pattern and roughTextLine format; added skipBodyValidation flag; extended totalLine to accept posts (b70ad2f)
+- T-289. Reuse cached exports when shrinking date ranges; expanded dates trigger fresh DOM scan for new messages
 
 ## Export format
 
@@ -204,11 +205,14 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-142. Added explicit alias entry for all sender names in both config files for consistent fallback (152b844)
 - T-143. Make tests expect image as the label for all image messages, not raw image-2 or image-3 variants (152b844)
 - T-282. Full-name img alt text replaced entirely with alias instead of only the first name
+- T-288. Reuse the previous export when rescanning the same chat without date changes; alias-only changes reuse the cached export, no DOM re-scan needed
 
 ## Frontend
 
 - T-283. Browser export auto-populates alias panel with detected sender names after scan completes
 - T-284. Group chat mode checkbox in alias panel controls auto-population behavior
+- T-286. Wrap the scan-finished result line for long output and move the download button onto its own line
+- T-291. Cache export data (messages + metadata) in browser local storage so re-scans of same chat reuse cached DOM data without re-scraping; invalidate when dates expand
 
 - T-68. Date parser accepts slash-separated date formats (a87ec74)
 - T-69. Scan completion displays elapsed time (a87ec74)
@@ -236,6 +240,8 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-193. Removed src/build.js wrapper, pointed package.json build:frontend directly at build.cjs (3adbbed)
 - T-194. Removed dead rel path constants from build-server.cjs (3adbbed)
 - T-198. Renamed server-side formatExportFileName in export-text.js to formatServerExportFileName (3e31f9d)
+- T-287. Trigger cleanup when a new chat scan starts
+- T-290. Do not auto-cleanup exports that have not been downloaded, because overnight scans are common
 
 ## Process
 

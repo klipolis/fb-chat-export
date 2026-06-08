@@ -48,9 +48,19 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Aria-label parser correctly extracts sender from labels where the message text contains a colon before the sender colon
 - Aria-label parser comma-iteration strips "At " prefix from the date part
 
+### Added
+- Browser export panel wraps long status line and places download button on its own row
+- Browser export caches scan results in-memory for instant reuse on same-chat re-scans
+
+### Changed
+- Browser export cleanup triggers only on new scan start instead of auto-countdown
+
+### Removed
+- Browser export auto-cleanup countdown for undownloaded exports (overnight scans common)
+
 ### Dev
 - Golden snapshot files updated to include text-2 fixture output
-- Export integration test verifies text-2 line date, sender, word count, and colon-preserved message body
+- Export integration test checks text-2 date, sender, word count, and message body containing colons
 - Unit tests added for text-2 extractMessageEntry and full pipeline with text-2.html fixture
 
 - Stale documentation references in RELEASING.md and skill files

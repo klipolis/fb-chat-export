@@ -60,24 +60,29 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
   notice.style.cssText = 'padding: 6px 10px; font-size: 12px; color: #333;';
   notice.setAttribute('role', 'status');
   notice.setAttribute('aria-live', 'polite');
+
+  const noticeStatus = document.createElement('div');
+  noticeStatus.style.cssText = 'word-break: break-word;';
   const noticeMsg = document.createElement('span');
   noticeMsg.textContent = 'Ready.';
+  noticeStatus.appendChild(noticeMsg);
+
+  const noticeActions = document.createElement('div');
+  noticeActions.style.cssText = 'margin-top: 4px;';
 
   const downloadBtn = createButton('Download .txt', '#27ae60');
-  downloadBtn.style.cssText += ' display: none; margin-left: 10px; vertical-align: middle;';
+  downloadBtn.style.cssText += ' display: none; margin-right: 8px; vertical-align: middle;';
 
   const saveAgainLink = document.createElement('a');
   saveAgainLink.textContent = 'Save again';
   saveAgainLink.href = '#';
-  saveAgainLink.style.cssText = 'display: none; margin-left: 8px; font-size: 11px; color: #27ae60; vertical-align: middle;';
+  saveAgainLink.style.cssText = 'display: none; font-size: 11px; color: #27ae60; vertical-align: middle;';
 
-  const cleanupLine = document.createElement('div');
-  cleanupLine.style.cssText = 'display: none; margin-top: 4px; font-size: 11px; color: #888;';
+  noticeActions.appendChild(downloadBtn);
+  noticeActions.appendChild(saveAgainLink);
 
-  notice.appendChild(noticeMsg);
-  notice.appendChild(downloadBtn);
-  notice.appendChild(saveAgainLink);
-  notice.appendChild(cleanupLine);
+  notice.appendChild(noticeStatus);
+  notice.appendChild(noticeActions);
 
   // body: inputs + scan button
   const body = document.createElement('div');
@@ -287,8 +292,88 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
   let scrollTimeout = null;
   let downloadHandler = null;
   let stopRequested = false;
-  let countdownInterval = null;
-  let cleanupCountdownInterval = null;
+
+  let exportCache = null;
+  let downloadCleanup = null;
+
+  function cleanupExport() {
+    if (downloadCleanup) {
+      if (downloadCleanup.url && downloadCleanup.url.startsWith('blob:')) {
+        URL.revokeObjectURL(downloadCleanup.url);
+      }
+      downloadCleanup = null;
+    }
+    downloadBtn.style.display = 'none';
+    saveAgainLink.style.display = 'none';
+    saveAgainLink.onclick = null;
+    setScanState('idle');
+  }
+
+  function triggerDownload(url, fileName) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+  }
+
+  function setupDownload(downloadUrl, info) {
+    noticeStatus.textContent = `${info.doneLabel}: ${info.messages.length} messages | ${info.personName} | ${info.fromLabel} - ${info.toLabel} | ${info.elapsed}`;
+
+    downloadBtn.style.display = '';
+    downloadBtn.removeAttribute('aria-disabled');
+    downloadBtn.style.opacity = '';
+    downloadBtn.style.cursor = '';
+    downloadBtn.textContent = 'Download';
+    saveAgainLink.style.display = 'none';
+    saveAgainLink.onclick = null;
+    if (downloadHandler) downloadBtn.removeEventListener('click', downloadHandler);
+
+    downloadCleanup = { url: downloadUrl, fileName: info.fileName };
+
+    downloadHandler = () => {
+      if (downloadBtn.getAttribute('aria-disabled') === 'true') return;
+      triggerDownload(downloadUrl, info.fileName);
+      downloadBtn.setAttribute('aria-disabled', 'true');
+      downloadBtn.style.opacity = '0.5';
+      downloadBtn.style.cursor = 'not-allowed';
+      downloadBtn.textContent = 'Downloaded';
+      saveAgainLink.style.display = '';
+      saveAgainLink.onclick = (e) => {
+        e.preventDefault();
+        triggerDownload(downloadUrl, info.fileName);
+      };
+    };
+
+    downloadBtn.addEventListener('click', downloadHandler);
+    setScanState('idle');
+  }
+
+  function computeAliasHash(aliasMap) {
+    const sorted = Object.keys(aliasMap).sort().map((k) => `${k}:${aliasMap[k]}`).join('|');
+    if (!sorted) return '';
+    let hash = 0;
+    for (let i = 0; i < sorted.length; i++) {
+      hash = ((hash << 5) - hash) + sorted.charCodeAt(i);
+      hash |= 0;
+    }
+    return String(hash);
+  }
+
+  function canReuseCached(cached, personName, fromVal, toVal, aliasHash) {
+    if (!cached || cached.personName !== personName) return null;
+    const sameDates = cached.fromDate === fromVal && cached.toDate === toVal;
+    const sameAliases = cached.aliasHash === aliasHash;
+    if (sameDates && sameAliases) return 'exact';
+    if (sameDates) return 'alias-only';
+    const fromDate = fromVal ? parseLocalDate(fromVal) : null;
+    const toDate = toVal ? parseLocalDate(toVal) : null;
+    const cachedFrom = cached.fromDate ? parseLocalDate(cached.fromDate) : null;
+    const cachedTo = cached.toDate ? parseLocalDate(cached.toDate) : null;
+    if (cachedFrom && cachedTo && fromDate && toDate) {
+      if (fromDate >= cachedFrom && toDate <= cachedTo) return 'narrower';
+    }
+    return null;
+  }
 
   function setScanState(state) {
     if (state === 'scanning') {
@@ -345,15 +430,121 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
 
     fromInput.style.borderColor = toInput.style.borderColor = '#ccc';
 
+    cleanupExport();
+
+    const personName = getDisplayPersonName();
+    const fromVal = fromInput.value.trim();
+    const toVal = toInput.value.trim();
+    const aliasMap = aliasChk.checked ? getAliasMap() : {};
+    const aliasHash = computeAliasHash(aliasMap);
+
     if (downloadRevokeTimeout !== null) {
       clearTimeout(downloadRevokeTimeout);
       downloadRevokeTimeout = null;
     }
-    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
-    if (cleanupCountdownInterval) { clearInterval(cleanupCountdownInterval); cleanupCountdownInterval = null; }
     stopRequested = false;
-    sessionStorage.setItem('exportFrom', fromInput.value.trim());
-    sessionStorage.setItem('exportTo', toInput.value.trim());
+    sessionStorage.setItem('exportFrom', fromVal);
+    sessionStorage.setItem('exportTo', toVal);
+
+    const reuseMode = canReuseCached(exportCache, personName, fromVal, toVal, aliasHash);
+    if (reuseMode) {
+      const cached = exportCache;
+      let headerText = cached.headerText;
+      let summaryText = cached.summaryText;
+      let messages = cached.messages;
+
+      if (reuseMode === 'alias-only') {
+        headerText = formatExportHeader({
+          method: 'browser',
+          messageTypes: cached.messageTypes,
+          exportOptions: cached.exportOptions,
+          aliasMap,
+        });
+        summaryText = buildSummary(cached.rawEntries, { useMessageLabel: true });
+        messages = cached.rawEntries.map((e) => {
+          const aliasedSender = aliasChk.checked
+            ? (aliasMap[e.rawSender] || aliasMap.any || e.rawSender)
+            : e.rawSender;
+          const aliasedContent = aliasChk.checked
+            ? applyAliasToText(e.text, aliasMap, e.rawSender)
+            : e.text;
+          const lineEntry = {
+            fileType: e.displayType,
+            semanticType: e.semanticType,
+            dateText: e.dateText,
+            sender: aliasedSender,
+            duration: e.duration,
+            content: aliasedContent,
+            contentLength: e.contentLength,
+          };
+          return formatLine(lineEntry, {
+            includeContent: includeContentChk.checked,
+            includeLength: lengthChk.checked,
+          });
+        });
+      } else if (reuseMode === 'narrower') {
+        const fromDateParsed = fromVal ? parseLocalDate(fromVal) : null;
+        const toDateParsed = toVal ? (() => { const d = parseLocalDate(toVal); if (!isNaN(d)) d.setHours(23, 59, 59); return d; })() : null;
+        const filtered = cached.rawEntries.filter((e) => {
+          if (!e.ts) return false;
+          if (fromDateParsed && e.ts < fromDateParsed.getTime()) return false;
+          if (toDateParsed && e.ts > toDateParsed.getTime()) return false;
+          return true;
+        });
+        headerText = formatExportHeader({
+          method: 'browser',
+          messageTypes: cached.messageTypes,
+          exportOptions: cached.exportOptions,
+          aliasMap,
+        });
+        const displayEntries = filtered.map((e) => ({
+          ts: e.ts, sender: e.rawSender, date: new Date(e.ts),
+          type: e.semanticType, isCall: e.isCall, isImage: e.isImage,
+          callMinutes: e.callMinutes, wordCount: e.wordCount,
+        }));
+        summaryText = buildSummary(displayEntries, { useMessageLabel: true });
+        messages = filtered.map((e) => {
+          const aliasedSender = aliasChk.checked
+            ? (aliasMap[e.rawSender] || aliasMap.any || e.rawSender)
+            : e.rawSender;
+          const aliasedContent = aliasChk.checked
+            ? applyAliasToText(e.text, aliasMap, e.rawSender)
+            : e.text;
+          const lineEntry = {
+            fileType: e.displayType,
+            semanticType: e.semanticType,
+            dateText: e.dateText,
+            sender: aliasedSender,
+            duration: e.duration,
+            content: aliasedContent,
+            contentLength: e.contentLength,
+          };
+          return formatLine(lineEntry, {
+            includeContent: includeContentChk.checked,
+            includeLength: lengthChk.checked,
+          });
+        });
+      }
+
+      const cacheFromLabel = fromVal || 'start';
+      const cacheToLabel = toVal || 'end';
+      const cacheElapsed = '0.0 seconds';
+      const cacheFileName = customFileName || formatExportFileName(undefined, { fromDate: fromVal, toDate: toVal });
+
+      const blob = new Blob([headerText + summaryText + messages.join('')], { type: 'text/plain' });
+      const downloadUrl = URL.createObjectURL(blob);
+      setupDownload(downloadUrl, {
+        doneLabel: 'Done',
+        messages,
+        personName,
+        fromLabel: cacheFromLabel,
+        toLabel: cacheToLabel,
+        elapsed: cacheElapsed,
+        fileName: cacheFileName,
+      });
+      return;
+    }
+
     setScanState('scanning');
     downloadBtn.style.display = 'none';
     saveAgainLink.style.display = 'none';
@@ -449,6 +640,8 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
         collected.set(key, {
           ts: isNaN(msgDate) ? 0 : msgDate.getTime(),
           sender: authorLabel,
+          rawSender: sender,
+          rawText: text,
           date: msgDate,
           type,
           isCall,
@@ -581,91 +774,60 @@ import { applyAliasToText } from '../../shared/alias-utils.js';
           });
           const doneLabel = stopRequested ? 'Stopped' : 'Done';
 
-          function setupDownload(downloadUrl) {
-            noticeMsg.textContent = `${doneLabel}: ${messages.length} messages | ${displayPersonName} | ${fromLabel} - ${toLabel} | ${elapsed}`;
-
-            let downloadedOnce = false;
-            let cleanupCountdown = 180;
-
-            function triggerDownload(url) {
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = fileName;
-              a.click();
-            }
-
-            function cleanupExport() {
-              if (downloadUrl && downloadUrl.startsWith('blob:')) {
-                URL.revokeObjectURL(downloadUrl);
-              }
-              downloadUrl = null;
-              if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
-              saveAgainLink.style.display = 'none';
-              downloadBtn.style.display = 'none';
-              cleanupLine.style.display = 'none';
-              noticeMsg.textContent = 'Ready.';
-              if (downloadHandler) downloadBtn.removeEventListener('click', downloadHandler);
-              downloadHandler = null;
-              setScanState('idle');
-            }
-
-            downloadBtn.style.display = '';
-            downloadBtn.removeAttribute('aria-disabled');
-            downloadBtn.style.opacity = '';
-            downloadBtn.style.cursor = '';
-            downloadBtn.textContent = 'Download';
-            saveAgainLink.style.display = 'none';
-            saveAgainLink.onclick = null;
-            cleanupLine.style.display = '';
-            if (downloadHandler) downloadBtn.removeEventListener('click', downloadHandler);
-
-            if (countdownInterval) clearInterval(countdownInterval);
-            countdownInterval = setInterval(() => {
-              cleanupCountdown--;
-              if (cleanupCountdown <= 0) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
-                cleanupLine.textContent = 'Cleaning...';
-                setTimeout(cleanupExport, 800);
-              } else {
-                cleanupLine.textContent = `Cleanup in ${cleanupCountdown}s`;
-              }
-            }, 1000);
-
-            downloadHandler = () => {
-              if (downloadBtn.getAttribute('aria-disabled') === 'true') return;
-              downloadBtn.setAttribute('aria-disabled', 'true');
-              downloadBtn.style.opacity = '0.5';
-              downloadBtn.style.cursor = 'not-allowed';
-              downloadBtn.textContent = 'Downloaded';
-              triggerDownload(downloadUrl);
-
-              if (!downloadedOnce) {
-                downloadedOnce = true;
-                if (cleanupCountdown > 70) cleanupCountdown = 70;
-              } else {
-                if (cleanupCountdown > 60) cleanupCountdown = 60;
-              }
-
-              saveAgainLink.style.display = '';
-              saveAgainLink.textContent = 'Download again';
-              saveAgainLink.onclick = (e) => {
-                e.preventDefault();
-                triggerDownload(downloadUrl);
-                if (cleanupCountdown > 60) cleanupCountdown = 60;
-                saveAgainLink.textContent = 'Download again';
-              };
-            };
-
-            downloadBtn.addEventListener('click', downloadHandler);
-            setScanState('idle');
-          }
+          exportCache = {
+            personName: displayPersonName,
+            fromDate: fromInput.value.trim(),
+            toDate: toInput.value.trim(),
+            aliasHash: computeAliasHash(aliasChk.checked ? getAliasMap() : {}),
+            headerText,
+            summaryText,
+            messageTypes,
+            exportOptions: {
+              calls: includeCallsChk.checked,
+              alias: aliasChk.checked,
+              summary: summaryChk.checked,
+              content: includeContentChk.checked,
+              rawLink: rawLinkChk.checked,
+              length: lengthChk.checked,
+            },
+            rawEntries: sortedEntries.map((e) => ({
+              ts: e.ts,
+              rawSender: e.rawSender,
+              text: e.rawText || '',
+              semanticType: e.type,
+              displayType: e.exportEntry.fileType,
+              dateText: e.exportEntry.dateText,
+              duration: e.exportEntry.duration,
+              contentLength: e.exportEntry.contentLength,
+              isCall: e.isCall,
+              isImage: e.isImage,
+              callMinutes: e.callMinutes,
+              wordCount: e.wordCount,
+            })),
+            messages,
+          };
 
           try {
-            setupDownload(URL.createObjectURL(blob));
+            setupDownload(URL.createObjectURL(blob), {
+              doneLabel,
+              messages,
+              personName: displayPersonName,
+              fromLabel,
+              toLabel,
+              elapsed,
+              fileName,
+            });
           } catch (_) {
             const reader = new FileReader();
-            reader.onload = (e) => setupDownload(e.target.result);
+            reader.onload = (e) => setupDownload(e.target.result, {
+              doneLabel,
+              messages,
+              personName: displayPersonName,
+              fromLabel,
+              toLabel,
+              elapsed,
+              fileName,
+            });
             reader.onerror = () => {
               noticeMsg.textContent = 'Could not prepare download.';
               setScanState('idle');
