@@ -54,13 +54,8 @@ function extractRawDuration(text) {
 }
 
 function durationToMinutes(duration) {
-  if (!duration) return 0;
-  const normalized = normalizeDuration(duration) || duration;
-  const hms = String(normalized).match(/^(\d+):(\d{2}):(\d{2})$/);
-  if (hms) {
-    return Number(hms[1]) * 60 + Number(hms[2]) + Math.ceil(Number(hms[3]) / 60);
-  }
-  return 0;
+  const seconds = durationToSeconds(duration);
+  return Math.ceil(seconds / 60);
 }
 
 function durationToSeconds(duration) {

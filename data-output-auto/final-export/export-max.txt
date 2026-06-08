@@ -21,15 +21,15 @@ Aliases:
 ---
 
 Total Summary
-25 messages / 11 days
-~ 14 text / 294 words
-~ 21 images
+26 messages / 12 days
+~ 15 text / 334 words
+~ 22 images
 ~ 4 calls 00:49:41
 
 ABC Summary
-15 messages / 6 days
-~ 8 text / 209 words
-~ 12 images
+16 messages / 7 days
+~ 9 text / 249 words
+~ 13 images
 ~ 2 calls 00:31:21
 
 Youghurt Summary
@@ -45,6 +45,7 @@ Barnabas Summary
 ~ 1 calls 00:00:20
 
 ---
+[2026-01-19 08:43] ABC: text-2-link 40 words / Good Morning Karoli! How are you? It's been long time! How much would it cost me to ask you to do a healthy check on photomeet.reviews? We are going to launch soon and would like to start putting things together.
 [2026-04-12 13:23] Youghurt: audio-call 00:18:00
 [2026-04-13 17:45] Youghurt: image
 > Replied to: Original image

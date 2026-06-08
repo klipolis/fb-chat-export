@@ -40,6 +40,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Frontend
 
+- T-377. Align browser summary duration handling with server path by deriving callSeconds from entry.duration before buildSummary runs.
 - no tasks
 
 ## Cleanup

@@ -791,15 +791,10 @@
         return null;
       }
       function durationToMinutes2(duration) {
-        if (!duration) return 0;
-        const normalized = normalizeDuration2(duration) || duration;
-        const hms = String(normalized).match(/^(\d+):(\d{2}):(\d{2})$/);
-        if (hms) {
-          return Number(hms[1]) * 60 + Number(hms[2]) + Math.ceil(Number(hms[3]) / 60);
-        }
-        return 0;
+        const seconds = durationToSeconds2(duration);
+        return Math.ceil(seconds / 60);
       }
-      function durationToSeconds(duration) {
+      function durationToSeconds2(duration) {
         if (!duration) return 0;
         const normalized = normalizeDuration2(duration) || duration;
         const hms = String(normalized).match(/^(\d+):(\d{2}):(\d{2})$/);
@@ -813,7 +808,7 @@
         extractRawDuration,
         formatDurationSeconds,
         durationToMinutes: durationToMinutes2,
-        durationToSeconds
+        durationToSeconds: durationToSeconds2
       };
     }
   });
@@ -1184,7 +1179,7 @@
       }
       var { summaryConcept } = require_export_config();
       var { TIMED_CALL_TYPES, MISSED_CALL_TYPES } = require_constants();
-      var { formatDurationSeconds } = require_duration_utils();
+      var { formatDurationSeconds, durationToSeconds: durationToSeconds2 } = require_duration_utils();
       var TOTAL_SUMMARY_TITLE = summaryConcept.totalSummaryTitle || "Total Summary";
       var ROUGH_PREFIX = summaryConcept.roughPrefix || "~";
       var PERSON_SUMMARY_SUFFIX = summaryConcept.personSummarySuffix || " Summary";
@@ -1241,9 +1236,9 @@
           data.days.add(dayKey);
           if (isCountedCall(entry)) {
             data.calls += 1;
-            data.callSeconds += Number(entry.callSeconds || 0);
+            data.callSeconds += Number(entry.callSeconds || 0) + (entry.duration ? durationToSeconds2(entry.duration) : 0);
             totalCalls += 1;
-            totalCallSeconds += Number(entry.callSeconds || 0);
+            totalCallSeconds += Number(entry.callSeconds || 0) + (entry.duration ? durationToSeconds2(entry.duration) : 0);
           }
           if (entry.imageCount) {
             data.images += Number(entry.imageCount || 0);
@@ -1565,7 +1560,7 @@
   var require_export_formatter = __commonJS({
     "src/shared/export-formatter.js"(exports, module) {
       "use strict";
-      var { normalizeDuration: normalizeDuration2, durationToMinutes: durationToMinutes2, durationToSeconds } = require_duration_utils();
+      var { normalizeDuration: normalizeDuration2, durationToMinutes: durationToMinutes2, durationToSeconds: durationToSeconds2 } = require_duration_utils();
       var { normalizeDateToIsoSafe } = require_aria_label_parser();
       var { buildSummary: buildSummary2, buildDetailedSummary, buildSummaryData } = require_export_summary();
       var { TIMED_CALL_TYPES, CALL_TYPES, CONTENT_TYPES } = require_constants();
@@ -1645,7 +1640,7 @@ ${aliasLines}
         const isTimedCall = TIMED_CALL_TYPES.includes(semanticType);
         const contentText = String(entry.content || "").trim();
         const textWords = contentText ? stripVariantSelectors2(contentText).split(/\s+/).filter(Boolean).length : 0;
-        const callSeconds = isTimedCall ? durationToSeconds(entry.duration) : 0;
+        const callSeconds = isTimedCall ? durationToSeconds2(entry.duration) : 0;
         return {
           sender: entry.sender,
           date: Number.isFinite(entry.ts) ? new Date(entry.ts) : /* @__PURE__ */ new Date(NaN),
@@ -2843,6 +2838,7 @@ ${aliasLines}
             isCall: e.isCall,
             isImage: e.isImage,
             callMinutes: e.callMinutes,
+            callSeconds: e.callSeconds,
             wordCount: e.wordCount
           }));
           summaryText = (0, import_export_summary.buildSummary)(displayEntries, { useMessageLabel: true });
@@ -2970,6 +2966,7 @@ ${aliasLines}
             isCall,
             isImage,
             callMinutes,
+            callSeconds: duration ? (0, import_export_formatter.durationToSeconds)(duration) : 0,
             wordCount: isCall || isImage ? 0 : text ? (0, import_string_utils.stripVariantSelectors)(text).split(/\s+/).filter(Boolean).length : 0,
             line: finalLine,
             exportEntry: lineEntry,
@@ -3127,6 +3124,7 @@ ${aliasLines}
                 isCall: e.isCall,
                 isImage: e.isImage,
                 callMinutes: e.callMinutes,
+                callSeconds: e.callSeconds,
                 wordCount: e.wordCount,
                 repliedTo: e.repliedTo,
                 repliedType: e.repliedType

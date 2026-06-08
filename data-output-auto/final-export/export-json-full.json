@@ -1,5 +1,5 @@
 {
-  "exportDate": "2026-06-08T17:31:17.043Z",
+  "exportDate": "2026-06-08T18:19:22.920Z",
   "exportOptions": {
     "includeContent": true,
     "includeLength": true,
@@ -9,13 +9,27 @@
     "lazyLoad": false
   },
   "conversation": "Chat Export",
-  "messageCount": 25,
+  "messageCount": 26,
   "participants": [
     "ABC",
     "Youghurt",
     "Barnabas"
   ],
   "messages": [
+    {
+      "date": "2026-01-19 08:43",
+      "sender": "ABC",
+      "type": "text",
+      "text": "Good Morning Karoli! How are you? It's been long time! How much would it cost me to ask you to do a healthy check on photomeet.reviews? We are going to launch soon and would like to start putting things together.",
+      "duration": "",
+      "durationSeconds": 0,
+      "isCall": false,
+      "isImage": false,
+      "contentLength": 212,
+      "wordCount": 40,
+      "repliedTo": null,
+      "repliedType": null
+    },
     {
       "date": "2026-04-12 13:23",
       "sender": "Youghurt",

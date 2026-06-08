@@ -3,7 +3,7 @@ import { getContentMeta, stripTrackingParams } from '../../shared/message-metada
 import { normalizeDuration } from '../../shared/duration-utils.js';
 import { parseAriaLabel, normalizeDateToIso, extractNameAfterBy, isValidSender } from '../../shared/aria-label-parser/index.js';
 import { buildSummary } from '../../shared/export-summary.js';
-import { formatExportHeader, formatLine, durationToMinutes } from '../../shared/export-formatter.js';
+import { formatExportHeader, formatLine, durationToMinutes, durationToSeconds } from '../../shared/export-formatter.js';
 import {
   parseLocalDate,
   resolveRelativeDate,
@@ -850,7 +850,7 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
         const displayEntries = filtered.map((e) => ({
           ts: e.ts, sender: e.rawSender, date: new Date(e.ts),
           type: e.semanticType, isCall: e.isCall, isImage: e.isImage,
-          callMinutes: e.callMinutes, wordCount: e.wordCount,
+          callMinutes: e.callMinutes, callSeconds: e.callSeconds, wordCount: e.wordCount,
         }));
         summaryText = buildSummary(displayEntries, { useMessageLabel: true });
         messages = filtered.map((e) => {
@@ -1001,6 +1001,7 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
           isCall,
           isImage,
           callMinutes,
+          callSeconds: duration ? durationToSeconds(duration) : 0,
           wordCount: isCall || isImage ? 0 : (text ? stripVariantSelectors(text).split(/\s+/).filter(Boolean).length : 0),
           line: finalLine,
           exportEntry: lineEntry,
@@ -1189,6 +1190,7 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
               isCall: e.isCall,
               isImage: e.isImage,
               callMinutes: e.callMinutes,
+              callSeconds: e.callSeconds,
               wordCount: e.wordCount,
               repliedTo: e.repliedTo,
               repliedType: e.repliedType,

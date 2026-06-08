@@ -5,7 +5,7 @@ function formatDayKey(date) {
 
 const { summaryConcept } = require('./export-config.json');
 const { TIMED_CALL_TYPES, MISSED_CALL_TYPES } = require('./constants');
-const { formatDurationSeconds } = require('./duration-utils');
+const { formatDurationSeconds, durationToSeconds } = require('./duration-utils');
 const TOTAL_SUMMARY_TITLE = summaryConcept.totalSummaryTitle || 'Total Summary';
 const ROUGH_PREFIX = summaryConcept.roughPrefix || '~';
 const PERSON_SUMMARY_SUFFIX = summaryConcept.personSummarySuffix || ' Summary';
@@ -69,9 +69,9 @@ function buildSummaryData(entries = [], options = {}) {
     data.days.add(dayKey);
     if (isCountedCall(entry)) {
       data.calls += 1;
-      data.callSeconds += Number(entry.callSeconds || 0);
+      data.callSeconds += Number(entry.callSeconds || 0) + (entry.duration ? durationToSeconds(entry.duration) : 0);
       totalCalls += 1;
-      totalCallSeconds += Number(entry.callSeconds || 0);
+      totalCallSeconds += Number(entry.callSeconds || 0) + (entry.duration ? durationToSeconds(entry.duration) : 0);
     }
     if (entry.imageCount) {
       data.images += Number(entry.imageCount || 0);

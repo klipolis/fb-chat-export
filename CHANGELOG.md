@@ -82,6 +82,7 @@ Changelog entries should describe active changes in direct present-tense stateme
 - The voice-note message type uses the name `voice-note` across all rule, preview, and export paths.
 
 ### Fixed
+- Browser summary call durations remain consistent after clearing cached aliases
 - Aria-label parser extracts sender name after "by" in labels like "At 10:15 AM, sent by John: hello"
 - Date prefix detection truncates at " by " boundary to avoid treating "by" text as part of the date
 - Comma-iteration in aria-label parser skips date candidates with more than 6 words

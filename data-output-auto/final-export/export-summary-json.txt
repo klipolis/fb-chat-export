@@ -1,26 +1,26 @@
 {
   "total": {
     "title": "Total Summary",
-    "messages": 25,
+    "messages": 26,
     "days": 1,
     "rough": {
-      "text": 22,
+      "text": 23,
       "words": 0,
-      "images": 21,
+      "images": 22,
       "calls": 2,
-      "callSeconds": 0
+      "callSeconds": 1100
     }
   },
   "participants": [
     {
       "title": "ABC Summary",
       "name": "ABC",
-      "messages": 15,
+      "messages": 16,
       "days": 1,
       "rough": {
-        "text": 14,
+        "text": 15,
         "words": 0,
-        "images": 14,
+        "images": 15,
         "calls": 0,
         "callSeconds": 0
       }
