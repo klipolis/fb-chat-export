@@ -43,6 +43,19 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
   document.head.appendChild(style);
   'use strict';
 
+  function getDownloadLabel(state) {
+    const labels = {
+      initial: 'Download .txt file',
+      ready: 'Download .txt file',
+      saved: 'Downloaded',
+      again: 'Save again',
+    };
+    return labels[state] || 'Download .txt file';
+  }
+
+  let previewContentData = null;
+  let previewExpanded = false;
+
   const cleanupPending = sessionStorage.getItem('cleanupPending');
   if (cleanupPending === 'true') {
     sessionStorage.removeItem('exportFrom');
@@ -99,7 +112,7 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
   const noticeActions = document.createElement('div');
   noticeActions.style.cssText = 'margin-top: 4px;';
 
-  const downloadBtn = createButton('Download .txt', '#27ae60');
+  const downloadBtn = createButton(getDownloadLabel('initial'), '#27ae60');
   downloadBtn.style.cssText += ' display: none; margin-right: 8px; vertical-align: middle;';
 
   const copyBtn = createButton('Copy', '#555');
@@ -107,7 +120,7 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
   copyBtn.style.cssText += ' display: none; margin-right: 8px; vertical-align: middle;';
 
   const saveAgainLink = document.createElement('a');
-  saveAgainLink.textContent = 'Save again';
+  saveAgainLink.textContent = getDownloadLabel('again');
   saveAgainLink.href = '#';
   saveAgainLink.style.cssText = 'display: none; font-size: 11px; color: #27ae60; vertical-align: middle;';
 
@@ -168,7 +181,15 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
   let persistedAliases = {};
   try { const p = JSON.parse(localStorage.getItem('chatExportAliases') || '{}'); if (typeof p === 'object' && !Array.isArray(p)) persistedAliases = p; } catch (_) { /* ignore */ }
   const aliasDefaults = { ...builtinAliases, ...persistedAliases };
-  const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk, addRow: addAliasRow, showCollisions, caseInsensitiveChk } = createAliasRows(aliasDefaults);
+  const { wrap: aliasWrap, input: aliasChk, getAliasMap, validateAll: validateAliasRows, setDetectedNames, groupChatChk, addRow: addAliasRow, showCollisions, caseInsensitiveChk, updateYouAlias } = createAliasRows(aliasDefaults);
+  try {
+    const saved = localStorage.getItem('chatExportCaseInsensitive');
+    if (saved === 'true') caseInsensitiveChk.checked = true;
+    else if (saved === 'false') caseInsensitiveChk.checked = false;
+  } catch (_) { /* ignore */ }
+  caseInsensitiveChk.addEventListener('change', () => {
+    localStorage.setItem('chatExportCaseInsensitive', String(caseInsensitiveChk.checked));
+  });
   const { wrap: summaryWrap, input: summaryChk } = createCheckboxToggle('Summary');
   const { wrap: includeContentWrap, input: includeContentChk } = createCheckboxToggle('Content');
   const { wrap: rawLinkWrap, input: rawLinkChk } = createCheckboxToggle('Raw link');
@@ -249,9 +270,31 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
     });
     fileInput.click();
   });
+  const aliasPreviewLink = createLinkAction('Preview aliases', () => {
+    if (!exportCache || !exportCache.rawEntries || exportCache.rawEntries.length === 0) {
+      aliasPreviewEl.textContent = 'Scan first — no messages available.';
+      aliasPreviewWrap.style.display = '';
+      return;
+    }
+    const aliasMap = getAliasMap();
+    const lines = exportCache.rawEntries.slice(0, 5).map((entry) => {
+      const aliasedSender = lookupAlias(entry.rawSender, aliasMap);
+      const aliasedContent = applyAliasToText(entry.text, aliasMap, entry.rawSender);
+      const truncated = aliasedContent.length > 80 ? aliasedContent.slice(0, 80) + '…' : aliasedContent;
+      return `[${entry.rawSender}] → [${aliasedSender}]: ${truncated}`;
+    });
+    aliasPreviewEl.textContent = lines.join('\n');
+    aliasPreviewWrap.style.display = '';
+  });
   aliasActions.appendChild(exportAliasLink);
   aliasActions.appendChild(importAliasLink);
-  aliasWrap.appendChild(aliasActions);
+  aliasActions.appendChild(aliasPreviewLink);
+  const aliasPreviewWrap = document.createElement('div');
+  aliasPreviewWrap.style.cssText = 'display: none; margin-top: 6px; border: 1px solid #e0e0e0; border-radius: 4px; padding: 6px 8px; font-size: 11px; line-height: 1.4; background: #fafafa;';
+  const aliasPreviewEl = document.createElement('pre');
+  aliasPreviewEl.style.cssText = 'margin: 0; white-space: pre-wrap; word-break: break-all;';
+  aliasPreviewWrap.appendChild(aliasPreviewEl);
+  aliasWrap.appendChild(aliasPreviewWrap);
   rightCol.appendChild(summaryWrap);
   rightCol.appendChild(includeContentWrap);
   rightCol.appendChild(rawLinkWrap);
@@ -326,6 +369,32 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
   previewEl.style.cssText = 'max-height: 160px; overflow-y: auto; font-size: 11px; line-height: 1.4; background: #f5f5f5; padding: 6px 8px; margin: 0; border-radius: 4px; border: 1px solid #e0e0e0; white-space: pre-wrap; word-break: break-all;';
   previewWrap.appendChild(previewEl);
   panel.appendChild(previewWrap);
+
+  const previewToggleLink = createLinkAction('Show preview', () => {
+    previewExpanded = !previewExpanded;
+    if (previewExpanded) {
+      if (previewContentData) {
+        const { headerText, summaryText, messages } = previewContentData;
+        let content = '';
+        if (headerText) content += headerText;
+        if (summaryText) content += summaryText;
+        const shown = messages.slice(0, 20);
+        content += shown.join('');
+        if (messages.length > 20) {
+          content += '\n... (truncated)';
+        }
+        previewEl.textContent = content;
+      }
+      previewWrap.style.display = '';
+      previewToggleLink.textContent = 'Hide preview';
+    } else {
+      previewWrap.style.display = 'none';
+      previewToggleLink.textContent = 'Show preview';
+    }
+  });
+  previewToggleLink.style.display = 'none';
+  previewToggleLink.style.cssText += ' padding: 4px 10px; font-size: 12px;';
+  panel.insertBefore(previewToggleLink, previewWrap);
 
   const termsNote = document.createElement('div');
   termsNote.style.cssText = 'padding: 6px 10px 10px; font-size: 11px; color: #777;';
@@ -483,6 +552,10 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
     saveAgainLink.style.display = 'none';
     saveAgainLink.onclick = null;
     previewWrap.style.display = 'none';
+    previewContentData = null;
+    previewExpanded = false;
+    previewToggleLink.style.display = 'none';
+    previewToggleLink.textContent = 'Show preview';
     progressBar.style.display = 'none';
     setScanState('idle');
   }
@@ -501,7 +574,7 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
     downloadBtn.removeAttribute('aria-disabled');
     downloadBtn.style.opacity = '';
     downloadBtn.style.cursor = '';
-    downloadBtn.textContent = 'Download';
+    downloadBtn.textContent = getDownloadLabel('ready');
     copyBtn.style.display = '';
     copyBtn.onclick = null;
     saveAgainLink.style.display = 'none';
@@ -516,7 +589,7 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
       downloadBtn.setAttribute('aria-disabled', 'true');
       downloadBtn.style.opacity = '0.5';
       downloadBtn.style.cursor = 'not-allowed';
-      downloadBtn.textContent = 'Downloaded';
+      downloadBtn.textContent = getDownloadLabel('saved');
       saveAgainLink.style.display = '';
       saveAgainLink.onclick = (e) => {
         e.preventDefault();
@@ -535,9 +608,14 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
       });
     };
 
+    previewContentData = {
+      headerText: info.headerText || '',
+      summaryText: info.summaryText || '',
+      messages: info.messages,
+    };
     if (info.messages.length > 0) {
-      previewEl.textContent = info.messages.slice(0, 20).join('');
-      previewWrap.style.display = '';
+      previewToggleLink.style.display = '';
+      previewWrap.style.display = 'none';
     }
 
     downloadBtn.addEventListener('click', downloadHandler);
@@ -736,7 +814,9 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
       const downloadUrl = URL.createObjectURL(blob);
       localStorage.setItem('chatExportAliases', JSON.stringify(aliasChk.checked ? getAliasMap() : {}));
       setupDownload(downloadUrl, {
-        doneLabel: 'Done',
+        doneLabel: 'Export ready \u2013 tap to expand',
+        headerText,
+        summaryText,
         messages,
         exportText: headerText + summaryText + messages.join(''),
         personName,
@@ -946,6 +1026,18 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
           }
 
           if (aliasChk.checked) {
+            const aliasMap = getAliasMap();
+            if (aliasMap.any && detectedSenders.size > 0) {
+              const senderCounts = {};
+              Array.from(collected.values()).forEach((entry) => {
+                const s = entry.rawSender;
+                senderCounts[s] = (senderCounts[s] || 0) + 1;
+              });
+              const sortedSenders = Object.keys(senderCounts).sort((a, b) => senderCounts[b] - senderCounts[a]);
+              if (sortedSenders.length > 0) {
+                updateYouAlias(sortedSenders[0]);
+              }
+            }
             showCollisions(detectAliasCollisions(getAliasMap()));
           }
 
@@ -995,7 +1087,7 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
             fromDate: fromInput.value.trim() || '',
             toDate: toInput.value.trim() || '',
           });
-          const doneLabel = stopRequested ? 'Stopped' : 'Done';
+          const doneLabel = stopRequested ? 'Stopped' : 'Export ready \u2013 tap to expand';
 
           exportCache = {
             timestamp: Date.now(),
@@ -1037,6 +1129,8 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
             localStorage.setItem('chatExportAliases', JSON.stringify(aliasChk.checked ? getAliasMap() : {}));
             setupDownload(URL.createObjectURL(blob), {
               doneLabel,
+              headerText,
+              summaryText,
               messages,
               exportText: headerText + summaryText + messages.join(''),
               personName: displayPersonName,
@@ -1049,6 +1143,8 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
             const reader = new FileReader();
             reader.onload = (e) => setupDownload(e.target.result, {
               doneLabel,
+              headerText,
+              summaryText,
               messages,
               exportText: headerText + summaryText + messages.join(''),
               personName: displayPersonName,

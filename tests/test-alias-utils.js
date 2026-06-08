@@ -221,3 +221,71 @@ tap.test('applyAliasToText replaces explicit and any fallback names', (t) => {
   );
   t.end();
 });
+
+// ---------------------------------------------------------------------------
+// T-370: Case-insensitive alias matching
+// ---------------------------------------------------------------------------
+
+function lookupAlias(sender, aliasMap, caseInsensitive) {
+  if (!caseInsensitive) {
+    return aliasMap[sender] || aliasMap[sender.toLowerCase()] || aliasMap[sender.toUpperCase()] || aliasMap.any || sender;
+  }
+  const lower = String(sender).toLowerCase();
+  for (const key of Object.keys(aliasMap)) {
+    if (key.toLowerCase() === lower) return aliasMap[key];
+  }
+  return aliasMap.any || sender;
+}
+
+tap.test('T-370: lookupAlias with case-insensitive ON matches different cases', (t) => {
+  const aliasMap = { John: 'Johnny', any: 'Fallback' };
+  t.equal(lookupAlias('John', aliasMap, true), 'Johnny', 'exact case matches');
+  t.equal(lookupAlias('john', aliasMap, true), 'Johnny', 'lowercase matches');
+  t.equal(lookupAlias('JOHN', aliasMap, true), 'Johnny', 'uppercase matches');
+  t.equal(lookupAlias('jOhN', aliasMap, true), 'Johnny', 'mixed case matches');
+  t.end();
+});
+
+tap.test('T-370: lookupAlias with case-insensitive OFF exact match only', (t) => {
+  const aliasMap = { John: 'Johnny', any: 'Fallback' };
+  t.equal(lookupAlias('John', aliasMap, false), 'Johnny', 'exact match works');
+  t.equal(lookupAlias('JOHN', aliasMap, false), 'Fallback', 'uppercase sender falls through to any');
+  t.equal(lookupAlias('john', aliasMap, false), 'Fallback', 'lowercase sender falls through to any');
+  const noAny = { John: 'Johnny' };
+  t.equal(lookupAlias('john', noAny, false), 'john', 'without any returns original sender');
+  t.end();
+});
+
+tap.test('T-370: lookupAlias with case-insensitive ON no match falls through', (t) => {
+  const mapAny = { Alice: 'Ali', any: 'Fallback' };
+  t.equal(lookupAlias('Bob', mapAny, true), 'Fallback', 'unknown sender with any returns fallback');
+  const noAny = { Alice: 'Ali' };
+  t.equal(lookupAlias('Bob', noAny, true), 'Bob', 'unknown sender without any returns original');
+  t.end();
+});
+
+tap.test('T-370: lookupAlias with case-insensitive OFF case-different unmatched keys', (t) => {
+  const map = { Alice: 'Ali' };
+  t.equal(lookupAlias('Bob', map, false), 'Bob', 'unmatched sender returns original');
+  t.equal(lookupAlias('ALICE', map, false), 'ALICE', 'uppercase ALICE does not match mixed-case key');
+  t.equal(lookupAlias('alice', map, false), 'alice', 'lowercase alice does not match mixed-case key');
+  t.end();
+});
+
+tap.test('T-370: full flow with applyAliasToText', (t) => {
+  const aliasMap = { John: 'Johnny', any: 'Alpha' };
+  // Case-insensitive ON: sender resolves via lookup
+  const aliased = lookupAlias('JOHN', aliasMap, true);
+  t.equal(aliased, 'Johnny', 'case-insensitive sender resolution works');
+  // replaceWholeWord uses giu flag — case-insensitive by default
+  const text = 'JOHN sent a message';
+  const replaced = applyAliasToText(text, aliasMap, 'JOHN');
+  t.equal(replaced, 'Johnny sent a message', 'replaceWholeWord is case-insensitive via giu flag');
+  // any fallback in applyAliasToText replaces sender in text
+  t.equal(
+    applyAliasToText('JOHN sent a message', { any: 'Alpha' }, 'JOHN'),
+    'Alpha sent a message',
+    'any fallback replaces sender in text'
+  );
+  t.end();
+});

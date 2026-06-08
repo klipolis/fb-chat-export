@@ -117,7 +117,7 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
   wrap.appendChild(collisionWarning);
 
   const header = document.createElement('div');
-  header.style.cssText = 'display: flex; align-items: center; gap: 6px; color: #555; font-size: 12px;';
+  header.className = 'pe-flex-row pe-label';
 
   const checkbox = document.createElement('input');
   checkbox.type = 'checkbox';
@@ -131,7 +131,8 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
   header.appendChild(label);
 
   const rows = document.createElement('div');
-  rows.style.cssText = 'display: flex; flex-direction: column; gap: 4px; padding-left: 22px;';
+  rows.className = 'pe-flex-col';
+  rows.style.cssText += 'gap:4px;padding-left:22px;';
 
   const addButton = document.createElement('button');
   addButton.type = 'button';
@@ -146,8 +147,7 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
     input.placeholder = value;
     input.setAttribute('aria-label', ariaLabel);
     input.disabled = Boolean(disabled);
-    input.style.cssText =
-      'border: 1px solid #ccc; border-radius: 4px; padding: 4px 6px; font-size: 12px; width: 100px; outline: none;';
+    input.className = 'pe-input pe-input-sm';
     return input;
   };
 
@@ -279,8 +279,8 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
   };
 
   const groupChatWrap = document.createElement('label');
-  groupChatWrap.style.cssText =
-    'display: flex; align-items: center; gap: 6px; color: #888; font-size: 11px; cursor: pointer; padding-left: 22px; margin-top: 4px;';
+  groupChatWrap.className = 'pe-flex-row';
+  groupChatWrap.style.cssText = 'color:#888;font-size:11px;cursor:pointer;padding-left:22px;margin-top:4px;';
   groupChatWrap.title = 'When checked, new names detected during scan are added as alias rows';
   const groupChatChk = document.createElement('input');
   groupChatChk.type = 'checkbox';
@@ -310,6 +310,19 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
   wrap.appendChild(groupChatWrap);
   wrap.appendChild(caseInsensitiveWrap);
 
+  const updateYouAlias = (detectedName) => {
+    const youRow = Array.from(rows.querySelectorAll('.alias-row')).find((row) => {
+      const inputs = row.querySelectorAll('input[type="text"]');
+      return inputs.length >= 2 && inputs[0].value.trim() === 'You';
+    });
+    if (youRow) {
+      const inputs = youRow.querySelectorAll('input[type="text"]');
+      if (inputs.length >= 2) {
+        inputs[1].value = detectedName;
+      }
+    }
+  };
+
   const showCollisions = (collisions) => {
     if (!collisions || collisions.length === 0) {
       collisionWarning.style.display = 'none';
@@ -319,7 +332,7 @@ export function createAliasRows(initialRows = { You: 'Youghurt', any: 'Alpha' })
     collisionWarning.style.display = 'block';
   };
 
-  return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk, addRow, showCollisions, caseInsensitiveChk };
+  return { wrap, input: checkbox, getAliasMap, validateAll, setDetectedNames, groupChatChk, addRow, showCollisions, caseInsensitiveChk, updateYouAlias };
 }
 
 export function createLinkAction(labelText, onClick) {

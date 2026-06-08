@@ -4,6 +4,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Build / CI
 
+- T-348. Add CI workflow that runs `pnpm run lint:docs` only on docs/ and markdown file changes — reduces CI time for code-only commits
 - T-279. Add graceful worker pool shutdown on SIGINT/SIGTERM — terminate active workers instead of leaving orphans
 - T-267. Add stale export file cleanup for final-export — remove .txt outputs when input files are deleted
 - T-268. Accept build options via CLI arguments (--raw, --reference-date) instead of environment variables
@@ -28,6 +29,8 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-233. Created .github/dependabot.yml with weekly schedule for npm and GitHub Actions dependencies (503d098)
 - T-243. Added data-output-auto/build-cache.json to .gitignore — generated cache state that should not be tracked (252b531)
 - T-255. Added dist/app.js bundle syntax validation using `node --check` before release (cccf06a)
+- T-325. Add unit test for reuseMode 'narrower' date filtering — verify earlier messages are excluded and later messages are included when shrinking the date range (ef2887c)
+- T-326. Add test for cache invalidation when dates expand beyond the cached window — verifies reuse is rejected and a full rescan is triggered (ef2887c)
 
 ## Documentation
 
@@ -96,6 +99,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-297. Add developer guide section on adding a new message type end-to-end (docs/developer-guide/adding-a-new-message-type.md)
 - T-275. Add developer guide section for worker pool architecture, error isolation, and graceful shutdown
 - T-102. Export format docs added to README (9ad105b)
+- T-327. Document the incremental append cleanup strategy — when existing cache entries are preserved and new messages are appended instead of rebuilding from scratch (ef2887c)
 - T-124. TXT export header format, option state, and alias map documented in user guide (5727dfb)
 - T-125. Developer docs reviewed for shared config and server config (5727dfb)
 - T-128. Documented message type classification and data validation rules in developer guide (5727dfb)
@@ -147,6 +151,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-220. Consolidated duration normalization into src/shared/duration-utils.js, removed duplicate definitions from four files (0d01301)
 - T-221. Moved stripAttributes and normalizeTagStrings from optimize-html.js into src/shared/html-utils.js (0d01301)
 - T-367. Replace common inline style patterns (flex-box, label, input, button, link, checkbox) with shared CSS classes — reduces ~50 style.cssText assignments across ui.js and index.js
+- T-328. Extract reuseMode string constants ('exact', 'alias-only', 'narrower') into a shared constants module — eliminates duplicated string literals in index.js and any future reuse-site (ef2887c)
 
 ## Schema & config
 
@@ -161,6 +166,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-177. Added export-summary-combined.txt and export-summary-detailed.txt to export-config.json and generated-txt-schema.json (b70ad2f)
 - T-178. Fixed roughWordsLine pattern and roughTextLine format; added skipBodyValidation flag; extended totalLine to accept posts (b70ad2f)
 - T-289. Reuse cached exports when shrinking date ranges; expanded dates trigger fresh DOM scan for new messages
+- T-329. Add schema rule that export-json-full respects includeContent/includeLength options when they are disabled — null content and zero/omitted length fields must validate correctly (ef2887c)
 
 ## Export format
 
@@ -179,6 +185,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-159. Added export-raw-date.txt variant including raw aria-label date text in parentheses alongside normalized date (d8bec65)
 - T-176. Wired selected date range into browser export filename (d8bec65)
 - T-300. Added full per-message JSON export variant (export-json-full) with all message fields as structured data for programmatic consumption
+- T-330. Add an export-options snapshot block to export-json-full so consumers can see which flags produced the output without parsing the request URL (ef2887c)
 
 ## Message type detection
 
@@ -192,6 +199,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-57. Added dedicated video-link type for plain video platform URLs (82191b6)
 - T-133. Stop type detector from misclassifying reaction, sticker, gif, or poll messages by filename keywords (c72ef35)
 - T-134. Fix gap where some link messages return no parser data, showing empty preview (cc7b8a3)
+- T-331. Add a message-type rule to distinguish pinned-location messages from generic links — they use link-like aria-labels but should be classified as a distinct type for accurate count summaries (ef2887c)
 
 ## Content extraction
 
@@ -203,6 +211,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-110. Detects generic voice-note labels as fallback content, skips media-UI segment text (3e31f9d)
 - T-111. Preserve emoji reaction content in preview data - emoji characters stored in data_preview.content (27da1bb)
 - T-173. Fixed hasLink detection in frontend to match server behavior: bare word link no longer triggers classification (82191b6)
+- T-332. Strip emoji variant selectors (skin-tone modifiers) only from length-calculation inputs, not from exported content — preserves skin-tone data in the export while keeping word counts consistent (ef2887c)
 
 ## Alias / Anonymisation
 
@@ -224,6 +233,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-143. Make tests expect image as the label for all image messages, not raw image-2 or image-3 variants (152b844)
 - T-282. Full-name img alt text replaced entirely with alias instead of only the first name
 - T-288. Reuse the previous export when rescanning the same chat without date changes; alias-only changes reuse the cached export, no DOM re-scan needed
+- T-333. Warn when two aliases map to the same output name — silent collisions in applyAliasToText collapse distinct senders into one identity without user awareness (ef2887c)
 
 ## Frontend
 
@@ -241,6 +251,11 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-306. Add Escape key to stop an active scan
 - T-307. Show estimated time remaining during scan based on scroll rate
 - T-308. Add auto-scan checkbox option that starts scan on panel open
+
+- T-334. Add a visual cache-hit indicator (colored dot or badge) next to the status bar — lets users know the export was reused without parsing the text message (ef2887c)
+- T-335. Persist exportOptions (includeContent, includeLength, aliasChk, messageTypeFilter) in sessionStorage alongside the date range — restoring a session restores every visual preference (ef2887c)
+- T-355. Add tooltip or aria-label to the Copy button showing "Copy text result" — matches the download label style and clarifies clipboard action (ef2887c)
+- T-356. Add aria-expanded and aria-controls to the export textbox toggle so screen readers announce the collapsed/expanded state (ef2887c)
 
 - T-68. Date parser accepts slash-separated date formats (a87ec74)
 - T-69. Scan completion displays elapsed time (a87ec74)
@@ -274,6 +289,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-290. Do not auto-cleanup exports that have not been downloaded, because overnight scans are common
 - T-366. Move case-insensitive alias checkbox from option column into alias panel — groups matching controls with alias configuration
 - T-368. Remove auto-scan checkbox and auto-trigger from browser export panel — users always start scans explicitly
+- T-336. Add a configurable cache TTL for browser export entries (default 24 hours) — prevents overnight scans from serving stale exports when the chat has changed (ef2887c)
 
 ## Process
 
@@ -284,3 +300,4 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-235. Create contributing guidelines that clearly explain how to submit bug fixes, features, and improvements (0205824)
 - T-236. Add issue templates for bug reports, feature requests, and questions to standardize issue reporting (0205824)
 - T-237. Implement semantic versioning automation that detects breaking changes, features, and fixes to suggest version bumps (0205824)
+- T-337. Update the pre-commit hook to run lint:docs only when docs/ files are staged — avoids unnecessary markdownlint passes on code-only commits (ef2887c)

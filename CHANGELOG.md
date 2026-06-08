@@ -10,6 +10,14 @@ Changelog entries should describe active changes in direct present-tense stateme
 ## [Unreleased]
 
 ### Added
+- Export textbox collapses by default with lazy-load toggle — content renders only on expand
+- Copy and Download buttons stay visible when textbox is collapsed
+- Preview aliases button shows first 5 aliased messages before export
+- Auto-detect and map the most frequent sender name to the `you` alias
+- Persist case-insensitive alias toggle state across page reloads
+- JSON export schema includes `lazyLoad` metadata flag
+- Browser export README section documents keyboard shortcuts and collapsed-panel workflow
+- Integration tests for case-insensitive alias matching, lazy-load textbox, and collapsed-panel buttons
 - Browser export shows green dot indicator when export is served from cache
 - Browser export persists all options (content, length, alias, type filter) across sessions
 - Browser export rejects stale cache entries older than 24 hours

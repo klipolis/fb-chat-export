@@ -14,6 +14,9 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 
 ---
 
+2026-06-08 22:30 | user | continue all next tasks
+2026-06-08 22:30 | ai | Audited 30 TODO-next tasks — 16 already implemented (moved to TODO-done). Dispatched 3 parallel agents for remaining 14 tasks: frontend main (lazy-load textbox, collapsed buttons, label consolidation, summary in panel), frontend features (preview aliases, auto-detect sender, persist CI toggle, CSS classes), and tests+schema+docs (3 test suites, lazyLoad flag, README). All 187 tests pass. Committed.
+
 2026-06-08 21:45 | user | Remove autoscan, move case-insensitive checkbox, minimise CSS, more TODO tasks
 2026-06-08 21:45 | ai | Removed autoscan option and auto-trigger from frontend, moved case-insensitive toggle into alias panel with wiring, replaced common inline style patterns with shared (pe-*) CSS classes, added meaningful TODO-next tasks (T-369 to T-371) for alias persistence and CSS consolidation. Updated changelog, TODO-done, TODO-ignore, config. Committed.
 

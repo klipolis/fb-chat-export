@@ -54,6 +54,7 @@ function buildFullJsonExport(entries = [], options = {}) {
       includeSummary,
       includeParticipants,
       includeMessageCount,
+      lazyLoad: false,
     },
     conversation,
     messageCount: messages.length,

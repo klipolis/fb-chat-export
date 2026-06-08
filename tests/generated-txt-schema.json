@@ -82,13 +82,14 @@
           "exportOptions": {
             "type": "object",
             "description": "Snapshot of export options used to generate this output",
-            "required": ["includeContent", "includeLength", "includeSummary", "includeParticipants", "includeMessageCount"],
+            "required": ["includeContent", "includeLength", "includeSummary", "includeParticipants", "includeMessageCount", "lazyLoad"],
             "properties": {
               "includeContent": { "type": "boolean" },
               "includeLength": { "type": "boolean" },
               "includeSummary": { "type": "boolean" },
               "includeParticipants": { "type": "boolean" },
-              "includeMessageCount": { "type": "boolean" }
+              "includeMessageCount": { "type": "boolean" },
+              "lazyLoad": { "type": "boolean", "description": "Content is loaded on demand when user expands" }
             }
           },
           "conversation": { "type": "string" },

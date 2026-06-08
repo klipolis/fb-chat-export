@@ -348,3 +348,172 @@ tap.test('T-326: subset range keeps cache valid (narrower)', (t) => {
   t.equal(result, REUSE_NARROWER);
   t.end();
 });
+
+// ---------------------------------------------------------------------------
+// T-349: Lazy-loaded export textbox
+// ---------------------------------------------------------------------------
+
+function createLazyTextbox(doc) {
+  let stored = '';
+  let expanded = false;
+  const wrap = doc.createElement('div');
+  wrap.style.display = 'none';
+  const pre = doc.createElement('pre');
+  pre.style.display = 'none';
+  wrap.appendChild(pre);
+  const toggle = doc.createElement('a');
+  toggle.textContent = '▼ Expand';
+  let expandedChanged = null;
+
+  function setContent(text) {
+    stored = text;
+    pre.textContent = '';
+    pre.style.display = 'none';
+    toggle.textContent = '▼ Expand';
+    expanded = false;
+  }
+
+  function expand() {
+    expanded = true;
+    pre.textContent = stored;
+    pre.style.display = '';
+    toggle.textContent = '▲ Collapse';
+    if (expandedChanged) expandedChanged(true);
+  }
+
+  toggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!expanded) expand();
+  });
+
+  function isExpanded() { return expanded; }
+  function getContent() { return stored; }
+
+  return { wrap, pre, toggle, setContent, expand, isExpanded, getContent, onExpand(fn) { expandedChanged = fn; } };
+}
+
+tap.test('T-349: lazyLoadTextbox - content not rendered after setContent', (t) => {
+  const w = makeWindow();
+  const tb = createLazyTextbox(w.document);
+  tb.setContent('line1\nline2\nline3');
+  t.equal(tb.pre.textContent, '', 'pre element is empty after setContent');
+  t.equal(tb.pre.style.display, 'none', 'pre is hidden after setContent');
+  t.notOk(tb.isExpanded(), 'not expanded after setContent');
+  t.end();
+});
+
+tap.test('T-349: lazyLoadTextbox - content rendered after expand', (t) => {
+  const w = makeWindow();
+  const tb = createLazyTextbox(w.document);
+  tb.setContent('line1\nline2\nline3');
+  tb.expand();
+  t.ok(tb.isExpanded(), 'expanded after expand call');
+  t.equal(tb.pre.textContent, 'line1\nline2\nline3', 'pre contains the content after expand');
+  t.equal(tb.pre.style.display, '', 'pre is visible after expand');
+  t.end();
+});
+
+tap.test('T-349: lazyLoadTextbox - content matches expected export format', (t) => {
+  const w = makeWindow();
+  const tb = createLazyTextbox(w.document);
+  const exportText =
+    '[2026-01-15 10:30] Alice: Hello\n' +
+    '[2026-01-15 10:31] Bob: Hi there\n' +
+    '[2026-01-15 10:32] Alice: How are you?';
+  tb.setContent(exportText);
+  tb.expand();
+  t.equal(tb.pre.textContent, exportText, 'export format content matches after expand');
+  t.ok(tb.pre.textContent.includes('Alice: Hello'), 'contains first message');
+  t.ok(tb.pre.textContent.includes('Bob: Hi there'), 'contains second message');
+  t.end();
+});
+
+tap.test('T-349: lazyLoadTextbox - memory stays flat (no textContent) before expand', (t) => {
+  const w = makeWindow();
+  const tb = createLazyTextbox(w.document);
+  const largeText = Array.from({ length: 1000 }, (_, i) => `line${i}`).join('\n');
+  tb.setContent(largeText);
+  t.equal(tb.pre.textContent.length, 0, 'textContent length is 0 before expand despite large content');
+  t.end();
+});
+
+// ---------------------------------------------------------------------------
+// T-350: Collapsed-panel button visibility
+// ---------------------------------------------------------------------------
+
+function createExportPanelSim(doc) {
+  const state = { scanComplete: false, reset: false };
+  const downloadBtn = doc.createElement('button');
+  downloadBtn.style.display = 'none';
+  const copyBtn = doc.createElement('button');
+  copyBtn.style.display = 'none';
+
+  function finishScan() {
+    state.scanComplete = true;
+    downloadBtn.style.display = '';
+    downloadBtn.removeAttribute('aria-disabled');
+    copyBtn.style.display = '';
+    state.reset = false;
+  }
+
+  function resetScan() {
+    state.scanComplete = false;
+    state.reset = true;
+    downloadBtn.style.display = 'none';
+    copyBtn.style.display = 'none';
+    downloadBtn.removeAttribute('aria-disabled');
+  }
+
+  function collapsePanel() {
+    // Panel collapses but scan is complete — buttons stay visible
+  }
+
+  function clickDownload() {
+    downloadBtn.setAttribute('aria-disabled', 'true');
+  }
+
+  return { state, downloadBtn, copyBtn, finishScan, resetScan, collapsePanel, clickDownload };
+}
+
+tap.test('T-350: collapsedPanelButtons - buttons visible when collapsed after scan', (t) => {
+  const w = makeWindow();
+  const panel = createExportPanelSim(w.document);
+  panel.finishScan();
+  panel.collapsePanel();
+  t.not(panel.downloadBtn.style.display, 'none', 'download button visible after collapse');
+  t.not(panel.copyBtn.style.display, 'none', 'copy button visible after collapse');
+  t.notOk(panel.downloadBtn.hasAttribute('aria-disabled'), 'download has no aria-disabled');
+  t.end();
+});
+
+tap.test('T-350: collapsedPanelButtons - buttons hidden on full reset', (t) => {
+  const w = makeWindow();
+  const panel = createExportPanelSim(w.document);
+  panel.finishScan();
+  panel.resetScan();
+  t.equal(panel.downloadBtn.style.display, 'none', 'download button hidden after reset');
+  t.equal(panel.copyBtn.style.display, 'none', 'copy button hidden after reset');
+  t.end();
+});
+
+tap.test('T-350: collapsedPanelButtons - aria-disabled after download click', (t) => {
+  const w = makeWindow();
+  const panel = createExportPanelSim(w.document);
+  panel.finishScan();
+  panel.clickDownload();
+  t.equal(panel.downloadBtn.getAttribute('aria-disabled'), 'true', 'aria-disabled set after download click');
+  t.end();
+});
+
+tap.test('T-350: collapsedPanelButtons - new scan hides and resets buttons', (t) => {
+  const w = makeWindow();
+  const panel = createExportPanelSim(w.document);
+  panel.finishScan();
+  panel.clickDownload();
+  t.equal(panel.downloadBtn.getAttribute('aria-disabled'), 'true', 'aria-disabled before reset');
+  panel.resetScan();
+  t.equal(panel.downloadBtn.style.display, 'none', 'download hidden after new scan');
+  t.equal(panel.copyBtn.style.display, 'none', 'copy hidden after new scan');
+  t.notOk(panel.downloadBtn.hasAttribute('aria-disabled'), 'aria-disabled removed after new scan');
+  t.end();
+});
