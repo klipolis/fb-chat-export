@@ -12,6 +12,8 @@ YYYY-MM-DD HH:MM | commit <hash> | commit subject
 
 Do not modify existing entries below. Update `project-logs/interaction-log.md` as well for AI session details.
 
+2026-06-08 22:00 | user | Fix receiver name (Karoli) not recognised in export
+2026-06-08 22:00 | ai | Replaced broken T-359 frequency-based You alias guess with viewer name detection from page DOM. You alias defaults to "you" instead of "Youghurt".
 2026-06-08 21:33 | ai | Restored browser summary call durations to match server by adding callSeconds to browser entries and caches, and unified durationToMinutes() to use durationToSeconds(). Ready to commit.
 
 2026-06-08 21:30 | user | Implement T-325 to T-337 pending tasks

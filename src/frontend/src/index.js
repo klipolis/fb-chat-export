@@ -8,6 +8,7 @@ import {
   parseLocalDate,
   resolveRelativeDate,
   getDisplayPersonName,
+  detectCurrentUserName,
   sanitizeFileNamePart,
   formatExportFileName,
 } from '../../shared/frontend-utils.mjs';
@@ -199,7 +200,7 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
   rightCol.style.cssText = 'gap:8px;min-width:160px;padding-left:10px;';
 
   const { wrap: includeCallsWrap, input: includeCallsChk } = createCheckboxToggle('Calls');
-  const builtinAliases = sharedConfig.aliasNames || { You: 'Youghurt', any: 'Alpha' };
+  const builtinAliases = sharedConfig.aliasNames || { You: 'you', any: 'Alpha' };
   let persistedAliases = {};
   try { const p = JSON.parse(localStorage.getItem('chatExportAliases') || '{}'); if (typeof p === 'object' && !Array.isArray(p)) persistedAliases = p; } catch (_) { /* ignore */ }
   const aliasDefaults = { ...builtinAliases, ...persistedAliases };
@@ -1093,23 +1094,17 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
         ) {
           actionBtn.dataset.scanning = 'false';
 
+          const viewerName = aliasChk.checked ? detectCurrentUserName() : null;
+          if (viewerName && viewerName !== 'You') {
+            detectedSenders.add(viewerName);
+          }
+
           if (aliasChk.checked && groupChatChk.checked) {
-            setDetectedNames(detectedSenders);
+            const defaultAliases = viewerName && viewerName !== 'You' ? { [viewerName]: 'you' } : {};
+            setDetectedNames(detectedSenders, defaultAliases);
           }
 
           if (aliasChk.checked) {
-            const aliasMap = getAliasMap();
-            if (aliasMap.any && detectedSenders.size > 0) {
-              const senderCounts = {};
-              Array.from(collected.values()).forEach((entry) => {
-                const s = entry.rawSender;
-                senderCounts[s] = (senderCounts[s] || 0) + 1;
-              });
-              const sortedSenders = Object.keys(senderCounts).sort((a, b) => senderCounts[b] - senderCounts[a]);
-              if (sortedSenders.length > 0) {
-                updateYouAlias(sortedSenders[0]);
-              }
-            }
             showCollisions(detectAliasCollisions(getAliasMap()));
           }
 

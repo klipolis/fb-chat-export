@@ -1798,6 +1798,31 @@ ${aliasLines}
     const withoutYou = name.replace(/\byou\b/gi, "").replace(/\s{2,}/g, " ").trim();
     return withoutYou || "chat";
   }
+  function detectCurrentUserName() {
+    const candidates = [];
+    const profileImg = document.querySelector('[data-pagelet="LeftSidebar"] img[alt], [role="navigation"] img[alt], [aria-label*="Profile" i] img[alt], [aria-label*="Account" i] img[alt]');
+    if (profileImg) {
+      const alt = (profileImg.getAttribute("alt") || "").trim();
+      if (alt && (0, import_aria_label_parser.isValidSender)(alt)) candidates.push(alt);
+    }
+    const profileEl = document.querySelector('[aria-label*="Profile" i]');
+    if (profileEl) {
+      const label = profileEl.getAttribute("aria-label") || "";
+      const cleaned = label.replace(/^(your\s+)?profile\s*/i, "").trim();
+      if (cleaned && (0, import_aria_label_parser.isValidSender)(cleaned) && cleaned.toLowerCase() !== "you") candidates.push(cleaned);
+    }
+    const pagelet = document.querySelector('[data-pagelet*="Profile" i]');
+    if (pagelet) {
+      const text = pagelet.textContent.trim();
+      if (text && (0, import_aria_label_parser.isValidSender)(text)) candidates.push(text);
+    }
+    const sidebarImgs = document.querySelectorAll('[role="navigation"] img[alt], [data-pagelet="LeftSidebar"] img[alt]');
+    sidebarImgs.forEach((img) => {
+      const alt = (img.getAttribute("alt") || "").trim();
+      if (alt && (0, import_aria_label_parser.isValidSender)(alt) && !candidates.includes(alt)) candidates.push(alt);
+    });
+    return candidates.find((name) => name.toLowerCase() !== "you") || null;
+  }
   function formatExportFileName(mode, { fromDate, toDate } = {}) {
     const conversationName = getConversationName();
     const base = sanitizeFileNamePart(conversationName);
@@ -2234,7 +2259,7 @@ ${aliasLines}
     rightCol.className = "pe-flex-col";
     rightCol.style.cssText = "gap:8px;min-width:160px;padding-left:10px;";
     const { wrap: includeCallsWrap, input: includeCallsChk } = createCheckboxToggle("Calls");
-    const builtinAliases = import_frontend_shared.default.aliasNames || { You: "Youghurt", any: "Alpha" };
+    const builtinAliases = import_frontend_shared.default.aliasNames || { You: "you", any: "Alpha" };
     let persistedAliases = {};
     try {
       const p = JSON.parse(localStorage.getItem("chatExportAliases") || "{}");
@@ -3038,22 +3063,15 @@ ${aliasLines}
           }
           if (stopRequested || reachedFromDate || scroller.scrollTop <= 0 && stableCount >= 3) {
             actionBtn.dataset.scanning = "false";
+            const viewerName = aliasChk.checked ? detectCurrentUserName() : null;
+            if (viewerName && viewerName !== "You") {
+              detectedSenders.add(viewerName);
+            }
             if (aliasChk.checked && groupChatChk.checked) {
-              setDetectedNames(detectedSenders);
+              const defaultAliases = viewerName && viewerName !== "You" ? { [viewerName]: "you" } : {};
+              setDetectedNames(detectedSenders, defaultAliases);
             }
             if (aliasChk.checked) {
-              const aliasMap2 = getAliasMap();
-              if (aliasMap2.any && detectedSenders.size > 0) {
-                const senderCounts = {};
-                Array.from(collected.values()).forEach((entry) => {
-                  const s = entry.rawSender;
-                  senderCounts[s] = (senderCounts[s] || 0) + 1;
-                });
-                const sortedSenders = Object.keys(senderCounts).sort((a, b) => senderCounts[b] - senderCounts[a]);
-                if (sortedSenders.length > 0) {
-                  updateYouAlias(sortedSenders[0]);
-                }
-              }
               showCollisions((0, import_alias_utils.detectAliasCollisions)(getAliasMap()));
             }
             const sortedEntries = Array.from(collected.values()).sort((a, b) => a.ts - b.ts);

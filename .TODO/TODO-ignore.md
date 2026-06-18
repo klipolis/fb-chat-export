@@ -66,3 +66,4 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-232. Add tests for release/publishing workflow to ensure proper artifact generation.
 - T-245. worker_threads availability check fallback — Removed since Node >=26.0.0 is now required; fallback code is no longer needed.
 - T-262. Test for empty input directory — Already validated in build-server.cjs (lines 392-409) and tested as part of build failure handling.
+- T-389. Add pnpm run audit:todos command that maps TODO tasks to open GitHub issues so task provenance stays traceable.

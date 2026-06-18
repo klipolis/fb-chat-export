@@ -9,11 +9,15 @@ Changelog entries should describe active changes in direct present-tense stateme
 
 ## [Unreleased]
 
+### Fixed
+- You alias no longer guesses from the most frequent sender — detects the viewer's real name from the page DOM instead
+
 ### Added
 - Export textbox collapses by default with lazy-load toggle — content renders only on expand
 - Copy and Download buttons stay visible when textbox is collapsed
 - Preview aliases button shows first 5 aliased messages before export
-- Auto-detect and map the most frequent sender name to the `you` alias
+- Self-messages alias default changed from "Youghurt" to "you"
+- Detect current user's real name from the Facebook page and map it to "you"
 - Persist case-insensitive alias toggle state across page reloads
 - JSON export schema includes `lazyLoad` metadata flag
 - Browser export README section documents keyboard shortcuts and collapsed-panel workflow

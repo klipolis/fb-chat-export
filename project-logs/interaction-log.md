@@ -13,7 +13,11 @@ YYYY-MM-DD HH:MM | commit <hash> | commit subject
 Do not modify existing entries below. Update `project-logs/activity-log.md` as well for user-request-level summaries.
 
 ---
+2026-06-08 21:33 | commit 8b21bc0 | feat: regenerate text-3 fixtures, align frontend duration handling, update todo queue
 2026-06-08 21:33 | ai | Summary alignment between browser and frontend paths is now complete. Fixes: (1) Added callSeconds to browser entry creation and caches so buildSummary receives the same timing fields the server build already computed live, restoring duration totals in browser exports. (2) Normalised durationToMinutes() to reuse durationToSeconds() so both paths use identical rounding/normalisation. (3) Finalised T-377. Ready to stage and commit.
+
+2026-06-08 22:00 | user | what we did so far + fix receiver name not recognised
+2026-06-08 22:00 | ai | Replaced broken T-359 frequency-based You alias guess with proper viewer name detection from Facebook page DOM. Changed You default alias from "Youghurt" to "you". Added `detectCurrentUserName()` function that scans page elements for the logged-in user's name.
 
 2026-06-08 21:30 | user | continue with next tasks
 2026-06-08 21:30 | ai | Implemented all 13 pending tasks (T-325 to T-337) via 4 parallel agents: cache tests + reuseMode constants, schema/export format changes, frontend features (cache-hit indicator, persist options, TTL), pinned-location type, emoji variant stripping, alias collision warning, pre-commit hook, cache append doc. Fixed html-utils.js bug from previous session, updated test fixture for reply prefix. Committed.
