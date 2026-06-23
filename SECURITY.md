@@ -1,12 +1,16 @@
-# Security
-
-If you discover a security issue in this repository, please report it responsibly.
+# Security Policy
 
 ## Reporting a Vulnerability
 
-1. Open an issue titled `SECURITY: <short description>`.
-2. Provide details and reproduction steps.
-3. If you prefer private communication, use the repository maintainer contact information.
+If you discover a security vulnerability in this project, please open a private issue or contact the maintainers directly.
+
+We will acknowledge receipt within 48 hours and aim to provide a fix or mitigation within 7 days.
+
+Please do not report vulnerabilities via public GitHub issues.
+
+## Scope
+
+- Build and deployment scripts (`scripts/`)
 
 ## Supported Versions
 

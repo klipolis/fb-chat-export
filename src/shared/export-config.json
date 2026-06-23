@@ -65,7 +65,8 @@
       "fileName": "export-raw-date.txt",
       "includeContent": true,
       "includeSummary": true,
-      "includeRawDate": true
+      "includeRawDate": true,
+      "includeRepliedText": true
     },
     {
       "fileName": "export-json-full.json",

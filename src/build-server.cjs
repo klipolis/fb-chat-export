@@ -47,6 +47,7 @@ let writeRaw = process.env.BUILD_RAW === 'true';
 let referenceDate = process.env.BUILD_REFERENCE_DATE ||
   (serverConfig.overwriteToday ? `${serverConfig.overwriteToday.replace(/-/g, '.')} 00:00` : '2026.05.22 00:00');
 let forceRebuild = false;
+let buildWatch = false;
 
 // CLI arguments override env vars
 const cliArgs = process.argv.slice(2);
@@ -56,6 +57,7 @@ for (let i = 0; i < cliArgs.length; i++) {
   if (cliArgs[i] === '--reference-date' && i + 1 < cliArgs.length) { referenceDate = cliArgs[++i]; }
   if (cliArgs[i].startsWith('--reference-date=')) referenceDate = cliArgs[i].slice(17);
   if (cliArgs[i] === '--force' || cliArgs[i] === '--full') forceRebuild = true;
+  if (cliArgs[i] === '--watch') buildWatch = true;
 }
 
 function writeRawMetadata(fileRecords) {
@@ -536,10 +538,38 @@ async function main() {
 }
 
 if (require.main === module) {
-  main().catch((err) => {
-    console.error('Build failed:', err.message);
-    process.exit(1);
-  });
+  if (buildWatch) {
+    const runWatch = async () => {
+      console.log('Starting server build in watch mode...');
+      await main();
+      const watched = [
+        rawDir,
+        hotDir,
+        path.dirname(sharedConfigPath),
+        path.dirname(serverConfigPath),
+      ].filter((dir) => fs.existsSync(dir));
+      console.log(`Watching for changes in ${watched.length} directories...`);
+      let timer = null;
+      const onChange = () => {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => {
+          main().catch((err) => console.error('Watch build failed:', err.message));
+        }, 250);
+      };
+      watched.forEach((dir) => {
+        fs.watch(dir, { recursive: true }, onChange);
+      });
+    };
+    runWatch().catch((err) => {
+      console.error('Watch build failed:', err.message);
+      process.exit(1);
+    });
+  } else {
+    main().catch((err) => {
+      console.error('Build failed:', err.message);
+      process.exit(1);
+    });
+  }
 }
 
 module.exports = {

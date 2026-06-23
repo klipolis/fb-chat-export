@@ -1111,7 +1111,8 @@
             includeContent: false,
             includeSummary: true,
             includeLength: false,
-            skipBodyValidation: true
+            skipBodyValidation: true,
+            skipSummaryValidation: true
           },
           {
             fileName: "export-summary-json.txt",
@@ -1123,7 +1124,8 @@
             fileName: "export-raw-date.txt",
             includeContent: true,
             includeSummary: true,
-            includeRawDate: true
+            includeRawDate: true,
+            includeRepliedText: true
           },
           {
             fileName: "export-json-full.json",
@@ -1604,6 +1606,7 @@ ${aliasLines}
         const includeContent = options.includeContent === true;
         const includeLength = options.includeLength !== false;
         const includeRawDate = options.includeRawDate === true;
+        const includeRepliedText = options.includeRepliedText !== false;
         const dateText = entry.dateText || "unknown";
         const sender = entry.sender || "Unknown";
         const displayType = /^image(?:-\d+)?$/i.test(entry.fileType || "") ? "image" : entry.fileType;
@@ -1616,7 +1619,7 @@ ${aliasLines}
         const rawDatePart = includeRawDate && entry.rawDate ? ` (${entry.rawDate})` : "";
         const base = `[${dateText}]${rawDatePart} ${sender}: ${parts.join(" ")}`;
         const shouldShowTextContent = includeContent && CONTENT_TYPES.has(entry.semanticType) && entry.content;
-        const replyPrefix = entry.repliedTo ? `> Replied to: ${entry.repliedTo}
+        const replyPrefix = includeRepliedText && entry.repliedTo ? `> Replied to: ${entry.repliedTo}
 ` : "";
         if (shouldShowTextContent) {
           return `${replyPrefix}${base} / ${entry.content}

@@ -54,7 +54,8 @@
     "validate:generated-json": "node tests/validate-generated-json.js",
     "validate:generated-txt": "node tests/validate-generated-txt.js",
     "validate:golden": "node tests/validate-golden.js",
-    "validate:release": "node tests/validate-release.js"
+    "validate:release": "node tests/validate-release.js",
+    "build:watch": "cross-env BUILD_WATCH=true node src/build-server.cjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",

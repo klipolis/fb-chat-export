@@ -2,11 +2,12 @@
 
 ```mermaid
 flowchart TD
-  A[.todo/config.json] --> B[.TODO/TODO-next.md]
+  A[.TODO/TODO-next.md header] --> B[.TODO/TODO-next.md]
   B --> C[Implement task]
   C --> D[.TODO/TODO-done.md]
-  A --> E[Maintain task numbering]
-  A --> F[Keep Links section current]
+  E[docs/developer-guide/todo-management.md] --> F[Rules reference]
+  F --> B
+  G[pnpm lint:todos] --> H[Validate TODO files]
 ```
 
 This repository uses a small structured TODO system for developer work tracking.
@@ -14,185 +15,108 @@ This repository uses a small structured TODO system for developer work tracking.
 ## Files
 
 - `.TODO/TODO-next.md` — active work items that should be done next.
-- `.TODO/TODO-done.md` — completed items moved here after implementation.
+- `.TODO/TODO-done.md` — append-only log for tasks completed from `TODO-next.md`.
 - `.TODO/TODO-future.md` — backlog items that need new samples, significant new scope, or can wait.
 - `.TODO/TODO-ignore.md` — intentionally deferred or rejected items with rationale.
-- `.todo/config.json` — authoritative TODO metadata, including the next task number, file paths, and instructions.
-
-> The `.todo/` directory may also contain other manual or repository-specific files. Keep those files as-is unless a change to TODO metadata is required.
+- `.TODO/TODO-audit.md` — ongoing hygiene checks run before releases or when guidance changes.
+- `docs/developer-guide/todo-management.md` — canonical rules reference for numbering, lifecycle, and style.
 
 ## How to add a new task
 
-1. Open `.todo/config.json` first.
-2. Read `nextTaskNumber` and the `instructions` field.
-3. Add one bullet per task in `.TODO/TODO-next.md`.
-4. Use the `currentTaskPrefix` and `taskIdPattern` rules from `.todo/config.json`.
-5. Update `nextTaskNumber` only when you add a new task.
-
-> Use `pnpm run lint:todos` to verify that `.TODO` files and `.todo/config.json` are consistent.
-
-Example:
-
-- T126. Describe the new shared config behavior for frontend and server build logic.
+1. Read the header of `.TODO/TODO-next.md` for the current prefix, next available number, and declared gaps.
+2. Use the smallest available gap number first; only advance the next available number when no gap remains.
+3. Add the bullet in the correct category section of `.TODO/TODO-next.md`.
+4. Run `pnpm lint:todos` to validate.
 
 ## Task numbering
 
-- Task IDs use the prefix defined in `.todo/config.json` (typically `T`).
-- The number should be taken from `.todo/config.json` and should be strictly increasing.
-- Do not reuse or renumber existing tasks unless correcting a clear error.
+- Task IDs use the prefix declared in `TODO-next.md` (`T-`).
+- When adding new tasks, prefer the smallest available gap number from the existing sequence before using the current next available number.
+- `TODO-next.md` must keep every canonical section, including empty sections, using "- no tasks" as the placeholder so gap reuse stays localized and visible.
 
 ## Task lifecycle
 
-- New work starts in `TODO-next.md`.
-- When a task is implemented, move the line to `TODO-done.md` unchanged.
-- Keep `TODO-future.md` for work that is worthwhile but not ready for the next queue.
-- Keep `TODO-ignore.md` for work that is intentionally excluded, along with a short rationale.
+- New work starts in `.TODO/TODO-next.md`.
+- When adding a new task, fill available gap numbers before advancing the next T-number.
+- Optionally renumber remaining tasks to compact gaps when no agent is actively working on those numbers.
+- When a task is implemented, move the line to `.TODO/TODO-done.md` unchanged.
+- Keep `.TODO/TODO-future.md` for work that is worthwhile but not ready for the next queue.
+- Keep `.TODO/TODO-audit.md` for repeatable hygiene and verification tasks that are always valid.
+- Keep `.TODO/TODO-ignore.md` for work that is intentionally excluded, along with a short rationale.
+- TODO files are user-facing — never embed temporary implementation comments or notes.
 
-## Structure expectations
+Keep one task in only one file. Moving a task from active to any retired
+state removes it from the active queue and keeps the original `T-` number
+unchanged.
 
-- Every `.TODO/*` file should include a `Links` section pointing to the other TODO files and `.todo/config.json`.
-- Keep TODO entries concise and actionable.
-- Preserve task numbers and descriptions when moving items between files.
-- Write task bullets as direct present-action statements.
-- Avoid changelog-style phrasing such as `now ...`, `now also ...`, `now removed ...`, `now always ...`, `now supports ...`, or `now documents ...`.
-- Prefer statements like `export filenames changed to export-max.txt ...` or `show platform reference only in terms and userscript header metadata.`
+## Adding a meaningful task
 
-## Task wording
+A useful task is specific enough that someone can start it without reading
+other files. Avoid phrases like `remaining tasks`, `the queue`, or
+`update docs`. Prefer an action with a clear result. Banal rote tasks
+(version bumps, file syncs, routine updates) belong in this doc's guidance
+or automation scripts, not as TODO items.
 
-Task bullets should describe the intended action or result, not explain what changed. Use the present tense and avoid retrospective language.
+Each task must describe a user-visible or design-level outcome. Ask: "What
+will the user observe or be able to do after this task is complete?"
 
-Example:
+Good:
 
-- T126. Describe the new shared config behavior for frontend and server build logic.
+- T126. Add editor style switcher for Default, Hero, Compact, and Inline
+  variants.
+- T145. Keep counter ticking smooth when the browser tab is backgrounded by
+  syncing to visible-frame updates.
 
-Instead of:
+Bad:
 
-- T126. Now the shared config behavior is described for frontend and server build logic.
+- T126. Implement remaining todo tasks from the queue. (vague — does not
+  specify what to build)
+- T126. Update documentation. (rote — happens as part of implementation)
+- T126. Sync version to 1.3.0. (rote — file sync, not user outcome)
+- T126. Bump plugin version. (rote — routine maintenance)
 
-## Why this exists
+A task should describe what changes, not that work exists. When in doubt,
+ask whether the bullet tells the implementer what to build. If the task is
+purely mechanical (version bump, file copy, config alignment), handle it
+automatically in scripts or document it here instead.
 
-This doc helps keep the repository TODO process consistent and avoid low or duplicated task numbers.
-It also ensures AI-assisted updates use the same task numbering source as human contributors.
+## Commit references
 
+Add the short commit hash after each done task entry when the commit is
+known:
 
-[additional]
-# TODO Management
+- T-NNN. Task description (abc1234)
 
-This repository tracks work in `.TODO/`. `.TODO/config.json` owns task numbering, tracked TODO file
-paths, and validation metadata.
+Do not list multiple commit hashes for one task. If a task truly spans
+commits, split it into separate tasks instead of stacking hashes.
 
-## Flow
+## Log files
 
-```mermaid
-flowchart TD
-  Config[.TODO/config.json] --> Next[.TODO/todo-next.md]
-  Next --> Work[Implement task]
-  Work --> Done[.TODO/todo-done.md]
-  Next --> Future[.TODO/todo-future.md]
-  Next --> Ignore[.TODO/todo-ignore.md]
-  Done --> Requirements[requirements.md]
-  Done --> Changelog[CHANGELOG.md]
-```
+Project logs (`project-logs/interaction-log.md` and
+`project-logs/activity-log.md`) should contain standalone summaries of user
+requests and AI actions. Do not reference task numbers in log entries. Logs
+are not a cross-reference index for tasks.
 
-## Two States
+## Gap lifecycle and safe renumbering
 
-TODO files have two repository states:
+Tasks can move from `TODO-next.md` to `TODO-future.md`, `TODO-ignore.md`, or `TODO-done.md`.
+When they do, their T-number becomes a gap.
+Leave gaps in place during active work so concurrent agents can coordinate by number.
 
-- Active state: `.TODO/todo-next.md` is the only active queue for confirmed implementation work.
-- Retired states: `.TODO/todo-done.md`, `.TODO/todo-future.md`, and `.TODO/todo-ignore.md` store
-  completed, deferred, or deliberate no-fix decisions.
+Renumbering is allowed only when no agent is actively working on a numbered task.
+A safe renumber is a purely mechanical compaction with no semantic change.
+Do not renumber while another session claims a task number.
 
-Keep one task in only one state. Moving a task from active to any retired state removes it from the
-active queue and keeps the original `T-` number unchanged.
+## Safe file-handling rules
 
-## Files
+`TODO-done.md`, `CHANGELOG.md`, and session logs are append-only history.
+Treat them as immutable historical records.
 
-| File                   | Purpose                                                     |
-| ---------------------- | ----------------------------------------------------------- |
-| `.TODO/config.json`    | Task numbering, tracked TODO file paths, and agent rules.   |
-| `.TODO/todo-next.md`   | The only active queue for confirmed work.                   |
-| `.TODO/todo-done.md`   | Completed work history.                                     |
-| `.TODO/todo-future.md` | Valid work that should wait.                                |
-| `.TODO/todo-ignore.md` | Intentionally excluded work with rationale.                 |
-
-Dist and audit-specific TODO files are retired. Dist follow-ups, audit findings, and migration
-records live in the regular TODO files and project guides.
-
-## Task Numbering
-
-Use `.TODO/config.json` before adding tasks:
-
-1. Read `nextTaskNumber`.
-2. Add one task per bullet using the `T-` prefix, for example `T-244`.
-3. Increase `nextTaskNumber` only when adding a new numbered task.
-4. Do not reuse or renumber existing task IDs unless correcting a clear error.
-5. Every task in the TODO files must have a `T-` number.
-6. Write task descriptions as direct present-action statements, not retrospective changelog copy.
-
-## How To Add Work
-
-Add confirmed work to `.TODO/todo-next.md`. Use `.TODO/todo-future.md` for deferred work and
-`.TODO/todo-ignore.md` for deliberate no-fix decisions.
-
-Each TODO file starts with a short description and links to the other TODO files. Keep that header in
-place when editing.
-
-## Completion Rules
-
-Move completed work from `.TODO/todo-next.md` to `.TODO/todo-done.md`. User-observable completed
-work also updates `requirements.md`; release-facing changes update `CHANGELOG.md` under
-`## [Unreleased]`.
-
-Developer-only changes belong in the changelog `### Dev` section.
-
-## Migration Record
-
-The retired TODO files were:
-
-- `.TODO/todo.md`
-- `.TODO/todo-audit.md`
-- `.TODO/todo-next-audit.md`
-- `.TODO/todo-dist.md`
-- `.TODO/todo-dist-done.md`
-- `.TODO/todo-dist-future.md`
-- `.TODO/todo-dist-no-fix.md`
-
-Most old audit tasks moved into:
-
-- `.TODO/todo-done.md` for completed documentation, static asset, dependency, flowchart, and setup
-  work.
-- `.TODO/todo-next.md` for active audit work covering API docs, security, production stability, code
-  quality, performance, monitoring, billing, dependency drift, and test coverage.
-- `docs/Developer_Guides/PROJECT_AUDIT_GUIDE.md` for repeatable auditor workflow.
-- `docs/Developer_Guides/PROJECT_TESTING_GUIDE.md` for repeatable start-to-finish product testing.
-
-The dist deployment succeeded, so completed deployment confirmations moved to `.TODO/todo-done.md`.
-Remaining dist ideas moved to `.TODO/todo-future.md`, and deliberate no-fix decisions moved to
-`.TODO/todo-ignore.md`.
-
-## Retirement And Temporary TODOs
-
-Temporary TODO branches are allowed only while a focused migration or audit is actively being
-processed. They must be short-lived and folded back into the four regular TODO files before the work
-is considered complete.
-
-Examples:
-
-- A temporary deployment audit may start as `.TODO/todo-dist-temp.md`, then move completed items to
-  `.TODO/todo-done.md`, deferred work to `.TODO/todo-future.md`, and no-fix decisions to
-  `.TODO/todo-ignore.md`.
-- A temporary security audit may start as `.TODO/todo-security-temp.md`, then move actionable work to
-  `.TODO/todo-next.md` with `T-` numbers and convert repeatable process steps into a developer guide.
-
-Retired TODO branches should not remain in `.TODO/config.json`. Keep the regular queues as the only
-validated TODO files.
-
-## Validation
-
-```bash
-pnpm lint:todos
-```
-
-The TODO checker validates `.TODO/config.json`, confirms configured files exist, checks task ID
-format, prevents duplicate task IDs across configured TODO files, and reports active versus retired
-task counts.
+- **Never rewrite** an append-only file in full. Always use the `edit` tool
+  to add new entries without removing or changing existing content.
+- When asked to "update" these files, always **append first, never delete**.
+- Before editing, check the current and `HEAD` content to establish a
+  baseline. After editing, verify with `git diff HEAD -- <file>` that only
+  additions appear.
+- If any existing entry is altered or removed, restore the file from `HEAD`
+  immediately and re-apply only the intended additions.

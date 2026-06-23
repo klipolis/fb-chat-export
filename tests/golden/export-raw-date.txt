@@ -45,7 +45,7 @@ Barnabas Summary
 ~ 1 calls 00:00:20
 
 ---
-[2026-01-19 08:43] (January 19, 2026, 8:43 AM) ABC: text-2-link 40 words / Good Morning Karoli! How are you? It's been long time! How much would it cost me to ask you to do a healthy check on photomeet.reviews? We are going to launch soon and would like to start putting things together.
+[2026-01-19 08:43] (January 19, 2026, 8:43 AM) ABC: text-2-link 40 words / Good Morning Tiroli! How are you? It's been long time! How much would it cost me to ask you to do a healthy check on photomeet.reviews? We are going to launch soon and would like to start putting things together.
 [2026-04-12 13:23] (April 12, 2026, 1:23 PM) Youghurt: audio-call 00:18:00
 [2026-04-13 17:45] (April 13, 2026, 5:45 PM) Youghurt: image
 > Replied to: Original image

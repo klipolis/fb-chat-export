@@ -1,5 +1,6 @@
 const { CALL_TYPES, TIMED_CALL_TYPES } = require('./constants');
 const { stripVariantSelectors } = require('./string-utils');
+const { durationToSeconds } = require('./duration-utils');
 
 function parseDurationToSeconds(duration) {
   if (!duration) return 0;
@@ -36,7 +37,7 @@ function buildFullJsonExport(entries = [], options = {}) {
       type: semanticType,
       text: includeContent ? contentText : null,
       duration: rawDuration,
-      durationSeconds: parseDurationToSeconds(rawDuration),
+      durationSeconds: durationToSeconds(rawDuration),
       isCall: CALL_TYPES.includes(semanticType),
       isImage: semanticType === 'image',
       contentLength: includeLength ? contentText.length : null,

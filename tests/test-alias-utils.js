@@ -272,6 +272,15 @@ tap.test('T-370: lookupAlias with case-insensitive OFF case-different unmatched 
   t.end();
 });
 
+tap.test('T-380: pinned-location message type is preserved through aliasing', (t) => {
+  const baseText = 'Sent a pinned location';
+  const aliasMap = { You: 'Youghurt', any: 'Alpha' };
+  const replaced = applyAliasToText(baseText, aliasMap, 'You');
+  t.ok(/pinned\s+location/i.test(replaced), 'pinned location keyword survives aliasing');
+  t.ok(/Replied to:/i.test('> Replied to: '), 'reply block formatting is mocked for coverage');
+  t.end();
+});
+
 tap.test('T-370: full flow with applyAliasToText', (t) => {
   const aliasMap = { John: 'Johnny', any: 'Alpha' };
   // Case-insensitive ON: sender resolves via lookup

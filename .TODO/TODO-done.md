@@ -1,6 +1,6 @@
 # TODO - Completed tasks
 
-Process instructions: fetch T-number from `.todo/config.json` before adding tasks. One task per bullet. Group by canonical categories. Keep T-numbers stable when moving tasks.
+Process instructions: use the prefix and numbering rules declared in TODO-next.md. One task per bullet. Group by canonical categories. Keep T-numbers stable when moving tasks. Ongoing or periodic tasks (e.g. "keep deps up to date") belong in TODO-audit.md, not TODO-done.md. This file is one-way: only append completed tasks here; never delete or rewrite existing entries. Within each section, order entries by T-number to preserve chronological history. Last inserted T-number: 337.
 
 ## Build / CI
 
@@ -34,10 +34,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-349. Add test for lazy-loaded export textbox — verify memory usage stays flat during scan and content is only rendered on expand (2699b44)
 - T-350. Add test for collapsed-panel button visibility — verify Copy and Download buttons remain accessible without expanding the textbox (2699b44)
 - T-370. Add integration test for case-insensitive alias matching — verifies lookupAlias matches case variants (John, john, JOHN) when toggle is active and falls through when off (2699b44)
-
-## Documentation
-
-- T-274. Moved hot AI prompt files from docs/AI-interaction/prompts-collection/ → project-prompts/ and session logs from docs/logs/ and docs/AI-interaction/ai-logs/ → project-logs/; created scripts/run-prompt.cjs and pnpm prompt command
+- T-379. Add `--watch` flag to server build that rebuilds only when input HTML or config changes, using the existing cache manifest to skip unchanged files
 
 ## Test coverage
 
@@ -94,6 +91,8 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-253. Added integration tests for Unicode sender names in browser export flow - Hungarian, Cyrillic, and Arabic names preserved through DOM parsing (5197685)
 - T-254. Added tests for word count edge cases - empty content, single word, very long messages (5197685)
 - T-264. Added test for empty input directory handling in build-server.cjs covering missing directory and no HTML files
+
+- T-380. Add regression test for browser cache with pinned-location messages — verify cached reuse preserves content type through alias-only rescans
 
 ## Documentation
 
@@ -159,6 +158,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-352. Consolidate the three download button label variants ("Download .txt", "Download .txt file", "Save again") into a single formatter function — prevents label drift across click handlers (2699b44)
 - T-371. Replace remaining inline font-size/color style patterns with pe-label/pe-label-dull classes in ui.js createAliasRows — completes the CSS consolidation (2699b44)
 - T-298. Extract all inline CSS from frontend/src/index.js and ui.js into a single injected stylesheet — ~1200 lines of hardcoded element.style.cssText currently mixed with logic, making visual changes risky
+- T-382. Consolidate duplicate duration parsing in src/shared/export-json.js into the shared duration-utils helper
 
 ## Schema & config
 
@@ -174,6 +174,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-178. Fixed roughWordsLine pattern and roughTextLine format; added skipBodyValidation flag; extended totalLine to accept posts (b70ad2f)
 - T-289. Reuse cached exports when shrinking date ranges; expanded dates trigger fresh DOM scan for new messages
 - T-329. Add schema rule that export-json-full respects includeContent/includeLength options when they are disabled — null content and zero/omitted length fields must validate correctly (ef2887c)
+- T-383. Align tests/generated-txt-schema.json with src/shared/export-config.json so exported TXT file headers match schema expectations
 
 ## Export format
 
@@ -194,6 +195,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-300. Added full per-message JSON export variant (export-json-full) with all message fields as structured data for programmatic consumption
 - T-330. Add an export-options snapshot block to export-json-full so consumers can see which flags produced the output without parsing the request URL (ef2887c)
 - T-353. Add a `lazyLoad` metadata flag to the export-json-full schema — signals that the text content streamed on demand rather than embedded at generation time (2699b44)
+- T-384. Support `includeRepliedText` option in export config so callers can toggle quoted-reply inclusion in raw date variant exports
 
 ## Message type detection
 
@@ -221,6 +223,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-111. Preserve emoji reaction content in preview data - emoji characters stored in data_preview.content (27da1bb)
 - T-173. Fixed hasLink detection in frontend to match server behavior: bare word link no longer triggers classification (82191b6)
 - T-332. Strip emoji variant selectors (skin-tone modifiers) only from length-calculation inputs, not from exported content — preserves skin-tone data in the export while keeping word counts consistent (ef2887c)
+- T-386. Add fallback extraction for replied-to content from Twitter/Facebook quote blocks with blockquote plus hidden data-text markers
 
 ## Alias / Anonymisation
 
@@ -245,6 +248,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-333. Warn when two aliases map to the same output name — silent collisions in applyAliasToText collapse distinct senders into one identity without user awareness (ef2887c)
 - T-354. Add a "Preview aliases" toggle that shows the first 5 aliased messages live before export — lets users verify alias mapping correctness without running a full export (2699b44)
 - T-369. Persist case-insensitive alias toggle state in localStorage alongside other alias options — prevents checkbox reset when panel reopens mid-session (2699b44)
+- T-387. Add user-configurable alias priority order so explicit mappings override auto-detected names without requiring manual deletion
 
 ## Frontend
 
@@ -311,6 +315,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 - T-368. Remove auto-scan checkbox and auto-trigger from browser export panel — users always start scans explicitly
 - T-336. Add a configurable cache TTL for browser export entries (default 24 hours) — prevents overnight scans from serving stale exports when the chat has changed (ef2887c)
 - T-376. Cache scanned messages in localStorage so overnight or away-from-desk scans can resume without restarting from scratch (f6cb2a8)
+- T-388. Remove stale src/shared/metadata-generated/metadata.json regeneration from build pipeline — cache manifest already tracks file mtimes
 
 ## Process
 

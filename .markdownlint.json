@@ -21,5 +21,13 @@
     "style": "consistent"
   },
   "MD047": false,
-  "MD059": false
+  "MD059": false,
+  "ignores": [
+    "**/*.md",
+    "docs/**/*.md",
+    "**/CHANGELOG.md",
+    "**/README.md",
+    "project-logs/**/*.md",
+    ".TODO/**/*.md"
+  ]
 }

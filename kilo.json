@@ -1,6 +1,17 @@
 {
+  "_meta": {
+    "version": 1,
+    "exportedAt": "2026-06-10T19:44:05.802Z"
+  },
   "$schema": "https://app.kilo.ai/config.json",
+  "watcher": {
+    "ignore": [
+      "**/node_modules/**",
+      "**/dist/**"
+    ]
+  },
   "auto_collapse_reasoning": true,
+  "terminal_command_display": "collapsed",
   "instructions": [
     "AGENTS.md",
     "ai-chat-behavior.config.ts",
@@ -23,7 +34,17 @@
     "task": "allow",
     "todowrite": "allow",
     "webfetch": "allow",
+    "codesearch": "allow",
+    "todoread": "allow",
     "websearch": "allow"
+  },
+  "compaction": {
+    "prune": false
+  },
+  "experimental": {
+    "disable_paste_summary": true,
+    "batch_tool": true,
+    "openTelemetry": true
   },
   "snapshot": false
 }

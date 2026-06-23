@@ -68,6 +68,13 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Server build generates a full per-message JSON export variant
 - Troubleshooting guide for browser export in docs/user-guide/
 - Developer guide for adding new message types in docs/developer-guide/
+- Server build accepts `--watch` flag for incremental rebuilds on input or config changes
+- TXT export validation accepts variable message-type counts and skips summary-only variants
+- Exported replies omit quoted text unless the new `includeRepliedText` option is enabled
+- Reply extraction falls back to `blockquote[data-text]` for Twitter and Facebook quote blocks
+- Alias replacement uses explicit mappings first, then falls back to the `any` catch-all
+- Duration parsing in JSON export shares the shared `durationToSeconds` helper instead of duplicating logic
+- Stale metadata generation removed from node build path; build cache manifest remains the single source of truth
 
 ### Changed
 - Alias name validation accepts Unicode characters, 1–3 words, max 25 characters, no numbers

@@ -48,6 +48,7 @@ function formatLine(entry, options = {}) {
   const includeContent = options.includeContent === true;
   const includeLength = options.includeLength !== false;
   const includeRawDate = options.includeRawDate === true;
+  const includeRepliedText = options.includeRepliedText !== false;
   const dateText = entry.dateText || 'unknown';
   const sender = entry.sender || 'Unknown';
   const displayType = /^image(?:-\d+)?$/i.test(entry.fileType || '')
@@ -65,7 +66,8 @@ function formatLine(entry, options = {}) {
   const base = `[${dateText}]${rawDatePart} ${sender}: ${parts.join(' ')}`;
   const shouldShowTextContent =
     includeContent && CONTENT_TYPES.has(entry.semanticType) && entry.content;
-  const replyPrefix = entry.repliedTo ? `> Replied to: ${entry.repliedTo}\n` : '';
+  const replyPrefix =
+    includeRepliedText && entry.repliedTo ? `> Replied to: ${entry.repliedTo}\n` : '';
   if (shouldShowTextContent) {
     return `${replyPrefix}${base} / ${entry.content}\n`;
   }

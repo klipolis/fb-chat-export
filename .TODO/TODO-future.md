@@ -1,6 +1,6 @@
-# TODO — Future tasks
+# TODO — Future / deferred
 
-Process instructions: fetch T-number from `.todo/config.json` before adding tasks. One task per bullet. Group by canonical categories. Keep T-numbers stable when moving tasks.
+AI agents only implement tasks from `TODO-next.md`. Tasks here are deferred until the user explicitly moves them to `TODO-next.md` or requests implementation.
 
 ## Build / CI
 
@@ -8,7 +8,7 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 
 ## Test coverage
 
-- T-285. Cache test results and re-run only tests whose source files have changed
+- 285. Cache test results and re-run only tests whose source files have changed
 
 ## Documentation
 

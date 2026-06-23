@@ -15,7 +15,6 @@ const rawDir = path.join(rootDir, 'data-input-test');
 const hotDir = path.join(rawDir, 'userscript');
 const optimizedDir = path.join(rootDir, 'data-output-auto', 'optimized-html');
 const nodesDir = path.join(rootDir, 'data-output-auto', 'json-format');
-const metadataDir = path.join(helperDir, 'metadata-generated');
 
 function relativePath(p) {
   const rel = path.relative(rootDir, p).replace(/\\/g, '/');
@@ -296,18 +295,10 @@ function createNodeJson(fileName, metaMap, exportDate) {
   return targetPath;
 }
 
-function writeExportMetadata(createdFiles) {
-  const meta = {
-    file_count: createdFiles.length,
-    files: createdFiles.map((filePath) => path.basename(filePath)),
-  };
-
-  writeJsonIfChanged(path.join(metadataDir, 'metadata.json'), meta);
-}
+function writeExportMetadata() {}
 
 function main(htmlFilesByFile, opts) {
   ensureDir(nodesDir);
-  ensureDir(metadataDir);
 
   const relOptimizedDir = relativePath(optimizedDir);
   const relNodesDir = relativePath(nodesDir);
@@ -333,7 +324,6 @@ function main(htmlFilesByFile, opts) {
   const exportDate = formatLocalDateTime();
   const metaMap = buildAllMessageMetaMap(rawDir, htmlFilesByFile);
   const created = htmlFiles.map((fileName) => createNodeJson(fileName, metaMap, exportDate));
-  writeExportMetadata(created);
   console.log(`Generated ${created.length} JSON files in ${relNodesDir}`);
 }
 

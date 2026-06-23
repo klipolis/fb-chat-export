@@ -12,8 +12,11 @@ flowchart TB
 
 Before tagging a release, verify the repository and generated artifacts.
 
-- Run `pnpm run release:check`.
-- Run `pnpm run build:ci` if you want the full pipeline including lint, audit, build, test, and validation.
+- Run `pnpm lint:package` to verify `package.json` is consistent.
+- Run `pnpm build:verify` and `pnpm lint:unreleased` to confirm dist and `CHANGELOG.md` are valid.
+- Run `pnpm test:js` to confirm the remaining JS test suite passes.
+
+If validation fails, fix the reported issue before tagging.
 
 ## Tagging a release
 

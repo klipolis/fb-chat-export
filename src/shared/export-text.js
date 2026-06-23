@@ -50,6 +50,16 @@ function extractMessageEntry(el, fileName, referenceDate, aliasMap = {}) {
         repliedTo = textSpan ? normalizeLabel(textSpan.textContent) : null;
       }
     }
+    if (!repliedTo) {
+      const blockQuote = el.querySelector('blockquote');
+      if (blockQuote) {
+        const dataText = blockQuote.getAttribute('data-text')?.trim();
+        if (dataText) {
+          repliedType = 'text';
+          repliedTo = normalizeLabel(dataText);
+        }
+      }
+    }
   }
   const linkEl = el.querySelector('a[href]');
   const imageEls = Array.from(el.querySelectorAll('img'));
