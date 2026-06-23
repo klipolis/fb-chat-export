@@ -71,7 +71,7 @@ function formatLine(entry, options = {}) {
   if (shouldShowTextContent) {
     return `${replyPrefix}${base} / ${entry.content}\n`;
   }
-  return `${replyPrefix}${base}\n`;
+  return `${base}\n`;
 }
 
 function buildEntryFromEntry(entry) {

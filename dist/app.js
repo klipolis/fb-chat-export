@@ -1625,7 +1625,7 @@ ${aliasLines}
           return `${replyPrefix}${base} / ${entry.content}
 `;
         }
-        return `${replyPrefix}${base}
+        return `${base}
 `;
       }
       function buildEntryFromEntry(entry) {

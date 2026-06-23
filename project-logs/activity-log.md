@@ -15,6 +15,8 @@ Do not modify existing entries below. Update `project-logs/interaction-log.md` a
 2026-06-23 16:29 | user | Review recent changes, fix TODO structure, run lint checks, implement remaining TODO-next tasks
 2026-06-23 16:29 | ai | Fixed TODO-ignore and TODO-future to remove T-number prefixes, implemented build:watch mode, pinned-location regression test, includeRepliedText option, Twitter/Facebook quote-block fallback, duration parsing consolidation, metadata.json removal, alias priority ordering, schema alignment, and frontend_shared.json docs. All lint checks pass.
 
+2026-06-23 16:29 | ai | Fixed formatLine — reply preview text no longer shows in no-content export mode.
+
 2026-06-08 22:00 | user | Fix receiver name (Tiroli) not recognised in export
 2026-06-08 22:00 | ai | Replaced broken T-359 frequency-based You alias guess with viewer name detection from page DOM. You alias defaults to "you" instead of "Youghurt".
 2026-06-08 21:33 | ai | Restored browser summary call durations to match server by adding callSeconds to browser entries and caches, and unified durationToMinutes() to use durationToSeconds(). Ready to commit.

@@ -11,6 +11,7 @@ Changelog entries should describe active changes in direct present-tense stateme
 
 ### Fixed
 - You alias no longer guesses from the most frequent sender — detects the viewer's real name from the page DOM instead
+- Reply preview text no longer leaks into no-content export lines
 
 ### Added
 - Export textbox collapses by default with lazy-load toggle — content renders only on expand

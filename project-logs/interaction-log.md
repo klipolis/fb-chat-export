@@ -15,6 +15,8 @@ Do not modify existing entries below. Update `project-logs/activity-log.md` as w
 ---
 2026-06-23 16:29 | ai | Reviewed and implemented remaining TODO-next items: fixed TODO file structure (removed T-number prefixes from ignore/future), added build:watch flag, regression test for pinned-location caching, includeRepliedText toggle, Twitter/Facebook quote-block fallback, duration parsing consolidation (export-json.js now uses shared durationToSeconds), stale metadata.json removal, alias priority ordering docs, and schema/config alignment. Lint and generated-artifact validations pass.
 
+2026-06-23 16:29 | ai | Fixed `formatLine` — reply preview line `> Replied to: ...` no longer appears when content display is off. Only shows when `includeContent: true`.
+
 ---
 2026-06-08 21:33 | commit 8b21bc0 | feat: regenerate text-3 fixtures, align frontend duration handling, update todo queue
 2026-06-08 21:33 | ai | Summary alignment between browser and frontend paths is now complete. Fixes: (1) Added callSeconds to browser entry creation and caches so buildSummary receives the same timing fields the server build already computed live, restoring duration totals in browser exports. (2) Normalised durationToMinutes() to reuse durationToSeconds() so both paths use identical rounding/normalisation. (3) Finalised T-377. Ready to stage and commit.
