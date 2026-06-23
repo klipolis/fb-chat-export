@@ -120,16 +120,6 @@
           matchLabel: /\bvideo call\b/i
         },
         {
-          type: "pinned-location",
-          prefixes: [
-            "pinned-location"
-          ],
-          matchLabel: /\bpinned location\b/i
-        },
-        //
-        // LINK (merged with video-link)
-        //
-        {
           type: "link",
           prefixes: [
             "link-embed-no-text",
@@ -1673,7 +1663,8 @@ ${aliasLines}
         buildEntryFromEntry,
         formatSummarySection,
         buildSummaryData,
-        durationToMinutes: durationToMinutes2
+        durationToMinutes: durationToMinutes2,
+        durationToSeconds: durationToSeconds2
       };
     }
   });
@@ -1776,7 +1767,26 @@ ${aliasLines}
     return NaN;
   }
   function resolveRelativeDate(raw) {
-    return (0, import_aria_label_parser.normalizeDateToIso)(raw) || raw;
+    const iso = (0, import_aria_label_parser.normalizeDateToIso)(raw);
+    if (iso) return iso;
+    const timeOnly = String(raw || "").trim().match(/^(?:\d{1,2}:\d{2}(?::\d{2})?\s*(?:am|pm)?)$/i);
+    if (timeOnly) {
+      const now = /* @__PURE__ */ new Date();
+      const date = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const [timePart, meridiem] = timeOnly[0].trim().split(/\s+/);
+      const parts = timePart.split(":").map(Number);
+      let hour = parts[0];
+      const minute = parts[1] || 0;
+      const second = parts[2] || 0;
+      if (meridiem) {
+        const m = meridiem.toLowerCase();
+        if (m === "pm" && hour < 12) hour += 12;
+        if (m === "am" && hour === 12) hour = 0;
+      }
+      date.setHours(hour, minute, second, 0);
+      return date.toISOString();
+    }
+    return raw;
   }
   function sanitizeFileNamePart(value) {
     const normalized = String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -1931,11 +1941,11 @@ ${aliasLines}
     const validateName = (name) => {
       const cleaned = String(name || "").trim();
       if (!cleaned) return false;
-      if (cleaned.length > 25) return false;
+      if (cleaned.length > 50) return false;
       if (/\d/.test(cleaned)) return false;
       const parts = cleaned.split(/\s+/);
-      if (parts.length > 3) return false;
-      return /^\p{L}[\p{L} .'\-_]{0,24}$/u.test(cleaned);
+      if (parts.length > 5) return false;
+      return /^\p{L}[\p{L} .'\-_]{0,49}$/u.test(cleaned);
     };
     const createRow = (orig, alias, fixed) => {
       const row = document.createElement("div");
@@ -2380,7 +2390,7 @@ ${aliasLines}
     rightCol.appendChild(rawLinkWrap);
     rightCol.appendChild(lengthWrap);
     rightCol.appendChild(selectAllLink);
-    const typeFilterTypes = ["text", "link", "pinned-location", "image", "reaction", "audio-call", "video-call", "voice-note", "sticker", "poll"];
+    const typeFilterTypes = ["text", "link", "image", "reaction", "audio-call", "video-call", "voice-note", "sticker", "poll"];
     const typeFilterState = {};
     const typeFilterDetails = document.createElement("details");
     typeFilterDetails.className = "pe-label";
@@ -3028,8 +3038,8 @@ ${aliasLines}
         setScanState("idle");
         return;
       }
+      const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
       if (startAtBottomChk.checked) {
-        const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
         if (toDate) {
           const latestVisible = getLatestVisibleMessageDate();
           if (latestVisible && latestVisible > toDate) {
@@ -3037,6 +3047,15 @@ ${aliasLines}
           }
         } else {
           scroller.scrollTop = maxScrollTop;
+        }
+      }
+      let scanDown = false;
+      if (fromDate && !startAtBottomChk.checked) {
+        const latestVisible = getLatestVisibleMessageDate();
+        if (latestVisible && latestVisible < fromDate) {
+          scanDown = true;
+          const step = Math.max(800, scroller.clientHeight - 100);
+          scroller.scrollTop = Math.min(maxScrollTop, scroller.scrollTop + step);
         }
       }
       const scanStartedAt = Date.now();
@@ -3061,7 +3080,7 @@ ${aliasLines}
           } else {
             noticeMsg.textContent = `Scanning... ${collected.size} collected (${elapsedSec}s)`;
           }
-          if (stopRequested || reachedFromDate || scroller.scrollTop <= 0 && stableCount >= 3) {
+          if (stopRequested || reachedFromDate || scanDown && scroller.scrollTop >= maxScrollTop2 && stableCount >= 3 || !scanDown && scroller.scrollTop <= 0 && stableCount >= 3) {
             actionBtn.dataset.scanning = "false";
             const viewerName = aliasChk.checked ? detectCurrentUserName() : null;
             if (viewerName && viewerName !== "You") {
@@ -3185,12 +3204,30 @@ ${aliasLines}
             }
             return;
           }
-          const nextTop = Math.max(0, scroller.scrollTop - Math.max(800, scroller.clientHeight - 100));
+          const maxScrollTop2 = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+          const step = Math.max(800, scroller.clientHeight - 100);
+          const nextTop = scanDown ? Math.min(maxScrollTop2, scroller.scrollTop + step) : Math.max(0, scroller.scrollTop - step);
           if (Math.abs(nextTop - scroller.scrollTop) < 5) {
             stableCount += 1;
           } else {
             stableCount = 0;
             scroller.scrollTop = nextTop;
+          }
+          if (stopRequested || reachedFromDate || scanDown && scroller.scrollTop >= maxScrollTop2 && stableCount >= 3 || !scanDown && scroller.scrollTop <= 0 && stableCount >= 3) {
+            actionBtn.dataset.scanning = "false";
+            const viewerName = aliasChk.checked ? detectCurrentUserName() : null;
+            if (viewerName && viewerName !== "You") {
+              detectedSenders.add(viewerName);
+            }
+            if (aliasChk.checked && groupChatChk.checked) {
+              const defaultAliases = viewerName && viewerName !== "You" ? { [viewerName]: "you" } : {};
+              setDetectedNames(detectedSenders, defaultAliases);
+            }
+            if (aliasChk.checked) {
+              bindAliasListeners();
+            }
+            buildExport();
+            return;
           }
           const delay = 500 + Math.random() * 500;
           scrollTimeout = setTimeout(scanStep, delay);

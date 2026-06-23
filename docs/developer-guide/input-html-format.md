@@ -92,7 +92,7 @@ The parser classifies each message into one of these types based on a combinatio
 - `voice-note` — audio voice messages (detected via timer, play button, or label text)
 - `audio-call`, `video-call` — call records with duration
 - `missed-call` — missed audio or video call notifications
-- `link` — messages containing URLs, attachments, or pinned locations
+- `link` — messages containing URLs or attachments
 - `reaction` — emoji reactions, GIFs, and like buttons
 - `sticker` — sticker images
 - `unsent` — deleted/unsent message notifications

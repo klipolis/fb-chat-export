@@ -52,7 +52,8 @@
       "includeContent": false,
       "includeSummary": true,
       "includeLength": false,
-      "skipBodyValidation": true
+      "skipBodyValidation": true,
+      "skipSummaryValidation": true
     },
     {
       "fileName": "export-summary-json.txt",

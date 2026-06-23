@@ -153,11 +153,11 @@ export function createAliasRows(initialRows = { You: 'you', any: 'Alpha' }) {
   const validateName = (name) => {
     const cleaned = String(name || '').trim();
     if (!cleaned) return false;
-    if (cleaned.length > 25) return false;
+    if (cleaned.length > 50) return false;
     if (/\d/.test(cleaned)) return false;
     const parts = cleaned.split(/\s+/);
-    if (parts.length > 3) return false;
-    return /^\p{L}[\p{L} .'\-_]{0,24}$/u.test(cleaned);
+    if (parts.length > 5) return false;
+    return /^\p{L}[\p{L} .'\-_]{0,49}$/u.test(cleaned);
   };
 
   const createRow = (orig, alias, fixed) => {

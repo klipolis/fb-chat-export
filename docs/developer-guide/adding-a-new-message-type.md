@@ -66,13 +66,13 @@ If the new type belongs to a group used in summary counting or formatting, add i
 
 ```js
 const TIMED_CALL_TYPES = ['audio-call', 'video-call', 'voice-note'];
-const MISSED_CALL_TYPES = ['missed-call', 'missed-audio-call', 'missed-video-call'];
+const MISSED_CALL_TYPES = ['missed-call'];
 const CALL_TYPES = [...TIMED_CALL_TYPES, ...MISSED_CALL_TYPES];
 const CONTENT_TYPES = new Set(['text', 'link', 'reaction']);
 ```
 
 - If the type has a **duration** (like a timed call), add it to `TIMED_CALL_TYPES`.
-- If the type is a **missed call**, add it to `MISSED_CALL_TYPES`.
+- If the type is a **missed call**, add it to `MISSED_CALL_TYPES`. Note that missed call filename stems (`missed-audio-call`, `missed-call-audio`, `missed-video-call`, `missed-call-video`) all resolve to the single type `missed-call`.
 - If the type's content should be shown after `/` in `export-max.txt`, add it to `CONTENT_TYPES`.
 
 For a `game` type with no duration and no content text that requires display, **no constant change is needed**.

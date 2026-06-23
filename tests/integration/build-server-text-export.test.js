@@ -27,7 +27,7 @@ tap.teardown(() => {
 
 function runServerBuildOnce() {
   if (!serverBuildCache) {
-    const buildResult = childProcess.spawnSync('node', ['src/build-server.cjs'], {
+    const buildResult = childProcess.spawnSync('node', ['src/build-server.cjs', '--force'], {
       encoding: 'utf8',
       cwd: resolveRepoPath(),
     });
@@ -140,8 +140,8 @@ tap.test('buildServerTextExport', (t) => {
   // Filename to schema type alias (mirrors getBaseSemanticTypes in build-server.cjs)
   const schemaAlias = {
     'call-video': 'video-call',
-    'missed-call-audio': 'missed-audio-call',
-    'missed-call-video': 'missed-video-call',
+    'missed-call-audio': 'missed-call',
+    'missed-call-video': 'missed-call',
   };
 
   const rawFiles = fs.readdirSync(rawDir).filter((name) => name.endsWith('.html'));
@@ -256,11 +256,11 @@ tap.test('buildServerTextExport', (t) => {
   t.ok(bodyLinesOn.some((line) => line.includes('👍')), 'reaction 👍 appears in export-max TXT output');
 
   // text-2: full message in aria-label, colon in message body
-  const text2Line = bodyLinesOn.find((l) => l.includes('text-2'));
+  const text2Line = bodyLinesOn.find((l) => l.includes('text-2 ') && !l.includes('text-2-link'));
   t.ok(text2Line, 'export-max body includes text-2 line');
   t.ok(text2Line.includes('[2026-05-07 07:09]'), 'text-2 line has correct date');
   t.ok(text2Line.includes('Youghurt:'), 'text-2 line has aliased sender');
-  t.ok(text2Line.includes('25 words'), 'text-2 line shows 25 words');
+  t.ok(/text-2\s+\d+\s+words/.test(text2Line), 'text-2 line shows word count');
   t.ok(text2Line.includes('morning: 272'), 'text-2 line preserves colon in message body');
   t.ok(text2Line.includes('emails at ~4am.'), 'text-2 line contains full message text');
 

@@ -13,7 +13,28 @@ export function parseLocalDate(str) {
 }
 
 export function resolveRelativeDate(raw) {
-  return normalizeDateToIso(raw) || raw;
+  const iso = normalizeDateToIso(raw);
+  if (iso) return iso;
+  const timeOnly = String(raw || '')
+    .trim()
+    .match(/^(?:\d{1,2}:\d{2}(?::\d{2})?\s*(?:am|pm)?)$/i);
+  if (timeOnly) {
+    const now = new Date();
+    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const [timePart, meridiem] = timeOnly[0].trim().split(/\s+/);
+    const parts = timePart.split(':').map(Number);
+    let hour = parts[0];
+    const minute = parts[1] || 0;
+    const second = parts[2] || 0;
+    if (meridiem) {
+      const m = meridiem.toLowerCase();
+      if (m === 'pm' && hour < 12) hour += 12;
+      if (m === 'am' && hour === 12) hour = 0;
+    }
+    date.setHours(hour, minute, second, 0);
+    return date.toISOString();
+  }
+  return raw;
 }
 
 export function sanitizeFileNamePart(value) {

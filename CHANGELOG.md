@@ -16,8 +16,7 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Export textbox collapses by default with lazy-load toggle — content renders only on expand
 - Copy and Download buttons stay visible when textbox is collapsed
 - Preview aliases button shows first 5 aliased messages before export
-- Self-messages alias default changed from "Youghurt" to "you"
-- Detect current user's real name from the Facebook page and map it to "you"
+- Detect current user's real name from the Facebook page and map it to the configured alias
 - Persist case-insensitive alias toggle state across page reloads
 - JSON export schema includes `lazyLoad` metadata flag
 - Browser export README section documents keyboard shortcuts and collapsed-panel workflow
@@ -264,7 +263,7 @@ Changelog entries should describe active changes in direct present-tense stateme
 
 - TXT exports include link URL content in export-max mode.
 - Link content uses the resolved URL instead of a generic label.
-- Added fallback Google Maps URL for pinned locations with no direct link.
+- Added fallback Google Maps URL for location links with no direct link.
 - Fixed sender name parsing for dash-form aria-labels so leading conversational tokens stay in message content.
 - Fixed duration parser to ignore wall-clock times like `1:23 PM`.
 

@@ -49,17 +49,6 @@ const rules = [
   },
 
   {
-    type: 'pinned-location',
-    prefixes: [
-      'pinned-location'
-    ],
-    matchLabel: /\bpinned location\b/i,
-  },
-
-  //
-  // LINK (merged with video-link)
-  //
-  {
     type: 'link',
     prefixes: [
       'link-embed-no-text',

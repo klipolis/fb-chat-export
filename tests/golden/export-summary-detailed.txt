@@ -21,12 +21,12 @@ Aliases:
 ---
 
 Total Summary
-23 posts / 9 days
-~ 246 words
-~ 4 text
+26 posts / 12 days
+~ 334 words
+~ 6 text
 ~ 3 reaction
 ~ 4 link
-~ 3 image
+~ 4 image
 ~ 1 sticker
 ~ 1 poll
 ~ 1 audio call
@@ -37,9 +37,9 @@ Total Summary
 ~ 4 calls 00:49:41
 
 ABC Summary
-15 posts / 6 days
-~ 217 words
-~ 3 text
+16 posts / 7 days
+~ 255 words
+~ 4 text
 ~ 1 reaction
 ~ 2 link
 ~ 2 image
@@ -52,12 +52,12 @@ ABC Summary
 ~ 2 calls 00:31:21
 
 Youghurt Summary
-7 posts / 4 days
-~ 29 words
-~ 1 text
+9 posts / 6 days
+~ 79 words
+~ 2 text
 ~ 2 reaction
 ~ 2 link
-~ 1 image
+~ 2 image
 ~ 1 audio call
 ~ 1 calls 00:18:00
 

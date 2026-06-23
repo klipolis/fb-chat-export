@@ -11,7 +11,7 @@ Classification uses the **file name** first (when available), then the **aria-la
 | `missed-call` | `missed-audio-call.html`, `missed-video-call.html` | `missed audio call`, `missed video call` | No duration |
 | `audio-call` | `audio-call.html` | `audio call` | Duration from timer |
 | `image` | `image(-N).html` | `image`, `photo`, `picture` | File name with suffix (e.g. `image-2.html`) is still classified as `image`. The `imageCount` field tracks the real number of `<img>` elements in the message — for example `image-2.html` counts 2 images; `image-3.html` counts 2. Display always shows `image`. |
-| `link` | `link-embed-no-text.html`, `link-text.html`, `video-link.html` | URL patterns, `attachment`, `pinned location`, video hosting domains | Merged with `video-link` at the type level |
+| `link` | `link-embed-no-text.html`, `link-text.html`, `video-link.html` | URL patterns, `attachment`, video hosting domains | Merged with `video-link` at the type level |
 | `text` | `text.html`, `text-replied.html`, `text-image-replied.html` | Broad fallback | Excludes all other types |
 | `video-call` | `video-call.html` | `video call` | Duration from timer |
 | `voice-note` | `voice-note.html` | `voice message`, `voice note`, `audio message`, `audio note` | Duration from timer or label |

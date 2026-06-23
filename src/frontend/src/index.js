@@ -327,7 +327,7 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
   rightCol.appendChild(selectAllLink);
 
   // Message type filter
-  const typeFilterTypes = ['text', 'link', 'pinned-location', 'image', 'reaction', 'audio-call', 'video-call', 'voice-note', 'sticker', 'poll'];
+  const typeFilterTypes = ['text', 'link', 'image', 'reaction', 'audio-call', 'video-call', 'voice-note', 'sticker', 'poll'];
   const typeFilterState = {};
   const typeFilterDetails = document.createElement('details');
   typeFilterDetails.className = 'pe-label';
@@ -1048,8 +1048,9 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
       return;
     }
 
+    const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+
     if (startAtBottomChk.checked) {
-      const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
       if (toDate) {
         const latestVisible = getLatestVisibleMessageDate();
         if (latestVisible && latestVisible > toDate) {
@@ -1057,6 +1058,16 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
         }
       } else {
         scroller.scrollTop = maxScrollTop;
+      }
+    }
+
+    let scanDown = false;
+    if (fromDate && !startAtBottomChk.checked) {
+      const latestVisible = getLatestVisibleMessageDate();
+      if (latestVisible && latestVisible < fromDate) {
+        scanDown = true;
+        const step = Math.max(800, scroller.clientHeight - 100);
+        scroller.scrollTop = Math.min(maxScrollTop, scroller.scrollTop + step);
       }
     }
 
@@ -1090,7 +1101,8 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
         if (
           stopRequested ||
           reachedFromDate ||
-          (scroller.scrollTop <= 0 && stableCount >= 3)
+          (scanDown && scroller.scrollTop >= maxScrollTop && stableCount >= 3) ||
+          (!scanDown && scroller.scrollTop <= 0 && stableCount >= 3)
         ) {
           actionBtn.dataset.scanning = 'false';
 
@@ -1230,13 +1242,44 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
           return;
         }
 
-        const nextTop = Math.max(0, scroller.scrollTop - Math.max(800, scroller.clientHeight - 100));
+        const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+        const step = Math.max(800, scroller.clientHeight - 100);
+        const nextTop = scanDown
+          ? Math.min(maxScrollTop, scroller.scrollTop + step)
+          : Math.max(0, scroller.scrollTop - step);
         if (Math.abs(nextTop - scroller.scrollTop) < 5) {
           stableCount += 1;
         } else {
           stableCount = 0;
           scroller.scrollTop = nextTop;
         }
+
+        if (
+          stopRequested ||
+          reachedFromDate ||
+          (scanDown && scroller.scrollTop >= maxScrollTop && stableCount >= 3) ||
+          (!scanDown && scroller.scrollTop <= 0 && stableCount >= 3)
+        ) {
+          actionBtn.dataset.scanning = 'false';
+
+          const viewerName = aliasChk.checked ? detectCurrentUserName() : null;
+          if (viewerName && viewerName !== 'You') {
+            detectedSenders.add(viewerName);
+          }
+
+          if (aliasChk.checked && groupChatChk.checked) {
+            const defaultAliases = viewerName && viewerName !== 'You' ? { [viewerName]: 'you' } : {};
+            setDetectedNames(detectedSenders, defaultAliases);
+          }
+
+          if (aliasChk.checked) {
+            bindAliasListeners();
+          }
+
+          buildExport();
+          return;
+        }
+
         const delay = 500 + Math.random() * 500;
         scrollTimeout = setTimeout(scanStep, delay);
       } catch (err) {
@@ -1248,5 +1291,4 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
 
     scanStep();
   });
-
 })();

@@ -46,6 +46,7 @@ const baseDir = resolveRepoPath('.');
 let writeRaw = process.env.BUILD_RAW === 'true';
 let referenceDate = process.env.BUILD_REFERENCE_DATE ||
   (serverConfig.overwriteToday ? `${serverConfig.overwriteToday.replace(/-/g, '.')} 00:00` : '2026.05.22 00:00');
+let forceRebuild = false;
 
 // CLI arguments override env vars
 const cliArgs = process.argv.slice(2);
@@ -54,6 +55,7 @@ for (let i = 0; i < cliArgs.length; i++) {
   if (cliArgs[i].startsWith('--raw=')) writeRaw = cliArgs[i].slice(6) !== 'false';
   if (cliArgs[i] === '--reference-date' && i + 1 < cliArgs.length) { referenceDate = cliArgs[++i]; }
   if (cliArgs[i].startsWith('--reference-date=')) referenceDate = cliArgs[i].slice(17);
+  if (cliArgs[i] === '--force' || cliArgs[i] === '--full') forceRebuild = true;
 }
 
 function writeRawMetadata(fileRecords) {
@@ -417,13 +419,13 @@ async function main() {
     ? Object.keys(previousCache.inputStates || {}).filter((name) => !currentInputStates[name])
     : [];
 
-  if (!configChanged && changedFiles.length === 0 && deletedFiles.length === 0 && previousCache?.complete) {
+  if (!configChanged && changedFiles.length === 0 && deletedFiles.length === 0 && previousCache?.complete && !forceRebuild) {
     console.log('All input files and config unchanged — skipping build');
     reportArtifactSizes();
     return;
   }
 
-  const fullRebuild = configChanged || !previousCache?.complete;
+  const fullRebuild = configChanged || !previousCache?.complete || forceRebuild;
 
   ensureDir(optimizedDir);
   ensureDir(previewDir);

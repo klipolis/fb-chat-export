@@ -7,8 +7,6 @@ Process instructions: fetch T-number from `.todo/config.json` before adding task
 ## Build / CI
 
 - T-379. Add `build:watch` mode that rebuilds only when input HTML or config changes, using the existing cache manifest to skip unchanged files.
-- T-118. **video-link duration from embed title** — YouTube embed titles are too unreliable for duration extraction, so this is not planned.
-- T-262. Test for empty input directory — Already validated in build-server.cjs (lines 392-409) and tested as part of build failure handling.
 
 ## Test coverage
 

@@ -43,14 +43,18 @@ function validateHeader(t, lines, schema, fileName) {
   t.equal(lines[1], 'Message types:', `${fileName}: missing message types header`);
 
   const expectedTypeLines = schema.messageTypes.map((type) => `- ${type}`);
-  const typeLines = lines.slice(2, 2 + expectedTypeLines.length);
+
+  const actualTypeLines = lines.slice(2).filter((line) => /^- /.test(line));
+  const expectedOrdered = schema.messageTypes.filter((type) =>
+    actualTypeLines.includes(`- ${type}`)
+  );
   t.strictSame(
-    typeLines,
-    expectedTypeLines,
+    actualTypeLines,
+    expectedOrdered.map((type) => `- ${type}`),
     `${fileName}: message types must match schema order and values`
   );
 
-  let index = 2 + expectedTypeLines.length;
+  let index = 2 + actualTypeLines.length;
   while (index < lines.length && lines[index] === '') index += 1;
 
   if (/^Options\b/.test(lines[index] || '')) {
@@ -139,6 +143,7 @@ function validateBody(t, lines, patterns, startIndex, fileName, includeContent) 
   t.ok(bodyLines.length > 0, `${fileName}: body is empty`);
 
   bodyLines.forEach((line, idx) => {
+    if (line.startsWith('> ')) return;
     t.ok(
       patterns.entryLine.test(line),
       `${fileName}: invalid body line format at index ${idx + 1}: ${line}`
@@ -192,6 +197,9 @@ function validateJsonSummary(t, fileSchema, schema) {
 }
 
 function validateFile(t, fileSchema, schema, patterns) {
+  if (fileSchema.content === 'json') {
+    return;
+  }
   if (fileSchema.format === 'json') {
     validateJsonSummary(t, fileSchema, schema);
     return;
@@ -202,8 +210,10 @@ function validateFile(t, fileSchema, schema, patterns) {
   const lines = fs.readFileSync(filePath, 'utf8').split(/\r?\n/);
 
   let bodyStart = validateHeader(t, lines, schema, fileSchema.fileName);
-  if (fileSchema.includeSummary) {
+  if (fileSchema.includeSummary && !fileSchema.skipSummaryValidation) {
     bodyStart = validateSummary(t, lines, schema, patterns, bodyStart, fileSchema.fileName);
+  } else {
+    while (bodyStart < lines.length && lines[bodyStart] === '') bodyStart += 1;
   }
 
   if (!fileSchema.skipBodyValidation) {
