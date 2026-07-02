@@ -10,10 +10,12 @@ Changelog entries should describe active changes in direct present-tense stateme
 ## [Unreleased]
 
 ### Fixed
-- You alias no longer guesses from the most frequent sender — detects the viewer's real name from the page DOM instead
-- Reply preview text no longer leaks into no-content export lines
+- Browser summary callSeconds now derives from entry.duration consistently with server build — restores duration totals in browser exports after alias-only cache reuse
+- Plain "call" text in messages is no longer classified as voice-note when type is text — prevents false classification
 
 ### Added
+- You alias no longer guesses from the most frequent sender — detects the viewer's real name from the page DOM instead
+- Reply preview text no longer leaks into no-content export lines
 - Export textbox collapses by default with lazy-load toggle — content renders only on expand
 - Copy and Download buttons stay visible when textbox is collapsed
 - Preview aliases button shows first 5 aliased messages before export
@@ -74,8 +76,6 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Exported replies omit quoted text unless the new `includeRepliedText` option is enabled
 - Reply extraction falls back to `blockquote[data-text]` for Twitter and Facebook quote blocks
 - Alias replacement uses explicit mappings first, then falls back to the `any` catch-all
-- Duration parsing in JSON export shares the shared `durationToSeconds` helper instead of duplicating logic
-- Stale metadata generation removed from node build path; build cache manifest remains the single source of truth
 
 ### Changed
 - Alias name validation accepts Unicode characters, 1–3 words, max 25 characters, no numbers
@@ -86,7 +86,6 @@ Changelog entries should describe active changes in direct present-tense stateme
 - Export config and generated-txt-schema align on `includeSummary`, `duration` pattern, and `messageTypes` values
 - Golden export summary files regenerated to match current server output
 - Browser export cleanup triggers only on new scan start instead of auto-countdown
-- Updated alias configuration so a single source defines runtime replacements and removes duplicate metadata.
 - Reorganises the JSON preview schema with top-level fields and separate raw and preview sections.
 - Reaction messages produce null content in both raw and preview data.
 - `video-link` is a new message type for video platform URLs, using the URL as content.

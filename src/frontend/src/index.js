@@ -1237,58 +1237,18 @@ import { stripVariantSelectors } from '../../shared/string-utils.js';
               noticeMsg.textContent = 'Could not prepare download.';
               setScanState('idle');
             };
-            reader.readAsDataURL(blob);
-          }
-          return;
-        }
+reader.readAsDataURL(blob);
+           }
+         }
+         const delay = 500 + Math.random() * 500;
+         scrollTimeout = setTimeout(scanStep, delay);
+       } catch (err) {
+         noticeMsg.textContent = 'An unexpected error occurred. Please try again.';
+         setScanState('idle');
+         console.error(err);
+       }
+     }
 
-        const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
-        const step = Math.max(800, scroller.clientHeight - 100);
-        const nextTop = scanDown
-          ? Math.min(maxScrollTop, scroller.scrollTop + step)
-          : Math.max(0, scroller.scrollTop - step);
-        if (Math.abs(nextTop - scroller.scrollTop) < 5) {
-          stableCount += 1;
-        } else {
-          stableCount = 0;
-          scroller.scrollTop = nextTop;
-        }
-
-        if (
-          stopRequested ||
-          reachedFromDate ||
-          (scanDown && scroller.scrollTop >= maxScrollTop && stableCount >= 3) ||
-          (!scanDown && scroller.scrollTop <= 0 && stableCount >= 3)
-        ) {
-          actionBtn.dataset.scanning = 'false';
-
-          const viewerName = aliasChk.checked ? detectCurrentUserName() : null;
-          if (viewerName && viewerName !== 'You') {
-            detectedSenders.add(viewerName);
-          }
-
-          if (aliasChk.checked && groupChatChk.checked) {
-            const defaultAliases = viewerName && viewerName !== 'You' ? { [viewerName]: 'you' } : {};
-            setDetectedNames(detectedSenders, defaultAliases);
-          }
-
-          if (aliasChk.checked) {
-            bindAliasListeners();
-          }
-
-          buildExport();
-          return;
-        }
-
-        const delay = 500 + Math.random() * 500;
-        scrollTimeout = setTimeout(scanStep, delay);
-      } catch (err) {
-        noticeMsg.textContent = 'An unexpected error occurred. Please try again.';
-        setScanState('idle');
-        console.error(err);
-      }
-    }
-
-    scanStep();
-  });
+     scanStep();
+   });
 })();

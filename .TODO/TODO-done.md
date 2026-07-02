@@ -1,6 +1,6 @@
 # TODO - Completed tasks
 
-Process instructions: use the prefix and numbering rules declared in TODO-next.md. One task per bullet. Group by canonical categories. Keep T-numbers stable when moving tasks. Ongoing or periodic tasks (e.g. "keep deps up to date") belong in TODO-audit.md, not TODO-done.md. This file is one-way: only append completed tasks here; never delete or rewrite existing entries. Within each section, order entries by T-number to preserve chronological history. Last inserted T-number: 337.
+Process instructions: use the prefix and numbering rules declared in TODO-next.md. One task per bullet. Group by canonical categories. Keep T-numbers stable when moving tasks. Ongoing or periodic tasks (e.g. "keep deps up to date") belong in TODO-audit.md, not TODO-done.md. This file is one-way: only append completed tasks here; never delete or rewrite existing entries. Within each section, order entries by T-number to preserve chronological history. Last inserted T-number: 388.
 
 ## Build / CI
 
@@ -29,11 +29,11 @@ Process instructions: use the prefix and numbering rules declared in TODO-next.m
 - T-233. Created .github/dependabot.yml with weekly schedule for npm and GitHub Actions dependencies (503d098)
 - T-243. Added data-output-auto/build-cache.json to .gitignore — generated cache state that should not be tracked (252b531)
 - T-255. Added dist/app.js bundle syntax validation using `node --check` before release (cccf06a)
+- T-274. Moved hot AI prompt files from docs/AI-interaction/prompts-collection/ → project-prompts/ and session logs from docs/logs/ and docs/AI-interaction/ai-logs/ → project-logs/; created scripts/run-prompt.cjs and pnpm prompt command
 - T-325. Add unit test for reuseMode 'narrower' date filtering — verify earlier messages are excluded and later messages are included when shrinking the date range (ef2887c)
 - T-326. Add test for cache invalidation when dates expand beyond the cached window — verifies reuse is rejected and a full rescan is triggered (ef2887c)
 - T-349. Add test for lazy-loaded export textbox — verify memory usage stays flat during scan and content is only rendered on expand (2699b44)
 - T-350. Add test for collapsed-panel button visibility — verify Copy and Download buttons remain accessible without expanding the textbox (2699b44)
-- T-370. Add integration test for case-insensitive alias matching — verifies lookupAlias matches case variants (John, john, JOHN) when toggle is active and falls through when off (2699b44)
 - T-379. Add `--watch` flag to server build that rebuilds only when input HTML or config changes, using the existing cache manifest to skip unchanged files
 
 ## Test coverage
@@ -66,6 +66,9 @@ Process instructions: use the prefix and numbering rules declared in TODO-next.m
 - T-172. Added unit test coverage for buildSummary and buildDetailedSummary fixedParticipants filter (512f5c0)
 - T-174. Added link-video to TXT export message types list (512f5c0)
 - T-183. Added direct unit tests for buildDetailedSummary, buildSummaryJson, and buildEntryFromEntry (512f5c0)
+- T-370. Add integration test for case-insensitive alias matching - verifies lookupAlias matches case variants (John, john, JOHN) when toggle is active and falls through when off (2699b44)
+- T-264. Added test for empty input directory handling in build-server.cjs covering missing directory and no HTML files
+- T-380. Add regression test for browser cache with pinned-location messages - verify cached reuse preserves content type through alias-only rescans
 - T-184. Added direct unit tests for extractHtmlLocale, findMatchingClosingTag, and extractRawDuration (512f5c0)
 - T-188. Integration test harness includes tap.teardown with conditional cleanup based on serverBuildCache (e98c792)
 - T-199. Split test-other.js (469 lines, 14 subtests, 496 assertions) into three per-module test files (e98c792)
@@ -90,9 +93,6 @@ Process instructions: use the prefix and numbering rules declared in TODO-next.m
 - T-244. Added tests for create-nodes.js onlyFiles option to verify filtered processing skips unchanged files during partial rebuild (3a5426e)
 - T-253. Added integration tests for Unicode sender names in browser export flow - Hungarian, Cyrillic, and Arabic names preserved through DOM parsing (5197685)
 - T-254. Added tests for word count edge cases - empty content, single word, very long messages (5197685)
-- T-264. Added test for empty input directory handling in build-server.cjs covering missing directory and no HTML files
-
-- T-380. Add regression test for browser cache with pinned-location messages — verify cached reuse preserves content type through alias-only rescans
 
 ## Documentation
 
@@ -295,6 +295,8 @@ Process instructions: use the prefix and numbering rules declared in TODO-next.m
 - T-79. Details/summary open state mirrors aria-expanded (a87ec74)
 - T-80. Validation errors focus the invalid input field (a87ec74)
 - T-81. Download button uses aria-disabled for screen reader compatibility (a87ec74)
+- T-377. Align browser summary duration handling with server path by deriving callSeconds from entry.duration before buildSummary runs
+- T-378. Add unit test verifying browser summary callSeconds matches server build for audio/video call fixtures
 
 ## Cleanup
 

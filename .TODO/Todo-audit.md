@@ -19,7 +19,7 @@ so they happen automatically without needing separate tracking.
 - Verify no T-numbers appear in TODO-future.md, TODO-ignore.md, or TODO-audit.md.
 - Verify all task descriptions start with a capital letter and use present-tense wording.
 - Verify gap reuse is still preferred over advancing the next T-number.
-- Verify all five canonical sections exist in TODO-next.md and TODO-done.md, including empty ones with placeholder.
+- Verify all canonical sections exist in TODO-next.md and TODO-done.md, including empty ones with placeholder.
 - Verify tasks moved from TODO-next to TODO-done keep their number and wording unchanged.
 
 ## For CHANGELOG

@@ -19,6 +19,7 @@
     "build:raw": "cross-env BUILD_RAW=true node src/build-server.cjs",
     "build:raw-clean": "node src/build-raw-clean.cjs",
     "build:server": "node src/build-server.cjs",
+    "build:watch": "cross-env BUILD_WATCH=true node src/build-server.cjs",
     "create:nodes": "node src/shared/create-nodes.js",
     "format": "prettier --write \"src/**/*.{js,cjs,mjs}\" \"tests/**/*.{js,cjs,mjs}\" \"scripts/**/*.{js,cjs}\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"CONTRIBUTING.md\" \"SECURITY.md\" \"CODE_OF_CONDUCT.md\"",
     "format:check": "prettier --check \"src/**/*.{js,cjs,mjs}\" \"tests/**/*.{js,cjs,mjs}\" \"scripts/**/*.{js,cjs}\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"CONTRIBUTING.md\" \"SECURITY.md\" \"CODE_OF_CONDUCT.md\"",
@@ -54,8 +55,7 @@
     "validate:generated-json": "node tests/validate-generated-json.js",
     "validate:generated-txt": "node tests/validate-generated-txt.js",
     "validate:golden": "node tests/validate-golden.js",
-    "validate:release": "node tests/validate-release.js",
-    "build:watch": "cross-env BUILD_WATCH=true node src/build-server.cjs"
+    "validate:release": "node tests/validate-release.js"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",

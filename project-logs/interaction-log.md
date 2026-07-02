@@ -12,8 +12,14 @@ YYYY-MM-DD HH:MM | commit <hash> | commit subject
 
 Do not modify existing entries below. Update `project-logs/activity-log.md` as well for user-request-level summaries.
 
+- 2026-07-02 16:45 | user | commit and push, then add more meaningful todo-next tasks
+- 2026-07-02 16:45 | ai | Staged changes, updated CHANGELOG and logs, removing debug.log from staging, prepared commit
+
+- 2026-07-02 16:50 | user | commit and push, then add more meaningful todo-next tasks
+- 2026-07-02 16:50 | ai | Removed dead code block in frontend index.js (duplicate scan completion logic with undefined functions), updated logs
+
 ---
-2026-06-23 16:29 | ai | Reviewed and implemented remaining TODO-next items: fixed TODO file structure (removed T-number prefixes from ignore/future), added build:watch flag, regression test for pinned-location caching, includeRepliedText toggle, Twitter/Facebook quote-block fallback, duration parsing consolidation (export-json.js now uses shared durationToSeconds), stale metadata.json removal, alias priority ordering docs, and schema/config alignment. Lint and generated-artifact validations pass.
+2026-06-23 16:29 | ai | Reviewed and implemented remaining TODO-next items: fixed TODO file structure
 
 2026-06-23 16:29 | ai | Fixed `formatLine` — reply preview line `> Replied to: ...` no longer appears when content display is off. Only shows when `includeContent: true`.
 
